@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,23 +31,57 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.groovy.editor.completion;
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
- * This Exception class wraps Reflection Exceptions so the Web Service code can catch a single exception.
- * @author  David Botterill
+ *
+ * @author schmidtm
  */
-public class WebServiceReflectionException extends Exception {
-    
-    /** Creates a new instance of WebServiceReflectionException */
-    public WebServiceReflectionException() {
+public class CollectionsTest extends GroovyTestBase {
+
+    String TEST_BASE = "testfiles/completion/collections/";
+
+    public CollectionsTest(String testName) {
+        super(testName);
+        Logger.getLogger(CodeCompleter.class.getName()).setLevel(Level.FINEST);
     }
-    
-    public WebServiceReflectionException(String inMessage,Throwable inThrowable) {
-        super(inMessage,inThrowable);
+
+    @Override
+    public void setUp() throws Exception {
+        super.setUp();
+        CodeCompleter.setTesting(true);
     }
-    
+
+    // uncomment this to have logging from GroovyLexer
+    protected Level logLevel() {
+        // enabling logging
+        return Level.INFO;
+        // we are only interested in a single logger, so we set its level in setUp(),
+        // as returning Level.FINEST here would log from all loggers
+    }
+
+    // testing proper creation of constructor-call proposals
+
+    //     * groovy.lang.*
+    //     * groovy.util.*
+
+    public void testCollections1() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[\"one\",\"two\"].listIter^", false);
+    }
+
+    public void testCollections2() throws Exception {
+        checkCompletion(TEST_BASE + "" + "Collections1.groovy", "[1:\"one\", 2:\"two\"].ent^", false);
+    }
+
+
 }

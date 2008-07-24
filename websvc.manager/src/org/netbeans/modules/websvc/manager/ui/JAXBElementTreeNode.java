@@ -25,7 +25,7 @@
  *
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
 
 import java.net.URLClassLoader;
 import javax.swing.tree.DefaultMutableTreeNode;

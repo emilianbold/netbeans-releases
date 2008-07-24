@@ -40,92 +40,76 @@
  */
 
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
 
-import java.util.Collection;
-import javax.swing.tree.*;
-import java.util.Iterator;
-
+import java.util.ArrayList;
 import java.net.URLClassLoader;
+import javax.swing.tree.DefaultMutableTreeNode;
+import org.openide.ErrorManager;
 
 /**
- * Node for Collection and List types
- * 
- * @author  quynguyen
+ *
+ * @author  David Botterill
  */
-public class ListTypeTreeNode extends AbstractParameterTreeNode {
+public class ArrayTypeTreeNode extends AbstractParameterTreeNode {
     private URLClassLoader urlClassLoader;
     
-    public ListTypeTreeNode(TypeNodeData userObject,URLClassLoader inClassLoader) {
+    public ArrayTypeTreeNode(Object userObject,URLClassLoader inClassLoader) {
         super(userObject);
         urlClassLoader = inClassLoader;
         
     }
-    
     
     public void updateValueFromChildren(TypeNodeData inData) {
         /**
          * create a new ArrayList from all of the child values.
          */
         TypeNodeData data = (TypeNodeData)this.getUserObject();
+        ArrayList<Object> newList = new ArrayList<Object>();
         
-        Collection c = (Collection)data.getTypeValue();
-        if (c == null) return;
-        
-        c.clear();
         for(int ii=0; ii < this.getChildCount(); ii++) {
             DefaultMutableTreeNode childNode = (DefaultMutableTreeNode)this.getChildAt(ii);
             TypeNodeData childData = (TypeNodeData)childNode.getUserObject();
             if(null != childData.getTypeValue()) {
-                c.add(childData.getTypeValue());
+                newList.add(childData.getTypeValue());
             }
         }
+        Object[] arr = newList.toArray();
         
+        data.setTypeValue(arr);
+        
+        // Update the parent node
         DefaultMutableTreeNode parentNode = (DefaultMutableTreeNode) this.getParent();
         if (parentNode != null && parentNode instanceof ParameterTreeNode) {
             ((ParameterTreeNode)parentNode).updateValueFromChildren(data);
         }
     }
+    
     /**
      * Update the child nodes based on the value of this UserObject.
-     * Fix for Bug: 5059732
-     * - David Botterill 8/12/2004
      *
      */
     public void updateChildren() {
         TypeNodeData thisData = (TypeNodeData)this.getUserObject();
-        /**
-         * First get the Collection for this node.
-         */
-        Collection childCollection = (Collection)thisData.getTypeValue();
-        /**
-         * Next we need to delete all of the child nodes
-         */
-        this.removeAllChildren();
-        /**
-         * For each entry in the array, make a child node
-         */
-        String structureType = thisData.getGenericType();
-        if (structureType == null || structureType.length() == 0) {
-            structureType = "java.lang.Object"; // NOI18N
-        }
+        Object arrayObj = thisData.getTypeValue();
         
-        Iterator iter = childCollection.iterator();
-        for (int i = 0; iter.hasNext(); i++) {
-            TypeNodeData data = ReflectionHelper.createTypeData(structureType, "[" + i + "]", iter.next());
-            data.setAssignable(thisData.isAssignable());
-            if (ReflectionHelper.isComplexType(data.getTypeClass(), urlClassLoader)) {
-                StructureTypeTreeNode childNode = new StructureTypeTreeNode(data,urlClassLoader);
-                childNode.updateChildren();
-                this.add(childNode);
-            }else if (ReflectionHelper.isCollection(data.getTypeClass(), urlClassLoader)) {
-                ListTypeTreeNode childNode = new ListTypeTreeNode(data,urlClassLoader);
-                childNode.updateChildren();
-                this.add(childNode);
-            }else {
-                DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(data);
-                this.add(childNode);
+        this.removeAllChildren();
+        //For each entry in the array, make a child node
+        try {
+            String genericType = thisData.getGenericType();
+            int arrayLength = ReflectionHelper.getArrayLength(arrayObj);
+            for (int i = 0; i < arrayLength; i++) {
+                Object entry = ReflectionHelper.getArrayValue(arrayObj, i);
+                TypeNodeData entryData = ReflectionHelper.createTypeData(genericType, "[" + i + "]", entry); // NOI18N
+                
+                DefaultMutableTreeNode entryNode = NodeHelper.getInstance().createNodeFromData(entryData);
+                this.add(entryNode);
             }
+        }catch (Exception ex) {
+            Throwable cause = ex.getCause();
+            ErrorManager.getDefault().notify(cause);
+            ErrorManager.getDefault().log(this.getClass().getName() + 
+                    ": Error using reflection on array: " + thisData.getRealTypeName() + "WebServiceReflectionException=" + cause); // NOI18N
         }
     }
     

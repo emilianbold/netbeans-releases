@@ -39,15 +39,14 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
+
+import java.util.LinkedList;
 
 /**
  *
  * @author David Botterill
  */
-public interface ParameterTreeNode {
-    
-    void updateValueFromChildren(TypeNodeData inData);
-    void updateChildren();
-    
+public interface MethodTaskListener {
+    void methodFinished(Object returnedObject, LinkedList paramList);
 }

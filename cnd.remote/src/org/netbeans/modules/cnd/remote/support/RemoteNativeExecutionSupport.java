@@ -127,7 +127,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             //echannel.setEnv(var, val); // not in 0.1.24
             
             //as a workaround
-            cmdline = "export " + var + "=" + val + ";" + cmdline; // NOI18N
+            cmdline = "export " + var + "=\"" + val + "\";" + cmdline; // NOI18N
             //cmdline = "export PATH=/usr/bin:/usr/sfw/bin/;" + cmdline;
         }
         

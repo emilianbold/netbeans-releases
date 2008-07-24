@@ -39,14 +39,27 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
 
-import java.util.LinkedList;
+package org.netbeans.modules.websvc.manager.ui;
+
+import javax.swing.tree.*;
+
 
 /**
- *
- * @author David Botterill
+ * This class is meant to be the starting point for creating Tree nodes that will be shown in the parameter tree
+ * table.
+ * @author  David Botterill
  */
-public interface MethodTaskListener {
-    void methodFinished(Object returnedObject, LinkedList paramList);
+public abstract class AbstractParameterTreeNode extends DefaultMutableTreeNode implements ParameterTreeNode {
+    
+        /** Creates a new instance of TypeTreeNode */
+    
+    public AbstractParameterTreeNode(Object inUserObject) {
+        super(inUserObject);
+    }
+    
+    public abstract void updateChildren();
+    
+    public abstract void updateValueFromChildren(TypeNodeData inData);
+    
 }

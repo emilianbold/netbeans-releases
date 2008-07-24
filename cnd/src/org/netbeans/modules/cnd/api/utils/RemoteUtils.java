@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -21,12 +21,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,62 +31,33 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
+package org.netbeans.modules.cnd.api.utils;
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
-
-import org.netbeans.swing.outline.RowModel;
-import org.openide.util.NbBundle;
-import javax.swing.tree.DefaultMutableTreeNode;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 
 /**
  *
- * @author  David Botterill
+ * @author Sergey Grinev
  */
-public class ResultRowModel implements RowModel {
-    
-    /** Creates a new instance of TypeRowModel */
-    public ResultRowModel() {
+public final class RemoteUtils {
+
+    public static boolean isLocalhost(String hkey) {
+        return CompilerSetManager.LOCALHOST.equals(hkey);
     }
-    
-    public Class getColumnClass(int column) {
-        switch(column) {
-         //   case 0: return String.class;
-            case 0: return Object.class;
-            default: return String.class;
+
+    public static String getHostName(String hkey) {
+        int index = hkey.indexOf('@');
+        if (index > -1 ) {
+            return hkey.substring(index + 1);
+        } else {
+            assert isLocalhost(hkey);
+            return hkey;
         }
-    }
-    
-    public int getColumnCount() {
-        return 1;
-    }
-    
-    public String getColumnName(int column) {
-        switch(column) {
-            case 0: return NbBundle.getMessage(this.getClass(), "PARAM_VALUE");
-            default: return "";
-        }
-        
-    }
-    
-    public Object getValueFor(Object inNode, int column) {
-        if(null == inNode) return null;
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
-        if(null == node.getUserObject()) return null;
-        TypeNodeData data = (TypeNodeData)node.getUserObject();
-        switch(column) {
-            case 0: return data.getTypeValue();
-            default: return "";
-        }
-        
-    }
-    
-    public boolean isCellEditable(Object inNode, int column) {
-        return true;
-    }
-    
-    public void setValueFor(Object inNode, int column, Object value) {
-        return;
     }
 }

@@ -69,6 +69,7 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.api.lexer.TokenUtilities;
 import org.netbeans.napi.gsfret.source.ClasspathInfo;
 import org.netbeans.napi.gsfret.source.CompilationController;
 import org.netbeans.napi.gsfret.source.CompilationInfo;
@@ -358,7 +359,8 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
             if (root == null) {
                 //System.out.println("Skipping file " + workingCopy.getFileObject());
                 // See if the document contains references to this symbol and if so, put a warning in
-                if (compiler.getText().indexOf(targetName) != -1) {
+                String sourceText = compiler.getText();
+                if (sourceText != null && sourceText.indexOf(targetName) != -1) {
                     int start = 0;
                     int end = 0;
                     String desc = "Parse error in file which contains " + targetName + " reference - skipping it"; 
@@ -485,9 +487,14 @@ public class RubyWhereUsedQueryPlugin extends RubyRefactoringPlugin {
                     String primaryCategory = id.primaryCategory();
                     if ("comment".equals(primaryCategory) || "block-comment".equals(primaryCategory)) { // NOI18N
                         // search this comment
-                        String text = token.text().toString();
-                        int index = text.indexOf(targetName);
+                        assert targetName != null;
+                        CharSequence tokenText = token.text();
+                        if (tokenText == null || targetName == null) {
+                            continue;
+                        }
+                        int index = TokenUtilities.indexOf(tokenText, targetName);
                         if (index != -1) {
+                            String text = tokenText.toString();
                             // TODO make sure it's its own word. Technically I could
                             // look at identifier chars like "_" here but since they are
                             // used for other purposes in comments, consider letters

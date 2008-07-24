@@ -47,10 +47,10 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -80,7 +80,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
             }
         };
     }
-    
+
     private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
@@ -89,10 +89,11 @@ public class UploadCommand extends FtpCommand implements Displayable {
 
         // XXX project name could be cached - but is it correct?
 
-        InputOutput ftpLog = getFtpLog();
+        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(ftpLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_UploadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+        TransferInfo transferInfo = null;
         try {
             progressHandle.start();
             Set<TransferFile> forUpload = remoteClient.prepareUpload(sources[0], selectedFiles);
@@ -106,7 +107,7 @@ public class UploadCommand extends FtpCommand implements Displayable {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
-                remoteClient.upload(sources[0], forUpload);
+                transferInfo = remoteClient.upload(sources[0], forUpload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
             }
@@ -118,10 +119,12 @@ public class UploadCommand extends FtpCommand implements Displayable {
             } catch (RemoteException ex) {
                 processRemoteException(ex);
             }
+            if (transferInfo != null) {
+                processTransferInfo(transferInfo, ftpLog);
+            }
             progressHandle.finish();
         }
     }
-
 
     public String getDisplayName() {
         return DISPLAY_NAME;
