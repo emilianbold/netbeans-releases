@@ -265,7 +265,6 @@ public final class GemPanel extends JPanel {
     }
 
     private void setEnabled(TabIndex tab, boolean enabled) {
-        gemsTab.setEnabledAt(tab.ordinal(), enabled);
         switch (tab) {
             case NEW:
                 reloadNewButton.setEnabled(enabled);
