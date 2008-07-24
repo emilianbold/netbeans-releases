@@ -18,7 +18,7 @@
  Microsystems, Inc. All Rights Reserved.
 -->
 <project name="etl.project" default="netbeans" basedir=".">
-    <import file="../nbbuild/templates/projectized.xml"/>  
+    <import file="../nbbuild/templates/projectized.xml"/>
     <target name="ant-extra" depends="init">
         <mkdir dir="build/antclasses"/>
         <javac srcdir="antsrc" destdir="build/antclasses" source="1.5" debug="true" >
@@ -28,29 +28,24 @@
                 <pathelement location="${cluster}/${module.jar}"/>
                 <pathelement location="${cluster}/modules/org-netbeans-modules-etl-editor.jar"/>
             </classpath>
-         </javac>
-          <antcall target="compile-i18" />
+        </javac>
+        <antcall target="compile-i18" />
         <copy todir="build/antclasses">
             <fileset dir="antsrc" includes="**/*.wsdl.template">
             </fileset>
         </copy>
-        
         <mkdir dir="${cluster}/modules/ext/etlpro"/>
         <jar jarfile="${cluster}/modules/ext/etlpro/org-netbeans-modules-etl-project-anttask.jar" compress="false">
             <fileset dir="build/antclasses"/>
         </jar>
     </target>
-
-    <target name="netbeans-extra" depends="ant-extra"/> 
-    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/../etl.editor/external/net.java.hulp.i18ntask.jar"></taskdef>
-      <target name="compile-i18" depends="init">
-        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties" prefix="DM-DI-" strict="false" pattern="(BUND\d\d\d)(: )(.*)"></i18n>   
-        <i18n dir="${basedir}/build/classes" file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties" prefix="DM-DI-" strict="false" pattern="(PRJS\d\d\d)(: )(.*)"></i18n> 
-	<copy file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties"
-                                      todir="${basedir}/build/classes/org/netbeans/modules/etl/project"/>
-        <copy file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties"  
-                                      todir="${basedir}/build/classes/org/netbeans/modules/etl/project"/>
-       <!--delete file="${basedir}/src/org/netbeans/modules/etl/project/msgs.properties"/>
-       <delete file="${basedir}/src/org/netbeans/modules/etl/project/msgs_log.properties"/-->
+    <target name="netbeans-extra" depends="ant-extra"/>
+    <taskdef name="i18n" classname="net.java.hulp.i18n.buildtools.I18NTask" classpath="${basedir}/../etl.editor/external/net.java.hulp.i18ntask.jar">
+    </taskdef>
+    <target name="compile-i18" depends="projectized-common.compile">
+        <i18n dir="${basedir}/build/classes" file="${basedir}/build/classes/org/netbeans/modules/etl/project/msgs.properties" prefix="DM-DI-" strict="false" pattern="(BUND\d\d\d)(: )(.*)">
+        </i18n>
+        <i18n dir="${basedir}/build/classes" file="${basedir}/build/classes/org/netbeans/modules/etl/project/msgs_log.properties" prefix="DM-DI-" strict="false" pattern="(PRJS\d\d\d)(: )(.*)">
+        </i18n>
     </target>
 </project>

@@ -209,10 +209,13 @@ public class SaasClientJavaAuthenticationGenerator extends SaasClientAuthenticat
             }
             if(useTemplates != null) {
                 for (Template template : useTemplates.getTemplates()) {
+                    if(!template.getDropTypeList().contains(getDropFileType().prefix()))
+                        continue;
+                    
                     String id = template.getId();
                     String type = template.getType();
                     String templateUrl = template.getUrl();
-
+                  
                      //FIXME - Hack
                     if(!templateUrl.contains("Desktop"))
                         continue;

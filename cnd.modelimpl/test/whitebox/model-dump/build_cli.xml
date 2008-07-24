@@ -52,8 +52,8 @@ Contributor(s):
     <property name="main.class" value="modeldump.ModelDump"/>
 
     <property name="nbdist.path" value="../../../../nbbuild/netbeans"/>
-    <property name="platform" value="platform8"/>
-    <property name="ide" value="ide9"/>
+    <property name="platform" value="platform9"/>
+    <property name="ide" value="ide10"/>
     
     <property name="cnddist.path" value="../../../../nbbuild/netbeans/cnd2"/>
     
