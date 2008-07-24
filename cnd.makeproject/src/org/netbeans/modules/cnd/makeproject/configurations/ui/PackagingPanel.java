@@ -63,6 +63,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private Object getPropertyValue() throws IllegalStateException {
         Vector v = packagingFilesPanel.getListData();
         packagingConfiguration.getFiles().setValue(new ArrayList(v));
+        packagingConfiguration.getType().setValue(packagingTypeComboBox.getSelectedIndex());
 	return packagingConfiguration;
     }
 

@@ -65,7 +65,6 @@ import org.netbeans.api.project.ant.FileChooser;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.project.libraries.LibraryCustomizerContext;
 import org.openide.DialogDisplayer;
-import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -500,7 +499,7 @@ public class J2SEVolumeCustomizer extends javax.swing.JPanel implements Customiz
                     // TODO: warn user that no source root was found
                     return null;
                 } else {
-                    assert FileUtil.isParentOf(fo, root) : fo.toString()+" is not parent of "+root; // NOI18N
+                    assert fo.equals(root) || FileUtil.isParentOf(fo, root) : fo.toString()+" is not parent of "+root; // NOI18N
                     return FileUtil.getRelativePath(fo, root)+File.separatorChar;
                 }
             }

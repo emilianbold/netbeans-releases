@@ -554,6 +554,30 @@ public class RubyStructureAnalyzer implements StructureScanner {
             
             break;
         }
+        case LOCALASGNNODE: {
+            // Only include variables at the top level
+            if (parent == null && AstUtilities.findMethod(path) == null) {
+                // Make sure we're not inside a method
+                // TODO - avoid duplicates?
+
+                String name = ((INameNode)node).getName();
+                boolean found = false;
+                for (AstElement child : structure) {
+                    if (child.getKind() == ElementKind.VARIABLE && name.equals(child.getName())) {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found) {
+                    AstElement co = new AstNameElement(info, node, name,
+                            ElementKind.VARIABLE);
+                    co.setIn(in);
+                    structure.add(co);
+                }
+            }
+            
+            break;
+        }
         case FCALLNODE: {
             String name = ((INameNode)node).getName();
 
