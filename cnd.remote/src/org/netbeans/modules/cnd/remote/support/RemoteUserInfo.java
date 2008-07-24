@@ -140,7 +140,6 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                     passwd = passwordField.getText();
                     return true;
                 } else {
-                    System.err.println("RUI.promptPassword: Password cancelled on " + Thread.currentThread().getName());
                     cancelled = true;
                     return false; 
                 }

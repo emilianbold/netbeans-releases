@@ -44,6 +44,10 @@ import com.jcraft.jsch.JSch;
 import com.jcraft.jsch.JSchException;
 import com.jcraft.jsch.Session;
 import java.util.logging.Logger;
+import javax.swing.JButton;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -91,13 +95,22 @@ public abstract class RemoteConnectionSupport {
                 String msg = jsce.getMessage();
                 if (msg.equals("Auth cancel")) { // NOI18N
                     cancelled = true;
-                } else {
-                    if (msg.equals("Auth fail")) {
-                        retry = true;
+                } else if (msg.equals("Auth fail")) { // NOI18N
+                    JButton btRetry = new JButton(NbBundle.getMessage(RemoteConnectionSupport.class, "BTN_Retry"));
+                    NotifyDescriptor d = new NotifyDescriptor(
+                            NbBundle.getMessage(RemoteConnectionSupport.class, "MSG_AuthFailedRetry"),
+                            NbBundle.getMessage(RemoteConnectionSupport.class, "TITLE_AuthFailedRetryDialog"),
+                            NotifyDescriptor.OK_CANCEL_OPTION, NotifyDescriptor.QUESTION_MESSAGE,
+                            new Object[] { btRetry, NotifyDescriptor.CANCEL_OPTION}, btRetry);
+                    if (DialogDisplayer.getDefault().notify(d) == btRetry) {
+                         retry = true;
                     } else {
                         failed = true;
                         failureReason = msg;
                     }
+                } else {
+                    failed = true;
+                    failureReason = msg;
                 }
             }
         } while (retry);
