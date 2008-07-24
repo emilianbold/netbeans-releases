@@ -44,8 +44,6 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import org.netbeans.modules.cnd.makeproject.api.configurations.IntConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.PlatformConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.openide.nodes.Node;
 
 public class IntNodeProp extends Node.Property {
@@ -54,6 +52,8 @@ public class IntNodeProp extends Node.Property {
     private String txt1;
     private String txt2;
     private String txt3;
+    
+    IntEditor intEditor = null;
 
     public IntNodeProp(IntConfiguration intConfiguration, boolean canWrite, String txt1, String txt2, String txt3) {
         super(Integer.class);
@@ -115,7 +115,10 @@ public class IntNodeProp extends Node.Property {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new IntEditor();
+        if (intEditor == null) {
+            intEditor = new IntEditor();
+        }
+	return intEditor;
     }
 
     private class IntEditor extends PropertyEditorSupport {
