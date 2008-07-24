@@ -181,10 +181,6 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         modRegions.add(index, region);
     }
     
-    MutablePositionRegion removeRegion(int index) {
-        return modRegions.remove(index);
-    }
-    
     private int findRegionIndex(int offset, boolean forInsert) {
         int low = 0;
         int high = modRegions.size() - 1;
@@ -388,12 +384,11 @@ public final class TrailingWhitespaceRemove implements BeforeSaveTasks.Task, Doc
         @Override
         public void undo() throws CannotUndoException {
             super.undo();
-            MutablePositionRegion removedRegion = removeRegion(index);
+            modRegions.remove (region);
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.fine("Removed region " + region + " at index=" + index + '\n'); // NOI18N
                 LOG.fine("Regions:\n" + modRegions + '\n'); // NOI18N
             }
-            assert (removedRegion == region);
         }
 
         @Override

@@ -106,7 +106,13 @@ public final class WebServiceManager {
                 !wsData.isResolved())) {
             wsData.setState(WebServiceData.State.WSDL_RETRIEVING);
 
-            File localWsdlFile = copyWsdlResources(wsData.getOriginalWsdlUrl());
+            File localWsdlFile = null;
+            try {
+                localWsdlFile = copyWsdlResources(wsData.getOriginalWsdlUrl());
+            } catch (IOException ex) {
+                wsData.setState(WebServiceData.State.WSDL_UNRETRIEVED);
+                throw ex;
+            }
             File catalogFile = new File(WEBSVC_HOME, WsdlUtil.getCatalogForWsdl(wsData.getOriginalWsdlUrl()));
 
             wsData.setWsdlFile(localWsdlFile.getAbsolutePath());

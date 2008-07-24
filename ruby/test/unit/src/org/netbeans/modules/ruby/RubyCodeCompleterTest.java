@@ -268,7 +268,11 @@ public class RubyCodeCompleterTest extends RubyTestBase {
         checkComputeMethodCall("testfiles/calls/call12.rb", " ^#",
                 null, null, false);
     }
-    
+
+    public void testEmpty1() throws Exception {
+        checkCompletion("testfiles/empty.rb", "^", false);
+    }
+
     // TODO - test more non-fc calls (e.g. x.foo)
     // TODO test with splat args (more args than are in def list)
     // TODO test with long arg lists
