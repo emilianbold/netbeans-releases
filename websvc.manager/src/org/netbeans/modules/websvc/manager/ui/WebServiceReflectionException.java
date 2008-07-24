@@ -40,49 +40,20 @@
  */
 
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
-
-import javax.swing.tree.DefaultMutableTreeNode;
-import org.netbeans.swing.outline.RenderDataProvider;
+package org.netbeans.modules.websvc.manager.ui;
 
 /**
- *
+ * This Exception class wraps Reflection Exceptions so the Web Service code can catch a single exception.
  * @author  David Botterill
  */
-public class TypeDataProvider implements RenderDataProvider {
+public class WebServiceReflectionException extends Exception {
     
-    /** Creates a new instance of TypeDataProvider */
-    public TypeDataProvider() {
+    /** Creates a new instance of WebServiceReflectionException */
+    public WebServiceReflectionException() {
     }
     
-    public java.awt.Color getBackground(Object o) {
-        
-        return null;
-    }
-    
-    public String getDisplayName(Object inNode) {
-        if(null == inNode) return null;
-        DefaultMutableTreeNode node = (DefaultMutableTreeNode)inNode;
-        if(null == node.getUserObject()) return null;
-        TypeNodeData data = (TypeNodeData)node.getUserObject();
-        return data.getRealTypeName();
-        
-    }
-    
-    public java.awt.Color getForeground(Object o) {
-        return null;
-    }
-    
-    public javax.swing.Icon getIcon(Object o) {
-        return null;
-    }
-    
-    public String getTooltipText(Object o) {
-        return null;
-    }
-    
-    public boolean isHtmlDisplayName(Object o) {
-        return false;
+    public WebServiceReflectionException(String inMessage,Throwable inThrowable) {
+        super(inMessage,inThrowable);
     }
     
 }

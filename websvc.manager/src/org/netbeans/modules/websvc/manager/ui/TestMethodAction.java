@@ -39,11 +39,10 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.ui.actions;
+package org.netbeans.modules.websvc.manager.ui;
 
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.netbeans.modules.websvc.saas.ui.wizards.TestWebServiceMethodDlg;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;

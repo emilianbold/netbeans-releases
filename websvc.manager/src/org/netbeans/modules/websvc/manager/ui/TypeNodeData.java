@@ -40,7 +40,7 @@
  */
 
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
 
 /**
  * This class represents the data for each node in the TreeTable.

@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.websvc.saas.ui.wizards;
+package org.netbeans.modules.websvc.manager.ui;
 
 //import com.sun.tools.ws.processor.model.java.JavaMethod;
 //import com.sun.tools.ws.processor.model.java.JavaParameter;

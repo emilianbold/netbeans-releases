@@ -44,7 +44,6 @@ package org.netbeans.modules.websvc.saas.ui.nodes;
 import java.awt.Image;
 import java.awt.datatransfer.Transferable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
@@ -54,8 +53,7 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaMethod;
 import org.netbeans.modules.websvc.jaxwsmodelapi.java.JavaParameter;
 import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
-import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
-import org.netbeans.modules.websvc.saas.ui.actions.TestMethodAction;
+import org.netbeans.modules.websvc.saas.spi.MethodNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.util.SaasTransferable;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.TypeUtil;
@@ -66,7 +64,6 @@ import org.openide.nodes.Sheet;
 import org.openide.nodes.Sheet.Set;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
-import org.openide.util.actions.SystemAction;
 import org.openide.util.datatransfer.ExTransferable;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -117,8 +114,11 @@ public class WsdlMethodNode extends AbstractNode {
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = SaasNode.getActions(getLookup());
-        //TODO maybe ???
-        actions.add(SystemAction.get(TestMethodAction.class));
+        for (MethodNodeActionsProvider ext : SaasUtil.getMethodNodeActionsProviders()) {
+            for (Action a : ext.getMethodActions(getLookup())) {
+                actions.add(a);
+            }
+        }
         return actions.toArray(new Action[actions.size()]);
     }
     
