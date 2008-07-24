@@ -121,6 +121,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.common.ui.BrokenServerSupport;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
@@ -852,6 +853,15 @@ public final class WebProject implements Project, AntProjectListener {
                     // UI Logging
                     Utils.logUI(NbBundle.getBundle(WebProject.class), "UI_WEB_PROJECT_OPENED", // NOI18N
                             new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
+                    // Usage Logging
+                    String serverName = ""; // NOI18N
+                    try {
+                        serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                    }
+                    catch (InstanceRemovedException ire) {
+                        // do nothing
+                    }
+                    Utils.logUsage(WebProject.class, "USG_PROJECT_OPEN_WEB", new Object[] { serverName }); // NOI18N
                 }
                 
             } catch (IOException e) {
