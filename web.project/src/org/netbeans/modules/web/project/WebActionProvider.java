@@ -42,9 +42,9 @@ package org.netbeans.modules.web.project;
 
 import java.io.IOException;
 import java.io.File;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -65,7 +65,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
@@ -89,9 +88,6 @@ import java.util.HashSet;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.fileinfo.NonRecursiveFolder;
-import org.netbeans.api.java.queries.SourceForBinaryQuery;
-import org.netbeans.api.java.source.BuildArtifactMapper;
-import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -145,6 +141,7 @@ class WebActionProvider implements ActionProvider {
         COMMAND_MOVE,
         COMMAND_RENAME
     };
+
     // Project
     WebProject project;
     // Ant project helper of the project
@@ -902,6 +899,15 @@ class WebActionProvider implements ActionProvider {
     public boolean isActionEnabled(String command, Lookup context) {
         FileObject buildXml = findBuildXml();
         if (buildXml == null || !buildXml.isValid()) {
+            return false;
+        }
+
+        boolean cos = Boolean.parseBoolean((String) project.getWebProjectProperties().get(WebProjectProperties.DEPLOY_ON_SAVE));
+        // build or compile source file (JSP compilation allowed)
+        if (cos && (COMMAND_BUILD.equals(command)
+                || (COMMAND_COMPILE_SINGLE.equals(command)
+                    && (findJavaSourcesAndPackages(context, project.getSourceRoots().getRoots()) != null || findJavaSourcesAndPackages(context, project.getTestSourceRoots().getRoots()) != null)))) {
+
             return false;
         }
 

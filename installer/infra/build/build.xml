@@ -361,10 +361,10 @@
 	</if>
 
 
-	<set property="glassfish-mod.milestone.number"      value="10"/>
-	<set property="glassfish-mod.milestone.number.real" value="10d"/>
-	<set property="glassfish-mod.build.type"            value="preview"/>
-	<set property="glassfish-mod.build.number"          value="20080610"/>
+	<set property="glassfish-mod.milestone.number"      value="15"/>
+	<set property="glassfish-mod.milestone.number.real" value="15a"/>
+	<set property="glassfish-mod.build.type"            value="express"/>
+	<set property="glassfish-mod.build.number"          value="20080722"/>
 
 
         <!--
@@ -714,7 +714,7 @@ jarsigner.storepass=${jarsigner.storepass}
     <target name="build-netbeans-components" if="do.build.netbeans">
 	<set property="netbeans.group.uid" value=""/>
 	<antcall target="build-list">
-	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-soa nb-uml nb-ruby nb-groovy nb-cnd nb-php runtimes-group glassfish glassfish-mod tomcat openesb"/>
+	    <param name="build.list" value="nb-base nb-javase nb-webcommon nb-javaee nb-javame nb-soa nb-uml nb-ruby nb-cnd nb-php runtimes-group glassfish glassfish-mod tomcat openesb"/>
         </antcall>
      </target>
 
@@ -1133,7 +1133,6 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javame"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
-            <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="6.0.16.0.0"/>
@@ -1152,7 +1151,6 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-javase"     version="${nb.full.version}"/>
             <component uid="nb-webcommon"  version="${nb.full.version}"/>
             <component uid="nb-javaee"     version="${nb.full.version}"/>
-            <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
             <component uid="glassfish-mod" version="3.0.0.${glassfish-mod.milestone.number}.${glassfish-mod.build.number}"/>
             <component uid="tomcat"        version="6.0.16.0.0"/>
@@ -1248,7 +1246,6 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-soa"         version="${nb.full.version}"/>
                        <component uid="nb-uml"         version="${nb.full.version}"/>
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
-                       <component uid="nb-groovy"      version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
@@ -1269,7 +1266,6 @@ jarsigner.storepass=${jarsigner.storepass}
                        <component uid="nb-soa"         version="${nb.full.version}"/>
                        <component uid="nb-uml"         version="${nb.full.version}"/>
                        <component uid="nb-ruby"        version="${nb.full.version}"/>
-                       <component uid="nb-groovy"      version="${nb.full.version}"/>
                        <component uid="nb-cnd"         version="${nb.full.version}"/>
                        <component uid="nb-php"         version="${nb.full.version}"/>
                        <component uid="glassfish"      version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>
@@ -1292,7 +1288,6 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-soa"        version="${nb.full.version}"/>
             <!--<component uid="nb-uml"    version="${nb.full.version}"/>-->
             <component uid="nb-ruby"       version="${nb.full.version}"/>
-            <component uid="nb-groovy"     version="${nb.full.version}"/>
             <component uid="nb-cnd"        version="${nb.full.version}"/>
             <component uid="nb-php"        version="${nb.full.version}"/>
             <component uid="glassfish"     version="2.0.2.${glassfish.milestone.number}.${glassfish.build.number}"/>

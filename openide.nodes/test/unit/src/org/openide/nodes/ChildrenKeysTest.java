@@ -334,6 +334,14 @@ public class ChildrenKeysTest extends NbTestCase {
                 super(lazy);
             }
             public Node[] arr;
+            public int cnt;
+
+            @Override
+            protected Node[] createNodes(Object key) {
+                Node[] tmpArray = super.createNodes(key);
+                cnt += tmpArray.length;
+                return tmpArray;
+            }
 
             @Override
             protected void destroyNodes (Node[] arr) {
@@ -345,23 +353,51 @@ public class ChildrenKeysTest extends NbTestCase {
 
         K k = new K(lazy());
         k.keys (new String[] { "A", "B", "C" });
+        Node root = createNode(k);
+        holder = root;
 
-        Node[] n = k.getNodes ();
-        assertEquals ("3", 3, n.length);
+        Listener l = new Listener();
+        root.addNodeListener(l);
+
+        Node[] arr = root.getChildren().getNodes ();
+        assertEquals ("3", 3, arr.length);
         assertNull ("Still no destroy", k.arr);
+        assertEquals("3nodes created", 3, k.cnt);
+        l.assertNoEvents("No change");
+
+        Listener l0 = new Listener();
+        Listener l1 = new Listener();
+        Listener l2 = new Listener();
+        arr[0].addNodeListener(l0);
+        arr[1].addNodeListener(l1);
+        arr[2].addNodeListener(l2);
 
         k.keys (new String[] { "A" });
+        l.assertRemoveEvent("one removal of two nodes", new int[] { 1, 2 });
         assertNotNull ("Some destroyed", k.arr);
         assertEquals ("2 destroyed", 2, k.arr.length);
         k.arr = null;
-        n = k.getNodes ();
-        assertEquals ("! left", 1, n.length);
+        arr = root.getChildren().getNodes ();
+        assertEquals ("! left", 1, arr.length);
+        assertEquals("Still just 3 nodes created", 3, k.cnt);
 
-        WeakReference ref = new WeakReference (n[0]);
-        n = null;
+        
+        l.assertNoEvents("No next events");
+
+        l0.assertExpectedProperties("No properties delivered");
+        l1.assertExpectedProperties("Destroy", "parentNode");
+        l2.assertExpectedProperties("Destroy", "parentNode");
+        l1.assertDestroyEvent("B destroyed");
+        l2.assertDestroyEvent("C destroyed");
+        
+        WeakReference ref = new WeakReference (arr[0]);
+        arr = null;
         assertGC ("Node can be gced", ref);
 
         assertNull ("Garbage collected nodes are not notified", k.arr);
+
+        assertEquals("Again only 3 nodes created", 3, k.cnt);
+        l.assertNoEvents("No next events");
     }
 
     public void testSlowRemoveNotify () throws Throwable {
@@ -1375,9 +1411,15 @@ public class ChildrenKeysTest extends NbTestCase {
     static class Listener extends NodeAdapter {
         private LinkedList events = new LinkedList ();
         LinkedList<PropertyChangeEvent> props = new LinkedList<PropertyChangeEvent>();
+        LinkedList<NodeEvent> destroyed = new LinkedList<NodeEvent>();
         boolean disableConsistencyCheck;
         private Exception when;
         
+
+        @Override
+        public void nodeDestroyed(NodeEvent ev) {
+            destroyed.add(ev);
+        }
         
         @Override
         public void childrenRemoved (NodeMemberEvent ev) {
@@ -1415,6 +1457,13 @@ public class ChildrenKeysTest extends NbTestCase {
             }
             return (NodeMemberEvent)events.removeFirst ();
         }
+
+        public NodeEvent assertDestroyEvent(String msg) {
+            if (destroyed.isEmpty()) {
+                fail(msg);
+            }
+            return destroyed.poll();
+        }
         
         public NodeMemberEvent assertAddEvent (String msg, int cnt) {
             return checkOneEvent (msg, cnt, null, true);
@@ -1430,12 +1479,20 @@ public class ChildrenKeysTest extends NbTestCase {
         }
 
         public void assertExpectedProperties(String msg, String ... expectedProps) {
-            Set set = new HashSet(Arrays.asList(expectedProps));
-            for (PropertyChangeEvent ev : props) {
-                if (!set.contains(ev.getPropertyName())) {
-                    fail(msg);
+            for (int i = 0; i < expectedProps.length; i++) {
+                if (props.get(i).getPropertyName().equals(expectedProps[i])) {
+                    continue;
                 }
+                List<String> names = new ArrayList<String>();
+                for (PropertyChangeEvent ev : props) {
+                    names.add(ev.getPropertyName());
+                }
+
+                fail("\nExpecting properties: " + Arrays.asList(expectedProps) +
+                     "\nBut getting         : " + names
+                );
             }
+            props.clear();
         }
         
         public void assertReorderEvent (String msg, int[] perm) {

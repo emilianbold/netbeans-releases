@@ -116,6 +116,9 @@ public final class UseEntityManagerAction extends NodeAction {
         // breaks from left to right if the javax.persistence.EntityManager class is missing
         FileObject target = activatedNodes[0].getCookie(DataObject.class).getPrimaryFile();
         ClassPath cp = ClassPath.getClassPath(target, ClassPath.EXECUTE);
+        if(cp == null) {
+            return false;
+        }
         FileObject entityMgrRes = cp.findResource("javax/persistence/EntityManager.class"); // NOI18N
        
         if (entityMgrRes != null) { 

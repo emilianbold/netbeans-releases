@@ -167,10 +167,10 @@ public class CreateProject extends PerformanceTestCase {
     
     /** Tests if created and later dclosed projects can be GCed from memory.
      */
-    public void testGC() throws Exception {
+/*    public void testGC() throws Exception {
         runTestGC(PROJECT_REFS);
     }
-    
+  */
     public static void main(java.lang.String[] args) {
         junit.textui.TestRunner.run(new CreateProject("testCreateJavaApplicationProject"));
     }

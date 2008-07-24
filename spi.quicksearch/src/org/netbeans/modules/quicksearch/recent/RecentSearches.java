@@ -104,7 +104,7 @@ public class RecentSearches {
         }
         result.setDate(now);
         recent.addFirst(result);
-        prefs().put(RECENT_SEARCHES, recent.toString());
+        prefs().put(RECENT_SEARCHES, stripHTMLnames(recent.toString()));
     }
     
     public List<ItemResult> getSearches() {
@@ -179,10 +179,10 @@ public class RecentSearches {
             s = stripHTMLnames(s);
             return s.replaceAll("\\(.*\\)", "").trim();
         }
+    }
 
-        private String stripHTMLnames(String s) {
-            return s.replaceAll("\\<.*?>", "").trim();
-        }
+    private String stripHTMLnames(String s) {
+        return s.replaceAll("<.*?>", "").trim();
     }
 
 }

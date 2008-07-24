@@ -334,6 +334,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.deployment.plugins.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.spi</package>
                 <package>org.netbeans.modules.j2ee.deployment.plugins.spi.config</package>
+                <package>org.netbeans.modules.j2ee.deployment.plugins.spi.support</package>
                 <package>org.netbeans.modules.j2ee.deployment.profiler.api</package>
                 <package>org.netbeans.modules.j2ee.deployment.profiler.spi</package>
             </public-packages>
