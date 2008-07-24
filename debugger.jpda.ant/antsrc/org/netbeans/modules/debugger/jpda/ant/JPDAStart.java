@@ -383,7 +383,7 @@ public class JPDAStart extends Task implements Runnable {
                         }
                     }
 
-                    ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED);
+                    ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED);
                     b.setHidden (true);
                     DebuggerManager.getDebuggerManager ().addBreakpoint (b);
                     artificialBreakpoints.add(b);

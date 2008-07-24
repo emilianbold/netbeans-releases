@@ -61,6 +61,7 @@ import java.security.ProtectionDomain;
 import java.security.cert.Certificate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -341,6 +342,8 @@ public class JarClassLoader extends ProxyClassLoader {
         private boolean dead;
         private int requests;
         private int used;
+        /** #141110: expensive to repeatedly look for them */
+        private final Set<String> nonexistentResources = Collections.synchronizedSet(new HashSet<String>());
         
         JarSource(File file) throws IOException {
             this(file, "jar:" + file.toURI() + "!/"); // NOI18N
@@ -394,11 +397,17 @@ public class JarClassLoader extends ProxyClassLoader {
         }
         
         public byte[] resource(String path) throws IOException {
+            if (nonexistentResources.contains(path)) {
+                return null;
+            }
             ZipEntry ze;
             JarFile jf = getJarFile(path);
             try {
                 ze = jf.getEntry(path);
-                if (ze == null) return null;
+                if (ze == null) {
+                    nonexistentResources.add(path);
+                    return null;
+                }
 
                 LOGGER.log(Level.FINER, "Loading {0} from {1}", new Object[] {path, file.getPath()});
             

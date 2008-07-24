@@ -59,6 +59,7 @@ import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteConfiguration;
 import org.netbeans.modules.php.project.connections.RemoteConnections;
+import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.modules.php.project.ui.options.PhpOptions;
 import org.netbeans.modules.web.client.tools.api.JSToNbJSLocationMapper;
@@ -400,5 +401,25 @@ public abstract class Command {
         assert remoteConfiguration != null : "Remote configuration must exist";
 
         return new RemoteClient(remoteConfiguration, io, getRemoteDirectory());
+    }
+
+    protected void processRemoteException(RemoteException remoteException) {
+        String title = NbBundle.getMessage(Command.class, "LBL_FtpError");
+        StringBuilder message = new StringBuilder(remoteException.getMessage());
+        String remoteServerAnswer = remoteException.getRemoteServerAnswer();
+        Throwable cause = remoteException.getCause();
+        if (remoteServerAnswer != null && remoteServerAnswer.length() > 0) {
+            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", remoteServerAnswer));
+        } else if (cause != null) {
+            message.append(NbBundle.getMessage(Command.class, "MSG_FtpErrorReason", cause.getMessage()));
+        }
+        NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                message.toString(),
+                title,
+                NotifyDescriptor.OK_CANCEL_OPTION,
+                NotifyDescriptor.ERROR_MESSAGE,
+                new Object[] {NotifyDescriptor.OK_OPTION},
+                NotifyDescriptor.OK_OPTION);
+        DialogDisplayer.getDefault().notify(notifyDescriptor);
     }
 }

@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.compilers;
 
+import java.util.List;
+
 /**
  *
  * @author gordonp
@@ -52,4 +54,6 @@ public interface CompilerSetProvider {
     public boolean hasMoreCompilerSets();
     
     public String getNextCompilerSetData();
+
+    public void loadCompilerSetData(List<CompilerSet> sets);
 }

@@ -90,7 +90,7 @@ import org.netbeans.junit.RandomlyFails;
 public class AcceptanceTestCase extends JellyTestCase {
     
     static final String [] m_aTestMethods = {
-        "createNewSchema",
+                "createNewSchema",
                 "createSchemaComponents",
                 "customizeSchema"
                 //"checkSourceCRC",

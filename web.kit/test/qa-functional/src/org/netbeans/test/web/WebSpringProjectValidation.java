@@ -83,9 +83,9 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebSpringProjectValidation.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.GLASSFISH, conf,
         "testPreconditions", "testNewSpringWebProject", "testRedeployProject", 
-                "testBuildProject", "testCompileAllJSP", "testCleanProject", "testStopServer");
+                "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
 //        NbTestSuite suite = new NbTestSuite();

@@ -43,7 +43,6 @@ package org.netbeans.napi.gsfret.source.support;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,15 +54,12 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
-import org.netbeans.editor.Registry;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.DataLoadersBridge;
 import org.netbeans.napi.gsfret.source.Source;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.Parameters;
 
 /**
@@ -163,19 +159,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     static FileObject getFileObject(JTextComponent pane) {
-        Object source = pane.getDocument().getProperty(Document.StreamDescriptionProperty);
-        
-        if (!(source instanceof DataObject)) {
-            return null;
-        }
-        
-        DataObject file = (DataObject) source;
-        
-        if (file != null) {
-            return file.getPrimaryFile();
-        }
-
-        return null;
+        return DataLoadersBridge.getDefault().getFileObject(pane);
     }
 
     /**Checks if the given file is supported. See {@link #filterSupportedMIMETypes}
