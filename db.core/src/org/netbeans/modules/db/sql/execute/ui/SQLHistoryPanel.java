@@ -119,11 +119,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             sqlLimitTextField.setText(savedLimit);
         } else {
             sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
-        }
-        
+        }       
+        // Make sure the save limit is considered
+        SQLHistoryPersistenceManager.getInstance().updateSQLSaved(Integer.parseInt(savedLimit), Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
         // Check SQL statements limit
         verifySQLLimit();
-        
         // Adjust table column width
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
@@ -131,7 +131,6 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
                 sqlHistoryTable.revalidate();
             }
         });
-
     }
 
     private void initSQLHistoryTableData(SQLHistoryView localSQLView) {

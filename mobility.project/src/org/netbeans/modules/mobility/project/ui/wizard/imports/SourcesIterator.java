@@ -119,9 +119,12 @@ public class SourcesIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         platformInstall = PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
-        if (platformInstall)
+        if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(SourcesIterator.class, "TXT_ExistingImport"));
+        }
         sourcesPanel = new SourcesPanel.WizardPanel();
+        ((JComponent)sourcesPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(SourcesIterator.class, "TXT_ExistingImport"));
         projectPanel = new ProjectPanel.WizardPanel(false, true);
         psPanel = new PlatformSelectionPanel();
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, null);

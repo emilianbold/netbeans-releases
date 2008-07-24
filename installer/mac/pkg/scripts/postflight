@@ -68,7 +68,7 @@ fi
 
 #fix for 114656
 cd "$2/$NETBEANS_INSTALL_DIR"
-cd Contents/Resources/NetBeans*/nb6.1
+cd Contents/Resources/NetBeans*/nb6.5
 mkdir var
 touch var/license_accepted
 

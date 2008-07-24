@@ -83,7 +83,7 @@ public class J2EEProjectsViewPopupMenu extends PerformanceTestCase {
     public void testEARProjectNodePopupMenu() {
         testNode(getEARProjectNode(), null);
     }
-    
+
     public void testEARConfFilesNodePopupMenu(){
         testNode(getEARProjectNode(), "Configuration Files");
     }
@@ -111,7 +111,7 @@ public class J2EEProjectsViewPopupMenu extends PerformanceTestCase {
     public void testEJBProjectNodePopupMenu() {
         testNode(getEJBProjectNode(), null);
     }
-    
+
     public void testEJBsNodePopupMenu() {
         testNode(getEJBProjectNode(), "Enterprise Beans");
     }
@@ -131,7 +131,7 @@ public class J2EEProjectsViewPopupMenu extends PerformanceTestCase {
     public void testSunEjbJarXmlPopupMenu(){
         testNode(getEJBProjectNode(), "Configuration Files|sun-ejb-jar.xml");
     }
-    
+   
     
     public void testNode(Node rootNode, String path){
         try {
