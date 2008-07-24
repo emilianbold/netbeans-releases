@@ -155,7 +155,9 @@ public final class PlatformComponentFactory {
         public abstract void platformChanged();
 
         public void itemStateChanged(ItemEvent e) {
-            platformChanged();
+            if (e.getStateChange() == ItemEvent.SELECTED) {
+                platformChanged();
+            }
         }
 
         public void propertyChange(PropertyChangeEvent evt) {

@@ -51,7 +51,7 @@ import org.netbeans.junit.Manager;
 
 /**
  *
- * @author luke
+ * @author jawed
  */
 public class TestCaseDataFactory {
    
@@ -117,12 +117,6 @@ public class TestCaseDataFactory {
                          return  name.endsWith(".jar") || name.endsWith(".zip") ? true : false;
                     }
                 });
-                    
-                for(int iii=0;iii<s.length;iii++){
-                    System.out.println(s[iii]);
-                }
-            //    if(s.length>1)
-             //       throw new RuntimeException("one jar or zip file must existed in directory "+dir_name);
                 if(s.length==0)
                     throw new RuntimeException("the driver doesn't  extist for test case called: "+dir_name);
                 ArrayList drivers=new ArrayList();

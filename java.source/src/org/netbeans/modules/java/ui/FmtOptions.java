@@ -95,7 +95,7 @@ public class FmtOptions {
     public static final String absoluteLabelIndent = "absoluteLabelIndent"; //NOI18N
     public static final String indentTopLevelClassMembers = "indentTopLevelClassMembers"; //NOI18N
     public static final String indentCasesFromSwitch = "indentCasesFromSwitch"; //NOI18N
-    public static final String rightMargin = "rightMargin"; //NOI18N
+    public static final String rightMargin = SimpleValueNames.TEXT_LIMIT_WIDTH;
     
     public static final String addLeadingStarInComment = "addLeadingStarInComment"; //NOI18N
 
@@ -337,7 +337,7 @@ public class FmtOptions {
             { absoluteLabelIndent, FALSE}, //NOI18N
             { indentTopLevelClassMembers, TRUE}, //NOI18N
             { indentCasesFromSwitch, TRUE}, //NOI18N
-            { rightMargin, "120"}, //NOI18N
+            { rightMargin, "80"}, //NOI18N
             { addLeadingStarInComment, TRUE}, //NOI18N
 
             { preferLongerNames, TRUE}, //NOI18N

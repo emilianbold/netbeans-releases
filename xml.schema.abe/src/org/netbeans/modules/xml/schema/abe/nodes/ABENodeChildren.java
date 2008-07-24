@@ -94,9 +94,11 @@ public class ABENodeChildren extends Children.Keys
     protected void addNotify() {
         super.addNotify();
         refreshChildren();
-        ComponentListener cl = WeakListeners.create(ComponentListener.class, this,
-                component.getModel());
-        component.getModel().addComponentListener(cl);
+        if(component != null && component.getModel() != null) {
+            ComponentListener cl = WeakListeners.create(ComponentListener.class, this,
+                    component.getModel());
+            component.getModel().addComponentListener(cl);
+        }
     }
     
     protected void removeNotify() {

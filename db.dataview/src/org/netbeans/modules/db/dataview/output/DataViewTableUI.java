@@ -261,7 +261,7 @@ class DataViewTableUI extends JTable {
                     for (int j = 0; j < rows.length; j++) {
                         Object[] insertRow = dataView.getDataViewPageContext().getCurrentRows().get(rows[j]);
                         String sql = dataView.getSQLStatementGenerator().generateInsertStatement(insertRow)[1];
-                        insertSQL += sql.replaceAll("\n", "").replaceAll("\t", "") + ";\n"; // NOI18N
+                        insertSQL += sql.replaceAll("\n", " ").replaceAll("\t", " ") + ";\n"; // NOI18N
                     }
                     ShowSQLDialog dialog = new ShowSQLDialog();
                     dialog.setLocationRelativeTo(WindowManager.getDefault().getMainWindow());

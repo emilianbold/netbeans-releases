@@ -504,7 +504,12 @@ public class J2SEClassPathUi {
                 }
                 
                 Set<Library> added = LibraryChooser.showDialog(manager,
-                        null, project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX filter to j2se libs only?
+                        new LibraryChooser.Filter() {
+                            public boolean accept(Library library) {
+                                return "j2se".equals(library.getType());    //NOI18N
+                            }
+                        },
+                        project.getReferenceHelper().getLibraryChooserImportHandler());
                 if (added != null) {
                     Set<Library> includedLibraries = new HashSet<Library>();
                     for (int i=0; i< listModel.getSize(); i++) {
