@@ -1232,6 +1232,7 @@ public class SequenceDiagramEngine extends DiagramEngine implements SQDDiagramEn
     
     private void setInteractionBounds()
     {
+        if(PersistenceUtil.isDiagramLoading())return;
         Widget widget=getScene().getMainLayer();
         Collection<Widget> children = widget.getChildren ();
         Rectangle bounds=null;
