@@ -998,6 +998,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
             } catch (java.lang.NoSuchMethodException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
+            } catch (IllegalThreadStateException ex) {
+                // Thrown when thread has exited
             }
         }
         return Collections.emptyList();
