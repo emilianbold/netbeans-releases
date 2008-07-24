@@ -397,7 +397,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         String csname = cs.getOption();
         String csdirs = cs.getCompilerSetManager().getCompilerSet(csname).getDirectory();
         
-        if (cs.getFlavor().equals(CompilerFlavor.MinGW.toString())) {
+        if (cs.getCompilerSetManager().getCompilerSet(csname).getCompilerFlavor().isMinGWCompiler()) {
             String msysBase = CppUtils.getMSysBase();
             if (msysBase != null && msysBase.length() > 0) {
                 csdirs += File.pathSeparator + msysBase + File.separator + "bin"; // NOI18N;
@@ -845,6 +845,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else if (msg.startsWith("^done,thread-id=") && Utilities.isMac()) { // NOI18N
             cb = gdb.getCommandBuffer(itok);
             if (cb != null) {
+                cb.done();
+            }
+        } else if (msg.startsWith("^done,addr=")) { // NOI18N
+            cb = gdb.getCommandBuffer(itok);
+            if (cb != null) {
+                cb.append(msg.substring(6));
                 cb.done();
             }
         } else if (msg.startsWith("^done,shlib-info=") && Utilities.isMac()) { // NOI18N

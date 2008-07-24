@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -62,7 +62,7 @@ import static java.nio.charset.CoderResult.UNDERFLOW;
  *
  * @author  Marian Petras
  */
-final class PropertiesEncoding extends FileEncodingQueryImplementation {
+public final class PropertiesEncoding extends FileEncodingQueryImplementation {
     
     /*
      * TO DO:
@@ -86,14 +86,20 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
     Charset getEncoding() {
         return encoding;
     }
+
+    public static CharsetDecoder createDecoder(Charset charset, long fileSize) {
+        return new PropCharsetDecoder(charset, fileSize);
+    }
     
     /**
      *
      */
-    static final class PropCharset extends Charset {
+    public static final class PropCharset extends Charset {
+
+        public static final String NAME = "resource_bundle_charset";    //NOI18N
         
         PropCharset() {
-            super("resource_bundle_charset", null);                     //NOI18N
+            super(NAME, null);
         }
 
         public boolean contains(Charset charset) {

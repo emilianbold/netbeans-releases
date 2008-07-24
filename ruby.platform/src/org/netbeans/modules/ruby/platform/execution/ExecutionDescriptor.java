@@ -70,6 +70,7 @@ public class ExecutionDescriptor {
     private final RubyPlatform platform;
     private FileLocator fileLocator;
     String script;
+    private String scriptPrefix;
     private Map<String, String> additionalEnv;
     private String[] additionalArgs;
     private String initialArgs;
@@ -83,6 +84,7 @@ public class ExecutionDescriptor {
     private boolean fastDebugRequired;
     private boolean appendJdkToPath;
     private String encoding;
+    private boolean useInterpreter;
     List<OutputRecognizer> outputRecognizers;
 
     public ExecutionDescriptor(final RubyPlatform platform) {
@@ -99,6 +101,7 @@ public class ExecutionDescriptor {
         this.pwd = pwd;
         this.script = script;
         this.outputRecognizers = new ArrayList<OutputRecognizer>();
+        this.useInterpreter = true;
         assert (pwd == null) || pwd.isDirectory() : pwd + " is a directory";
         if (platform.hasRubyGemsInstalled()) {
             Map<String, String> env = new HashMap<String, String>();
@@ -243,6 +246,14 @@ public class ExecutionDescriptor {
         return script;
     }
     
+    public void scriptPrefix(String sp) {
+        scriptPrefix = sp;
+    }
+
+    public String getScriptPrefix() {
+        return scriptPrefix;
+    }
+    
     /**
      * Arguments to be appended <em>AFTER</em> the target. Usually arguments and
      * options to the Ruby script (target, application, ..) itself.
@@ -310,4 +321,13 @@ public class ExecutionDescriptor {
     public Map<String, String> getAdditionalEnvironment() {
         return additionalEnv;
     }
+
+    public boolean useInterpreter() {
+        return useInterpreter;
+    }
+
+    public void useInterpreter(final boolean useInterpreter) {
+        this.useInterpreter = useInterpreter;
+    }
+
 }

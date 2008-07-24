@@ -63,7 +63,7 @@ final class ComponentFinalVisualPanel extends JPanel {
     ComponentFinalVisualPanel(ComponentFinalWizardPanel panel) {
         myPanel = panel;
         initComponents();
-        
+
     }
     
 
@@ -231,6 +231,7 @@ final class ComponentFinalVisualPanel extends JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
+        createdFiles.setLabelFor(createdFilesValue);
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/componentssupport/ui/wizard/Bundle"); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(createdFiles, bundle.getString("LBL_F_CreatedFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -243,6 +244,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         createdFiles.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_F_CreatedFiles")); // NOI18N
         createdFiles.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_CreatedFiles")); // NOI18N
 
+        modifiedFiles.setLabelFor(modifiedFilesValue);
         org.openide.awt.Mnemonics.setLocalizedText(modifiedFiles, bundle.getString("LBL_F_ModifiedFiles")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -261,6 +263,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         createdFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_CreatedFiles")); // NOI18N
         createdFilesValue.setBorder(null);
         createdFilesValueS.setViewportView(createdFilesValue);
+        createdFilesValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_F_CreatedFiles")); // NOI18N
+        createdFilesValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_CreatedFiles")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -278,6 +282,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         modifiedFilesValue.setToolTipText(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_ModifiedFiles")); // NOI18N
         modifiedFilesValue.setBorder(null);
         modifiedFilesValueS.setViewportView(modifiedFilesValue);
+        modifiedFilesValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_F_ModifiedFiles")); // NOI18N
+        modifiedFilesValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_F_ModifiedFiles")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -287,6 +293,7 @@ final class ComponentFinalVisualPanel extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(modifiedFilesValueS, gridBagConstraints);
 
+        projectName.setLabelFor(projectNameValue);
         org.openide.awt.Mnemonics.setLocalizedText(projectName, bundle.getString("LBL_F_ProjectName")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -306,6 +313,8 @@ final class ComponentFinalVisualPanel extends JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 6, 0);
         add(projectNameValue, gridBagConstraints);
+        projectNameValue.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSN_ProjectName")); // NOI18N
+        projectNameValue.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ComponentFinalVisualPanel.class, "ACSD_ProjectName")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

@@ -43,19 +43,47 @@ package org.netbeans.modules.php.project.connections;
  * @author Tomas Mysik
  */
 public class RemoteException extends Exception {
-    private static final long serialVersionUID = 3149267252276925034L;
+    private static final long serialVersionUID = 314926954722925034L;
+    private final String remoteServerAnswer;
 
     /**
      * @see Exception#Exception(java.lang.String)
      */
     public RemoteException(String message) {
-        super(message);
+        this(message, null, null);
+    }
+
+    /**
+     * @see Exception#Exception(java.lang.String)
+     * @see #RemoteException(String, Throwable, String)
+     */
+    public RemoteException(String message, String remoteServerAnswer) {
+        this(message, null, remoteServerAnswer);
     }
 
     /**
      * @see Exception#Exception(java.lang.String, java.lang.Throwable)
      */
     public RemoteException(String message, Throwable cause) {
+        this(message, cause, null);
+    }
+
+    /**
+     * The same as {@link #RemoteException(String, Throwable)} but remote server answer can be provided.
+     * It is usually some detailed information about the failure, probably never localized (it is taken directly
+     * from a remote server).
+     * @see Exception#Exception(java.lang.String, java.lang.Throwable)
+     */
+    public RemoteException(String message, Throwable cause, String remoteServerAnswer) {
         super(message, cause);
+        this.remoteServerAnswer = remoteServerAnswer;
+    }
+
+    /**
+     * Get non-localized remote server answer or <code>null</code>.
+     * @return non-localized remote server answer or <code>null</code>.
+     */
+    public String getRemoteServerAnswer() {
+        return remoteServerAnswer;
     }
 }

@@ -190,8 +190,9 @@ public class EmbeddedSectionsHighlighting extends AbstractHighlightsContainer im
                             sectionEnd = sequence.offset() + sequence.token().length();
 
                             try {
-                                int startLine = Utilities.getLineOffset((BaseDocument) document, sectionStart);
-                                int endLine = Utilities.getLineOffset((BaseDocument) document, sectionEnd);
+                                int docLen = document.getLength();
+                                int startLine = Utilities.getLineOffset((BaseDocument) document, Math.min(sectionStart, docLen));
+                                int endLine = Utilities.getLineOffset((BaseDocument) document, Math.min(sectionEnd, docLen));
 
                                 if (startLine != endLine) {
                                     // multiline scriplet section

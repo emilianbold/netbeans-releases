@@ -118,19 +118,19 @@ public class CustomJDBCConnectionProvider implements ConnectionProvider {
                 logger.info("Got connection.. returning");
                 info = null;
             } catch (ClassNotFoundException e) {
-                logger.log(Level.WARNING, "DB Driver class not found during connection creation.", e);
+                logger.log(Level.INFO, "DB Driver class not found during connection creation.", e);
                 NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
                 DialogDisplayer.getDefault().notifyLater(ne);
             } catch (InstantiationException e) {
-                logger.log(Level.WARNING, "Cannot instantiate driver class.", e);
+                logger.log(Level.INFO, "Cannot instantiate driver class.", e);
                 NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
                 DialogDisplayer.getDefault().notifyLater(ne);
             } catch (IllegalAccessException e) {
-                logger.log(Level.WARNING, "Illegal access during connection creation.", e);
+                logger.log(Level.INFO, "Illegal access during connection creation.", e);
                 NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
                 DialogDisplayer.getDefault().notifyLater(ne);
             } catch (SQLException e) {
-                logger.log(Level.WARNING, "DB connection error.", e);
+                logger.log(Level.INFO, "DB connection error.", e);
                 NotifyDescriptor.Exception ne = new NotifyDescriptor.Exception(e);
                 DialogDisplayer.getDefault().notifyLater(ne);
             }

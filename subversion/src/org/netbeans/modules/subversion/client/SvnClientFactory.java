@@ -124,11 +124,13 @@ public class SvnClientFactory {
     }
 
     public static boolean isCLI() {
+        init();
         assert factory != null;
         return factory.connectionType() == ConnectionType.cli;
     }
 
     public static boolean isJavaHl() {
+        init();
         assert factory != null;
         return factory.connectionType() == ConnectionType.javahl;
     }
@@ -201,10 +203,12 @@ public class SvnClientFactory {
      * Throws an exception if no SvnClientAdapter is available.
      */
     public static void checkClientAvailable() throws SVNClientException {
+        init();
         if(exception != null) throw exception;
     }
 
     public static boolean wasJavahlCrash() {
+        init();
         if(javahlCrash) {
             javahlCrash = false;
             return true;
@@ -230,7 +234,7 @@ public class SvnClientFactory {
         presetJavahl();
         try {            
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
-               Subversion.LOG.log(Level.INFO, "Could not setup JavaHl. Falling back on commandline!");
+               Subversion.LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                setupCommandline();
                return;
             }
@@ -350,7 +354,7 @@ public class SvnClientFactory {
                 case -1: // empty means we crashed
                     writeJavahlInitFlag(initFile, JAVAHL_INIT_STOP_REPORTING);
                     javahlCrash = true;
-                    Subversion.LOG.log(Level.WARNING, "It appears that subversion javahl initialization caused trouble in a previous Netbeans session. Please report.");
+                    Subversion.LOG.log(Level.WARNING, "It appears that subversion java bindings initialization caused trouble in a previous Netbeans session. Please report.");
                     return true;
                 case JAVAHL_INIT_STOP_REPORTING:
                     return true;

@@ -893,7 +893,9 @@ public final class LoaderPoolNode extends AbstractNode {
         };
         private void listenToDeclarativeResolvers() {
             FileObject resolvers = Repository.getDefault().getDefaultFileSystem().findResource("Services/MIMEResolver"); // NOI18N
-            resolvers.addFileChangeListener(listener);
+            if (resolvers != null) { // might be inside test which overrides SFS?
+                resolvers.addFileChangeListener(listener);
+            }
         }
 
         /** Enumerates all loaders. Loaders are taken from children

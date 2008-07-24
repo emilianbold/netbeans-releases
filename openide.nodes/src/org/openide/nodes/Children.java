@@ -526,6 +526,10 @@ public abstract class Children extends Object {
         //System.err.println("Finished: " + this);
     }
 
+    final void callRemoveNotify() {
+        removeNotify();
+    }
+
     /** Called when the nodes have been removed from the children.
      * This method should allow subclasses to clean the nodes somehow.
      * <p>
@@ -616,6 +620,11 @@ public abstract class Children extends Object {
             super(lazy);
             if (!lazy) {
                 nodesEntry = createNodesEntry();
+            }
+        }
+        @Override
+        void postInitializeEntrySupport() {
+            if (!lazySupport) {
                 entrySupport().setEntries(Collections.singleton(getNodesEntry()));
             }
         }
@@ -1527,7 +1536,7 @@ public abstract class Children extends Object {
             public String toString() {
                 String s = getKey().toString();
                 if (s.length() > 80) {
-                    s = s.substring(0, 80);
+                    s = s.substring(s.length() - 80);
                 }
                 return "Children.Keys.KE[" + s + "," + getCnt() + "]"; // NOI18N
             }

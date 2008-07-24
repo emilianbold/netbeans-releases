@@ -338,11 +338,16 @@ public class Property extends BaseMessageChildElement {
         private static final String TYPE_ARG = "-t ";               // NOI18N
         static final String ADDRESS_ARG = "-a ";               // NOI18N
         private static final String LENGTH_ARG = "-l ";               // NOI18N
-        private static final String VALUE_ARG = "-v ";               // NOI18N        
+        private static final String VALUE_ARG = "-- ";               // NOI18N        
 
         public PropertySetCommand(int transactionId, String name, int stackDepth) {
             super(CommandMap.PROPERTY_SET.getCommand(), transactionId, name , stackDepth);
         }
+        
+        public PropertySetCommand(int transactionId, String name, String value, int stackDepth) {
+            super(CommandMap.PROPERTY_SET.getCommand(), transactionId, name, stackDepth);
+            this.value = value;
+        }        
 
         @Override
         public boolean wantAcknowledgment() {
@@ -425,7 +430,7 @@ public class Property extends BaseMessageChildElement {
             super(node);
         }
 
-        public boolean isSusccess() {
+        public boolean isSet() {
             return getBoolean(getNode(), SUCCESS);
         }
     }

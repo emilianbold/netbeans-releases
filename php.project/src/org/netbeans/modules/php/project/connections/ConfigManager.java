@@ -207,12 +207,46 @@ public final class ConfigManager {
             return configs.get(getName()) == null;
         }
 
+        public String getValue(String propertyName, boolean decode) {
+            String value = getValue(propertyName);
+            if (decode && value != null) {
+                value = rot13coder(value);
+            }
+            return value;
+        }
+
+        //not secure - just not to be obvious at first glance
+        private String rot13coder(String input) {
+            char[] out = new char[input.length()];
+            for (int i = 0; i < input.length(); i++) {
+                char c = input.charAt(i);
+                if (c >= 'a' && c <= 'm') {
+                    c += 13;
+                } else if (c >= 'n' && c <= 'z') {
+                    c -= 13;
+                } else if (c >= 'A' && c <= 'M') {
+                    c += 13;
+                } else if (c >= 'A' && c <= 'Z') {
+                    c -= 13;
+                }
+                out[i] = c;
+            }
+            return String.valueOf(out);
+        }
+
         public String getValue(String propertyName) {
             assert Arrays.asList(getPropertyNames()).contains(propertyName) : "Unknown property: " + propertyName;
             //assert !isDeleted();
             synchronized (ConfigManager.this) {
                 return !isDeleted() ?  getProperties(getName()).get(propertyName) : null;
             }
+        }
+
+        public void putValue(String propertyName, String value, boolean encode) {
+            if (encode && value != null) {
+                value = rot13coder(value);
+            }
+            putValue(propertyName, value);
         }
 
         public void putValue(String propertyName, String value) {

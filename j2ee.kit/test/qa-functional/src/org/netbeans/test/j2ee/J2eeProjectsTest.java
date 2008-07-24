@@ -83,7 +83,7 @@ public class J2eeProjectsTest extends J2eeTestCase {
     
         public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(J2eeProjectsTest.class);
-        conf = addServerTests(conf,"testCreateEjbProject","testCreateWebProject",
+        conf = addServerTests(Server.GLASSFISH, conf,"testCreateEjbProject","testCreateWebProject",
                 "testCreateEmptyJ2eeProject","testAddModulesToJ2eeProject");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);

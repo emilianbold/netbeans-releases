@@ -64,6 +64,9 @@ class ShowSQLDialog extends javax.swing.JDialog {
         super(WindowManager.getDefault().getMainWindow(), true);
         initComponents();
 
+        jEditorPane1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "showsql.editorpane.accessibleName"));
+        jEditorPane1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.jEditorPane1.AccessibleContext.accessibleDescription"));
+
         KeyStroke escape = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, false);
         Action escapeAction = new AbstractAction() {
 
@@ -71,6 +74,9 @@ class ShowSQLDialog extends javax.swing.JDialog {
                 dispose();
             }
         };
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.title"));
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ShowSQLDialog.class, "ShowSQLDialog.AccessibleContext.accessibleDescription"));
+
         getRootPane().getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(escape, "ESCAPE"); // NOI18N
         getRootPane().getActionMap().put("ESCAPE", escapeAction); // NOI18N
 

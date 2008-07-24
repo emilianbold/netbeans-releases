@@ -49,10 +49,15 @@ import org.openide.nodes.Node;
  * @author mkuchtiak
  */
 public interface WebServiceImplementation {
-     
+
     /**
-     * Returns if this is a service provider
-     * @return true if it is a service provider, false otherwise
+     * Returns an identifier for the service provider or consumer
+     */
+    String getIdentifier();
+    
+    /**
+     * Says whether this is a service provider or service consumer
+     * @return true if it is a service provider, false if consumer
      */
     boolean isServiceProvider();
     

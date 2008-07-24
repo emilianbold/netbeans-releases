@@ -48,12 +48,17 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.compilers.DefaultCompilerProvider;
@@ -65,31 +70,22 @@ import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 
 /**
  * Manage a set of CompilerSets. The CompilerSets are dynamically created based on which compilers
  * are found in the user's $PATH variable.
  */
-public class CompilerSetManager implements PlatformTypes {
-    
+public class CompilerSetManager {
+
     /* Legacy defines for CND 5.5 compiler set definitions */
     public static final int SUN_COMPILER_SET = 0;
     public static final int GNU_COMPILER_SET = 1;
-    
+
     public static final Object STATE_PENDING = "state_pending"; // NOI18N
     public static final Object STATE_COMPLETE = "state_complete"; // NOI18N
-    
+
     public static final String LOCALHOST = "localhost"; // NOI18N
-    
-    private static final String gcc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*gcc(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
-    private static final String gpp_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*g\\+\\+(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
-    private static final String cc_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*cc(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
-    private static final String CC_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*CC(([-.]\\d){2,4})?$"; // NOI18N
-    private static final String fortran_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*[fg](77|90|95|fortran)(([-.]\\d){2,4})?(\\.exe)?"; // NOI18N
-    private static final String make_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*([dg]make|make)(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
-    private static final String debugger_pattern = "([a-zA-z][a-zA-Z0-9_]*-)*(gdb|dbx)(([-.]\\d){2,4})?(\\.exe)?$"; // NOI18N
-    
+
     /* Persistance information */
     private static final double csm_version = 1.1;
     private static final String CSM = "csm."; // NOI18N
@@ -107,47 +103,40 @@ public class CompilerSetManager implements PlatformTypes {
     private static final String TOOL_KIND = ".toolKind."; // NOI18N
     private static final String TOOL_PATH = ".toolPath."; // NOI18N
     private static final String TOOL_FLAVOR = ".toolFlavor."; // NOI18N
-    
-    private static CompilerFilenameFilter gcc_filter;
-    private static CompilerFilenameFilter gpp_filter;
-    private static CompilerFilenameFilter cc_filter;
-    private static CompilerFilenameFilter CC_filter;
-    private static CompilerFilenameFilter fortran_filter;
-    private static CompilerFilenameFilter make_filter;
-    private static CompilerFilenameFilter debugger_filter;
+
     private static HashMap<String, CompilerSetManager> managers = new HashMap<String, CompilerSetManager>();
     private final static Object MASTER_LOCK = new Object();
     private static CompilerProvider compilerProvider = null;
-    
+
     public static final String Sun12 = "SunStudio_12"; // NOI18N
     public static final String Sun11 = "SunStudio_11"; // NOI18N
     public static final String Sun10 = "SunStudio_10"; // NOI18N
     public static final String Sun = "SunStudio"; // NOI18N
     public static final String GNU = "GNU"; // NOI18N
-    
-    private ArrayList<CompilerSet> sets = new ArrayList();
+
+    private ArrayList<CompilerSet> sets = new ArrayList<CompilerSet>();
     private final String hkey;
     private Object state;
     private int platform = -1;
     private int current;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
-    
+
     /**
      * Find or create a default CompilerSetManager for the given key. A default
      * CSM is one which is active in the system. A non-default is one which gets
      * created but has no affect unless its made default.
-     * 
+     *
      * For instance, the Build Tools tab (on C/C++ Tools->Options) creates a non-Default
      * CSM and only makes it default if the OK button is pressed. If Cancel is pressed,
      * it never becomes default.
-     * 
+     *
      * @param key Either user@host or localhost
      * @return A default CompilerSetManager for the given key
      */
     public static CompilerSetManager getDefault(String key) {
         CompilerSetManager csm = null;
         boolean no_compilers = false;
-        
+
         synchronized (MASTER_LOCK) {
             csm = managers.get(key);
             if (csm == null) {
@@ -166,7 +155,7 @@ public class CompilerSetManager implements PlatformTypes {
                     no_compilers = true;
                 }
             }
-            if (csm != null) { 
+            if (csm != null) {
                 managers.put(key, csm);
             }
         }
@@ -184,11 +173,11 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return csm;
     }
-    
+
     public static CompilerSetManager getDefault() {
 	return getDefault(LOCALHOST);
     }
-    
+
     /** Create a CompilerSetManager which may be registered at a later time via CompilerSetManager.setDefault() */
     public static CompilerSetManager create() {
         CompilerSetManager csm;
@@ -197,24 +186,24 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return csm;
     }
-    
+
     /** Replace the default CompilerSetManager. Let registered listeners know its been updated */
     public static synchronized void setDefault(CompilerSetManager csm) {
         if (csm.getCompilerSets().size() == 0) { // No compilers found
-            csm.add(CompilerSet.createEmptyCompilerSet());
+            csm.add(CompilerSet.createEmptyCompilerSet(csm.getPlatform()));
         }
         synchronized (MASTER_LOCK) {
             csm.saveToDisk();
             managers.put(csm.hkey, csm);
         }
     }
-    
+
     private CompilerSetManager(String key) {
         hkey = key;
         state = STATE_PENDING;
         init();
     }
-    
+
     private CompilerSetManager(String hkey, ArrayList<CompilerSet> sets, int current) {
         this.hkey = hkey;
         this.sets = sets;
@@ -224,11 +213,10 @@ public class CompilerSetManager implements PlatformTypes {
             platform = computeLocalPlatform();
         }
     }
-    
+
     private void init() {
         if (hkey.equals(LOCALHOST)) {
             platform = computeLocalPlatform();
-            initCompilerFilters();
             initCompilerSets(Path.getPath());
             state = STATE_COMPLETE;
         } else {
@@ -236,11 +224,11 @@ public class CompilerSetManager implements PlatformTypes {
             initRemoteCompilerSets(hkey);
         }
     }
-    
+
     public boolean isValid() {
         return sets.size() > 0 && !sets.get(0).getName().equals(CompilerSet.None);
     }
-    
+
     public boolean isPending() {
         return state == STATE_PENDING;
     }
@@ -255,7 +243,7 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return platform;
     }
-    
+
     public void waitForCompletion() {
         while (isPending()) {
             try {
@@ -264,33 +252,34 @@ public class CompilerSetManager implements PlatformTypes {
             }
         }
     }
-    
+
     private static int computeLocalPlatform() {
         String os = System.getProperty("os.name"); // NOI18N
-        
+
         if (os.equals("SunOS")) {
-            return System.getProperty("os.arch").equals("x86") ? PLATFORM_SOLARIS_INTEL : PLATFORM_SOLARIS_SPARC; // NOI18N
+            return System.getProperty("os.arch").equals("x86") ? PlatformTypes.PLATFORM_SOLARIS_INTEL : PlatformTypes.PLATFORM_SOLARIS_SPARC; // NOI18N
         } else if (os.startsWith("Windows ")) {
-            return PLATFORM_WINDOWS;
+            return PlatformTypes.PLATFORM_WINDOWS;
         } else if (os.toLowerCase().contains("linux")) {
-            return PLATFORM_LINUX;
+            return PlatformTypes.PLATFORM_LINUX;
         } else if (os.toLowerCase().contains("mac")) {
-            return PLATFORM_MACOSX;
+            return PlatformTypes.PLATFORM_MACOSX;
         } else {
-            return PLATFORM_GENERIC;
+            return PlatformTypes.PLATFORM_GENERIC;
         }
     }
-    
+
     public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
         // FIXUP: need a real deep copy..
         CompilerSetManager copy = new CompilerSetManager(hkey, new ArrayList<CompilerSet>(), current);
+        copy.platform = this.platform;
         for (CompilerSet set : getCompilerSets()) {
             copy.add(set.createCopy());
         }
         return copy;
     }
-    
+
     public String getUniqueCompilerSetName(String baseName) {
         int n = 0;
         String suggestedName = baseName;
@@ -305,11 +294,11 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return suggestedName;
     }
-    
+
     /** Search $PATH for all desired compiler sets and initialize cbCompilerSet and spCompilerSets */
-    public void initCompilerSets(ArrayList<String> dirlist) {
-        HashSet flavors = new HashSet();
-        
+    private void initCompilerSets(ArrayList<String> dirlist) {
+        Set<CompilerFlavor> flavors = new HashSet<CompilerFlavor>();
+        initKnownCompilers(getPlatform(), flavors);
         for (String path : dirlist) {
             if (path.equals("/usr/ucb")) { // NOI18N
                 // Don't look here.
@@ -319,335 +308,180 @@ public class CompilerSetManager implements PlatformTypes {
                 path = FileUtil.normalizeFile(new File(path)).getAbsolutePath();
             }
             File dir = new File(path);
-            if (dir.isDirectory()&& isACompilerSetFolder(dir)) {
-                ArrayList<String> list = new ArrayList<String>();
-                if (new File(dir, "cc").exists()) // NOI18N
-                    list.add("cc"); // NOI18N
-                if (new File(dir, "gcc").exists()) // NOI18N
-                    list.add("gcc"); // NOI18N
-                CompilerSet.CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), (String[])list.toArray(new String[list.size()]));
-                if (flavors.contains(flavor)) {
-                    // Skip ...
-                    continue;
-                }
-                flavors.add(flavor);
-                CompilerSet cs = null;
-                if (path.contains("msys")) { // NOI18N)
-                    cs = getCompilerSet(CompilerFlavor.MinGW);
-                    if (cs != null          )
+            if (dir.isDirectory()) {
+                for(CompilerFlavor flavor : CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), getPlatform())) {
+                    if (!flavors.contains(flavor)) {
+                        flavors.add(flavor);
+                        CompilerSet cs = CompilerSet.getCustomCompilerSet(dir.getAbsolutePath(), flavor, flavor.toString());
+                        cs.setAutoGenerated(true);
                         initCompilerSet(path, cs);
-                }
-                if (cs == null) {
-                    cs = CompilerSet.getCustomCompilerSet(dir.getAbsolutePath(), flavor, flavor.toString());
-                    cs.setAutoGenerated(true);
-                    initCompilerSet(path, cs);
-                    add(cs);
+                        add(cs);
+                    }
                 }
             }
         }
         completeCompilerSets();
     }
-    
+
+    private void initKnownCompilers(int platform, Set<CompilerFlavor> flavors){
+        for(ToolchainDescriptor d : ToolchainManager.getInstance().getToolchains(platform)) {
+            String base = ToolchainManager.getInstance().getBaseFolder(d, platform);
+            if (base != null) {
+                File folder = new File(base);
+                if (folder.exists() && folder.isDirectory()){
+                    CompilerFlavor flavor = CompilerFlavor.toFlavor(d.getName(), platform);
+                    flavors.add(flavor);
+                    CompilerSet cs = CompilerSet.getCustomCompilerSet(folder.getAbsolutePath(), flavor, flavor.toString());
+                    cs.setAutoGenerated(true);
+                    initCompilerSet(base, cs);
+                    add(cs);
+                }
+            }
+        }
+    }
+
     /** Initialize remote CompilerSets */
     private void initRemoteCompilerSets(final String key) {
-        final CompilerSetProvider provider = (CompilerSetProvider) Lookup.getDefault().lookup(CompilerSetProvider.class);
-        if (provider != null) {
-            RequestProcessor.getDefault().post(new Runnable() {
-                public void run() {
-                    provider.init(key);
-                    platform = provider.getPlatform();
-                    log.fine("CSM.initRemoveCompileSets: platform = " + platform);
-                    getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
-                    while (provider.hasMoreCompilerSets()) {
-                        String data = provider.getNextCompilerSetData();
-                        log.fine("CSM.initRemoveCompileSets: line = [" + data + "]");
-                        int i1 = data.indexOf(';');
-                        int i2 = data.indexOf(';', i1 + 1);
-                        String flavor = data.substring(0, i1);
-                        String path = data.substring(i1 + 1, i2);
-                        String tools = data.substring(i2 + 1);
-                        CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor), path, flavor);
-                        StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
-                        while (st.hasMoreTokens()) {
-                            String name = st.nextToken();
-                            int kind = -1;
-                            String p = path + '/' + name;
-                            if (flavor.startsWith("Sun")) { // NOI18N
-                                if (name.equals("cc")) { // NOI18N
-                                    kind = Tool.CCompiler;
-                                } else if (name.equals("CC")) { // NOI18N
-                                    kind = Tool.CCCompiler;
-                                } else if (name.equals("dmake")) { // NOI18N
-                                    kind = Tool.MakeTool;
-                                } else if (name.startsWith("gdb=")) { // NOI18N
-                                    kind = Tool.DebuggerTool;
-                                    i1 = name.indexOf('=');
-                                    p = name.substring(i1 + 1);
+        final CompilerSetProvider provider = Lookup.getDefault().lookup(CompilerSetProvider.class);
+        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (provider != null && registry != null) {
+            ServerRecord record = registry.get(key);
+            if (record != null && record.isOnline()) {
+                RequestProcessor.getDefault().post(new Runnable() {
+                    public void run() {
+                        provider.init(key);
+                        platform = provider.getPlatform();
+                        log.fine("CSM.initRemoteCompileSets: platform = " + platform);
+                        getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
+                        while (provider.hasMoreCompilerSets()) {
+                            String data = provider.getNextCompilerSetData();
+                            log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
+                            int i1 = data.indexOf(';');
+                            int i2 = data.indexOf(';', i1 + 1);
+                            String flavor = data.substring(0, i1);
+                            String path = data.substring(i1 + 1, i2);
+                            String tools = data.substring(i2 + 1);
+                            CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
+                            StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
+                            while (st.hasMoreTokens()) {
+                                String name = st.nextToken();
+                                int kind = -1;
+                                String p = path + '/' + name;
+                                if (flavor.startsWith("Sun")) { // NOI18N
+                                    if (name.equals("cc")) { // NOI18N
+                                        kind = Tool.CCompiler;
+                                    } else if (name.equals("CC")) { // NOI18N
+                                        kind = Tool.CCCompiler;
+                                    } else if (name.equals("dmake")) { // NOI18N
+                                        kind = Tool.MakeTool;
+                                    } else if (name.startsWith("gdb=")) { // NOI18N
+                                        kind = Tool.DebuggerTool;
+                                        i1 = name.indexOf('=');
+                                        p = name.substring(i1 + 1);
+                                    }
+                                } else {
+                                    if (name.equals("gcc")) { // NOI18N
+                                        kind = Tool.CCompiler;
+                                    } else if (name.equals("g++")) { // NOI18N
+                                        kind = Tool.CCCompiler;
+                                    } else if (name.equals("make") ||  // NOI18N
+                                            ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
+                                                    name.equals("gmake"))) { // NOI18N
+                                        kind = Tool.MakeTool;
+                                    } else if (name.equals("gdb")) { // NOI18N
+                                        kind = Tool.DebuggerTool;
+                                    } else if (name.startsWith("gdb=")) { // NOI18N
+                                        kind = Tool.DebuggerTool;
+                                        i1 = name.indexOf('=');
+                                        p = name.substring(i1 + 1);
+                                    }
                                 }
-                            } else {
-                                if (name.equals("gcc")) { // NOI18N
-                                    kind = Tool.CCompiler;
-                                } else if (name.equals("g++")) { // NOI18N
-                                    kind = Tool.CCCompiler;
-                                } else if (name.equals("make") ||  // NOI18N
-                                        ((platform == PLATFORM_SOLARIS_INTEL || platform == PLATFORM_SOLARIS_SPARC) &&
-                                                name.equals("gmake"))) { // NOI18N
-                                    kind = Tool.MakeTool;
-                                } else if (name.equals("gdb")) { // NOI18N
-                                    kind = Tool.DebuggerTool;
-                                } else if (name.startsWith("gdb=")) { // NOI18N
-                                    kind = Tool.DebuggerTool;
-                                    i1 = name.indexOf('=');
-                                    p = name.substring(i1 + 1);
+                                if (kind != -1) {
+                                    cs.addTool(key, name, p, kind);
                                 }
                             }
-                            if (kind != -1) {
-                                cs.addTool(key, name, p, kind);
-                            }
+                            add(cs);
                         }
-                        add(cs);
+                        provider.loadCompilerSetData(sets);
+                        // TODO: this should be upgraded to error reporting
+                        // about absence of tool chain on remote host
+                        // also compilersetmanager without compiler sets
+                        // should be handled gracefully
+                        log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
+                        state = STATE_COMPLETE;
                     }
-                    // TODO: this should be upgraded to error reporting
-                    // about absence of tool chain on remote host
-                    // also compilersetmanager without compiler sets
-                    // should be handled gracefully
-                    log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
-                    state = STATE_COMPLETE;
-                }
-            });
+                });
+            }
         } else {
             throw new IllegalStateException();
         }
     }
-    
+
     public void initCompilerSet(CompilerSet cs) {
         initCompilerSet(cs.getDirectory(), cs);
-        completeCompilerSet(hkey, cs);
+        completeCompilerSet(hkey, cs, sets);
     }
-    
+
     public void reInitCompilerSet(CompilerSet cs, String path) {
         cs.reparent(path);
         initCompilerSet(cs);
     }
-    
+
     private void initCompilerSet(String path, CompilerSet cs) {
-        initCompiler(gcc_filter, "gcc", Tool.CCompiler, path, cs); // NOI18N
-        initCompiler(gpp_filter, "g++", Tool.CCCompiler, path, cs); // NOI18N
-        initCompiler(cc_filter, "cc", Tool.CCompiler, path, cs); // NOI18N
-        initFortranCompiler(fortran_filter, Tool.FortranCompiler, path, cs); // NOI18N
-        if (Utilities.isUnix()) {  // CC and cc are the same on Windows, so skip this step on Windows
-            initCompiler(CC_filter, "CC", Tool.CCCompiler, path, cs); // NOI18N
+        CompilerFlavor flavor = cs.getCompilerFlavor();
+        ToolchainDescriptor d = flavor.getToolchainDescriptor();
+        if (d != null && ToolchainManager.getInstance().isMyFolder(path, d, getPlatform())) {
+            CompilerDescriptor compiler = d.getC();
+            if (compiler != null) {
+                initCompiler(Tool.CCompiler, path, cs, compiler.getNames());
+            }
+            compiler = d.getCpp();
+            if (compiler != null) {
+                initCompiler(Tool.CCCompiler, path, cs, compiler.getNames());
+            }
+            compiler = d.getFortran();
+            if (compiler != null) {
+                initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
+            }
+            initCompiler(Tool.MakeTool, path, cs, d.getMakeNames());
+            initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
         }
-        initMakeTool(make_filter, Tool.MakeTool, path, cs); // NOI18N
-        initDebuggerTool(debugger_filter, Tool.DebuggerTool, path, cs); // NOI18N
     }
-    
-    /**
-     * Check whether folder is a compilerset. It needs at least one C or C++ compiler.
-     * @param folder
-     * @return
-     */
-    private boolean isACompilerSetFolder(File folder) {
-        String[] compilerNames = new String[] {"gcc", "g++", "cc", "CC"}; // NOI18N
-        if (folder.getPath().contains("msys") && new File(folder, "make.exe").exists()) { // NOI18N
-            return true;
-        }
-        for (int i = 0; i < compilerNames.length; i++) {
-            if (new File(folder, compilerNames[i]).exists() || new File(folder, compilerNames[i] + ".exe").exists()) // NOI18N
-                return true;
-        }
-        return false;
-    }
-    
-    private void initCompiler(CompilerFilenameFilter filter, String best, int kind, String path, CompilerSet cs) {
-        File dir = new File(path);
-        String[] list = dir.list(filter);
 
-        if (list != null && list.length > 0) {
-            if (cs == null) {
-                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
-                cs = getCompilerSet(flavor);
-                if (cs != null && !cs.getDirectory().equals(path))
-                    return;
-                cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-                add(cs);
-                if (cs.findTool(kind) != null) {
-                    // Only one tool of each kind in a cs
-                    return;
-                }
-            }
-            for (String name : list) {
-                File file = new File(dir, name);
-                if (file.exists() && !file.isDirectory() && (name.equals(best) || name.equals(best + ".exe"))) { // NOI18N
-                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
-                    break;
-                }
-            }
-        }
-    }
-    
-    private void initFortranCompiler(CompilerFilenameFilter filter, int kind, String path, CompilerSet cs) {
+    private void initCompiler(int kind, String path, CompilerSet cs, String[] names) {
         File dir = new File(path);
-        String[] list = dir.list(filter);
-        String[] best = {
-            "gfortran", // NOI18N
-            "g95", // NOI18N
-            "g90", // NOI18N
-            "g77", // NOI18N
-            "ffortran", // NOI18N
-            "f95", // NOI18N
-            "f90", // NOI18N
-            "f77", // NOI18N
-        };
-
-        if (list != null && list.length > 0) {
-            if (cs == null) {
-                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
-                cs = getCompilerSet(flavor);
-                if (cs != null && !cs.getDirectory().equals(path))
-                    return;
-                cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-                add(cs);
-        //            for (String name : list) {
-        //                File file = new File(dir, name);
-        //                if (file.exists()) {
-        //                    for (int i = 0; i < best.length; i++) {
-        //                        if (name.equals(best[i]) || name.equals(best[i] + ".exe")) { // NOI18N
-        //                            cs.addTool(name, path, kind);
-        //                        }
-        //                    }
-        //                }
-        //            }
+        if (cs.findTool(kind) != null) {
+            // Only one tool of each kind in a cs
+            return;
+        }
+        for (String name : names) {
+            File file = new File(dir, name);
+            if (file.exists() && !file.isDirectory()) {
+                cs.addTool(hkey, name, file.getAbsolutePath(), kind);
+                return;
             }
-            for (int i = 0; i < best.length; i++) {
-                String name = best[i];
-                if (isWindows()) {
-                    name = name + ".exe"; // NOI18N
-                }
-                File file = new File(dir, name);
-                if (file.exists() && !file.isDirectory()) {
-                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
-                    return;
-                }
+            file = new File(dir, name+".exe"); // NOI18N
+            if (file.exists() && !file.isDirectory()) {
+                cs.addTool(hkey, name, file.getAbsolutePath(), kind);
+                return;
             }
         }
     }
-    
-    private void initMakeTool(CompilerFilenameFilter filter, int kind, String path, CompilerSet cs) {
-        File dir = new File(path);
-        String[] list = dir.list(filter);
-        String[] best = {
-            "dmake", // NOI18N
-            "gmake", // NOI18N
-            "make", // NOI18N
-        };
 
-        if (list != null && list.length > 0) {
-            if (cs == null) {
-                cs = null;
-                if (path.contains("msys")) { // NOI18N
-                    // use minGW cs
-                    cs = getCompilerSet(CompilerFlavor.MinGW);
-                }
-                if (cs == null) {
-                    CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
-                    cs = getCompilerSet(flavor);
-                    if (cs != null && !cs.getDirectory().equals(path))
-                        return;
-                    cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-                        add(cs);
-                }
-            }
-            for (int i = 0; i < best.length; i++) {
-                String name = best[i];
-                if (isWindows()) {
-                    name = name + ".exe"; // NOI18N
-                }
-                File file = new File(dir, name);
-                if (file.exists() && !file.isDirectory()) { // NOI18N
-                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
-                    return;
-                }
-            }
-        }
-    }
-    
-    private void initDebuggerTool(CompilerFilenameFilter filter, int kind, String path, CompilerSet cs) {
-        File dir = new File(path);
-        String[] list = dir.list(filter);
-        String[] best;
-        if (IpeUtils.isGdbEnabled()) {
-            best = new String[] {
-                "gdb", // NOI18N
-            };
-        }
-        else {
-            // Assume dbxgui
-            best = new String[] {
-                "dbx", // NOI18N
-            };
-        }
-
-        if (list != null && list.length > 0) {
-            if (cs == null) {
-                CompilerFlavor flavor = CompilerSet.getCompilerSetFlavor(dir.getAbsolutePath(), list);
-                cs = getCompilerSet(flavor);
-                if (cs != null && !cs.getDirectory().equals(path))
-                    return;
-                cs = CompilerSet.getCompilerSet(dir.getAbsolutePath(), list);
-                add(cs);
-            }
-            for (int i = 0; i < best.length; i++) {
-                String name = best[i];
-                if (isWindows()) {
-                    name = name + ".exe"; // NOI18N
-                }
-                File file = new File(dir, name);
-                if (file.exists() && !file.isDirectory()) { // NOI18N
-                    cs.addTool(hkey, name, file.getAbsolutePath(), kind);
-                    return;
-                }
-            }
-        }
-    }
-    
     /**
      * If a compiler set doesn't have one of each compiler types, add a "No compiler"
      * tool. If selected, this will tell the build validation things are OK.
      */
     private void completeCompilerSets() {
-        CompilerSet sun = getCompilerSet(CompilerFlavor.Sun);
-        if (sun == null) {
-            // find 'best' Sun set and copy it
-            sun = getCompilerSet(CompilerFlavor.Sun12);
-            if (sun == null)
-                sun = getCompilerSet(CompilerFlavor.Sun11);
-            if (sun == null)
-                sun = getCompilerSet(CompilerFlavor.Sun10);
-            if (sun == null)
-                sun = getCompilerSet(CompilerFlavor.Sun9);
-            if (sun == null)
-                sun = getCompilerSet(CompilerFlavor.Sun8);
-            if (sun != null) {
-                sun = sun.createCopy();
-                sun.setName(CompilerFlavor.Sun.toString());
-                sun.setFlavor(CompilerFlavor.Sun);
-                sun.setAsDefault(false);
-                sun.setAutoGenerated(true);
-                add(sun);
-            }
-        }
-        
         for (CompilerSet cs : sets) {
-            completeCompilerSet(hkey, cs);
+            completeCompilerSet(hkey, cs, sets);
         }
-        
         if (sets.size() == 0) { // No compilers found
-            add(CompilerSet.createEmptyCompilerSet());
+            add(CompilerSet.createEmptyCompilerSet(getPlatform()));
         }
     }
-    
-    private static void completeCompilerSet(String hkey, CompilerSet cs) {
+
+    private static void completeCompilerSet(String hkey, CompilerSet cs, List<CompilerSet> sets) {
         if (cs.getTool(Tool.CCompiler) == null) {
             cs.addTool(hkey, "", "", Tool.CCompiler);
         }
@@ -658,9 +492,26 @@ public class CompilerSetManager implements PlatformTypes {
             cs.addTool(hkey, "", "", Tool.FortranCompiler);
         }
         if (cs.findTool(Tool.MakeTool) == null) {
-            String path = Path.findCommand("make"); // NOI18N
-            if (path != null)
-                cs.addNewTool(hkey, IpeUtils.getBaseName(path), IpeUtils.getDirName(path), Tool.MakeTool);
+            Tool other = null;
+            for (CompilerSet set : sets) {
+                other = set.findTool(Tool.MakeTool);
+                if (other != null) {
+                    break;
+                }
+            }
+            if (other != null) {
+                cs.addNewTool(hkey, other.getName(), other.getPath(), Tool.MakeTool);
+            } else {
+                String path = Path.findCommand("make"); // NOI18N
+                if (path != null) {
+                    cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
+                } else {
+                    path = Path.findCommand("gmake"); // NOI18N
+                    if (path != null) {
+                        cs.addNewTool(hkey, IpeUtils.getBaseName(path), path, Tool.MakeTool);
+                    }
+                }
+            }
         }
         if (cs.getTool(Tool.MakeTool) == null) {
                 cs.addTool(hkey, "", "", Tool.MakeTool);
@@ -679,21 +530,9 @@ public class CompilerSetManager implements PlatformTypes {
         if (cs.getTool(Tool.DebuggerTool) == null) {
                 cs.addTool(hkey, "", "", Tool.DebuggerTool);
         }
-        
+
     }
-    
-    private void initCompilerFilters() {
-        gcc_filter = new CompilerFilenameFilter(gcc_pattern);
-        gpp_filter = new CompilerFilenameFilter(gpp_pattern);
-        cc_filter = new CompilerFilenameFilter(cc_pattern);
-        fortran_filter = new CompilerFilenameFilter(fortran_pattern);
-        if (Utilities.isUnix()) {
-            CC_filter = new CompilerFilenameFilter(CC_pattern);
-        }
-        make_filter = new CompilerFilenameFilter(make_pattern);
-        debugger_filter = new CompilerFilenameFilter(debugger_pattern);
-    }
-    
+
     /**
      * Add a CompilerSet to this CompilerSetManager. Make sure it doesn't get added multiple times.
      *
@@ -701,7 +540,7 @@ public class CompilerSetManager implements PlatformTypes {
      */
     public void add(CompilerSet cs) {
 //        String csdir = cs.getDirectory();
-        
+
         if (sets.size() == 1 && sets.get(0).getName().equals(CompilerSet.None)) {
             sets.remove(0);
         }
@@ -717,7 +556,7 @@ public class CompilerSetManager implements PlatformTypes {
             setDefault(cs);
         }
     }
-    
+
     /**
      * Remove a CompilerSet from this CompilerSetManager. Use caution with this method. Its primary
      * use is to remove temporary CompilerSets which were added to represent missing compiler sets. In
@@ -736,11 +575,11 @@ public class CompilerSetManager implements PlatformTypes {
             sets.remove(idx);
         }
     }
-    
+
     public CompilerSet getCompilerSet(CompilerFlavor flavor) {
         return getCompilerSet(flavor.toString());
     }
-    
+
     public CompilerSet getCompilerSet(String name) {
         for (CompilerSet cs : sets) {
             if (cs.getName().equals(name)) {
@@ -749,7 +588,7 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return null;
     }
-    
+
     public CompilerSet getCompilerSetByDisplayName(String name) {
         for (CompilerSet cs : sets) {
             if (cs.getDisplayName().equals(name)) {
@@ -758,7 +597,7 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return null;
     }
-    
+
     public CompilerSet getCompilerSetByPath(String path) {
         for (CompilerSet cs : sets) {
             if (cs.getDirectory().equals(path)) {
@@ -767,7 +606,7 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return null;
     }
-        
+
     public CompilerSet getCompilerSet(String name, String dname) {
         waitForCompletion();
         for (CompilerSet cs : sets) {
@@ -785,15 +624,15 @@ public class CompilerSetManager implements PlatformTypes {
         else
             return null;
     }
-    
+
     public CompilerSet getCurrentCompilerSet() {
         return sets.get(current);
     }
-    
+
     public void setCurrentCompilerSet(int current) {
         this.current = current;
     }
-    
+
     public void setCurrentCompilerSet(String name) {
         int i = 0;
         for (CompilerSet cs : sets) {
@@ -805,27 +644,27 @@ public class CompilerSetManager implements PlatformTypes {
             i++;
         }
     }
-    
+
     public List<CompilerSet> getCompilerSets() {
         return sets;
     }
-    
+
     public List<String> getCompilerSetDisplayNames() {
-        ArrayList<String> names = new ArrayList();
+        List<String> names = new ArrayList<String>();
         for (CompilerSet cs : getCompilerSets()) {
             names.add(cs.getDisplayName());
         }
         return names;
     }
-    
+
     public List<String> getCompilerSetNames() {
-        ArrayList<String> names = new ArrayList();
+        List<String> names = new ArrayList<String>();
         for (CompilerSet cs : getCompilerSets()) {
             names.add(cs.getName());
         }
         return names;
     }
-    
+
     public void setDefault(CompilerSet newDefault) {
         boolean set = false;
         for (CompilerSet cs : getCompilerSets()) {
@@ -839,7 +678,7 @@ public class CompilerSetManager implements PlatformTypes {
             getCompilerSet(0).setAsDefault(true);
         }
     }
-    
+
     public CompilerSet getDefaultCompilerSet() {
         for (CompilerSet cs : getCompilerSets()) {
             if (cs.isDefault())
@@ -847,7 +686,7 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return null;
     }
-    
+
     /**
      * Check if the gdb module is enabled. Don't show the gdb line if it isn't.
      *
@@ -863,47 +702,47 @@ public class CompilerSetManager implements PlatformTypes {
         }
         return false;
     }
-    
+
     /** Special FilenameFilter which should recognize different variations of supported compilers */
     private class CompilerFilenameFilter implements FilenameFilter {
-        
+
         Pattern pc = null;
-        
+
         public CompilerFilenameFilter(String pattern) {
             try {
                 pc = Pattern.compile(pattern);
             } catch (PatternSyntaxException ex) {
             }
         }
-        
+
         public boolean accept(File dir, String name) {
             return pc != null && pc.matcher(name).matches();
         }
     }
-    
+
     private static CompilerProvider getCompilerProvider() {
         if (compilerProvider == null) {
-            compilerProvider = (CompilerProvider) Lookup.getDefault().lookup(CompilerProvider.class);
+            compilerProvider = Lookup.getDefault().lookup(CompilerProvider.class);
         }
         if (compilerProvider == null) {
             compilerProvider = new DefaultCompilerProvider();
         }
         return compilerProvider;
     }
-    
+
     /*
      * Persistence ...
      */
     private static Preferences getPreferences() {
         return NbPreferences.forModule(CompilerSetManager.class);
     }
-    
+
     public void saveToDisk() {
-        if (!sets.isEmpty() && platform != PLATFORM_GENERIC) {
+        if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
             getPreferences().putInt(CSM + hkey + NO_SETS, sets.size());
             getPreferences().putInt(CSM + hkey + CURRENT_SET_NAME, current);
-            getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
+            getPreferences().putInt(CSM + hkey + SET_PLATFORM, getPlatform());
             int setCount = 0;
             for (CompilerSet cs : getCompilerSets()) {
                 getPreferences().put(CSM + hkey + SET_NAME + setCount, cs.getName());
@@ -925,13 +764,13 @@ public class CompilerSetManager implements PlatformTypes {
             }
         }
     }
-        
+
     public static CompilerSetManager restoreFromDisk(String hkey) {
         double version = getPreferences().getDouble(CSM + VERSION, 1.0);
         if (version == 1.0 && hkey.equals(LOCALHOST)) {
             return restoreFromDisk10();
         }
-        
+
         int noSets = getPreferences().getInt(CSM + hkey + NO_SETS, -1);
         if (noSets < 0) {
             return null;
@@ -943,14 +782,14 @@ public class CompilerSetManager implements PlatformTypes {
                 pform = computeLocalPlatform();
             }
         }
-        
+
         ArrayList<CompilerSet> css = new ArrayList<CompilerSet>();
         for (int setCount = 0; setCount < noSets; setCount++) {
             String setName = getPreferences().get(CSM + hkey + SET_NAME + setCount, null);
             String setFlavorName = getPreferences().get(CSM + hkey + SET_FLAVOR + setCount, null);
             CompilerFlavor flavor = null;
             if (setFlavorName != null) {
-                flavor = CompilerFlavor.toFlavor(setFlavorName);
+                flavor = CompilerFlavor.toFlavor(setFlavorName, pform);
             }
             String setDirectory = getPreferences().get(CSM + hkey + SET_DIRECTORY + setCount, null);
             if (setName == null || setFlavorName == null || flavor == null) {
@@ -969,28 +808,28 @@ public class CompilerSetManager implements PlatformTypes {
                 String toolFlavorName = getPreferences().get(CSM + hkey + TOOL_FLAVOR + setCount + '.' + toolCount, null);
                 CompilerFlavor toolFlavor = null;
                 if (toolFlavorName != null) {
-                    toolFlavor = CompilerFlavor.toFlavor(toolFlavorName);
+                    toolFlavor = CompilerFlavor.toFlavor(toolFlavorName, pform);
                 }
                 Tool tool = getCompilerProvider().createCompiler(hkey, toolFlavor, toolKind, "", toolDisplayName, toolPath);
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(hkey, cs);
+            completeCompilerSet(hkey, cs, css);
             css.add(cs);
         }
-        
+
         CompilerSetManager csm = new CompilerSetManager(hkey, css, current);
         csm.current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         csm.platform = pform;
         return csm;
     }
-        
+
     public static CompilerSetManager restoreFromDisk10() {
         int noSets = getPreferences().getInt(CSM + NO_SETS, -1);
         if (noSets < 0) {
             return null;
         }
-        
+
         ArrayList<CompilerSet> css = new ArrayList<CompilerSet>();
         getPreferences().remove(CSM + NO_SETS);
         for (int setCount = 0; setCount < noSets; setCount++) {
@@ -1000,7 +839,7 @@ public class CompilerSetManager implements PlatformTypes {
             getPreferences().remove(CSM + SET_FLAVOR + setCount);
             CompilerFlavor flavor = null;
             if (setFlavorName != null) {
-                flavor = CompilerFlavor.toFlavor(setFlavorName);
+                flavor = CompilerFlavor.toFlavor(setFlavorName, PlatformTypes.getDefaultPlatform());
             }
             String setDirectory = getPreferences().get(CSM + SET_DIRECTORY + setCount, null);
             getPreferences().remove(CSM + SET_DIRECTORY + setCount);
@@ -1027,34 +866,42 @@ public class CompilerSetManager implements PlatformTypes {
                 getPreferences().remove(CSM + TOOL_FLAVOR + setCount + '.' + toolCount);
                 CompilerFlavor toolFlavor = null;
                 if (toolFlavorName != null) {
-                    toolFlavor = CompilerFlavor.toFlavor(toolFlavorName);
+                    toolFlavor = CompilerFlavor.toFlavor(toolFlavorName, PlatformTypes.getDefaultPlatform());
                 }
                 Tool tool = getCompilerProvider().createCompiler(LOCALHOST, toolFlavor, toolKind, "", toolDisplayName, toolPath);
                 tool.setName(toolName);
                 cs.addTool(tool);
             }
-            completeCompilerSet(CompilerSetManager.LOCALHOST, cs);
+            completeCompilerSet(CompilerSetManager.LOCALHOST, cs, css);
             css.add(cs);
         }
         CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0);
         csm.platform = computeLocalPlatform();
         return csm;
     }
-    
+
     /** Look up i18n strings here */
     private static String getString(String s) {
         return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
     private boolean isWindows() {
-        return platform == PLATFORM_WINDOWS;
+        return getPlatform() == PlatformTypes.PLATFORM_WINDOWS;
     }
-    
+
 
     public static boolean useFakeRemoteCompilerSet = Boolean.getBoolean("cnd.remote.fakeCompilerSet");
-    public static CompilerSet fakeRemoteCS = new FakeRemoteCompilerSet();
-    
+    public static CompilerSet fakeRemoteCS = new FakeRemoteCompilerSet(PlatformTypes.getDefaultPlatform());
+
     private static class FakeRemoteCompilerSet extends CompilerSet {
+
+        public FakeRemoteCompilerSet(int platform){
+            super(platform);
+            fakeMake = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake");
+            fakeC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc");
+            fakeCC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++");
+            fakeFortran = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++");
+        }
 
         @Override
         public String getName() {
@@ -1076,11 +923,11 @@ public class CompilerSetManager implements PlatformTypes {
         public Tool getTool(String name) {
             throw new UnsupportedOperationException();
         }
-        
-        private Tool fakeMake = new Tool("fake", CompilerFlavor.GNU, Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake"); 
-        private Tool fakeC = new Tool("fake", CompilerFlavor.GNU, Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc"); 
-        private Tool fakeCC = new Tool("fake", CompilerFlavor.GNU, Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++"); 
-        private Tool fakeFortran = new Tool("fake", CompilerFlavor.GNU, Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++"); 
-        
+
+        private Tool fakeMake;
+        private Tool fakeC;
+        private Tool fakeCC;
+        private Tool fakeFortran;
+
     }
 }

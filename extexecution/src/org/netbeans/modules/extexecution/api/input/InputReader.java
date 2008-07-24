@@ -56,7 +56,7 @@ public interface InputReader extends Closeable {
     /**
      * Reads some input and process it through the processor (if any).
      * <p>
-     * Implementation of this method has to be responsive to interrruption
+     * Implementation of this method has to be non blocking
      * for safe usage in {@link InputReaderTask}.
      *
      * @param processor consumer of read characters, mey be <code>null</code>

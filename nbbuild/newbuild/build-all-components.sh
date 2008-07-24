@@ -171,7 +171,7 @@ if [ $TEST_CODE = 1 ]; then
 fi
 
 #Build the NB stableuc modules
-ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-one-cluster -Drebuild.cluster.name=nb.cluster.stableuc -Dbuild.compiler.debuglevel=source,lines
+ant -Dbuildnum=$BUILDNUM -Dbuildnumber=$BUILDNUMBER -f nbbuild/build.xml rebuild-cluster -Drebuild.cluster.name=nb.cluster.stableuc -Dbuild.compiler.debuglevel=source,lines
 ERROR_CODE=$?
 
 if [ $ERROR_CODE != 0 ]; then

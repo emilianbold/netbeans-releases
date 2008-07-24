@@ -89,12 +89,16 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             @Override
             public void keyReleased(KeyEvent e) {
                 updateWarning();
-                jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
                 if (jCheckBox1.isSelected()) {
                     jTextFieldExpressionWrite.setText(jTextFieldExpressionRead.getText());
                 }
             }
         });
+        TextFieldFocusListener fl = new TextFieldFocusListener();
+        jTextFieldExpressionRead.addFocusListener(fl);
+        jTextFieldExpressionWrite.addFocusListener(fl);
+        
+        
         radioButton.addItemListener(new ItemListener() {
 
             public void itemStateChanged(ItemEvent e) {
@@ -890,6 +894,26 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
        }
         
     }
+    
+    private class TextFieldFocusListener extends FocusAdapter {
+
+            @Override
+            public void focusGained(FocusEvent e) {
+                super.focusGained(e);
+                jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
+                jTextFieldExpressionWrite.setText(jTextFieldExpressionWrite.getText().trim());
+            }
+
+            @Override
+            public void focusLost(FocusEvent e) {
+                super.focusLost(e);
+                jTextFieldExpressionRead.setText(jTextFieldExpressionRead.getText().trim());
+                jTextFieldExpressionWrite.setText(jTextFieldExpressionWrite.getText().trim());
+            }
+            
+            
+        }
+
 }
     
     

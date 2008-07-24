@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,21 +31,21 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
 package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -59,7 +59,8 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
 
     private PersistentList systemIncludeDirectoriesList = null;
     private PersistentList systemPreprocessorSymbolsList = null;
-    
+    private String includeFilePrefix = null;
+
     public GNUCCCCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
     }
@@ -75,7 +76,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         saveSystemIncludesAndDefines();
         return true;
     }
-    
+
     @Override
     public boolean setSystemPreprocessorSymbols(List values) {
         assert values != null;
@@ -86,25 +87,25 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         saveSystemIncludesAndDefines();
         return true;
     }
-    
+
     @Override
     public List getSystemPreprocessorSymbols() {
         if (systemPreprocessorSymbolsList != null)
             return systemPreprocessorSymbolsList;
-        
+
         getSystemIncludesAndDefines();
         return systemPreprocessorSymbolsList;
     }
-    
+
     @Override
     public List getSystemIncludeDirectories() {
         if (systemIncludeDirectoriesList != null)
             return systemIncludeDirectoriesList;
-        
+
         getSystemIncludesAndDefines();
         return systemIncludeDirectoriesList;
     }
-    
+
     @Override
     public void saveSystemIncludesAndDefines() {
         if (systemIncludeDirectoriesList != null)
@@ -112,43 +113,63 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         if (systemPreprocessorSymbolsList != null)
             systemPreprocessorSymbolsList.saveList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
     }
-    
+
     private void restoreSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = PersistentList.restoreList(getUniqueID() + "systemIncludeDirectoriesList"); // NOI18N
         systemPreprocessorSymbolsList = PersistentList.restoreList(getUniqueID() + "systemPreprocessorSymbolsList"); // NOI18N
     }
-    
+
     private void getSystemIncludesAndDefines() {
         restoreSystemIncludesAndDefines();
         if (systemIncludeDirectoriesList == null || systemPreprocessorSymbolsList == null) {
             getFreshSystemIncludesAndDefines();
         }
     }
-    
-    protected abstract String getDefaultPath();
-    protected abstract String getCompilerStderrCommand();
-    protected abstract String getCompilerStdoutCommand();
-    
+
+    protected String getDefaultPath() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getNames().length > 0){
+            return compiler.getNames()[0];
+        }
+        return ""; // NOI18N
+    }
+
+    protected String getCompilerStderrCommand() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null){
+            return " "+compiler.getIncludeFlags();
+        }
+        return ""; // NOI18N
+    }
+
+    protected String getCompilerStdoutCommand() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null){
+            return " "+compiler.getMacroFlags();
+        }
+        return ""; // NOI18N
+    }
+
     private void getFreshSystemIncludesAndDefines() {
         systemIncludeDirectoriesList = new PersistentList();
         systemPreprocessorSymbolsList = new PersistentList();
-        if (!getHostKey().endsWith(CompilerSetManager.LOCALHOST)) {
-            // TODO: this is temporary to test CA for remote projects
-            String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc\\" + getHostKey() + "\\"; //NOI18N //TODO
-            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\include");
-            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\local\\include");
-            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include");
-//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3");
-//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3\\i386-pc-solaris2.10");
-
-            //systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
-            return;
-        } 
+//        if (!getHostKey().endsWith(CompilerSetManager.LOCALHOST)) {
+//            // TODO: this is temporary to test CA for remote projects
+//            String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc\\" + getHostKey() + "\\"; //NOI18N //TODO
+//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\include");
+//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\local\\include");
+//            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include");
+////            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3");
+////            systemIncludeDirectoriesList.add(storagePrefix + "\\usr\\sfw\\include\\c++\\3.4.3\\i386-pc-solaris2.10");
+//
+//            //systemPreprocessorSymbolsList.add("__cplusplus=1"); // NOI18N
+//            return;
+//        }
         String path = getPath();
         if (path != null && path.length() == 0) {
             return;
         }
-        if (path == null || !new File(path).exists()) {
+        if (path == null || !PlatformInfo.getDefault(getHostKey()).fileExists(path)) {
             path = getDefaultPath();
         }
         try {
@@ -165,12 +186,12 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
         }
     }
-    
+
     @Override
     public void resetSystemIncludesAndDefines() {
         getFreshSystemIncludesAndDefines();
     }
-    
+
     private boolean startsWithPath(String line) {
         line = line.trim();
         if( line.startsWith("/") ) {  // NOI18N
@@ -183,10 +204,41 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
         }
         return false;
     }
-            
+
+    protected String cutIncludePrefix(String line) {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getRemoveIncludeOutputPrefix() != null) {
+            String remove = compiler.getRemoveIncludeOutputPrefix();
+            if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
+                line = line.substring(getIncludeFilePathPrefix().length());
+            } else if (line.toLowerCase().startsWith(remove)) {
+                line = line.substring(remove.length());
+            }
+        }
+        return line;
+    }
+
+    @Override
+    public String getIncludeFilePathPrefix() {
+        if (includeFilePrefix == null) {
+            includeFilePrefix = ""; // NOI18N
+            CompilerDescriptor compiler = getCompilerDescription();
+            if (compiler != null) {
+                String path = getPath().replaceAll("\\\\", "/"); // NOI18N
+                if (compiler.getRemoveIncludePathPrefix() != null) {
+                    int i = path.toLowerCase().indexOf("/bin"); // NOI18N
+                    if (i > 0) {
+                        includeFilePrefix = path.substring(0, i);
+                    }
+                }
+            }
+        }
+        return includeFilePrefix;
+    }
+
     @Override
     protected void parseCompilerOutput(BufferedReader reader) {
-        
+
         try {
             String line;
             boolean startIncludes = false;
@@ -203,15 +255,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
                     }
 		}
                 if (startIncludes) {
-                    line = line.trim();
-                    if (getFlavor() == CompilerFlavor.MinGW) {
-                        if (line.toLowerCase().startsWith(getIncludeFilePathPrefix().toLowerCase())) {
-                            line = line.substring(getIncludeFilePathPrefix().length());
-                        }
-                        else if (line.toLowerCase().startsWith("/mingw")) { // NOI18N
-                            line = line.substring(6);
-                        }
-                    }
+                    line = cutIncludePrefix(line.trim());
                     systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line));
                     if (getIncludeFilePathPrefix().length() > 0 && line.startsWith("/usr/lib")) // NOI18N
                         systemIncludeDirectoriesList.addUnique(normalizePath(getIncludeFilePathPrefix() + line.substring(4)));
@@ -231,8 +275,8 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             ErrorManager.getDefault().notify(ErrorManager.WARNING, ioe); // FIXUP
         }
     }
-    
-    
+
+
     private void dumpLists() {
         System.out.println("==================================" + getDisplayName()); // NOI18N
         for (int i = 0; i < systemIncludeDirectoriesList.size(); i++) {
@@ -242,5 +286,5 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
             System.out.println("-D" + systemPreprocessorSymbolsList.get(i)); // NOI18N
         }
     }
-    
+
 }

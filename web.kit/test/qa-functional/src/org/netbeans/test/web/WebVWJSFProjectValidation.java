@@ -86,9 +86,9 @@ public class WebVWJSFProjectValidation extends WebProjectValidationEE5 {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(WebVWJSFProjectValidation.class);
-        conf = addServerTests(conf, 
+        conf = addServerTests(Server.GLASSFISH, conf, 
         "testPreconditions", "testNewVWJSFWebProject", "testRedeployProject", 
-                "testBuildProject", "testCompileAllJSP", "testCleanProject", "testStopServer");
+                "testCleanAndBuildProject", "testCompileAllJSP", "testStopServer");
         conf = conf.enableModules(".*").clusters(".*");
         return NbModuleSuite.create(conf);        
 //        suite.addTest(new WebVWJSFProjectValidation("testNewJSP"));

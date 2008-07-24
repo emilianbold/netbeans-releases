@@ -47,14 +47,15 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.javascript.editing.lexer.Call;
 import org.netbeans.modules.web.client.javascript.debugger.api.NbJSDebugger;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSCallStackFrame;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSObject;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSProperty;
 import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSValue;
-import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
 import org.openide.loaders.DataObject;
 import org.openide.text.Annotation;
@@ -135,7 +136,16 @@ public final class ToolTipAnnotation extends Annotation implements Runnable {
             t = ep.getSelectedText();
         }
         if (t != null) { return t; }
-        
+
+        if (doc instanceof BaseDocument) {
+            try {
+                String expression = Call.getCallExpression((BaseDocument) doc, offset);
+                if (expression != null) {
+                    return expression;
+                };
+            } catch (BadLocationException ex) {
+            }
+        }
         try {
             int[] identifierBlock = Utilities.getIdentifierBlock(ep, offset);
             if (identifierBlock != null) {

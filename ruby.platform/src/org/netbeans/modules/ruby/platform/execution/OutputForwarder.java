@@ -197,24 +197,31 @@ final class OutputForwarder implements Runnable {
         try {
             while (true) {
                 if (!read.ready()) {
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException ie) {
-                        return;
-                    }
-
                     if (stopAction.process == null) {
                         // process finished
                         return;
                     }
-                    
+
+                    final int millisToWait = 1000;
+                    final int waitMillis = 50;
+                    int millisWaited = 0;
+                    // wait upto millisToWait for the stream to be ready
+                    while (!read.ready() && millisWaited < millisToWait) {
+                        try {
+                            Thread.sleep(waitMillis);
+                            millisWaited += waitMillis;
+                        } catch (InterruptedException ie) {
+                            return;
+                        }
+                    }
+
                     if (!read.ready() && sb.length() > 0) {
                         // Some output has been written - not a complete line
                         // and the process seems to be stalling so emit what
                         // we've got.
                         String line = sb.toString();
                         sb.setLength(0);
-
+                        LOGGER.log(Level.INFO, "Process seems to be stalling, emitting chars read so far: " + line);
                         writer.print(line);
                     }
 

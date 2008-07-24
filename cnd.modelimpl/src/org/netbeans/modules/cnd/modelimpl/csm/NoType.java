@@ -128,6 +128,10 @@ public class NoType implements CsmType {
         return false;
     }
 
+    public boolean isTemplateBased() {
+        return false;
+    }
+
     public CharSequence getClassifierText() {
         return "";
     }

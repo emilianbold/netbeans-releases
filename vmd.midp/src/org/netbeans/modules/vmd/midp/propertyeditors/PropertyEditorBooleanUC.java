@@ -170,6 +170,13 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
         if (radioButton == null) {
             radioButton = new JRadioButton();
             Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorBooleanUC.class, "LBL_VALUE_BOOLEAN")); // NOI18N
+            
+            radioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorBooleanUC.class, 
+                            "ACSN_VALUE_BOOLEAN")); // NOI18N
+            radioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorBooleanUC.class, 
+                            "ACSD_VALUE_BOOLEAN")); // NOI18N
         }
         return radioButton;
     }
@@ -286,6 +293,11 @@ public class PropertyEditorBooleanUC extends PropertyEditorUserCode implements P
             checkBox = new JCheckBox();
             if (rbLabel != null) {
                 Mnemonics.setLocalizedText(checkBox, rbLabel);
+                
+                checkBox.getAccessibleContext().setAccessibleName( 
+                        checkBox.getText());
+                checkBox.getAccessibleContext().setAccessibleDescription( 
+                        checkBox.getText());
             }
             checkBox.addActionListener(this);
             add(checkBox, BorderLayout.CENTER);

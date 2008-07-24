@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.api.compilers;
 import java.io.File;
 import java.util.ResourceBundle;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.openide.util.NbBundle;
@@ -191,17 +192,14 @@ public class Tool {
     public String getIncludeFilePathPrefix() {
         if (includeFilePrefix == null) {
             includeFilePrefix = ""; // NOI18N
-            if (getFlavor() == CompilerFlavor.Cygwin ||
-                    getFlavor() == CompilerFlavor.MinGW ||
-                    getFlavor() == CompilerFlavor.DJGPP ||
-                    getFlavor() == CompilerFlavor.Interix) {
-                int i = getPath().toLowerCase().indexOf("\\bin"); // NOI18N
-                if (i < 0)
-                    i = getPath().toLowerCase().indexOf("/bin"); // NOI18N
-                if (i > 0) {
-                    includeFilePrefix = getPath().substring(0, i);
-                    includeFilePrefix = includeFilePrefix.replaceAll("\\\\", "/"); // NOI18N
-                    //includeFilePrefix = FilePathAdaptor.normalize(includeFilePrefix);
+            CompilerDescriptor c = getFlavor().getToolchainDescriptor().getC();
+            if (c != null) {
+                String path = getPath().replaceAll("\\\\", "/"); // NOI18N
+                if (c.getRemoveIncludePathPrefix() != null) {
+                    int i = path.toLowerCase().indexOf("/bin"); // NOI18N
+                    if (i > 0) {
+                        includeFilePrefix = path.substring(0, i);
+                    }
                 }
             }
         }
@@ -211,7 +209,8 @@ public class Tool {
     public void setIncludeFilePathPrefix(String includeFilePrefix) {
         this.includeFilePrefix = includeFilePrefix;
     }
-    
+
+    @Deprecated
     public boolean exists() {
         if (getPath() == null || getPath().length() == 0)
             return false;

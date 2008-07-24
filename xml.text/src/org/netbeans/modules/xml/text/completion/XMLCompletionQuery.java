@@ -330,8 +330,13 @@ public class XMLCompletionQuery implements CompletionQuery, XMLTokenIDs {
     }
     
     private List queryValues(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {
-        Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
-        return translateValues(res);
+        try {
+            Enumeration res = getPerformer(doc, sup).queryValues(helper.getContext());
+            return translateValues(res);
+        } catch (Exception ex) {            
+            //issue #118136: just catch and return
+            return null;
+        }
     }
     
     private List queryNotations(SyntaxQueryHelper helper, Document doc, XMLSyntaxSupport sup) {  //!!! to be implemented

@@ -82,6 +82,7 @@ import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.EjbJarProjectProper
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
+import org.netbeans.modules.j2ee.common.project.BinaryForSourceQueryImpl;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathExtender;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathModifier;
 import org.netbeans.modules.j2ee.common.project.classpath.ClassPathSupport;
@@ -125,6 +126,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.j2ee.ejbjarproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.BrokenReferencesAlertPanel;
 import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.ArtifactListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider.DeployOnSaveSupport;
 import org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerProviderImpl;
@@ -436,6 +438,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 LookupMergerSupport.createSFBLookupMerger(),
                 ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
                 LookupMergerSupport.createJFBLookupMerger(),
+                BinaryForSourceQueryImpl.createBinaryForSourceQueryImplementation(sourceRoots, testRoots, helper, eval),
                 // TODO: AB: maybe add "this" to the lookup. You should not cast a Project to EjbJarProject, but use the lookup instead.
             });
             return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-ejbjarproject/Lookup"); //NOI18N
@@ -932,6 +935,16 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 // UI Logging
                 Utils.logUI(NbBundle.getBundle(EjbJarProject.class), "UI_EJB_PROJECT_OPENED", // NOI18N
                         new Object[] {(serverType != null ? serverType : Deployment.getDefault().getServerID(servInstID)), servInstID});
+
+                String serverName = "";  // NOI18N
+                try {
+                    serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                }
+                catch (InstanceRemovedException ier) {
+                    // ignore
+                }
+
+                Utils.logUsage(EjbJarProject.class, "USG_PROJECT_OPEN_EJB", new Object[] { serverName }); // NOI18N
             } catch (IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);
             }
@@ -1099,7 +1112,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
     
     // TODO cleanup and move to j2ee.common if possible
     public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, DeployOnSaveSupport {
-        
+
+        private static final String META_INF_FOLDER = "META-INF";
+
         private FileObject metaBase = null;
 
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
@@ -1173,11 +1188,11 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                     FileObject parent = fo.getParent();
                     String path;
                     if (FileUtil.isParentOf(docBase, parent)) {
-                        path = "META-INF/" + FileUtil.getRelativePath(docBase, fo.getParent()) +
+                        path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(docBase, fo.getParent()) +
                             "/" + fe.getName() + "." + fe.getExt();
                     }
                     else {
-                        path = "META-INF/" + fe.getName() + "." + fe.getExt();
+                        path = META_INF_FOLDER + "/" + fe.getName() + "." + fe.getExt();
                     }
                     if (!isSynchronizationAppropriate(path)) 
                         return;
@@ -1195,7 +1210,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 FileObject docBase = getEjbModule().getMetaInf();
                 if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
-                    String path = "META-INF/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
+                    String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
                     if (!isSynchronizationAppropriate(path)) 
                         return;
                     handleDeleteFileInDestDir(path);
@@ -1238,7 +1253,7 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
                 FileObject docBase = getEjbModule().getMetaInf();
                 if (docBase != null && FileUtil.isParentOf(docBase, fo)) {
                     // inside docbase
-                    String path = "META-INF/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
+                    String path = META_INF_FOLDER + "/" + FileUtil.getRelativePath(docBase, fo); // NOI18N
                     if (!isSynchronizationAppropriate(path)) 
                         return;
                     FileObject ejbBuildBase = getEjbModule().getContentDirectory();

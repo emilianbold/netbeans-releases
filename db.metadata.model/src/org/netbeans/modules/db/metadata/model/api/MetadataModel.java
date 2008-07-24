@@ -49,7 +49,7 @@ import org.openide.util.Parameters;
  */
 public class MetadataModel {
 
-    private final MetadataModelImplementation impl;
+    final MetadataModelImplementation impl;
 
     MetadataModel(MetadataModelImplementation impl) {
         this.impl = impl;

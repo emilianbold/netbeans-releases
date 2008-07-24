@@ -61,11 +61,11 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.plaf.UIResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.gsf.GsfDataObject;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
+import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -357,7 +357,7 @@ public final class Utils {
      * @return the relative path to folder or <code>null</code> if nothing selected.
      */
     public static String browseFolderFile(FileObject folder, String preselected) {
-        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, GsfDataObject.class, securePreselected(preselected, true));
+        FileObject selected = BrowseFolders.showDialog(new FileObject[] {folder}, DataObject.class, securePreselected(preselected, true));
         if (selected != null) {
             return PropertyUtils.relativizeFile(FileUtil.toFile(folder), FileUtil.toFile(selected));
         }
@@ -408,7 +408,7 @@ public final class Utils {
         assert sourceGroups[0] != null;
         File rootFolder = FileUtil.toFile(sourceGroups[0].getRootFolder());
         FileObject selected = BrowseFolders.showDialog(sourceGroups,
-                selectDirectory ? DataFolder.class : GsfDataObject.class, securePreselected(preselected, !selectDirectory));
+                selectDirectory ? DataFolder.class : DataObject.class, securePreselected(preselected, !selectDirectory));
         if (selected != null) {
             return PropertyUtils.relativizeFile(rootFolder, FileUtil.toFile(selected));
         }

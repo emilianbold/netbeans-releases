@@ -57,6 +57,7 @@ import org.openide.windows.WindowManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import javax.swing.JRootPane;
 
 
 // Extracted from core/NbTopManager.
@@ -232,9 +233,10 @@ public class DialogDisplayerImpl extends DialogDisplayer {
                 // dialog is gone, restore the focus
 
                 if (focusOwner != null) {
-                    win.requestFocus ();
-                    comp.requestFocus ();
-                    focusOwner.requestFocus ();
+                    win.requestFocusInWindow();
+                    comp.requestFocusInWindow();
+                    if( !(focusOwner instanceof JRootPane ) ) //#85068
+                        focusOwner.requestFocusInWindow();
                 }
             }
         }

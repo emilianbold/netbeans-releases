@@ -47,6 +47,9 @@ public class ChildrenFilterAsKeysTest extends ChildrenKeysTest {
         super(testName);
     }
 
+//   public static ChildrenFilterAsKeysTest suite() {
+//        return new ChildrenFilterAsKeysTest("testDestroyIsCalledWhenANodeIsRemoved");
+//    }
 
     @Override
     protected Node createNode (Children ch) {

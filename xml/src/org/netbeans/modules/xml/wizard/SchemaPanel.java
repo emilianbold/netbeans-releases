@@ -42,51 +42,26 @@ package org.netbeans.modules.xml.wizard;
 
 import java.awt.Component;
 
-import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.net.*;
 import java.io.*;
 import java.util.Iterator;
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.text.JTextComponent;
-import org.openide.explorer.ExplorerManager;
-import org.openide.explorer.view.TreeTableView;
-import javax.swing.tree.TreeSelectionModel;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
-import org.openide.nodes.AbstractNode;
-import org.openide.nodes.Children;
-import org.openide.nodes.Node;
-import org.openide.nodes.PropertySupport;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import org.openide.loaders.TemplateWizard;
-import org.openide.loaders.DataFolder;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.ui.LogicalViewProvider;
-import java.util.Set;
 import java.util.Vector;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JComboBox;
 import javax.swing.JRadioButton;
 import javax.swing.JTable;
-import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
@@ -95,12 +70,10 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
-import javax.swing.tree.TreePath;
+import org.netbeans.modules.xml.lib.Util;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.explorer.view.Visualizer;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 
@@ -164,7 +137,7 @@ public class SchemaPanel extends AbstractPanel implements ActionListener, TableM
         });
         removeButton = new javax.swing.JButton();
 
-        setName(Util.THIS.getString("PROP_schema_panel_name")); // NOI18N
+        setName(Util.THIS.getString(SchemaPanel.class, "PROP_schema_panel_name")); // NOI18N
 
         locationPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
         locationPanel.setLayout(new java.awt.BorderLayout());
@@ -263,9 +236,12 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
 
         // memonics
         Util util = Util.THIS;        
-        locationLabel.setDisplayedMnemonic(util.getChar("PROP_schema_locationLabel_mne"));
-        browseButton.setMnemonic(util.getChar("LBL_BrowseButton_mme"));
-        removeButton.setMnemonic(util.getChar("LBL_RemoveButton_mne"));
+        locationLabel.setDisplayedMnemonic(util.getChar(
+                SchemaPanel.class, "PROP_schema_locationLabel_mne"));
+        browseButton.setMnemonic(util.getChar(
+                SchemaPanel.class, "LBL_BrowseButton_mme"));
+        removeButton.setMnemonic(util.getChar(
+                SchemaPanel.class, "LBL_RemoveButton_mne"));
        
     }
     

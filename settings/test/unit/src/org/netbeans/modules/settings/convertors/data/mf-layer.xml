@@ -90,6 +90,36 @@ made subject to such option by the copyright holder.
 </settings>
 ]]>
         </file>
+
+        <file name="org-netbeans-modules-settings-convertors-FooSettingRemovedClassInstanceOf.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.xtest"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.RemovedClass"/>
+    <instance class="org.netbeans.modules.settings.convertors.Bar1Setting"/>
+</settings>
+]]>
+        </file>
+
+        <file name="org-netbeans-modules-settings-convertors-FooSettingRemovedClass.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.xtest"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.RemovedClass"/>
+    <instance class="org.netbeans.modules.settings.convertors.RemovedClass"/>
+</settings>
+]]>
+        </file>
+
+        <file name="org-netbeans-modules-settings-convertors-FooSettingRemovedClassSerial.settings">
+<![CDATA[<!DOCTYPE settings PUBLIC "-//NetBeans//DTD Session settings 1.0//EN" "http://www.netbeans.org/dtds/sessionsettings-1_0.dtd">
+<settings version="1.0">
+    <module name="org.netbeans.modules.settings.xtest"/>
+    <instanceof class="org.netbeans.modules.settings.convertors.RemovedClass"/>
+    <serialdata class="org.netbeans.modules.settings.convertors.RemovedClass">ACED00057372</serialdata>
+</settings>
+]]>
+        </file>
         
         <!-- SerialDataConvertorTest.testCorruptedSettingsFile -->
         
