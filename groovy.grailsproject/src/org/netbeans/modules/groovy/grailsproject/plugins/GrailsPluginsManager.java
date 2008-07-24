@@ -108,15 +108,14 @@ public class GrailsPluginsManager {
                 command, GrailsProjectConfig.forProject(project));
 
         final PluginProcessor processor = new PluginProcessor();
-        final ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.frontWindow(true);
-        builder.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
+        ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true);
+        descriptor = descriptor.outProcessorFactory(new ExecutionDescriptor.InputProcessorFactory() {
             public InputProcessor newInputProcessor() {
                 return InputProcessors.bridge(processor);
             }
         });
 
-        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         try {
             service.run().get();
         } catch (InterruptedException ex) {
@@ -228,11 +227,10 @@ public class GrailsPluginsManager {
 
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                         command, GrailsProjectConfig.forProject(project), args);
-                ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-                builder.frontWindow(true);
-                builder.postExecution(new RefreshProjectRunnable(project));
+                ExecutionDescriptor descriptor = new ExecutionDescriptor().frontWindow(true)
+                        .postExecution(new RefreshProjectRunnable(project));
 
-                ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+                ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
                 final Future<Integer> future = service.run();
 
                 SwingUtilities.invokeLater(new Runnable() {
