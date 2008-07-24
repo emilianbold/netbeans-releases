@@ -56,7 +56,7 @@ import java.util.logging.Logger;
 class GestureSubmitter {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    private static final Logger UILOGGER = Logger.getLogger("org.netbeans.ui.debugger"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
@@ -65,23 +65,23 @@ class GestureSubmitter {
         if (project != null) {
             params.add(0, project.getClass().getName());
         }
-        log("UI_DEBUGGER_DEBUG_PROJECT", params); // NOI18N
+        log("USG_PROJECT_DEBUG", params); // NOI18N
     }
 
     static void logAttach(String attachTypeName) {
         List params = new ArrayList();
         params.add(attachTypeName);
-        log("UI_DEBUGGER_ATTACH", params); // NOI18N
+        log("USG_DEBUG_ATTACH", params); // NOI18N
     }
 
     private static void log(String type, List<Object> params) {
-        LogRecord record = new LogRecord(Level.CONFIG, type);
+        LogRecord record = new LogRecord(Level.INFO, type);
         record.setResourceBundle(NbBundle.getBundle(GestureSubmitter.class));
         record.setResourceBundleName(GestureSubmitter.class.getPackage().getName() + ".Bundle"); // NOI18N
-        record.setLoggerName(UILOGGER.getName());
+        record.setLoggerName(USG_LOGGER.getName());
 
         record.setParameters(params.toArray(new Object[params.size()]));
 
-        UILOGGER.log(record);
+        USG_LOGGER.log(record);
     }
 }
