@@ -39,20 +39,14 @@
 
 package org.netbeans.modules.db.dataview.meta;
 
-import java.io.File;
-import java.net.URL;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Properties;
 import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.modules.db.dataview.spi.DBConnectionProviderImpl;
+import org.netbeans.modules.db.dataview.util.DbUtil;
 import org.netbeans.modules.db.dataview.util.TestCaseContext;
-import org.netbeans.modules.db.dataview.util.TestCaseDataFactory;
 import org.openide.util.Exceptions;
 
 /**
@@ -63,7 +57,6 @@ public class DBTableTest extends NbTestCase {
     
     DBTable table;
     private TestCaseContext context;
-    private String AXION_DRIVER = "org.axiondb.jdbc.AxionDriver";
     private DatabaseConnection dbconn;
     private Connection conn;
     
@@ -79,9 +72,10 @@ public class DBTableTest extends NbTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        getContext();
-        getDBConnection();
-        getjdbcConnection();
+        context = DbUtil.getContext();
+        dbconn = DbUtil.getDBConnection();
+        conn = DbUtil.getjdbcConnection();
+        DbUtil.createTable();
         createTable();
     }
 
@@ -91,45 +85,6 @@ public class DBTableTest extends NbTestCase {
         conn.createStatement().execute(context.getSqlDel());
         conn.close();
         dbconn=null;
-    }
-
-    private void getDBConnection() {
-        try {
-            Properties prop = context.getProperties();
-            File[] jars = context.getJars();
-            ArrayList list = new java.util.ArrayList();
-            for (int i = 0; i < jars.length; i++) {
-                list.add(jars[i].toURI().toURL());
-            }
-            URL[] urls = (URL[]) list.toArray(new URL[0]);
-            Class.forName(AXION_DRIVER);
-            JDBCDriver driver = JDBCDriver.create(AXION_DRIVER, "MashupDB", AXION_DRIVER, urls);
-            dbconn = DatabaseConnection.create(driver, prop.getProperty("url"), prop.getProperty("user"),
-                    "", prop.getProperty("password"), true);
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    private void getjdbcConnection() {
-        try {
-            DBConnectionProviderImpl dbp = new DBConnectionProviderImpl();
-            conn = dbp.getConnection(dbconn);
-            java.sql.Statement stmt = conn.createStatement();
-            stmt.execute(context.getSqlCreate());
-            stmt.execute(context.getSqlInsert());
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-        
-    private void getContext() {
-        try {
-            TestCaseDataFactory tfactory = TestCaseDataFactory.getTestCaseFactory();
-            context = (TestCaseContext) tfactory.getTestCaseContext()[0];
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
     }
 
     protected void createTable(){
