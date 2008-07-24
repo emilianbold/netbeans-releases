@@ -106,6 +106,7 @@ public class FileElementsCollector {
     private LinkedHashSet<CsmUsingDirective> usingNamespaces = new LinkedHashSet<CsmUsingDirective>();
     private LinkedHashSet<CsmNamespaceAlias> namespaceAliases = new LinkedHashSet<CsmNamespaceAlias>()/*<String, CsmNamespace>*/;
     private LinkedHashSet<CsmUsingDeclaration> usingDeclarations = new LinkedHashSet<CsmUsingDeclaration>()/*<String, CsmDeclaration>*/;
+//    private LinkedHashSet<CsmNamespaceDefinition> directVisibleNamespaceDefinitions = new LinkedHashSet<CsmNamespaceDefinition>();
     
     public Collection<CsmUsingDeclaration> getUsingDeclarations() {
         initMaps();
@@ -145,6 +146,11 @@ public class FileElementsCollector {
         }
         return Collections.unmodifiableCollection(visibleNamespaces);
     }
+
+//    public Collection<CsmNamespaceDefinition> getDirectVisibleNamespaceDefinitions() {
+//        initMaps();
+//        return Collections.unmodifiableCollection(directVisibleNamespaceDefinitions);
+//    }
     
     private boolean mapsGathered = false;
     private synchronized void initMaps() {
@@ -238,6 +244,8 @@ public class FileElementsCollector {
                 //currentNamespace = nsd.getNamespace();
                 gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
             }
+//            directVisibleNamespaceDefinitions.add(nsd);
+//            gatherDeclarationsMaps(nsd.getDeclarations(), 0, endOffset);
         } else if( kind == CsmDeclaration.Kind.NAMESPACE_ALIAS ) {
             CsmNamespaceAlias alias = (CsmNamespaceAlias) element;
             namespaceAliases.add(alias);

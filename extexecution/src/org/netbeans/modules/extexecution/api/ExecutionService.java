@@ -100,17 +100,12 @@ import org.openide.windows.OutputWriter;
  * <p>
  * Sample usage - executing ls command:
  * <pre>
- *     ExecutionDescriptor.Builder descriptorBuilder = new ExecutionDescriptor.Builder();
- *     descriptorBuilder.frontWindow(true).controllable(true);
+ *     ExecutionDescriptor descriptor = new ExecutionDescriptor()
+ *          .frontWindow(true).controllable(true);
  *
- *     final ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("ls");
- *     Callable&lt;Process&gt; processCreator = new Callable&lt;Process&gt;() {
- *         public Process call() throws Exception {
- *             return processBuilder.create();
- *         }
- *     };
+ *     ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("ls");
  *
- *     ExecutionService service = ExecutionService.newService(processCreator, descriptorBuilder.create(), "ls command");
+ *     ExecutionService service = ExecutionService.newService(processBuilder, descriptor, "ls command");
  *     Future&lt;Integer&gt task = service.run();
  * </pre>
  * </div>

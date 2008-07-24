@@ -93,10 +93,6 @@
                 <package>org.netbeans.modules.db.dataview.api</package>
                 <package>org.netbeans.modules.db.dataview.spi</package>
             </friend-packages>
-            <class-path-extension>
-                <runtime-relative-path>ext/dataview/axiondb.jar</runtime-relative-path>
-                <binary-origin>test/unit/data/etc/axiondb.jar</binary-origin>
-            </class-path-extension>
         </data>
     </configuration>
 </project>

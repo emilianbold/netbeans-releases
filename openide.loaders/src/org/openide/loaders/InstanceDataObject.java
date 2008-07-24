@@ -185,7 +185,7 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             } else {
                 if (!classNameEnc.equals(getName(newFile))) continue;
             }
-            if (className.equals(InstanceDataObject.Ser.getClassName(newFile))) {
+            if (className.equals(InstanceDataObject.Ser.getClassName(newFile, null))) {
                 return newFile;
             }
         }
@@ -1140,11 +1140,11 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             if (!fo.hasExt (INSTANCE)) {
                 return super.instanceName ();
             }
-            return getClassName(fo);
+            return getClassName(fo, this);
         }
 
         /** get class name from specified file object*/
-        private static String getClassName(FileObject fo) {
+        private static String getClassName(FileObject fo, Ser ser) {
             // first of all try "instanceClass" property of the primary file
             Object attr = fo.getAttribute (EA_INSTANCE_CLASS);
             if (attr instanceof String) {
@@ -1152,10 +1152,22 @@ public class InstanceDataObject extends MultiDataObject implements InstanceCooki
             } else if (attr != null) {
                 err.warning(
                     "instanceClass was a " + attr.getClass().getName()); // NOI18N
+                attr = null;
             }
 
-            attr = fo.getAttribute (EA_INSTANCE_CREATE);
+            if (fo.hasExt (INSTANCE)) {
+                attr = fo.getAttribute (EA_INSTANCE_CREATE);
+            }
             if (attr != null) {
+                // note we actually created instance, so let's remember it
+                // to prevent multiple creation
+                if (ser != null) {
+                    ser.saveTime = fo.lastModified ().getTime ();
+                    if (ser.saveTime < System.currentTimeMillis ()) {
+                        ser.saveTime = System.currentTimeMillis ();
+                    }
+                    ser.bean = new SoftReference<Object>(attr);
+                }
                 return attr.getClass().getName();
             }
 

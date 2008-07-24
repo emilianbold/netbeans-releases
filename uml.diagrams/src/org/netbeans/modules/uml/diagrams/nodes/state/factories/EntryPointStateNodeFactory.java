@@ -36,22 +36,23 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+
 package org.netbeans.modules.uml.diagrams.nodes.state.factories;
 
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
-import org.netbeans.modules.uml.diagrams.nodes.state.PseudoStateWidget;
+import org.netbeans.modules.uml.diagrams.nodes.state.EntryPointStateWidget;
 import org.netbeans.modules.uml.drawingarea.NodeWidgetFactory;
 
 /**
  *
- * @author treyspiva
+ * @author Sheryl Su
  */
-public class PseudoStateNodeFactory implements NodeWidgetFactory
+public class EntryPointStateNodeFactory implements NodeWidgetFactory
 {
 
     public Widget createNode(Scene scene)
     {
-        return new PseudoStateWidget(scene);
+        return new EntryPointStateWidget(scene, "UML/context-palette/State");
     }
 }

@@ -1,18 +1,22 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.Beans;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.beans.*;
 
 /**
- * @author __USER__
+ *
+ * @author ${user}
  */
-public class PropertyEditor extends PropertyEditorSupport {
+public class ${name} extends PropertyEditorSupport {
 
-    public PropertyEditor() {
+    public ${name}() {
     }
 
 }

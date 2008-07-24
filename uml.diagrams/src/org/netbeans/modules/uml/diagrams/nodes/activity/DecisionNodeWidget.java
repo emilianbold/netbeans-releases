@@ -58,9 +58,10 @@ public class DecisionNodeWidget extends ControlNodeWidget
 {
     public static final int MIN_NODE_WIDTH =  20;
     public static final int MIN_NODE_HEIGHT = 30;
-    public DecisionNodeWidget(Scene scene)
+    
+    public DecisionNodeWidget(Scene scene, String path)
     {
-        super(scene, true);  // context palette is on
+        super(scene, path); 
     }
     
     @Override
@@ -68,13 +69,12 @@ public class DecisionNodeWidget extends ControlNodeWidget
     {
         if (presentation != null)
         {
-            //IDecisionNode element = (IDecisionNode) presentation.getFirstSubject();
             Scene scene = getScene();
             
             //create main view 
             PolygonWidget polygonWidget = new PolygonWidget(scene,
-                                                                 getWidgetID(),
-                                                                 bundle.getString("LBL_body"));
+                                                 getWidgetID(),
+                                                 bundle.getString("LBL_body"));
              polygonWidget.setMinimumSize(new Dimension(
                                       MIN_NODE_WIDTH, MIN_NODE_HEIGHT));
             polygonWidget.setUseGradient(useGradient);

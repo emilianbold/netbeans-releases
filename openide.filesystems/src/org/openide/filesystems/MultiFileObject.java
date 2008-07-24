@@ -1127,7 +1127,7 @@ final class MultiFileObject extends AbstractFolder implements FileObject.Priorit
 
                 String newFullName = parent.getPath() + PATH_SEP + name;
 
-                if (isData()) {
+                if (isData() && ext != null && ext.trim().length() > 0) {
                     newFullName += (EXT_SEP + ext);
                 }
 

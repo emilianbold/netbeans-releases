@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.uml.diagrams.nodes.state;
+package org.netbeans.modules.uml.diagrams.nodes.activity;
 
 import java.awt.Color;
 import java.awt.GradientPaint;
