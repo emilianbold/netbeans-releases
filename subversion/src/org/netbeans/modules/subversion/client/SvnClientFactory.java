@@ -313,7 +313,7 @@ public class SvnClientFactory {
         }
         Subversion.LOG.fine("libsvnjavahl-1 located : " + location.getAbsolutePath());
         String locationPath = location.getParentFile().getAbsolutePath();
-        // svnClientAdapter workround - we have to explicitly load the
+        // svnClientAdapter workaround - we have to explicitly load the
         // libsvnjavahl-1 dependencies as sca tryies to get them via loadLibrary.
         // That won't work i they aren't on java.library.path
         loadJavahlDependencies(locationPath);
