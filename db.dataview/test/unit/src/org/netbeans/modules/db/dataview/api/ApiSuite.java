@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,13 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -37,71 +31,40 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ * 
+ * Contributor(s):
+ * 
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.ruby.options;
 
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyChangeSupport;
-import javax.swing.JComponent;
-import org.netbeans.spi.options.OptionsPanelController;
-import org.openide.util.HelpCtx;
-import org.openide.util.Lookup;
+package org.netbeans.modules.db.dataview.api;
 
-// This has a typo!
-final class FormatingOptionsPanelController extends OptionsPanelController {
+import org.netbeans.junit.NbTest;
+import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbTestCase;
+
+/**
+ *
+ * @author navaneeth
+ */
+public class ApiSuite extends NbTestCase {
     
-    FormatingOptionsPanel panel;
-    
-    private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
-                    
-    public void update() {
-        changed = false;
-	panel.load();
+    public ApiSuite(String testName) {
+        super(testName);
+    }            
+
+    public static NbTest suite() {
+        NbTestSuite suite = new NbTestSuite("ApiSuite");
+        suite.addTest(org.netbeans.modules.db.dataview.api.DataViewTest.suite());
+        return suite;
     }
-    
-    public void applyChanges() {
-	panel.store();
+
+    protected void setUp() throws Exception {
+        super.setUp();
     }
-    
-    public void cancel() {
-	panel.cancel();
+
+    protected void tearDown() throws Exception {
+        super.tearDown();
     }
-    
-    public boolean isValid() {
-        return true; // XXXX
-	// return getPanel().valid(); 
-    }
-    
-    public boolean isChanged() {
-	return changed;
-    }
-    
-    public HelpCtx getHelpCtx() {
-	return null; // new HelpCtx("...ID") if you have a help set
-    }
-    
-    public synchronized JComponent getComponent(Lookup masterLookup) {
-        if ( panel == null ) {
-            panel = new FormatingOptionsPanel(this);
-        }
-        return panel;
-    }
-    
-    public void addPropertyChangeListener(PropertyChangeListener l) {
-	pcs.addPropertyChangeListener(l);
-    }
-    
-    public void removePropertyChangeListener(PropertyChangeListener l) {
-	pcs.removePropertyChangeListener(l);
-    }
-        
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
-    }
-    
+
 }

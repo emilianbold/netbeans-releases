@@ -113,7 +113,7 @@ class DataViewTableUI extends JTable {
         this.getColumnModel().getSelectionModel().addListSelectionListener(listener);
 
         setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 5;
+        multiplier = getFontMetrics(getFont()).stringWidth(data) / data.length() + 2;
 
         createPopupMenu(handler, dataView);
     }
@@ -141,16 +141,6 @@ class DataViewTableUI extends JTable {
         } catch (ArrayIndexOutOfBoundsException aio) {
             return null;
         }
-    }
-
-    @Override
-    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
-        Component c = super.prepareRenderer(renderer, row, column);
-        if (c instanceof JComponent) {
-            JComponent jc = (JComponent) c;
-            jc.setToolTipText((String) getValueAt(row, column));
-        }
-        return c;
     }
 
     private UpdatedRowContext getResultSetRowContext() {
@@ -478,6 +468,7 @@ class DataViewTableUI extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             setValue(NULL_LABEL);
+            setToolTipText(NULL_LABEL);
             c.setForeground(Color.GRAY);
             return c;
         }
@@ -489,6 +480,7 @@ class DataViewTableUI extends JTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             ((JLabel) c).setHorizontalAlignment(JLabel.RIGHT);
+            setToolTipText(value.toString());
             return c;
         }
     }
@@ -507,7 +499,7 @@ class DataViewTableUI extends JTable {
                 formatter = DateFormat.getDateTimeInstance();
             }
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
-
+            setToolTipText(getText());
         }
     }
 
@@ -525,7 +517,7 @@ class DataViewTableUI extends JTable {
                 formatter = DateFormat.getTimeInstance();
             }
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
-
+            setToolTipText(getText());
         }
     }
 
@@ -543,7 +535,7 @@ class DataViewTableUI extends JTable {
                 formatter = DateFormat.getDateInstance();
             }
             setText((value == null) ? "" : formatter.format(value)); // NOI18N
-
+            setToolTipText(getText());
         }
     }
 
@@ -584,7 +576,11 @@ class DataViewTableUI extends JTable {
             } else if (value instanceof Time) {
                 return TIME_RENDERER.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             } else {
-                return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if(c instanceof JComponent) {
+                    ((JComponent)c).setToolTipText(value.toString());
+                }
+                return c;
             }
         }
     }

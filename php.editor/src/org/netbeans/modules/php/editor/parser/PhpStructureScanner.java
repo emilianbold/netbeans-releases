@@ -84,10 +84,6 @@ public class PhpStructureScanner implements StructureScanner {
 
     private static final String CLOSE_FONT = "</font>";                   //NOI18N
 
-    private static final String CUSTOME_FOLD_START = "<editor-fold";        //NOI18N
-    private static final String CUSTOME_FOLD_END = "</editor-fold";         //NOI18N
-
-
     public List<? extends StructureItem> scan(final CompilationInfo info) {
         this.info = info;
         Program program = Utils.getRoot(info);
@@ -104,7 +100,7 @@ public class PhpStructureScanner implements StructureScanner {
         final Map<String, List<OffsetRange>> folds = new HashMap<String, List<OffsetRange>>();
         if (program != null) {
             program.accept(new FoldVisitor(folds));
-
+//<editor-fold>
             List<Comment> comments = program.getComments();
             if (comments != null) {
                 List<Comment> customeFoldStarts = new ArrayList<Comment>();
@@ -116,23 +112,10 @@ public class PhpStructureScanner implements StructureScanner {
                         if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
                             getRanges(folds, FOLD_COMMENT).add(createOffsetRange(comment));
                         }
-                        else if (comment.getCommentType() == Comment.Type.TYPE_SINGLE_LINE) {
-                            String commentText = text.substring(comment.getStartOffset(), comment.getEndOffset());
-                            commentText = commentText.trim().substring(2).trim();
-                            if (commentText.startsWith(CUSTOME_FOLD_START)) {
-                                customeFoldStarts.add(comment);
-                            }
-                            else {
-                                if (commentText.startsWith(CUSTOME_FOLD_END) && !customeFoldStarts.isEmpty()) {
-                                    int start = customeFoldStarts.remove(customeFoldStarts.size() - 1).getStartOffset();
-                                    int end = comment.getEndOffset()-1;
-                                    getRanges(folds, FOLD_COMMENT).add(new OffsetRange(start, end));
-                                }
-                            }
-                        }
                     }
                 }
             }
+//</editor-fold>
             return folds;
         }
         return Collections.emptyMap();

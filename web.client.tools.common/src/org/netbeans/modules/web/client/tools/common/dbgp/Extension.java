@@ -71,12 +71,6 @@ public class Extension {
         }        
     }
     
-    public static class OpenURIResponse extends ResponseMessage {
-        public OpenURIResponse(Node node) {
-            super(node);
-        }
-    }
-    
     public static class Source extends BaseMessageChildElement {
         public Source(Node node) {
             super(node);
@@ -87,17 +81,10 @@ public class Extension {
         }        
     }
     
-    public static class SourceGetCommand extends Command {
-        public SourceGetCommand(int transactionId) {
-            super(CommandMap.SOURCE_GET.getCommand(), transactionId);
-        }
-        
-    }
-    
-    public static class SourceGetResponse extends ResponseMessage {
+    public static class SourcesResponse extends ResponseMessage {
         private static final String SOURCE = "source";        // NOI18N
 
-        SourceGetResponse(Node node) {
+        SourcesResponse(Node node) {
             super(node);
         }
 
@@ -131,14 +118,8 @@ public class Extension {
         }        
     }
     
-   public static class WindowGetCommand extends Command {
-        public WindowGetCommand(int transactionId) {
-            super(CommandMap.WINDOW_GET.getCommand(), transactionId);
-        }
-    }
-   
-   public static class WindowGetResponse extends ResponseMessage {
-        WindowGetResponse(Node node) {
+   public static class WindowsResponse extends ResponseMessage {
+        WindowsResponse(Node node) {
             super(node);
         }
 

@@ -53,6 +53,7 @@ import javax.swing.JToggleButton;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
+import org.netbeans.jellytools.EditorOperator;
 import javax.swing.ListModel;
 import java.awt.Point;
 import org.netbeans.jemmy.drivers.input.MouseRobotDriver;
@@ -152,7 +153,8 @@ public class DesignView_0001 extends DesignView {
   protected void DragSomething(
       int iListIndex,
       String sElementName,
-      int iDestination
+      int iDestination,
+      String sResult
     )
   {
     TopComponentOperator top = new TopComponentOperator( SCHEMA_NAME_1 );
@@ -160,33 +162,29 @@ public class DesignView_0001 extends DesignView {
     JListOperator list = new JListOperator( pal, iListIndex );
 
     ListModel lmd = list.getModel( );
-    int iIndex = list.findItemIndex( "Element" );
+    int iIndex = list.findItemIndex( sElementName );
     list.selectItem( iIndex );
     Point pt = list.getClickPoint( iIndex );
 
-    int y = 40;
-    if( 1 == iDestination )
-      y += 20;
+    int[] yy = { 40, 60, 150, 90, 175, 200, 235 };
 
     MouseRobotDriver m_mouseDriver = new MouseRobotDriver(new Timeout("", 500));
     m_mouseDriver.moveMouse( list, pt.x, pt.y );
     m_mouseDriver.pressMouse( InputEvent.BUTTON1_MASK, 0 );
     m_mouseDriver.enterMouse( top );
-    m_mouseDriver.dragMouse( top, 50, 40, InputEvent.BUTTON1_MASK, 0 );
+    m_mouseDriver.dragMouse( top, 50, yy[ iDestination ], InputEvent.BUTTON1_MASK, 0 );
     m_mouseDriver.releaseMouse( InputEvent.BUTTON1_MASK, 0 );
 
     Sleep( 1000 );
 
-  }
-
-  protected void DragElementToTop( String sName )
-  {
-    DragSomething( 0, sName, 0 );
-  }
-
-  protected void DragElementToElement( String sName )
-  {
-    DragSomething( 0, sName, 1 );
+    if( null != sResult )
+    {
+      // Check text box
+      JTextComponentOperator text = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
+      String sText = text.getText( );
+      if( !sText.equals( sResult ) )
+        fail( "Invalid new element name, expected \"" + sResult + "\", found \"" + sText + "\"" );
+    }
   }
 
   public void DoDragAndDrop( )
@@ -202,21 +200,63 @@ public class DesignView_0001 extends DesignView {
     but.clickMouse( );
     Sleep( 1000 );
 
-    DragElementToTop( "Element" );
+    // Add elements
+    DragSomething( 0, "Element", 0, "newElement" );
+    DragSomething( 0, "Element", 1, "newElement1" );
 
-    // Check text box
-    JTextComponentOperator text = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
-    String sText = text.getText( );
-    if( !sText.equals( "newElement" ) )
-      fail( "Invalid new element name, expected \"newElement\", found \"" + sText + "\"" );
+    // Add complex types
+    DragSomething( 1, "Complex Type", 0, "newComplexType" );
+    DragSomething( 1, "Complex Type", 2, "newComplexType1" );
 
-    DragElementToElement( "Element" );
+    // Add attributes
+    DragSomething( 0, "Attribute", 3, "newAttribute" );
+    DragSomething( 0, "Attribute", 4, "newAttribute" );
 
-    // Check text box
-    text = new JTextComponentOperator( MainWindowOperator.getDefault( ), 0 );
-    sText = text.getText( );
-    if( !sText.equals( "newElement" ) )
-      fail( "Invalid new element name, expected \"newElement\", found \"" + sText + "\"" );
+    // Add more CT
+    DragSomething( 1, "Complex Type", 2, "newComplexType2" );
+
+    // Add all
+    DragSomething( 1, "All", 4, null );
+    DragSomething( 1, "Choice", 5, null );
+    DragSomething( 1, "Sequence", 6, null );
+
+    String[] asIdeal =
+    {
+      "<?xml version=\"1.0\" encoding=\"UTF-8\"?>",
+      "<xsd:schema xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\"",
+      "targetNamespace=\"http://xml.netbeans.org/schema/newXmlSchema1\"",
+      "xmlns:tns=\"http://xml.netbeans.org/schema/newXmlSchema1\"",
+      "elementFormDefault=\"qualified\">",
+      "<xsd:element name=\"newElement\">",
+      "<xsd:complexType>",
+      "<xsd:attribute name=\"newAttribute\" type=\"xsd:string\"/>",
+      "</xsd:complexType>",
+      "</xsd:element>",
+      "<xsd:element name=\"newElement1\"/>",
+      "<xsd:complexType name=\"newComplexType\">",
+      "<xsd:all/>",
+      "<xsd:attribute name=\"newAttribute\" type=\"xsd:string\"/>",
+      "</xsd:complexType>",
+      "<xsd:complexType name=\"newComplexType1\">",
+      "<xsd:choice/>",
+      "</xsd:complexType>",
+      "<xsd:complexType name=\"newComplexType2\">",
+      "<xsd:sequence/>",
+      "</xsd:complexType>",
+      "</xsd:schema>"
+    };
+
+    SwitchToSourceView( top );
+    EditorOperator code = new EditorOperator( SCHEMA_NAME_1 );
+    int iLine = 1;
+    for( String sIdeal : asIdeal )
+    {
+      String sLine = code.getText( iLine++ );
+      while( sLine.matches( "^[ \t]*\r?\n?$" ) )
+        sLine = code.getText( iLine++ );
+      if( -1 == sLine.indexOf( sIdeal ) )
+        fail( "Invalid code line #" + iLine + ": \"" + sLine + "\", ideal: \"" + sIdeal + "\"" );
+    }
 
     /*
     ComponentOperator jbSel = new ComponentOperator(
