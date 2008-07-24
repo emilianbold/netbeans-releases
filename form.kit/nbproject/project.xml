@@ -9,7 +9,7 @@
                     <code-name-base>org.netbeans.modules.form</code-name-base>
                     <run-dependency>
                         <release-version>2</release-version>
-                        <specification-version>1.23.1</specification-version>
+                        <specification-version>1.23.2</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
