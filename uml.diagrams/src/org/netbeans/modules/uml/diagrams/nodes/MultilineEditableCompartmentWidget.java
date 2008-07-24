@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.diagrams.nodes;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.InplaceEditorProvider.EditorController;
@@ -203,7 +204,19 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
 //            revalidate();
              if (widget != null)
             {
-                widget.getScene().validate();
+                Scene scene = widget.getScene();
+                scene.validate();
+            
+                //Fix #138735. Reselect the object when finishing editing to update the property sheet.
+                if ( scene instanceof DesignerScene)
+                {
+                    DesignerScene dScene = (DesignerScene)scene;
+                    Set<Object> selectedObjs = (Set<Object>) dScene.getSelectedObjects();
+                    if (selectedObjs != null && selectedObjs.size() == 1)
+                    {
+                        dScene.setSelectedObjects(selectedObjs);
+                    }
+                }
             }
         }
 

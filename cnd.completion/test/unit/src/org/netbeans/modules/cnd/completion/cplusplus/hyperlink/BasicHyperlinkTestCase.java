@@ -332,6 +332,17 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
     }
     
+    public void testLabels() throws Exception {
+        // IZ#141135 : Labels within code bocks are unresolved
+        performTest("labels.cc", 3, 12, "labels.cc", 4, 5);
+        performTest("labels.cc", 8, 12, "labels.cc", 10, 9);
+        performTest("labels.cc", 15, 12, "labels.cc", 19, 9);
+        performTest("labels.cc", 24, 12, "labels.cc", 26, 9);
+        performTest("labels.cc", 31, 12, "labels.cc", 33, 9);
+        performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
+        performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

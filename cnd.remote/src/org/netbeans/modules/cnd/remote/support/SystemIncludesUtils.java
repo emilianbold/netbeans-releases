@@ -44,9 +44,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -56,10 +54,8 @@ import java.util.zip.ZipFile;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.compilers.Tool;
-import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.openide.util.RequestProcessor;
 
@@ -76,24 +72,40 @@ public class SystemIncludesUtils {
 
     public static void load(final String hkey, final List<CompilerSet> csList) {
         Set<String> paths = new HashSet<String>();
+        String storagePrefix = null;
         for (CompilerSet cs : csList) {
             for (Tool tool : cs.getTools()) {
                 if (tool instanceof BasicCompiler) {
-                    for (Object obj : ((BasicCompiler)tool).getSystemIncludeDirectories()) {
-                        paths.add( (String) obj );
+                    BasicCompiler bc = (BasicCompiler)tool;
+                    storagePrefix = bc.getStoragePrefix();
+                    for (Object obj : bc.getSystemIncludeDirectories()) {
+                        String localPath = (String) obj;
+                        paths.add( localPath.substring(storagePrefix.length()) );
                     }
                 }
             }
         }
-        load(hkey, paths);
+        load(hkey, storagePrefix, paths);
     }
 
-    public static RequestProcessor.Task load(final String hkey, final Collection<String> paths) {
+    public static RequestProcessor.Task load(final String hkey, final String storagePrefix, final Collection<String> paths) {
+        synchronized (inProgress) {
+            if (inProgress.contains(storagePrefix)) { //TODO: very weak validation
+                return null;
+            }
+            inProgress.add(storagePrefix);
+        }
         return RequestProcessor.getDefault().post(new Runnable() {
 
             public void run() {
-                boolean success = doLoad(hkey, paths);
-                System.err.println("Loading done = " + success);
+                try{
+                    boolean success = doLoad(hkey, storagePrefix, paths);
+                    System.err.println("Loading done = " + success);
+                } finally {
+                    synchronized (inProgress) {
+                        inProgress.remove(storagePrefix);
+                    }
+                }
             }
         });
     }
@@ -105,47 +117,44 @@ public class SystemIncludesUtils {
     // hosts with the same project...
     private static final Set<String> inProgress = new HashSet<String>();
 
-    static boolean doLoad(final String hkey, Collection<String> paths) {
-        String path = storagePrefix + File.separator + hkey;
-        String serverName = hkey.substring(hkey.indexOf('@') + 1);
-        File theRsf = new File(path);
-        File rsf = new File(path + ".download"); //NOI18N
-        synchronized (inProgress) {
+    static boolean doLoad(final String hkey, String storagePrefix, Collection<String> paths) {
+        File includesStorageFolder = new File(storagePrefix);
+        File tempIncludesStorageFolder = new File(includesStorageFolder.getParent(), includesStorageFolder.getName() + ".download"); //NOI18N
 
-            if (theRsf.exists() || inProgress.contains(path)) { //TODO: very weak validation
-                return true;
-            }
-            inProgress.add(path);
+        if (includesStorageFolder.exists() ) { //TODO: very weak validation
+            return true;
         }
-        if (!rsf.exists()) {
-            rsf.mkdirs();
+
+        if (!tempIncludesStorageFolder.exists()) {
+            tempIncludesStorageFolder.mkdirs();
         }
-        if (!rsf.isDirectory()) {
+        if (!tempIncludesStorageFolder.isDirectory()) {
             //log
             return false;
         }
-
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + serverName); //NOI18N
+        boolean success = false;
+        ProgressHandle handle = ProgressHandleFactory.createHandle("Preparing Code Model for " + RemoteUtils.getHostName(hkey)); //NOI18N
         handle.start();
-        RemoteCopySupport rcs = new RemoteCopySupport(hkey);
-        if (!load(rsf.getAbsolutePath(), rcs, paths, handle)) {
-            return false;
-        }
-        rsf.renameTo(theRsf);
-        handle.finish();
-        synchronized (inProgress) {
-            inProgress.remove(path);
+        try {
+            RemoteCopySupport rcs = new RemoteCopySupport(hkey);
+            success = load(tempIncludesStorageFolder.getAbsolutePath(), rcs, paths, handle);
+            if (success) {
+                tempIncludesStorageFolder.renameTo(includesStorageFolder);
+            }
+        } finally {
+            handle.finish();
+            if (!success && includesStorageFolder.exists()) {
+                includesStorageFolder.delete();
+            }
         }
         return true;
     }
-    private static final String tempDir = System.getProperty("java.io.tmpdir");    // should be communicated back to toolchain
-    private static final String storagePrefix = System.getProperty("user.home") + "\\.netbeans\\remote-inc"; //NOI18N //TODO
 
-    private static boolean load(String rsf, RemoteCopySupport rcs, Collection<String> paths, ProgressHandle handle) {
+    private static final String tempDir = System.getProperty("java.io.tmpdir");
+
+    private static boolean load(String storageFolder, RemoteCopySupport copySupport, Collection<String> paths, ProgressHandle handle) {
         handle.switchToDeterminate(3 * paths.size());
         int workunit = 0;
-        //TODO: toolchain most probably will contain local paths.
-        //for now let's assume they are remote
         for (String path : paths) {
             //TODO: check file existence (or make shell script to rule them all ?)
             System.err.println("loading " + path);
@@ -154,12 +163,11 @@ public class SystemIncludesUtils {
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
             handle.progress("archiving " + path, workunit++);
-            rcs.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
+            copySupport.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
             handle.progress("downloading " + path, workunit++);
-            rcs.copyFrom(zipRemotePath, zipLocalPath);
+            copySupport.copyFrom(zipRemotePath, zipLocalPath);
             handle.progress("preparing local copy of " + path, workunit++);
-            unzip(rsf, zipLocalPath);
-            System.err.flush();
+            unzip(storageFolder, zipLocalPath);
         }
         return true;
     }
@@ -187,7 +195,6 @@ public class SystemIncludesUtils {
                 if (entry.isDirectory()) {
                     file.mkdirs();
                 } else {
-                    //System.err.println("Extracting file: " + entry.getName());
                     copyInputStream(zipFile.getInputStream(entry),
                             new BufferedOutputStream(new FileOutputStream(file.getAbsolutePath())));
                 }
@@ -214,40 +221,4 @@ public class SystemIncludesUtils {
         out.close();
     }
 
-    public static class FakeCompilerSet extends CompilerSet {
-
-        private List<Tool> tools = Collections.<Tool>singletonList(new FakeTool());
-
-        public FakeCompilerSet() {
-            super(PlatformTypes.getDefaultPlatform());
-        }
-
-        @Override
-        public List<Tool> getTools() {
-            return tools;
-        }
-
-        private static class FakeTool extends BasicCompiler {
-
-            private List<String> fakeIncludes = new ArrayList<String>();
-
-            private FakeTool() {
-                super("fake", CompilerFlavor.getUnknown(PlatformTypes.getDefaultPlatform()), 0, "fakeTool", "fakeTool", "/usr/sfw/bin");
-                fakeIncludes.add("/usr/include");
-                fakeIncludes.add("/usr/local/include");
-                fakeIncludes.add("/usr/sfw/include");
-            //fakeIncludes.add("/usr/sfw/lib/gcc/i386-pc-solaris2.10/3.4.3/include");
-            }
-
-            @Override
-            public List getSystemIncludeDirectories() {
-                return fakeIncludes;
-            }
-
-            @Override
-            protected CompilerDescriptor getCompilerDescription() {
-                return null;
-            }
-        }
-    }
 }

@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.Subversion;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
@@ -81,6 +82,8 @@ public class SvnClientFactory {
     private static boolean javahlCrash = false;
     private final static int JAVAHL_INIT_SUCCESS = 1;
     private final static int JAVAHL_INIT_STOP_REPORTING = 2;
+
+    private static final Logger LOG = Logger.getLogger("org.netbeans.modules.subversion.client.SvnClientFactory");
 
     public enum ConnectionType {
         javahl,
@@ -124,11 +127,13 @@ public class SvnClientFactory {
     }
 
     public static boolean isCLI() {
+        init();
         assert factory != null;
         return factory.connectionType() == ConnectionType.cli;
     }
 
     public static boolean isJavaHl() {
+        init();
         assert factory != null;
         return factory.connectionType() == ConnectionType.javahl;
     }
@@ -201,10 +206,12 @@ public class SvnClientFactory {
      * Throws an exception if no SvnClientAdapter is available.
      */
     public static void checkClientAvailable() throws SVNClientException {
+        init();
         if(exception != null) throw exception;
     }
 
     public static boolean wasJavahlCrash() {
+        init();
         if(javahlCrash) {
             javahlCrash = false;
             return true;
@@ -224,18 +231,18 @@ public class SvnClientFactory {
         try {
             if(!initFile.exists()) initFile.createNewFile();
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         }
 
         presetJavahl();
         try {            
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.javahl)) {
-               Subversion.LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
+               LOG.log(Level.INFO, "Could not setup subversion java bindings. Falling back on commandline.");
                setupCommandline();
                return;
             }
         } catch (SVNClientException e) {
-            Subversion.LOG.log(Level.WARNING, null, e); // should not happen
+            LOG.log(Level.WARNING, null, e); // should not happen
         } finally {
             writeJavahlInitFlag(initFile, JAVAHL_INIT_SUCCESS);
         }
@@ -253,11 +260,11 @@ public class SvnClientFactory {
                 return ConnectionType.javahl;
             }
         };
-        Subversion.LOG.info("running on javahl");
+        LOG.info("running on javahl");
     }
 
     private void presetJavahl() {
-        if(Utilities.isUnix() && !Utilities.isMac()) { // javahl for mac is already bundled
+        if(Utilities.isUnix() /*&& !Utilities.isMac() */) { // javahl for mac is already bundled
             presetJavahlUnix();
         } else if(Utilities.isWindows()) {
             presetJavahlWindows();
@@ -265,15 +272,18 @@ public class SvnClientFactory {
     }
 
     private void presetJavahlUnix() {
-        String libPath = System.getProperty("subversion.native.library");
+        String libPath = System.getProperty(SUBVERSION_NATIVE_LIBRARY);
         if (libPath != null && !libPath.trim().equals("")) {
+            LOG.log(Level.FINE, "won't preset javahl due to subversion.native.library={0}", new Object[] { libPath });
             return;
         }
         String name = "libsvnjavahl-1.so";
         String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
         for (String loc : locations) {
             File file = new File(loc, name);
+            LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
             if (file.exists()) {
+                LOG.log(Level.FINE, " found javahl library. Setting subversion.native.library={0}", new Object[] { file.getAbsolutePath() });
                 System.setProperty("subversion.native.library", file.getAbsolutePath());
                 return;
             }
@@ -285,11 +295,11 @@ public class SvnClientFactory {
         if (libPath != null && !libPath.trim().equals("")) {
             // the path is already set -> lets ensure we load all dependencies
             // from the same folder and let then svnClientAdapter take care for the rest
-            Subversion.LOG.fine("preset subversion.native.library=" + libPath);
+            LOG.log(Level.FINE, "preset subversion.native.library={0}", new Object[] { libPath } );
             int idx = libPath.lastIndexOf(File.separator);
             if(idx > -1) {
                 libPath = libPath.substring(0, idx);
-                Subversion.LOG.fine("loading dependencies from " + libPath);
+                LOG.log(Level.FINE, "loading dependencies from ", new Object[] { libPath } );
                 loadJavahlDependencies(libPath);
             }
             return;
@@ -297,25 +307,26 @@ public class SvnClientFactory {
                 
         try {
             System.loadLibrary("libapr-1");
+            LOG.fine("could load libapr-1.dll");
             return; // lets assume all needed libraries are on java.library.path
         } catch (Throwable t) {
-            Subversion.LOG.fine("could not load libapr-1.dll");        
+            LOG.fine("could not load libapr-1.dll");
         }
         
         File location = InstalledFileLocator.getDefault().locate("modules/lib/libsvnjavahl-1.dll", JAVAHL_MODULE_CODE_NAME, false);
         if(location == null) {
-            Subversion.LOG.fine("could not find location for libsvnjavahl-1");            
-            return; // can't do anythig here
+            LOG.fine("could not find location for javahl library");
+            return; // can't do anything here
         }
-        Subversion.LOG.fine("libsvnjavahl-1 located : " + location.getAbsolutePath());
+        LOG.fine("libsvnjavahl-1 located : " + location.getAbsolutePath());
         String locationPath = location.getParentFile().getAbsolutePath();
-        // svnClientAdapter workround - we have to explicitly load the
+        // svnClientAdapter workaround - we have to explicitly load the
         // libsvnjavahl-1 dependencies as sca tryies to get them via loadLibrary.
         // That won't work i they aren't on java.library.path
         loadJavahlDependencies(locationPath);
 
         // libsvnjavahl-1 must be loaded by the svnClientAdapter to get the factory initialized
-        Subversion.LOG.fine("setting subversion.native.library=" + location.getAbsolutePath());
+        LOG.log(Level.FINE, "setting subversion.native.library={0}", new Object[] { location.getAbsolutePath() });
         System.setProperty("subversion.native.library", location.getAbsolutePath());
     }
 
@@ -340,7 +351,10 @@ public class SvnClientFactory {
     }
 
     private boolean checkJavahlCrash(File initFile) {
-        if(!initFile.exists()) return false;
+        if(!initFile.exists()) {
+            LOG.fine("trying to init javahl first time.");
+            return false;
+        }
         FileReader r = null;
         try {
             r = new FileReader(initFile);
@@ -350,15 +364,17 @@ public class SvnClientFactory {
                 case -1: // empty means we crashed
                     writeJavahlInitFlag(initFile, JAVAHL_INIT_STOP_REPORTING);
                     javahlCrash = true;
-                    Subversion.LOG.log(Level.WARNING, "It appears that subversion java bindings initialization caused trouble in a previous Netbeans session. Please report.");
+                    LOG.log(Level.WARNING, "It appears that subversion java bindings initialization caused trouble in a previous Netbeans session. Please report.");
                     return true;
                 case JAVAHL_INIT_STOP_REPORTING:
+                    LOG.fine("won't init javahl due to problem in a previous try.");
                     return true;
                 case JAVAHL_INIT_SUCCESS:
+                    LOG.fine("will try init javahl.");
                     return false;
             }
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         } finally {
             try { if(r != null) r.close(); } catch (IOException ex) { }
         }
@@ -372,7 +388,7 @@ public class SvnClientFactory {
             w.write(flag);
             w.flush();
         } catch (IOException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex);
         } finally {
             try { if(w != null) w.close(); } catch (IOException ex) { }
         }
@@ -381,14 +397,14 @@ public class SvnClientFactory {
     private void setupSvnKit () {
         try {
             if(!SvnClientAdapterFactory.getInstance().setup(SvnClientAdapterFactory.Client.svnkit)) {
-                Subversion.LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
+                LOG.log(Level.INFO, "Svnkit not available. Falling back on commandline!");
                 setupCommandline();
                 return;
             }
         } catch (SVNClientException ex) {
-            Subversion.LOG.log(Level.INFO, null, ex);
-            Subversion.LOG.log(Level.INFO, null, ex.getCause());
-            Subversion.LOG.log(Level.INFO, "Could not setup svnkit. Falling back on commandline!");
+            LOG.log(Level.INFO, null, ex);
+            LOG.log(Level.INFO, null, ex.getCause());
+            LOG.log(Level.INFO, "Could not setup svnkit. Falling back on commandline!");
             setupCommandline();
             return;
         }
@@ -406,7 +422,7 @@ public class SvnClientFactory {
                 return ConnectionType.svnkit;
             }
         };
-        Subversion.LOG.info("svnClientAdapter running on svnkit");
+        LOG.info("svnClientAdapter running on svnkit");
     }
 
     public void setupCommandline () {
@@ -432,7 +448,7 @@ public class SvnClientFactory {
                 return ConnectionType.cli;
             }
         };
-        Subversion.LOG.info("running on commandline");
+        LOG.info("running on commandline");
     }
 
     private abstract class ClientAdapterFactory {
@@ -480,7 +496,7 @@ public class SvnClientFactory {
             try {
                return (SvnClient) proxyClass.getConstructor( new Class[] { InvocationHandler.class } ).newInstance( new Object[] { handler } );
             } catch (Exception e) {
-                Subversion.LOG.log(Level.SEVERE, null, e);
+                LOG.log(Level.SEVERE, null, e);
             }
             return null;
         }

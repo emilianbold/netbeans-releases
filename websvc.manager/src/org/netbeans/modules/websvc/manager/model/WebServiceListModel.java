@@ -65,6 +65,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.Repository;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 import org.openide.util.WeakListeners;
 
@@ -79,7 +80,7 @@ public class WebServiceListModel {
 
     private static Random serviceRandom = new Random(System.currentTimeMillis());
     private static Random serviceGroupRandom = new Random(System.currentTimeMillis());
-    public static boolean MODEL_DIRTY_FLAG = false;
+    public boolean isDirty = false;
     Set<WebServiceListModelListener> listeners = new HashSet<WebServiceListModelListener>();
     /**
      * Fix for Bug#: 5039378
@@ -171,7 +172,7 @@ public class WebServiceListModel {
     public void addWebService(WebServiceData webService) {
         initialize();
         if (!webServices.contains(webService)) {
-            WebServiceListModel.setDirty(true);
+            WebServiceListModel.getInstance().setDirty(true);
             webServices.add(webService);
         }
     }
@@ -197,7 +198,7 @@ public class WebServiceListModel {
             return;
         }
         WebServiceGroup group = getWebServiceGroup(wsData.getGroupId());
-        WebServiceListModel.setDirty(true);
+        WebServiceListModel.getInstance().setDirty(true);
         if (group != null) {
             group.remove(webServiceId);
         }
@@ -235,7 +236,7 @@ public class WebServiceListModel {
     public void addWebServiceGroup(WebServiceGroup group) {
         initialize();
         if (!webServiceGroups.contains(group)) {
-            WebServiceListModel.setDirty(true);
+            WebServiceListModel.getInstance().setDirty(true);
             webServiceGroups.add(group);
 
             for (WebServiceListModelListener listener : listeners) {
@@ -250,7 +251,7 @@ public class WebServiceListModel {
         initialize();
         WebServiceGroup group = getWebServiceGroup(groupId);
         if (group != null) {
-            WebServiceListModel.setDirty(true);
+            WebServiceListModel.getInstance().setDirty(true);
             /**
              * Fix bug:
              * We need to get an array of the web services instead of using the Iterator because a
@@ -329,14 +330,13 @@ public class WebServiceListModel {
 
                 public void run() {
                     try {
-                        System.out.println("adding web service");
                         WebServiceManager.getInstance().addWebService(target, true);
                     } catch (IOException ex) {
                         Logger.global.log(Level.INFO, ex.getLocalizedMessage(), ex);
                     }
                 }
             };
-            Task t = WebServiceManager.getInstance().getRequestProcessor().post(run);
+            Task t = RequestProcessor.getDefault().post(run);
             if (synchronous) {
                 t.waitFinished();
             }
@@ -349,12 +349,12 @@ public class WebServiceListModel {
         return webServiceGroups;
     }
 
-    public static void setDirty(boolean inDirtyFlag) {
-        WebServiceListModel.MODEL_DIRTY_FLAG = inDirtyFlag;
+    public void setDirty(boolean isDirty) {
+        this.isDirty = isDirty;
     }
 
-    public static boolean isDirty() {
-        return WebServiceListModel.MODEL_DIRTY_FLAG;
+    public boolean isDirty() {
+        return isDirty;
     }
 
     private synchronized void initialize() {
@@ -434,7 +434,7 @@ public class WebServiceListModel {
                 }
             }
         };
-        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
+        RequestProcessor.getDefault().post(addWsRunnable);
         return wsData;
     }
 
@@ -452,7 +452,7 @@ public class WebServiceListModel {
                 }
             }
         };
-        WebServiceManager.getInstance().getRequestProcessor().post(addWsRunnable);
+        RequestProcessor.getDefault().post(addWsRunnable);
     }
 
     private void handleException(final Exception exception) {

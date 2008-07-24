@@ -341,7 +341,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colNameLabel[i].setFont(colNameLabel[i].getFont()); // NOI18N
             colNameLabel[i].getAccessibleContext().setAccessibleName(colNameLabel[i].getName());
             colNameLabel[i].getAccessibleContext().setAccessibleDescription(colNameLabel[i].getName());
-
+            
             gridBagConstraints.gridx = gridx;
             gridBagConstraints.gridy = gridy;
             gridBagConstraints.insets = new java.awt.Insets(0, 0, bottom, right);
@@ -378,7 +378,7 @@ private void previewBtnActionPerformed(java.awt.event.ActionEvent evt) {
             colDataType[i].getAccessibleContext().setAccessibleDescription(colDataType[i].getName());
             colDataType[i].setText(DataViewUtils.getStdSqlType(col.getJdbcType()).toUpperCase());
             colDataType[i].setDisplayedMnemonicIndex(-1);
-
+           
             colNameLabel[i].setLabelFor(colValueTextField[i]);
             colDataType[i].setLabelFor(colValueTextField[i]);
 

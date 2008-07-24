@@ -169,6 +169,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
             }
             scene.setEdgeSource(PersistenceUtil.getPresentationElement(this), edgeReader.getSourcePE());
             scene.setEdgeTarget(PersistenceUtil.getPresentationElement(this), edgeReader.getTargetPE());
+            setControlPoints(edgeReader.getWayPoints(), true);
         }
         LabelManager manager = getLabelManager();
         if (manager != null)

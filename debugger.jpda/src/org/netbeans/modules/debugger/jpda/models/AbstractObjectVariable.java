@@ -72,6 +72,7 @@ import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.Field;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Super;
 import org.netbeans.api.debugger.jpda.Variable;
@@ -375,6 +376,26 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         String signature,
         Variable[] arguments
     ) throws NoSuchMethodException, InvalidExpressionException {
+        return invokeMethod(null, methodName, signature, arguments);
+    }
+
+    /**
+     * Calls given method in debugged JVM on this instance and returns
+     * its value.
+     *
+     * @param thread the thread on which the method invocation is performed.
+     * @param methodName a name of method to be called
+     * @param signature a signature of method to be called
+     * @param arguments a arguments to be used
+     *
+     * @return value of given method call on this instance
+     */
+    public Variable invokeMethod (
+        JPDAThread thread,
+        String methodName,
+        String signature,
+        Variable[] arguments
+    ) throws NoSuchMethodException, InvalidExpressionException {
         try {
              
             // 1) find corrent method
@@ -415,6 +436,7 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
             for (i = 0; i < k; i++)
                 vs [i] = ((AbstractVariable) arguments [i]).getInnerValue ();
             Value v = getDebugger().invokeMethod (
+                (JPDAThreadImpl) thread,
                 (ObjectReference) this.getInnerValue(),
                 method,
                 vs
