@@ -71,7 +71,7 @@ public class ViewUpdateCenterAction extends NodeAction {
     private static final String SHOW_UPDATE_CENTER_ICONBASE = 
             "org/netbeans/modules/glassfish/common/resources/UpdateCenter.gif"; // NOI18N
 
-    private static WeakHashMap<String, Process> taskMap = new WeakHashMap<String, Process>();
+    private static final WeakHashMap<String, Process> taskMap = new WeakHashMap<String, Process>();
     
     @Override
     protected void performAction(Node[] nodes) {
