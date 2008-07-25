@@ -41,11 +41,12 @@
 
 package org.netbeans.modules.j2ee.deployment.impl;
 
+import java.util.HashSet;
+import java.util.Set;
 import javax.enterprise.deploy.shared.ModuleType;
 import javax.enterprise.deploy.spi.*;
 import javax.enterprise.deploy.spi.exceptions.DeploymentManagerCreationException;
 import javax.enterprise.deploy.spi.factories.DeploymentFactory;
-import org.netbeans.modules.j2ee.deployment.plugins.api.*;
 import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
@@ -109,13 +110,22 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
         if (testPlugin == null || ! testPlugin.getShortName().equals("Test")) {
             fail("Could not get testPlugin: "+testPlugin);
         }
-        String expected = "META-INF/context.xml";
+        
         String[] names = testPlugin.getDeploymentPlanFiles(ModuleType.WAR);
-        if (names == null || names.length != 1) {
-            fail("Got null or incorrect deploy plan file paths: " + names);
-        } else if (! names[0].equals(expected)) {
-            fail("Expected: "+expected+" Got: "+names[0]);
-        }
+        assertEquals(1, names.length);
+        assertEquals("WEB-INF/test-web.xml", names[0]);
+
+        names = testPlugin.getDeploymentPlanFiles(ModuleType.EAR);
+        assertEquals(1, names.length);
+        assertEquals("META-INF/test-app.xml", names[0]);
+
+        names = testPlugin.getDeploymentPlanFiles(ModuleType.CAR);
+        assertEquals(1, names.length);
+        assertEquals("META-INF/test-client.xml", names[0]);
+
+        names = testPlugin.getDeploymentPlanFiles(ModuleType.EJB);
+        assertEquals(1, names.length);
+        assertEquals("META-INF/test-ejb.xml", names[0]);
     }
     
 }

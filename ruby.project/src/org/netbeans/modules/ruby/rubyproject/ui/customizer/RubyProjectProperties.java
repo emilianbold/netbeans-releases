@@ -195,9 +195,10 @@ public class RubyProjectProperties extends SharedRubyProjectProperties {
     }
     
     // From ClassPathUiSupport:
-    @SuppressWarnings("unchecked")
-    public static List<Item> getList( DefaultListModel model ) {
-        return (List<Item>) Collections.list( model.elements() );
+    public static List<Item> getList(DefaultListModel model) {
+        @SuppressWarnings("unchecked")
+        List<Item> items = (List<Item>) Collections.list(model.elements());
+        return items;
     }
     
     public void save() {

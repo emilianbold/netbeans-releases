@@ -72,6 +72,7 @@ public class JDBCMetadata implements MetadataImplementation {
     protected Map<String, Catalog> catalogs;
 
     public JDBCMetadata(Connection conn, String defaultSchemaName) {
+        LOGGER.log(Level.FINE, "Creating metadata for default schema ''{0}''", defaultSchemaName);
         this.conn = conn;
         this.defaultSchemaName = defaultSchemaName;
         try {
@@ -81,7 +82,7 @@ public class JDBCMetadata implements MetadataImplementation {
         }
         if (LOGGER.isLoggable(Level.FINE)) {
             try {
-                LOGGER.log(Level.FINE, "Created metadata for product ''{0}'' version ''{1}'', driver ''{2}'' version ''{3}''", new Object[] {
+                LOGGER.log(Level.FINE, "Retrieved DMD for product ''{0}'' version ''{1}'', driver ''{2}'' version ''{3}''", new Object[] {
                         dmd.getDatabaseProductName(),
                         dmd.getDatabaseProductVersion(),
                         dmd.getDriverName(),
@@ -125,11 +126,12 @@ public class JDBCMetadata implements MetadataImplementation {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
+            LOGGER.log(Level.FINE, "Default catalog is ''{0}''", defaultCatalogName);
             ResultSet rs = dmd.getCatalogs();
             try {
                 while (rs.next()) {
                     String catalogName = rs.getString("TABLE_CAT"); // NOI18N
-                    LOGGER.log(Level.FINE, "Read catalog {0}", catalogName);
+                    LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
                     if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
                         defaultCatalog = MetadataFactory.createCatalog(createCatalog(catalogName, true, defaultSchemaName));
                         newCatalogs.put(defaultCatalog.getName(), defaultCatalog);

@@ -263,8 +263,8 @@ public class DiscoveryUtils {
             option = st.next();
             boolean isQuote = false;
             if (isScriptOutput) {
-                if (option.startsWith("'") && option.endsWith("'") ||
-                    option.startsWith("\"") && option.endsWith("\"")){
+                if (option.startsWith("'") && option.endsWith("'") || // NOI18N
+                    option.startsWith("\"") && option.endsWith("\"")){ // NOI18N
                     option = option.substring(1,option.length()-1);
                     isQuote = true;
                 }
