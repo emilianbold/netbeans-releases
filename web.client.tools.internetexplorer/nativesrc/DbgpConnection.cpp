@@ -133,6 +133,9 @@ void DbgpConnection::sendInitMessage() {
 void DbgpConnection::handleDocumentComplete(IHTMLDocument2 *pHTMLDocument) {
     sendWindowsMessage(pHTMLDocument);
     sendSourcesMessage(pHTMLDocument);
+    if(m_pScriptDebugger->getStatus() != STATE_RUNNING) {
+        m_pScriptDebugger->changeState(STATE_RUNNING, OK);
+    }
 }
 
 void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
@@ -382,7 +385,6 @@ DWORD WINAPI DbgpConnection::commandHandler(LPVOID param) {
             pDbgpConnection->processCommand(cmdString, pDbgpConnection);
         }
         pDbgpConnection->getScriptDebugger()->endSession();
-        delete pDbgpConnection;
     }
     
     ::CoUninitialize();
