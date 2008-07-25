@@ -1,14 +1,13 @@
-/*
- * RestConnection.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -24,11 +23,11 @@ import javax.xml.transform.stream.StreamSource;
 
 
 /**
- * RestResponse
+ * ${name}
  *
- * @author __USER__
+ * @author ${user}
  */
-public class RestResponse {
+public class ${name} {
     private ByteArrayOutputStream os;
     private String contentType = "text/plain";
     private String contentEncoding;
@@ -37,11 +36,11 @@ public class RestResponse {
     private long lastModified;
 
     
-    public RestResponse() {
+    public ${name}() {
         os = new ByteArrayOutputStream();
     }
     
-    public RestResponse(byte[] bytes) throws IOException {
+    public ${name}(byte[] bytes) throws IOException {
         this();
 
         byte[] buffer = new byte[1024];
