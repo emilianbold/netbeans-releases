@@ -1195,8 +1195,7 @@ abstract class EntrySupport {
         }
         
         final boolean isDummyNode(Node node) {
-            return node.equals(Node.EMPTY);
-            //return node == NONEXISTING_NODE;
+            return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
         }
 
         @Override
@@ -1500,13 +1499,15 @@ abstract class EntrySupport {
                     return refNode == null ? null : refNode.get();
                 }
             }
+            
+
 
             Node refreshNode() {
                 Collection<Node> nodes = entry.nodes();
                 if (nodes.size() != 1) {
                     LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
                     if (nodes.size() == 0) {
-                        Node dummyNode = Node.EMPTY.cloneNode();
+                        Node dummyNode = new DummyNode();
                         return useNode(dummyNode);
                         //return useNode(NONEXISTING_NODE);
                     }
@@ -1570,6 +1571,13 @@ abstract class EntrySupport {
                 setName("Nonexisting node"); // NOI18N
             }
         }
+        
+        private static class DummyNode extends AbstractNode {
+
+            public DummyNode() {
+                super(Children.LEAF);
+            }
+        }     
 
         private void removeEmptyEntry(Entry entry, Node oldNode) {
             Children.MUTEX.postWriteRequest(new RemoveEmptyEntries(entry, oldNode));
