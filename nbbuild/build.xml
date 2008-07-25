@@ -97,9 +97,12 @@ made subject to such option by the copyright holder.
             <pathelement location="${ant.core.lib}"/>
         </classpath>
         <include name="org/netbeans/nbbuild/HgExec.java"/>
+        <include name="org/netbeans/nbbuild/ValidateHgConfiguration.java"/>
         <include name="org/netbeans/nbbuild/extlibs/RegisterExternalHook.java"/>
         <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
+    <taskdef name="validate-hg-configuration" classname="org.netbeans.nbbuild.ValidateHgConfiguration" classpath="build/antclasses"/>
+    <validate-hg-configuration root=".."/>
     <taskdef name="registerexternalhook" classname="org.netbeans.nbbuild.extlibs.RegisterExternalHook" classpath="build/antclasses"/>
     <registerexternalhook root=".." hook="antsrc/org/netbeans/nbbuild/extlibs/external.py"/>
 
