@@ -1915,8 +1915,60 @@ private void printMethod(MetaMethod mm) {
         
         return null;
     }
+
+    /**
+     * Get the list of parameters of this executable as a List of ParamDesc's
+     * To be used in insert templates and pretty-printers.
+     * @param exe
+     * @return
+     */
+    
+    static List<ParamDesc> getParameterList(ExecutableElement exe){
+        
+        List<ParamDesc> paramList = new ArrayList<ParamDesc>();
+        
+        if (exe != null) {
+            // generate a list of parameters
+            // unfortunately, we have to work around # 139695 in an ugly fashion
+
+            List<? extends VariableElement> params = null;
+
+            try {
+                params = exe.getParameters(); // this can cause NPE's 
+                int i = 1;
+
+                for (VariableElement variableElement : params) {
+                    TypeMirror tm = variableElement.asType();
+
+                    String fullName = tm.toString();
+                    String name = fullName;
+                    
+                    if (tm.getKind() == javax.lang.model.type.TypeKind.DECLARED) {
+                        name = NbUtilities.stripPackage(fullName);
+                    } 
+
+                    // todo: this needs to be replaced with values from the JavaDoc
+                    String varName = "param" + String.valueOf(i);
+                    
+                    paramList.add(new ParamDesc(fullName, name, varName));
+                    
+                    i++;
+                }
+            } catch (NullPointerException e) {
+                // simply do nothing.
+            }
+
+        }
+        
+        return paramList;        
+    }
     
     
+    /**
+     * Get the parameter-list of this executable as String
+     * @param exe
+     * @return
+     */
     static String getParameterListForMethod(ExecutableElement exe){
         StringBuffer sb = new StringBuffer();
 
@@ -2024,10 +2076,8 @@ private void printMethod(MetaMethod mm) {
                                 
                                 if(constructorName.toUpperCase(Locale.ENGLISH).startsWith(request.prefix.toUpperCase(Locale.ENGLISH))){
                                     
-                                    String params = getParameterListForMethod((ExecutableElement)encl);
-
                                     LOG.log(Level.FINEST, "Constructor call candidate added : {0}", constructorName);
-                                    proposals.add(new ConstructorItem(constructorName, params , anchor, request, false));
+                                    proposals.add(new ConstructorItem(constructorName, (ExecutableElement)encl , anchor, request, false));
                                     stuffAdded = true;
                                 }
                             }
@@ -2225,10 +2275,10 @@ private void printMethod(MetaMethod mm) {
             return false;
         }
 
-        // Are we dealing with an all-uppercase prefix?
 
         String prefix = request.prefix;
 
+        // Are we dealing with an all-uppercase prefix?
         if(prefix != null && prefix.length() > 0 && prefix.equals(prefix.toUpperCase())){
 
             ClassNode requestedClass = getSurroundingClassdNode(request);
@@ -2667,5 +2717,19 @@ private void printMethod(MetaMethod mm) {
         AstPath path;
     }
 
+    // This is from JavaCompletionItem
+    static class ParamDesc {
+
+        String fullTypeName;
+        String typeName;
+        String name;
+
+        public ParamDesc(String fullTypeName, String typeName, String name) {
+            this.fullTypeName = fullTypeName;
+            this.typeName = typeName;
+            this.name = name;
+        }
+    }
+    
 
 }
