@@ -40,6 +40,7 @@
 package org.netbeans.modules.extexecution.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -94,5 +95,15 @@ public class ExternalProcessBuilderTest extends NbTestCase {
                 + addedPath.getAbsolutePath() + File.pathSeparator
                 + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
+    }
+
+    public void testImmutability() throws IOException {
+        ExternalProcessBuilder builder = new ExternalProcessBuilder("ls");
+
+        assertNotSame(builder, builder.addArgument("test"));
+        assertNotSame(builder, builder.addEnvironmentVariable("test", "test"));
+        assertNotSame(builder, builder.prependPath(getWorkDir()));
+        assertNotSame(builder, builder.redirectErrorStream(true));
+        assertNotSame(builder, builder.workingDirectory(getWorkDir()));
     }
 }
