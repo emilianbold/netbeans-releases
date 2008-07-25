@@ -129,7 +129,9 @@ public class PhpMimeResolver extends MIMEResolver {
             MutableInteger shortOpenTagIdx, Sign[] signs) {
         for (int i = 0; i < len; i++) {
             byte b = bytes[i];
-            if (isOpenTag(b, openTagIdx) || isShortOpenTag(b,shortOpenTagIdx)) {
+            //short open tags not tested for now - code not deleted yet 
+            //until the decision whether to check or not will settle down
+            if (isOpenTag(b, openTagIdx) /*|| isShortOpenTag(b,shortOpenTagIdx)*/) {
                 return true;
             }
             for (int j = 0; j < signs.length; j++) {

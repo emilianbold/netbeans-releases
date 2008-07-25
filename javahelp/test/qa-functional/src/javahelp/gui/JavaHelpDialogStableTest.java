@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -38,34 +38,60 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.php.project.connections.ui;
+package javahelp.gui;
 
-import java.util.List;
-import org.openide.util.NbBundle;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.HelpOperator;
+
+import org.netbeans.junit.NbModuleSuite;
+
+import junit.framework.Test; 
 
 /**
- * @author Radek Matous
+ * JellyTestCase test case with implemented Java Help Test support stuff
+ *
+ * @author  juhrik@netbeans.org
  */
-public class TransferFileDownloadModel extends TransferFileUploadModel {
+public class JavaHelpDialogStableTest extends JellyTestCase {
 
-    public TransferFileDownloadModel(List<TransferFileUnit> fileUnits) {
-        super(fileUnits);
+    private HelpOperator helpWindow;
+
+    /** Creates a new instance of JavaHelpDialogTest */
+    public JavaHelpDialogStableTest(String testName) {
+        super(testName);
     }
 
-    @Override
-    public String getTabTitle() {
-        return NbBundle.getMessage(TransferFileDownloadModel.class,
-                "FileConfirmationTableModel_Download_Title");//NOI18N
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(JavaHelpDialogTest.class)
+                //.addTest("testHelpF1")
+                .addTest("testHelpFromMenu")
+                .addTest("testHelpByButtonNonModal")
+                //.addTest("testHelpByButtonModal")
+                .addTest("testContextualSearch")
+                //.addTest("testHelpByButtonNestedModal")
+                .enableModules(".*")
+                .clusters(".*") );
     }
 
-    @Override
-    public Type getType() {
-        return TransferFileTableModel.Type.DOWNLOAD;
+    public void setUp() {
     }
 
-    @Override
-    public String getColumnName(int column) {
-        return (column == 0) ? getBundle("FileConfirmationTableModel_Columns_Download") ://NOI18N
-                super.getColumnName(column);
+    public void tearDown() {
+        closeAllModal();
+
+        if (helpWindow != null && helpWindow.isVisible()) {
+            helpWindow.close();
+        }
+
+        helpWindow = null;
+    }
+
+    
+    /** Test could be executed internaly in Forte without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
     }
 }
