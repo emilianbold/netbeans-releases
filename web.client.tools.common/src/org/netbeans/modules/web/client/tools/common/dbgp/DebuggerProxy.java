@@ -315,11 +315,14 @@ public class DebuggerProxy {
                 suspensionPointQueue.add(message);
             }else {
                 //Ignore if the response is for a timed-out request
-                if(ignoreIDs.size() > 0 && ignoreIDs.contains(txID)) {
-                    ignoreIDs.remove(txID);
-                }else {
-                    responseQueue.add((ResponseMessage) message);
+                if(ignoreIDs.size() > 0) {
+                    int index = ignoreIDs.indexOf(txID);
+                    if(index != -1) {
+                        ignoreIDs.remove(index);
+                        return;
+                    }
                 }
+                responseQueue.add((ResponseMessage) message);
             }
         } else if (message instanceof InitMessage ||
                    message instanceof OnloadMessage ||
@@ -361,7 +364,6 @@ public class DebuggerProxy {
                 }
             } catch(IOException ioe) {
                 Log.getLogger().log(Level.FINE, getName() + " stopping because of exception", ioe);   //NOI18N
-                fireStoppedEvent();
             } finally {
                 try {
                     is.close();
