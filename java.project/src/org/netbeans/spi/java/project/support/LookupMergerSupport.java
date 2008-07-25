@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  * 
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -40,16 +40,28 @@
 package org.netbeans.spi.java.project.support;
 
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
+import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2.Result;
 import org.netbeans.spi.java.queries.support.SourceForBinaryQueryImpl2Base;
 import org.netbeans.spi.project.LookupMerger;
+import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex.Action;
 
 
 /**
@@ -106,38 +118,101 @@ public final class LookupMergerSupport {
     
     private static class SFBIMerged extends SourceForBinaryQueryImpl2Base {
         private Lookup lookup;
+        private Map<URL, Result> url2Result = new HashMap<URL, Result>();
         
         public SFBIMerged(Lookup lkp) {
             lookup = lkp;
         }
+        
         public SourceForBinaryQuery.Result findSourceRoots(URL binaryRoot) {
-            Collection<? extends SourceForBinaryQueryImplementation> col = lookup.lookupAll(SourceForBinaryQueryImplementation.class);
-            for (SourceForBinaryQueryImplementation impl : col) {
-                SourceForBinaryQuery.Result res = impl.findSourceRoots(binaryRoot);
-                if (res != null) {
-                    return res;
-                }
-            }
-            return null;
+            return findSourceRoots2(binaryRoot);
         }
 
-        public Result findSourceRoots2(URL binaryRoot) {
+        public Result findSourceRoots2(final URL binaryRoot) {
+            return ProjectManager.mutex().readAccess(new Action<Result>() {
+                public Result run() {
+                    return findSourceRoots2Impl(binaryRoot);
+                }
+            });
+        }
+        
+        private synchronized  Result findSourceRoots2Impl(URL binaryRoot) {
+            Result result = url2Result.get(binaryRoot);
+            
+            if (result != null) {
+                return result;
+            }
+            
             Collection<? extends SourceForBinaryQueryImplementation> col = lookup.lookupAll(SourceForBinaryQueryImplementation.class);
+            List<Result> queryResults = new LinkedList<Result>();
             for (SourceForBinaryQueryImplementation impl : col) {
                 if (impl instanceof SourceForBinaryQueryImplementation2) {
                     SourceForBinaryQueryImplementation2.Result res = ((SourceForBinaryQueryImplementation2)impl).findSourceRoots2(binaryRoot);
                     if (res != null) {
-                        return res;
+                        queryResults.add(res);
                     }
                 }
                 else {
                     SourceForBinaryQuery.Result res = impl.findSourceRoots(binaryRoot);
                     if (res != null) {
-                        return asResult(res);
+                        queryResults.add(asResult(res));
                     }
                 }
             }
-            return null;
+
+            if (queryResults.isEmpty()) {
+                return null;
+            }
+
+            url2Result.put(binaryRoot, result = new ResultImpl(queryResults));
+            
+            return result;
+        }
+        
+        private static final class ResultImpl implements Result, ChangeListener {
+
+            private final List<Result> delegateTo;
+            private final ChangeSupport cs = new ChangeSupport(this);
+
+            public ResultImpl(List<Result> delegateTo) {
+                this.delegateTo = delegateTo;
+                
+                for (Result r : delegateTo) {
+                    r.addChangeListener(this);
+                }
+            }
+            
+            public boolean preferSources() {
+                for (Result r : delegateTo) {
+                    if (r.preferSources())
+                        return true;
+                }
+                
+                return false;
+            }
+
+            public FileObject[] getRoots() {
+                List<FileObject> result = new LinkedList<FileObject>();
+                
+                for (Result r : delegateTo) {
+                    result.addAll(Arrays.asList(r.getRoots()));
+                }
+                
+                return result.toArray(new FileObject[result.size()]);
+            }
+
+            public void addChangeListener(ChangeListener l) {
+                cs.addChangeListener(l);
+            }
+
+            public void removeChangeListener(ChangeListener l) {
+                cs.removeChangeListener(l);
+            }
+
+            public void stateChanged(ChangeEvent e) {
+                cs.fireChange();
+            }
+            
         }
         
     }
