@@ -127,7 +127,7 @@ made subject to such option by the copyright holder.
             </not>
         </condition>
         You have stray *.class files in ${basedir}/antsrc which you must remove.
-        Probably you failed to clean your sources before updating. Try: ant hg-clean
+        Probably you failed to clean your sources before updating. Try: ant clean
     </fail>
     <!-- OK, continue: -->
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
@@ -1354,7 +1354,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="hg-clean"/><!-- deprecated -->
+  <target name="clean" depends="bootstrap" description="Clean everything possible.">
+      <taskdef name="try-else" classname="org.netbeans.nbbuild.TryElse" classpath="nbantext.jar"/>
+      <try-else first="-hg-clean" second="-real-clean"/>
+  </target>
 
   <target name="-clean-external">
     <subant target="clean">
@@ -1365,7 +1368,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </subant>
   </target>
 
-  <!-- Use hg-clean instead, which will call this if not in a Hg repo. -->
   <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
     <echo message="Cleaning old builds..."/>
     <delete>
@@ -1398,14 +1400,14 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="-hg-check-can-clean" unless="no.hg.clean">
-    <available property="can.hg.clean" type="dir" file="../.hg"/>
-  </target>
-  <target name="-hg-clean-alternative" depends="-hg-check-can-clean" unless="can.hg.clean">
-    <antcall target="-real-clean"/>
-  </target>
-  <target name="hg-clean" depends="-hg-clean-alternative" if="can.hg.clean"
-          description="Clean everything possible.">
+  <target name="-hg-clean">
+    <fail message="Not running in a Mercurial checkout.">
+      <condition>
+        <not>
+          <available type="dir" file="../.hg"/>
+        </not>
+      </condition>
+    </fail>
     <antcall target="-do-hg-clean">
       <!-- <include name="."/> does not seem to work in a dirset -->
       <param name="basedir" location=".."/>
