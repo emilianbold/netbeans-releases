@@ -45,6 +45,7 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.spi.quicksearch.SearchProvider;
 import org.netbeans.spi.quicksearch.SearchRequest;
 import org.netbeans.spi.quicksearch.SearchResponse;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -89,6 +90,7 @@ public class SlowProviderTest extends NbTestCase {
                 (endTime - startTime) > 1000);
 
         System.out.println("Testing CommandEvaluator.Wait4AllTask...");
+        RequestProcessor.getDefault().post(t);
 
         // should be still running
         assertFalse(t.isFinished());
