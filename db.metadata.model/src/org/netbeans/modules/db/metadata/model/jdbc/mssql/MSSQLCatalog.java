@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.metadata.model.jdbc.oracle;
+package org.netbeans.modules.db.metadata.model.jdbc.mssql;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -56,22 +56,17 @@ import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
  *
  * @author Andrei Badea
  */
-public class OracleCatalog extends JDBCCatalog {
+public class MSSQLCatalog extends JDBCCatalog {
 
-    private static final Logger LOGGER = Logger.getLogger(OracleCatalog.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(MSSQLCatalog.class.getName());
 
-    public OracleCatalog(OracleMetadata metadata, String name, boolean _default, String defaultSchemaName) {
+    public MSSQLCatalog(MSSQLMetadata metadata, String name, boolean _default, String defaultSchemaName) {
         super(metadata, name, _default, defaultSchemaName);
     }
 
     @Override
     public String toString() {
-        return "OracleCatalog[name='" + getName() + "']"; // NOI18N
-    }
-
-    @Override
-    protected OracleSchema createSchema(String name, boolean _default, boolean synthetic) {
-        return new OracleSchema(this, name, _default, synthetic);
+        return "MSSQLCatalog[name='" + getName() + "']"; // NOI18N
     }
 
     @Override
@@ -82,8 +77,8 @@ public class OracleCatalog extends JDBCCatalog {
             try {
                 while (rs.next()) {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
-                    // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
-                    // in DatabaseMetaData.getSchemas().
+                    // #141598: the MS SQL 2005 and jTDS drivers return null for the catalog name, and they
+                    // only return the schemas in the default catalog.
                     LOGGER.log(Level.FINE, "Read schema ''{0}''", schemaName);
                     if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                         defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));

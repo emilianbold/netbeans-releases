@@ -310,6 +310,10 @@ public class Installer extends ModuleInstall implements Runnable {
         params.add(Submit.getOS());
         params.add(Submit.getVM());
         params.add(Submit.getVersion());
+        List<String> buildInfo = BuildInfo.logBuildInfo();
+        if (buildInfo != null) {
+            params.addAll(buildInfo);
+        }
         userData = new LogRecord(Level.INFO, "USG_SYSTEM_CONFIG");
         userData.setParameters(params.toArray());
         userData.setLoggerName(logger.getName());

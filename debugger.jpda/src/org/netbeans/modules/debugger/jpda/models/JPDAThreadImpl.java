@@ -1231,9 +1231,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             threadReference.suspend();
             ObjectReference monitor = threadReference.currentContendedMonitor();
             if (monitor == null) return ;
-            Location l = threadReference.frame(0).location();
-            l = l.method().locationOfCodeIndex(l.codeIndex() + 1);
-            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(l);
+            Location loc = threadReference.frame(0).location();
+            loc = loc.method().locationOfCodeIndex(loc.codeIndex() + 1);
+            if (loc == null) return;
+            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(loc);
             br.addThreadFilter(threadReference);
             submitMonitorEnteredRequest(br);
         } catch (IncompatibleThreadStateException itex) {
