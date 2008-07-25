@@ -159,14 +159,14 @@ public class SystemIncludesUtils {
             //TODO: check file existence (or make shell script to rule them all ?)
             System.err.println("loading " + path);
             String zipRemote = "cnd" + path.replaceAll("(/|\\\\)", "-") + ".zip"; //NOI18N
-            String zipRemotePath = "/tmp/" + zipRemote;
+            String zipRemotePath = "/tmp/" + zipRemote; // NOI18N
             String zipLocalPath = tempDir + File.separator + zipRemote;
 
-            handle.progress("archiving " + path, workunit++);
+            handle.progress("archiving " + path, workunit++); // NOI18N
             copySupport.run("zip -r -q " + zipRemotePath + " " + path); //NOI18N
-            handle.progress("downloading " + path, workunit++);
+            handle.progress("downloading " + path, workunit++); // NOI18N
             copySupport.copyFrom(zipRemotePath, zipLocalPath);
-            handle.progress("preparing local copy of " + path, workunit++);
+            handle.progress("preparing local copy of " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
         }
         return true;

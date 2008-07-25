@@ -86,7 +86,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         initServerList(cache);
         desc = null;
         buttonsEnabled = true;
-        lbReason.setText(" "); // this keeps the dialog from resizing
+        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
         tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
     }
@@ -284,7 +284,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     private void hideReason() {
-        lbReason.setText(" ");
+        lbReason.setText(" "); // NOI18N - this keeps the dialog from resizing
         tfReason.setVisible(false);
     }
     
