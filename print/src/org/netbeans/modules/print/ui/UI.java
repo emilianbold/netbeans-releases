@@ -632,7 +632,7 @@ public final class UI {
       if (myDialog == null) {
         myDialog = DialogDisplayer.getDefault().createDialog(createDescriptor());
         myDialog.addWindowListener(this);
-        setCorner();
+//      setCorner();
         myDialog.addComponentListener(
           new ComponentAdapter() {
             public void componentResized(ComponentEvent event) {
