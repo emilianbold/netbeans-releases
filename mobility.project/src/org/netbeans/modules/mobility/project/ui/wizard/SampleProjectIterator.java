@@ -114,9 +114,12 @@ public class SampleProjectIterator implements TemplateWizard.Iterator {
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
         platformInstall = PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
-        if (platformInstall)
+        if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewProjectIterator.class, "TXT_SampleProject"));
+        }
         projectPanel = new ProjectPanel.WizardPanel(false, true);
+        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(NewProjectIterator.class, "TXT_SampleProject"));
         psPanel = new PlatformSelectionPanel();
         String configuration = null;
         String profile = null;

@@ -572,10 +572,10 @@ public class CommonUtilities {
         runtimeTree.selectPath(path);
         
         try {
-            //log("Let's check whether GlassFish V3 is already added");
-            runtimeTree.findPath("Servers|GlassFish V3");
+            //log("Let's check whether GlassFish V2 is already added");
+            runtimeTree.findPath("Servers|GlassFish V2");
         } catch (TimeoutExpiredException tee) {
-            //log("There is no GlassFish V3 node so we'll add it");
+            //log("There is no GlassFish V2 node so we'll add it");
             
             new JPopupMenuOperator(runtimeTree.callPopupOnPath(path)).pushMenuNoBlock(addServerMenuItem);
 
@@ -609,8 +609,8 @@ public class CommonUtilities {
             log("Looking path = Servers");
             path = runtimeTree.findPath("Servers");
             runtimeTree.selectPath(path);
-            log("Looking path = Servers|GlassFish V3");
-            path = runtimeTree.findPath("Servers|GlassFish V3"); // NOI18N
+            log("Looking path = Servers|GlassFish V2");
+            path = runtimeTree.findPath("Servers|GlassFish V2"); // NOI18N
             runtimeTree.selectPath(path);
         } catch (Exception exc) {
             exc.printStackTrace(System.err);

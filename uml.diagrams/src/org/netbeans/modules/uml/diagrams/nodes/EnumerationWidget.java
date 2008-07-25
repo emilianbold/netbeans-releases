@@ -812,7 +812,7 @@ public class EnumerationWidget extends SwitchableWidget
         {
             if(getCurrentView()!=null)
             {
-                org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget nameW=findNameWidget(getCurrentView());
+                org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler nameW=findNameWidget(getCurrentView());
                 if(nameW!=null)nameW.setNameFont(font);
             }
         }

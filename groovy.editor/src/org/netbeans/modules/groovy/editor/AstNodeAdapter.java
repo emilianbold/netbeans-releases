@@ -54,6 +54,7 @@ import java.util.logging.Level;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
+import org.codehaus.groovy.ast.expr.ConstantExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 
 
@@ -170,6 +171,8 @@ public class AstNodeAdapter implements ParserResult.AstTreeNode {
             return ((VariableExpression)node).getName();
         } else if (node instanceof ModuleNode) {
             return ((ModuleNode)node).getDescription();
+        } else if (node instanceof ConstantExpression) {
+            return ((ConstantExpression)node).getText();
         }
 
         return "";

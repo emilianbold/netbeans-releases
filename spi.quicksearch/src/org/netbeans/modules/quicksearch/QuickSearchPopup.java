@@ -410,7 +410,8 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             return null;
         }
         return NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.hintLabel.text",
-                evalCat.getDisplayName(), comboBar.getShortcutText());
+                evalCat.getDisplayName(), SearchResultRender.getKeyStrokeAsText(
+                comboBar.getKeyStroke()));
     }
 
 }

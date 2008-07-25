@@ -286,7 +286,7 @@ public class NewGroupPanel extends JPanel {
                     .add(layout.createSequentialGroup()
                         .add(nameLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(nameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 570, Short.MAX_VALUE))
+                        .add(nameField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 641, Short.MAX_VALUE))
                     .add(directoryKindRadio)
                     .add(adHocKindRadio)
                     .add(layout.createSequentialGroup()
@@ -295,7 +295,7 @@ public class NewGroupPanel extends JPanel {
                             .add(layout.createSequentialGroup()
                                 .add(directoryLabel)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                .add(directoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 465, Short.MAX_VALUE)
+                                .add(directoryField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 548, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(directoryButton))
                             .add(directoryKindLabel)))
@@ -355,6 +355,29 @@ public class NewGroupPanel extends JPanel {
                     .add(directoryButton))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        adHocKindRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.adHocKindRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        adHocKindLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.adHocKindLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        useOpenCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.useOpenCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
+        autoSynchCheckbox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.autoSynchCheckbox.AccessibleContext.accessibleDescription")); // NOI18N
+        subprojectsKindRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.subprojectsKindRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        subprojectsKindLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.subprojectsKindLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        masterProjectLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.masterProjectLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        masterProjectField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.masterProjectField.AccessibleContext.accessibleName")); // NOI18N
+        masterProjectField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.masterProjectField.AccessibleContext.accessibleDescription")); // NOI18N
+        masterProjectButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.masterProjectButton.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryKindRadio.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryKindRadio.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryKindLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryKindLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryField.AccessibleContext.accessibleName")); // NOI18N
+        directoryField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryField.AccessibleContext.accessibleDescription")); // NOI18N
+        directoryButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.directoryButton.AccessibleContext.accessibleDescription")); // NOI18N
+        nameLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.nameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        nameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.nameField.AccessibleContext.accessibleName")); // NOI18N
+        nameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.nameField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewGroupPanel.class, "NewGroupPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void directoryButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_directoryButtonActionPerformed

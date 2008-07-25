@@ -71,6 +71,7 @@
 	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>	
         <mapID target="framework_grails_about" url="web/create/tag/framework/grails/about.html"/>
         <mapID target="framework_grails_create" url="web/create/tag/framework/grails/create.html"/>
+        <mapID target="framework_grails_install" url="web/create/tag/framework/grails/install.html"/>
         <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
 	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html"/>
@@ -496,7 +497,8 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_link" url="ui_elements/palette/wdstk-jsf1_2/link.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_listbox" url="ui_elements/palette/wdstk-jsf1_2/listbox.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_markup" url="ui_elements/palette/wdstk-jsf1_2/markup.html"/>
-	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message" url="ui_elements/palette/wdstk-jsf1_2/message.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_menu" url="ui_elements/palette/wdstk-jsf1_2/menu.html"/>
+ 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message" url="ui_elements/palette/wdstk-jsf1_2/message.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_message_group" url="ui_elements/palette/wdstk-jsf1_2/message_group.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_meta" url="ui_elements/palette/wdstk-jsf1_2/meta.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_page_alert" url="ui_elements/palette/wdstk-jsf1_2/page_alert.html"/>
@@ -532,6 +534,7 @@
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_link_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/link_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_listbox_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/listbox_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_markup_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/markup_props.html"/>
+        <mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_menu_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/menu_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_message_group_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/message_group_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_message_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/message_props.html"/>
 	<mapID target="projrave_ui_elements_palette_wdstk-jsf1.2_propsheets_meta_props" url="ui_elements/palette/wdstk-jsf1_2/propsheets/meta_props.html"/>
