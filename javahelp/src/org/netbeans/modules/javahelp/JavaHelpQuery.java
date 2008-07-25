@@ -67,28 +67,13 @@ import org.openide.util.NbBundle;
  */
 class JavaHelpQuery implements Comparator<SearchTOCItem> {
 
-    private Thread searchThread;
-    private static JavaHelpQuery theInstance;
-    private SearchEngine engine;
-    
-    private JavaHelpQuery() {
-    }
-    
-    public static JavaHelpQuery getDefault() {
-        if( null == theInstance )
-            theInstance = new JavaHelpQuery();
-        return theInstance;
+    JavaHelpQuery() {
     }
     
     public List<SearchTOCItem> search( String searchString ) {
-        synchronized( this ) {
-            if( null == engine ) {
-                engine = createSearchEngine();
-            }
-        }
-        abort();
+        SearchEngine engine = createSearchEngine();
         List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();
-        searchThread = new Thread( createSearch( searchString, res ) );
+        Thread searchThread = new Thread( createSearch( engine, searchString, res ) );
         searchThread.start();
         try {
             //the first search can take a moment before all the helpsets are merged
@@ -99,16 +84,7 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
         return res;
     }
     
-    private void abort() {
-        if( null == searchThread ) {
-            return;
-        }
-        
-        searchThread.interrupt();
-        searchThread = null;
-    }
-    
-    private Runnable createSearch( final String searchString, final List<SearchTOCItem> items ) {
+    private Runnable createSearch( final SearchEngine engine, final String searchString, final List<SearchTOCItem> items ) {
         Runnable res = new Runnable() {
 
             public void run() {
