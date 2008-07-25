@@ -121,7 +121,7 @@ public class JDBCCatalog implements CatalogImplementation {
                     // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
                     // only returns a TABLE_SCHEM column.
                     String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
-                    LOGGER.log(Level.FINE, "Read schema {0} in catalog {1}", new Object[] { schemaName, catalogName });
+                    LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
                     if (MetadataUtilities.equals(catalogName, name)) {
                         if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                             defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));

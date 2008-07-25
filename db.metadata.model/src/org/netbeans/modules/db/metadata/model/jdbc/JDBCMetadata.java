@@ -126,12 +126,12 @@ public class JDBCMetadata implements MetadataImplementation {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
-            LOGGER.log(Level.FINE, "Default catalog is {0}", defaultCatalogName);
+            LOGGER.log(Level.FINE, "Default catalog is ''{0}''", defaultCatalogName);
             ResultSet rs = dmd.getCatalogs();
             try {
                 while (rs.next()) {
                     String catalogName = rs.getString("TABLE_CAT"); // NOI18N
-                    LOGGER.log(Level.FINE, "Read catalog {0}", catalogName);
+                    LOGGER.log(Level.FINE, "Read catalog ''{0}''", catalogName);
                     if (MetadataUtilities.equals(catalogName, defaultCatalogName)) {
                         defaultCatalog = MetadataFactory.createCatalog(createCatalog(catalogName, true, defaultSchemaName));
                         newCatalogs.put(defaultCatalog.getName(), defaultCatalog);

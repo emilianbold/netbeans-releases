@@ -79,7 +79,7 @@ public class MSSQLCatalog extends JDBCCatalog {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
                     // #141598: the MS SQL 2005 and jTDS drivers return null for the catalog name, and they
                     // only return the schemas in the default catalog.
-                    LOGGER.log(Level.FINE, "Read schema {0}", schemaName);
+                    LOGGER.log(Level.FINE, "Read schema ''{0}''", schemaName);
                     if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                         defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
                         newSchemas.put(defaultSchema.getName(), defaultSchema);
