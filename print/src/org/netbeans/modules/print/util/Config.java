@@ -60,9 +60,9 @@ import static org.netbeans.modules.print.ui.UI.*;
  * @author Vladimir Yaroslavskiy
  * @version 2006.03.21
  */
-public final class Option {
+public final class Config {
 
-  private Option() {}
+  private Config() {}
 
   public boolean showPageSetup() {
     PrinterJob job = PrinterJob.getPrinterJob();
@@ -285,15 +285,6 @@ public final class Option {
     set(FOOTER_FONT, getString(value));
   }
 
-  // scale
-  public double getScale() {
-    return get(SCALE, DEFAULT_SCALE);
-  }
-
-  public void setScale(double value) {
-    set(SCALE, value);
-  }
-
   // text
   public void setWrapLines(boolean value) {
     set(WRAP_LINES, value);
@@ -370,7 +361,7 @@ public final class Option {
 
   // service
   private Preferences getPreferences() {
-    return NbPreferences.forModule(Option.class);
+    return NbPreferences.forModule(Config.class);
   } 
 
   private String get(String name, String defaultValue) {
@@ -456,14 +447,14 @@ public final class Option {
   }
 
   public static String getPageOfCount(String page, String count) {
-    return i18n(Option.class, "LBL_Page_of_Count", page, count); // NOI18N
+    return i18n(Config.class, "LBL_Page_of_Count", page, count); // NOI18N
   }
 
   private static String getRowColumn(String row, String column) {
-    return i18n(Option.class, "LBL_Row_Column", row, column); // NOI18N
+    return i18n(Config.class, "LBL_Row_Column", row, column); // NOI18N
   }
 
-  public static Option getDefault() {
+  public static Config getDefault() {
     return DEFAULT;
   }
 
@@ -476,13 +467,11 @@ public final class Option {
     return graphics;
   }
 
+  public static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
   private PageFormat myPageFormat;
 
-  private static final Option DEFAULT = new Option();
+  private static final Config DEFAULT = new Config();
   private static final double INCH = 72.0; // .pt
-  private static final double DEFAULT_SCALE = 0.88;
-
-  public static final FontRenderContext FONT_RENDER_CONTEXT = new FontRenderContext(null, true, true);
 
   private static final Font DEFAULT_TITLE_FONT = new Font("Serif", Font.PLAIN, 10); //NOI18N
   private static final Font DEFAULT_TEXT_FONT = new Font("Monospaced", Font.PLAIN, 10); // NOI18N
@@ -509,9 +498,7 @@ public final class Option {
   private static final String LINE_SPACING = "print.text.line.spacing"; // NOI18N
   private static final String BACKGROUND_COLOR = "print.text.background.color"; // NOI18N
 
-  private static final String SCALE = "print.scale"; // NOI18N
   private static final String ZOOM = "print.zoom"; // NOI18N
-
   private static final String BORDER = "print.border"; // NOI18N
   private static final String BORDER_COLOR = "print.border.color"; // NOI18N
 

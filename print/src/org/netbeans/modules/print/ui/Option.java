@@ -65,30 +65,28 @@ import javax.swing.JTextField;
 import javax.swing.SpinnerNumberModel;
 
 import org.openide.DialogDescriptor;
-import org.openide.util.HelpCtx;
-
 import org.netbeans.modules.print.util.Percent;
 import org.netbeans.modules.print.util.Macro;
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
  * @author Vladimir Yaroslavskiy
  * @version 2006.02.14
  */
-final class Attribute extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
-  Attribute(Preview preview) {
+final class Option extends Dialog implements FocusListener, Macro.Listener, Percent.Listener {
+  Option(Preview preview) {
     myPreview = preview;
 
-    myBorderColorValue = Option.getDefault().getBorderColor();
-    myTextColorValue = Option.getDefault().getTextColor();
-    myTextFontValue = Option.getDefault().getTextFont();
-    myBackgroundColorValue = Option.getDefault().getBackgroundColor();
+    myBorderColorValue = Config.getDefault().getBorderColor();
+    myTextColorValue = Config.getDefault().getTextColor();
+    myTextFontValue = Config.getDefault().getTextFont();
+    myBackgroundColorValue = Config.getDefault().getBackgroundColor();
 
-    myHeaderColorValue = Option.getDefault().getHeaderColor();
-    myHeaderFontValue = Option.getDefault().getHeaderFont();
-    myFooterColorValue = Option.getDefault().getFooterColor();
-    myFooterFontValue = Option.getDefault().getFooterFont();
+    myHeaderColorValue = Config.getDefault().getHeaderColor();
+    myHeaderFontValue = Config.getDefault().getHeaderFont();
+    myFooterColorValue = Config.getDefault().getFooterColor();
+    myFooterFontValue = Config.getDefault().getFooterFont();
   }
 
   @Override
@@ -117,8 +115,6 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
         }
       }
     );
-    myDescriptor.setHelpCtx(new HelpCtx(Attribute.class));
-    
     return myDescriptor;
   }
 
@@ -148,32 +144,32 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     if ( !checkValue(zoomWidth, zoomHeight)) {
       return false;
     }
-    Option.getDefault().setBorder(myBorder.isSelected());
-    Option.getDefault().setBorderColor(myBorderColorValue);
+    Config.getDefault().setBorder(myBorder.isSelected());
+    Config.getDefault().setBorderColor(myBorderColorValue);
 
-    Option.getDefault().setHeader(myHeader.isSelected());
-    Option.getDefault().setHeaderLeft(myHeaderLeft.getText());
-    Option.getDefault().setHeaderCenter(myHeaderCenter.getText());
-    Option.getDefault().setHeaderRight(myHeaderRight.getText());
-    Option.getDefault().setHeaderColor(myHeaderColorValue);
-    Option.getDefault().setHeaderFont(myHeaderFontValue);
+    Config.getDefault().setHeader(myHeader.isSelected());
+    Config.getDefault().setHeaderLeft(myHeaderLeft.getText());
+    Config.getDefault().setHeaderCenter(myHeaderCenter.getText());
+    Config.getDefault().setHeaderRight(myHeaderRight.getText());
+    Config.getDefault().setHeaderColor(myHeaderColorValue);
+    Config.getDefault().setHeaderFont(myHeaderFontValue);
 
-    Option.getDefault().setFooter(myFooter.isSelected());
-    Option.getDefault().setFooterLeft(myFooterLeft.getText());
-    Option.getDefault().setFooterCenter(myFooterCenter.getText());
-    Option.getDefault().setFooterRight(myFooterRight.getText());
-    Option.getDefault().setFooterColor(myFooterColorValue);
-    Option.getDefault().setFooterFont(myFooterFontValue);
+    Config.getDefault().setFooter(myFooter.isSelected());
+    Config.getDefault().setFooterLeft(myFooterLeft.getText());
+    Config.getDefault().setFooterCenter(myFooterCenter.getText());
+    Config.getDefault().setFooterRight(myFooterRight.getText());
+    Config.getDefault().setFooterColor(myFooterColorValue);
+    Config.getDefault().setFooterFont(myFooterFontValue);
 
-    Option.getDefault().setWrapLines(myWrapLines.isSelected());
-    Option.getDefault().setLineNumbers(myLineNumbers.isSelected());
-    Option.getDefault().setUseFont(myUseFont.isSelected());
-    Option.getDefault().setUseColor(myUseColor.isSelected());
-    Option.getDefault().setTextColor(myTextColorValue);
-    Option.getDefault().setTextFont(myTextFontValue);
-    Option.getDefault().setBackgroundColor(myBackgroundColorValue);
-    Option.getDefault().setLineSpacing(getDouble(myLineSpacing.getValue()));
-    Option.getDefault().setAsEditor(myAsEditor.isSelected());
+    Config.getDefault().setWrapLines(myWrapLines.isSelected());
+    Config.getDefault().setLineNumbers(myLineNumbers.isSelected());
+    Config.getDefault().setUseFont(myUseFont.isSelected());
+    Config.getDefault().setUseColor(myUseColor.isSelected());
+    Config.getDefault().setTextColor(myTextColorValue);
+    Config.getDefault().setTextFont(myTextFontValue);
+    Config.getDefault().setBackgroundColor(myBackgroundColorValue);
+    Config.getDefault().setLineSpacing(getDouble(myLineSpacing.getValue()));
+    Config.getDefault().setAsEditor(myAsEditor.isSelected());
 
     double zoom = 0.0;
 
@@ -189,7 +185,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     else if (myFitToPage.isSelected()) {
       zoom = 0.0;
     }
-    Option.getDefault().setZoom(zoom);
+    Config.getDefault().setZoom(zoom);
     myPreview.updated();
 //out("SET zoom: " + zoom);
 
@@ -265,7 +261,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBorderColor = createButton(
       new ButtonAction(
-        icon(Option.class, "color"), // NOI18N
+        icon(Config.class, "color"), // NOI18N
         i18n("TLT_Border_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           borderColor();
@@ -349,7 +345,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     c.fill = GridBagConstraints.NONE;
     myHeaderColor = createButton(
       new ButtonAction(
-        icon(Option.class, "color"), // NOI18N
+        icon(Config.class, "color"), // NOI18N
         i18n("TLT_Header_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerColor();
@@ -360,7 +356,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
 
     // header font
     myHeaderFont = createButton(
-      new ButtonAction(icon(Option.class, "font"), i18n("TLT_Header_Font")) { // NOI18N
+      new ButtonAction(icon(Config.class, "font"), i18n("TLT_Header_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           headerFont();
         }
@@ -410,7 +406,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     c.fill = GridBagConstraints.NONE;
     myFooterColor = createButton(
       new ButtonAction(
-        icon(Option.class, "color"), // NOI18N
+        icon(Config.class, "color"), // NOI18N
         i18n("TLT_Footer_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerColor();
@@ -421,7 +417,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
 
     // footer font
     myFooterFont = createButton(
-      new ButtonAction(icon(Option.class, "font"), i18n("TLT_Footer_Font")) { // NOI18N
+      new ButtonAction(icon(Config.class, "font"), i18n("TLT_Footer_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           footerFont();
         }
@@ -526,7 +522,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     // text color
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myTextColor = createButton(
-      new ButtonAction(icon(Option.class, "color"), i18n("TLT_Text_Color")) { // NOI18N
+      new ButtonAction(icon(Config.class, "color"), i18n("TLT_Text_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textColor();
         }
@@ -536,7 +532,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     
     // text font
     myTextFont = createButton(
-      new ButtonAction(icon(Option.class, "font"), i18n("TLT_Text_Font")) { // NOI18N
+      new ButtonAction(icon(Config.class, "font"), i18n("TLT_Text_Font")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           textFont();
         }
@@ -575,7 +571,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
     myBackgroundColor = createButton(
       new ButtonAction(
-        icon(Option.class, "color"), // NOI18N
+        icon(Config.class, "color"), // NOI18N
         i18n("TLT_Background_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           backgroundColor();
@@ -603,16 +599,17 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     // []
     panel.add(new JLabel(), c);
 
-    // line spacing
+    // label
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
     myLineSpacingLabel = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
     panel.add(myLineSpacingLabel, c);
 
+    // line spacing
     c.anchor = GridBagConstraints.WEST;
     c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
-    double value = Option.getDefault().getLineSpacing();
+    double value = Config.getDefault().getLineSpacing();
 
     if (value < 0) {
       value = 1.0;
@@ -621,11 +618,9 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
       value,
       SPACING_MIN,
       SPACING_MAX,
-      SPACING_STP
+      SPACING_STEP
     ));
-    int height = myLineSpacing.getPreferredSize().height;
-    setHeight(myLineSpacing, round(height * SPACING_FTR));
-
+    setSize(myLineSpacing, myTextColor.getPreferredSize());
     myLineSpacingLabel.setLabelFor(myLineSpacing);
     panel.add(myLineSpacing, c);
   }
@@ -634,7 +629,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
     JPanel panel = new JPanel(new GridBagLayout());
     GridBagConstraints c = new GridBagConstraints();
     ButtonGroup group = new ButtonGroup();
-    double zoom = Option.getDefault().getZoom();
+    double zoom = Config.getDefault().getZoom();
     c.anchor = GridBagConstraints.WEST;
 //out("GET ZOOM: " + zoom);
 
@@ -855,34 +850,34 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
   }
 
   private void updateControl() {
-    myBorder.setSelected(Option.getDefault().hasBorder());
-    myBorderColor.setEnabled(Option.getDefault().hasBorder());
+    myBorder.setSelected(Config.getDefault().hasBorder());
+    myBorderColor.setEnabled(Config.getDefault().hasBorder());
 
-    myHeader.setSelected(Option.getDefault().hasHeader());
-    myHeaderLeft.setText(Option.getDefault().getHeaderLeft());
-    myHeaderLeft.setEnabled(Option.getDefault().hasHeader());
-    myHeaderCenter.setText(Option.getDefault().getHeaderCenter());
-    myHeaderCenter.setEnabled(Option.getDefault().hasHeader());
-    myHeaderRight.setText(Option.getDefault().getHeaderRight());
-    myHeaderRight.setEnabled(Option.getDefault().hasHeader());
-    myHeaderColor.setEnabled(Option.getDefault().hasHeader());
-    myHeaderFont.setEnabled(Option.getDefault().hasHeader());
+    myHeader.setSelected(Config.getDefault().hasHeader());
+    myHeaderLeft.setText(Config.getDefault().getHeaderLeft());
+    myHeaderLeft.setEnabled(Config.getDefault().hasHeader());
+    myHeaderCenter.setText(Config.getDefault().getHeaderCenter());
+    myHeaderCenter.setEnabled(Config.getDefault().hasHeader());
+    myHeaderRight.setText(Config.getDefault().getHeaderRight());
+    myHeaderRight.setEnabled(Config.getDefault().hasHeader());
+    myHeaderColor.setEnabled(Config.getDefault().hasHeader());
+    myHeaderFont.setEnabled(Config.getDefault().hasHeader());
 
-    myFooter.setSelected(Option.getDefault().hasFooter());
-    myFooterLeft.setText(Option.getDefault().getFooterLeft());
-    myFooterLeft.setEnabled(Option.getDefault().hasFooter());
-    myFooterCenter.setText(Option.getDefault().getFooterCenter());
-    myFooterCenter.setEnabled(Option.getDefault().hasFooter());
-    myFooterRight.setText(Option.getDefault().getFooterRight());
-    myFooterRight.setEnabled(Option.getDefault().hasFooter());
-    myFooterColor.setEnabled(Option.getDefault().hasFooter());
-    myFooterFont.setEnabled(Option.getDefault().hasFooter());
+    myFooter.setSelected(Config.getDefault().hasFooter());
+    myFooterLeft.setText(Config.getDefault().getFooterLeft());
+    myFooterLeft.setEnabled(Config.getDefault().hasFooter());
+    myFooterCenter.setText(Config.getDefault().getFooterCenter());
+    myFooterCenter.setEnabled(Config.getDefault().hasFooter());
+    myFooterRight.setText(Config.getDefault().getFooterRight());
+    myFooterRight.setEnabled(Config.getDefault().hasFooter());
+    myFooterColor.setEnabled(Config.getDefault().hasFooter());
+    myFooterFont.setEnabled(Config.getDefault().hasFooter());
 
-    myLineNumbers.setSelected(Option.getDefault().isLineNumbers());
-    myWrapLines.setSelected(Option.getDefault().isWrapLines());
-    myUseFont.setSelected(Option.getDefault().isUseFont());
-    myUseColor.setSelected(Option.getDefault().isUseColor());
-    myAsEditor.setSelected(Option.getDefault().isAsEditor());
+    myLineNumbers.setSelected(Config.getDefault().isLineNumbers());
+    myWrapLines.setSelected(Config.getDefault().isWrapLines());
+    myUseFont.setSelected(Config.getDefault().isUseFont());
+    myUseColor.setSelected(Config.getDefault().isUseColor());
+    myAsEditor.setSelected(Config.getDefault().isAsEditor());
 
     updateText();
   }
@@ -960,8 +955,7 @@ final class Attribute extends Dialog implements FocusListener, Macro.Listener, P
   private static final int MAX_FOOTER_SIZE = 100;
   private static final double SPACING_MIN =  0.1;
   private static final double SPACING_MAX = 10.0;
-  private static final double SPACING_STP =  0.1;
-  private static final double SPACING_FTR = 1.15;
+  private static final double SPACING_STEP =  0.1;
   private static final int [] PERCENTS =
     new int [] { 25, 50, 75, 100, 125, 150, 200, 300, 500 };
 }
