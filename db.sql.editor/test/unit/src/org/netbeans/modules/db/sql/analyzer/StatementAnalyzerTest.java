@@ -41,6 +41,7 @@ package org.netbeans.modules.db.sql.analyzer;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import junit.framework.TestCase;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -56,43 +57,71 @@ public class StatementAnalyzerTest extends TestCase {
         super(testName);
     }
 
-    public void testParse() throws Exception {
+    /**
+     * Just ensuring the analyzer doesn't end in an infinite loop.
+     */
+    public void testCanAnalyze() throws Exception {
         assertCanAnalyze("select");
         assertCanAnalyze("select from dual");
         assertCanAnalyze("select count(*) table_count from table");
         assertCanAnalyze("select component, count(id) from issuezilla group by component");
         assertCanAnalyze("select * from a where (select count(*) from b where a.x = b.x) > 42");
+        assertCanAnalyze("select * from a where (select (select");
+    }
 
-        StatementAnalyzer analyzer = doAnalyze("select f.bar as bingo, count(*), max(id) + 1 themax, cat.sch.foo.baz from foo f inner join bar");
-        List<List<String>> selectValues = analyzer.getSelectValues();
+    public void testAnalyzeSimple() throws Exception {
+        SQLStatement statement = doAnalyze("select f.bar as bingo, count(*), max(id) + 1 themax, cat.sch.foo.baz from foo f inner join bar");
+        List<List<String>> selectValues = statement.getSelectValues();
         assertEquals(3, selectValues.size());
         assertEquals(Arrays.asList("bingo"), selectValues.get(0));
         assertEquals(Arrays.asList("themax"), selectValues.get(1));
         assertEquals(Arrays.asList("cat", "sch", "foo", "baz"), selectValues.get(2));
-        FromClause fromClause = analyzer.getFromClause();
-        assertEquals(2, fromClause.size());
-        FromTable fromTable = fromClause.get(0);
-        assertEquals(Arrays.asList("foo"), fromTable.getParts());
-        assertEquals("f", fromTable.getAlias());
-        fromTable = fromClause.get(1);
-        assertEquals(Arrays.asList("bar"), fromTable.getParts());
-        assertNull(fromTable.getAlias());
-
-        analyzer = doAnalyze("select foo");
-        assertNull(analyzer.getFromClause());
-
-        analyzer = doAnalyze("select foo from");
-        assertEquals(0, analyzer.getFromClause().size());
+        FromClause fromClause = statement.getFromClause();
+        assertEquals(Collections.singletonMap("f", new QualIdent("foo")), fromClause.getAliasedTableNames());
+        assertEquals(Collections.singleton(new QualIdent("bar")), fromClause.getUnaliasedTableNames());
     }
 
-    private StatementAnalyzer doAnalyze(String sql) throws IOException {
-        TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
-        StatementAnalyzer analyzer = new StatementAnalyzer(hi.tokenSequence(SQLTokenId.language()));
-        return analyzer;
+    public void testFromClause() throws Exception {
+        SQLStatement statement = doAnalyze("select foo");
+        assertNull(statement.getFromClause());
+
+        statement = doAnalyze("select foo from");
+        assertNotNull(statement.getFromClause());
     }
 
-    public static void assertCanAnalyze(String sql) throws Exception {
+    public void testSubqueries() throws Exception {
+        String sql = "select * from foo where exists (select id from bar where bar.id = foo.id and (select count(id) from baz where bar.id = baz.id) = 1) order by xyz";
+        int firstSubStart = sql.indexOf("(select") + 1;
+        int firstSubEnd = sql.indexOf(" order", firstSubStart) - 1;
+        int secondSubStart = sql.indexOf("(select", firstSubStart) + 1;
+        int secondSubEnd = sql.indexOf(" = 1", secondSubStart) - 1;
+
+        SQLStatement statement = doAnalyze(sql);
+        assertEquals(0, statement.startOffset);
+        assertEquals(sql.length(), statement.endOffset);
+        assertTrue(statement.getFromClause().getUnaliasedTableNames().contains(new QualIdent("foo")));
+        assertEquals(1, statement.getSubqueries().size());
+
+        SQLStatement subquery = statement.getSubqueries().get(0);
+        assertEquals(firstSubStart, subquery.startOffset);
+        assertEquals(firstSubEnd, subquery.endOffset);
+        assertEquals(sql.length(), statement.endOffset);
+        assertTrue(subquery.getFromClause().getUnaliasedTableNames().contains(new QualIdent("bar")));
+        assertEquals(1, statement.getSubqueries().size());
+
+        subquery = subquery.getSubqueries().get(0);
+        assertEquals(secondSubStart, subquery.startOffset);
+        assertEquals(secondSubEnd, subquery.endOffset);
+        assertTrue(subquery.getFromClause().getUnaliasedTableNames().contains(new QualIdent("baz")));
+        assertEquals(0, subquery.getSubqueries().size());
+    }
+
+    private static SQLStatement doAnalyze(String sql) throws IOException {
         TokenHierarchy<String> hi = TokenHierarchy.create(sql, SQLTokenId.language());
-        StatementAnalyzer analyzer = new StatementAnalyzer(hi.tokenSequence(SQLTokenId.language()));
+        return SQLStatementAnalyzer.analyze(hi.tokenSequence(SQLTokenId.language()));
+    }
+
+    public static void assertCanAnalyze(String sql) throws IOException {
+        doAnalyze(sql);
     }
 }
