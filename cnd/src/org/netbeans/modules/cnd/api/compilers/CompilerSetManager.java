@@ -54,6 +54,7 @@ import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
@@ -83,6 +84,7 @@ public class CompilerSetManager {
 
     public static final Object STATE_PENDING = "state_pending"; // NOI18N
     public static final Object STATE_COMPLETE = "state_complete"; // NOI18N
+    public static final Object STATE_UNINITIALIZED = "state_uninitialized"; // NOI18N
 
     public static final String LOCALHOST = "localhost"; // NOI18N
 
@@ -163,6 +165,12 @@ public class CompilerSetManager {
             if (csm != null) {
                 managers.put(key, csm);
             }
+        }
+        
+        if (csm.state == STATE_UNINITIALIZED && !SwingUtilities.isEventDispatchThread()) {
+            log.fine("CSM.getDefault: Doing deferred remote setup");
+            csm.sets.clear();
+            csm.initRemoteCompilerSets(key);
         }
         if (no_compilers) {
             DialogDescriptor dialogDescriptor = new DialogDescriptor(
@@ -356,71 +364,82 @@ public class CompilerSetManager {
         ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (provider != null && registry != null) {
             ServerRecord record = registry.get(key);
-            if (record != null && record.isOnline()) {
-                RequestProcessor.getDefault().post(new Runnable() {
-                    public void run() {
-                        provider.init(key);
-                        platform = provider.getPlatform();
-                        log.fine("CSM.initRemoteCompileSets: platform = " + platform);
-                        getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
-                        while (provider.hasMoreCompilerSets()) {
-                            String data = provider.getNextCompilerSetData();
-                            log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
-                            int i1 = data.indexOf(';');
-                            int i2 = data.indexOf(';', i1 + 1);
-                            String flavor = data.substring(0, i1);
-                            String path = data.substring(i1 + 1, i2);
-                            String tools = data.substring(i2 + 1);
-                            CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
-                            StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
-                            while (st.hasMoreTokens()) {
-                                String name = st.nextToken();
-                                int kind = -1;
-                                String p = path + '/' + name;
-                                if (flavor.startsWith("Sun")) { // NOI18N
-                                    if (name.equals("cc")) { // NOI18N
-                                        kind = Tool.CCompiler;
-                                    } else if (name.equals("CC")) { // NOI18N
-                                        kind = Tool.CCCompiler;
-                                    } else if (name.equals("dmake")) { // NOI18N
-                                        kind = Tool.MakeTool;
-                                    } else if (name.startsWith("gdb=")) { // NOI18N
-                                        kind = Tool.DebuggerTool;
-                                        i1 = name.indexOf('=');
-                                        p = name.substring(i1 + 1);
+            
+            if (record != null) {
+                if (!record.isOnline()) {
+                    record.validate(); // should this call move to Runnable.run below? 
+                }
+                if (record.isOnline()) {
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            provider.init(key);
+                            platform = provider.getPlatform();
+                            log.fine("CSM.initRemoteCompileSets: platform = " + platform);
+                            getPreferences().putInt(CSM + hkey + SET_PLATFORM, platform);
+                            while (provider.hasMoreCompilerSets()) {
+                                String data = provider.getNextCompilerSetData();
+                                log.fine("CSM.initRemoteCompileSets: line = [" + data + "]");
+                                int i1 = data.indexOf(';');
+                                int i2 = data.indexOf(';', i1 + 1);
+                                String flavor = data.substring(0, i1);
+                                String path = data.substring(i1 + 1, i2);
+                                String tools = data.substring(i2 + 1);
+                                CompilerSet cs = new CompilerSet(CompilerFlavor.toFlavor(flavor, platform), path, flavor);
+                                StringTokenizer st = new StringTokenizer(tools, ";"); // NOI18N
+                                while (st.hasMoreTokens()) {
+                                    String name = st.nextToken();
+                                    int kind = -1;
+                                    String p = path + '/' + name;
+                                    if (flavor.startsWith("Sun")) { // NOI18N
+                                        if (name.equals("cc")) { // NOI18N
+                                            kind = Tool.CCompiler;
+                                        } else if (name.equals("CC")) { // NOI18N
+                                            kind = Tool.CCCompiler;
+                                        } else if (name.equals("dmake")) { // NOI18N
+                                            kind = Tool.MakeTool;
+                                        } else if (name.startsWith("gdb=")) { // NOI18N
+                                            kind = Tool.DebuggerTool;
+                                            i1 = name.indexOf('=');
+                                            p = name.substring(i1 + 1);
+                                        }
+                                    } else {
+                                        if (name.equals("gcc")) { // NOI18N
+                                            kind = Tool.CCompiler;
+                                        } else if (name.equals("g++")) { // NOI18N
+                                            kind = Tool.CCCompiler;
+                                        } else if (name.equals("make") ||  // NOI18N
+                                                ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
+                                                        name.equals("gmake"))) { // NOI18N
+                                            kind = Tool.MakeTool;
+                                        } else if (name.equals("gdb")) { // NOI18N
+                                            kind = Tool.DebuggerTool;
+                                        } else if (name.startsWith("gdb=")) { // NOI18N
+                                            kind = Tool.DebuggerTool;
+                                            i1 = name.indexOf('=');
+                                            p = name.substring(i1 + 1);
+                                        }
                                     }
-                                } else {
-                                    if (name.equals("gcc")) { // NOI18N
-                                        kind = Tool.CCompiler;
-                                    } else if (name.equals("g++")) { // NOI18N
-                                        kind = Tool.CCCompiler;
-                                    } else if (name.equals("make") ||  // NOI18N
-                                            ((platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) &&
-                                                    name.equals("gmake"))) { // NOI18N
-                                        kind = Tool.MakeTool;
-                                    } else if (name.equals("gdb")) { // NOI18N
-                                        kind = Tool.DebuggerTool;
-                                    } else if (name.startsWith("gdb=")) { // NOI18N
-                                        kind = Tool.DebuggerTool;
-                                        i1 = name.indexOf('=');
-                                        p = name.substring(i1 + 1);
+                                    if (kind != -1) {
+                                        cs.addTool(key, name, p, kind);
                                     }
                                 }
-                                if (kind != -1) {
-                                    cs.addTool(key, name, p, kind);
-                                }
+                                add(cs);
                             }
-                            add(cs);
+                            provider.loadCompilerSetData(sets);
+                            // TODO: this should be upgraded to error reporting
+                            // about absence of tool chain on remote host
+                            // also compilersetmanager without compiler sets
+                            // should be handled gracefully
+                            log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
+                            state = STATE_COMPLETE;
                         }
-                        provider.loadCompilerSetData(sets);
-                        // TODO: this should be upgraded to error reporting
-                        // about absence of tool chain on remote host
-                        // also compilersetmanager without compiler sets
-                        // should be handled gracefully
-                        log.fine("CSM.initRemoteCompilerSets: Found " + sets.size() + " compiler sets");
-                        state = STATE_COMPLETE;
-                    }
-                });
+                    });
+                } else {
+                    // create empty CSM
+                    log.fine("CSM.initRemoteCompilerSets: Adding empty CS to OFFLINE host " + key);
+                    add(CompilerSet.createEmptyCompilerSet(PlatformTypes.PLATFORM_NONE));
+                    state = STATE_UNINITIALIZED;
+                }
             }
         } else {
             throw new IllegalStateException();
