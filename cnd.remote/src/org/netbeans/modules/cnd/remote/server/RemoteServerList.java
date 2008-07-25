@@ -93,10 +93,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        add(CompilerSetManager.LOCALHOST); 
+        addServer(CompilerSetManager.LOCALHOST); 
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                add(hkey);
+                addServer(hkey);
             }
         }
         refresh();
@@ -161,7 +161,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return sa;
     }
     
-    public void add(final String name) {
+    public void addServer(final String name) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -213,8 +213,16 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
 
-    public void deleteServer(RemoteServerRecord record) {
-        if (remove(record)) {
+    public void removeServer(int idx) {
+        if (idx >= 0 && idx < size()) {
+            RemoteServerRecord record = remove(idx);
+            pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
+            refresh();
+        }
+    }
+
+    public void removeServer(RemoteServerRecord record) {
+        if (super.remove(record)) {
             pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
             refresh();
         }
