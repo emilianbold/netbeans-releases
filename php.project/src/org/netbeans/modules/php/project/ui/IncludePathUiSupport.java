@@ -430,9 +430,7 @@ public final class IncludePathUiSupport {
             chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             chooser.setMultiSelectionEnabled(true);
             chooser.setDialogTitle(NbBundle.getMessage(IncludePathUiSupport.class, "LBL_AddFolders_DialogTitle"));
-            // XXX get last folder
-//                File curDir = FoldersListSettings.getDefault().getLastUsedClassPathFolder();
-//                chooser.setCurrentDirectory (curDir);
+            chooser.setCurrentDirectory(LastUsedFolders.getIncludePath());
             int option = chooser.showOpenDialog(SwingUtilities.getWindowAncestor(list));
             if (option == JFileChooser.APPROVE_OPTION) {
                 String[] files;
@@ -456,8 +454,7 @@ public final class IncludePathUiSupport {
                 int[] newSelection = IncludePathUiSupport.addFolders(listModel, list.getSelectedIndices(), files);
                 list.setSelectedIndices(newSelection);
                 // remember last folder
-//                    curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-//                    FoldersListSettings.getDefault().setLastUsedClassPathFolder(curDir);
+                LastUsedFolders.setIncludePath(chooser.getCurrentDirectory());
             }
         }
     }
