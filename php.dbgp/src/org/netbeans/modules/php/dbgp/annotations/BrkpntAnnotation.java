@@ -100,7 +100,7 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
                 ts.moveNext();
                 for (; !isValid && ts.offset() < endOffset;) {
                     TokenId id = ts.token().id();
-                    isValid = id != PHPTokenId.T_INLINE_HTML;
+                    isValid = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
                     if (!ts.moveNext()) {
                         break;
                     }

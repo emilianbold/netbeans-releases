@@ -257,11 +257,6 @@ public class JdkLocationPanel extends ApplicationLocationPanel {
         if (jdkLocation != null) {
             return jdkLocation;
         }
-        
-        jdkLocation = getJavaBundledAndInstalled();
-        if (jdkLocation != null) {
-            return jdkLocation;
-        }
 
         jdkLocation = getJavaFromInstalledProductProperties();
         if (jdkLocation != null) {

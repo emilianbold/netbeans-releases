@@ -330,14 +330,14 @@ public final class UI {
   }
   
   public static void setWidth(JComponent component, int width) {
-    setDimension(component, new Dimension(width, component.getPreferredSize().height));
+    setSize(component, new Dimension(width, component.getPreferredSize().height));
   }
 
   public static void setHeight(JComponent component, int height) {
-    setDimension(component, new Dimension(component.getPreferredSize().width, height));
+    setSize(component, new Dimension(component.getPreferredSize().width, height));
   }
 
-  private static void setDimension(JComponent component, Dimension dimension) {
+  public static void setSize(JComponent component, Dimension dimension) {
     component.setMinimumSize(dimension);
     component.setPreferredSize(dimension);
   }
@@ -611,6 +611,7 @@ public final class UI {
   public abstract static class Dialog extends WindowAdapter {
 
     protected void opened() {}
+    protected void closed() {}
     protected void resized() {}
     protected void updated() {}
    
@@ -663,6 +664,11 @@ public final class UI {
       opened();
     }
 
+    @Override
+    public void windowClosed(WindowEvent event) {
+      closed();
+    }
+
     protected final String i18n(String key) {
       return UI.i18n(getClass(), key);
     }
@@ -684,7 +690,7 @@ public final class UI {
   private static final class CornerBorder extends EmptyBorder {
 
     public CornerBorder() {
-      super(0, SMALL_INSET, SMALL_INSET, SMALL_INSET);
+      super(0, TINY_INSET * 2, TINY_INSET * 2, TINY_INSET * 2);
     }
 
     @Override

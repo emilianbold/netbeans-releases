@@ -280,35 +280,16 @@ public abstract class TransferFileTableModel extends AbstractTableModel {
     }
 
     public List<TransferFileUnit> getFilteredUnits() {
-        List<TransferFileUnit> files = new ArrayList<TransferFileUnit>();
-        Set<TransferFileUnit> folders = new HashSet<TransferFileUnit>();
-
-        Map<Integer,TransferFileUnit> id2FolderUnit = new HashMap<Integer,TransferFileUnit>();
+        List<TransferFileUnit> retval = new ArrayList<TransferFileUnit>();
         List<TransferFileUnit> allUnits = getData();
         for (TransferFileUnit fUnit : allUnits) {
             if (fUnit.isMarked()) {
                 if (fUnit.getTransferFile().isFile()) {
-                    files.add(fUnit);
-                } else {
-                   if (fUnit.getTransferFile().isDirectory()) {
-                        id2FolderUnit.put(fUnit.getTransferFile().getRelativePath().hashCode(), fUnit);
-                   }
-                }
+                    retval.add(fUnit);
+                } 
             }
         }
-        for (TransferFileUnit fUnit : files) {
-            String[] split = fUnit.getTransferFile().getRelativePath().split("/");//NOI18N
-            StringBuilder path = null;
-            for (String elem : split) {
-                path = (path == null) ? new StringBuilder() : path.append("/");//NOI18N
-                TransferFileUnit fold = id2FolderUnit.get(path.append(elem).toString().hashCode());
-                if (fold != null) {
-                    folders.add(fold);
-                }
-            }
-        }
-        files.addAll(folders);
-        return files;
+        return retval;
     }
     
     
