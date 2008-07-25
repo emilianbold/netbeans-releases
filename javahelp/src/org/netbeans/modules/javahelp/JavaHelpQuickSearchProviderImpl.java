@@ -56,9 +56,14 @@ import org.netbeans.api.javahelp.Help;
  */
 public class JavaHelpQuickSearchProviderImpl implements SearchProvider {
 
+    private JavaHelpQuery query;
     
     public void evaluate(SearchRequest request, SearchResponse response) {
-        JavaHelpQuery query = new JavaHelpQuery();
+        synchronized( this ) {
+            if( null == query ) {
+                query = JavaHelpQuery.getDefault();
+            }
+        }
         List<SearchTOCItem> res = query.search( request.getText() );
         for( SearchTOCItem item : res ) {
             if( !response.addResult( createAction( item.getURL() ), item.getName() ) )
