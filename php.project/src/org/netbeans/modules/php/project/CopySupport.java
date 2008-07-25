@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.project;
@@ -52,6 +52,8 @@ import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
@@ -61,6 +63,7 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
@@ -68,7 +71,8 @@ import org.openide.util.WeakListeners;
  *
  * @author Radek Matous
  */
-public abstract class CopySupport {
+public abstract class CopySupport {    
+    private static boolean showMessage = true;
 
     static CopySupport getInstance() {
 	return new CopyImpl();
@@ -78,15 +82,22 @@ public abstract class CopySupport {
     abstract void projectClosed(PhpProject project);
     public abstract void waitFinished();
 
-    private static final class CopyImpl extends CopySupport implements PropertyChangeListener, FileChangeListener {
+    private static void showProblem(Exception ex) {
+        if (showMessage) {
+            String message = NbBundle.getMessage(CopySupport.class, "LBL_CopyFilesError", ex.getLocalizedMessage());
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Exception(ex, message));
+            showMessage = false;
+        }
+    }
 
+    private static final class CopyImpl extends CopySupport implements PropertyChangeListener, FileChangeListener {
 	private static final SourceTargetPair<FileObject, FileObject> INVALID_CONFIG = SourceTargetPair.forInvalidConfig();
 	private static final RequestProcessor RP = new RequestProcessor("PHP replication"); // NOI18N
 
 	private volatile PhpProject project;
 	private SourceTargetPair<FileObject, FileObject> config;
 	private FileSystem fileSystem;
-	private FileChangeListener weakFileChangeListener;	
+	private FileChangeListener weakFileChangeListener;
 	private boolean isProjectOpened;
 	private static final Queue<SourceTargetPair<FileObject, File>> allPairs =
 		new ConcurrentLinkedQueue<SourceTargetPair<FileObject, File>>();
@@ -96,10 +107,10 @@ public abstract class CopySupport {
 		SourceTargetPair<FileObject, File> nextPair = allPairs.poll();
 		Map<File, SourceTargetPair<FileObject, File>> m = new HashMap<File, SourceTargetPair<FileObject, File>>();
 		while (nextPair != null) {
-                    if (nextPair.isInitModifier()) {                    
+                    if (nextPair.isInitModifier()) {
                         //init first
                         doInit(nextPair);
-                    } else {                                        
+                    } else {
                         m.put(nextPair.getTarget(), nextPair);
                     }
                     nextPair = allPairs.poll();
@@ -115,7 +126,7 @@ public abstract class CopySupport {
 		}
 	    }
 
-	    private void doInit(SourceTargetPair<FileObject, File> nextPair) {            
+	    private void doInit(SourceTargetPair<FileObject, File> nextPair) {
                 try {
                     File target = nextPair.getTarget();
                     File[] childs = target.listFiles();
@@ -123,11 +134,11 @@ public abstract class CopySupport {
                         doDelete(file);
                     }
                 } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
+                    //Exceptions.printStackTrace(ex);
+                    showProblem(ex);
                 }
-
             }
-            
+
 	    private void doCopy(SourceTargetPair<FileObject, File> nextPair) {
 		try {
 		    File target = nextPair.getTarget();
@@ -141,11 +152,12 @@ public abstract class CopySupport {
 			String[] childs = target.list();
 			if (childs == null || childs.length == 0) {
 			    doDelete(target);
-			}			
+			}
                         FileUtil.createFolder(target);
                     }
 		} catch (IOException ex) {
-		    Exceptions.printStackTrace(ex);
+		    //Exceptions.printStackTrace(ex);
+                    showProblem(ex);
 		}
 	    }
 
@@ -153,7 +165,8 @@ public abstract class CopySupport {
 		try {
 		    doDelete(nextPair.getTarget());
 		} catch (IOException ex) {
-		    Exceptions.printStackTrace(ex);
+		    //Exceptions.printStackTrace(ex);
+                    showProblem(ex);
 		}
 	    }
 
@@ -179,7 +192,7 @@ public abstract class CopySupport {
 			setConfig(new ConfigurationFactory(project).getConfiguration());
                         start(true);
 		    }
-		});		
+		});
 	    }
 	}
 
@@ -200,7 +213,7 @@ public abstract class CopySupport {
 	}
 
 	public void fileRenamed(FileRenameEvent fe) {
-            prepareForRename(fe);	    
+            prepareForRename(fe);
 	}
 
 	public void fileAttributeChanged(FileAttributeEvent fe) {
@@ -209,14 +222,14 @@ public abstract class CopySupport {
 	@Override
 	protected void projectOpened(PhpProject project) {
 	    init(project);
-	    isProjectOpened = true;	    	    
+	    isProjectOpened = true;
 	    start(false);
 	}
 
 	@Override
-	protected void projectClosed(PhpProject project) {	    
+	protected void projectClosed(PhpProject project) {
 	    //init(project);
-	    isProjectOpened = false;	    
+	    isProjectOpened = false;
 	    stop();
 	}
 
@@ -232,7 +245,7 @@ public abstract class CopySupport {
 	    assert config != null;
 	    synchronized (this) {
 		this.config = config;
-	    }	    
+	    }
 	}
 
         private boolean isProjectFolder(FileObject fo) {
@@ -253,7 +266,7 @@ public abstract class CopySupport {
 		PropertyEvaluator evaluator = project.getEvaluator();
 		evaluator.addPropertyChangeListener(WeakListeners.propertyChange(this, evaluator));
 		ConfigurationFactory factory = new ConfigurationFactory(project);
-		setConfig(factory.getConfiguration());                
+		setConfig(factory.getConfiguration());
 	    } else {
 		assert this.project.equals(project);
 	    }
@@ -266,7 +279,7 @@ public abstract class CopySupport {
              if (!forDelete) {
                  File srcRoot = FileUtil.toFile(getConfig().getSource());
                  File tmp = FileUtil.toFile(fo);
-                 while(tmp != null && !tmp.equals(srcRoot)) {                              
+                 while(tmp != null && !tmp.equals(srcRoot)) {
                      if (!VisibilityQuery.getDefault().isVisible(tmp)) {
                          return false;
                      }
@@ -309,7 +322,7 @@ public abstract class CopySupport {
 	private void prepareForRename(FileRenameEvent fe) {
 	    SourceTargetPair<FileObject, FileObject> config = getConfig();
 	    if (config != null && !config.isInvalidModifier() && config.isCopyModifier()) {
-                FileObject sourceFo = fe.getFile();                            
+                FileObject sourceFo = fe.getFile();
                 if (isCopyAllowed(sourceFo,false)) {
                     if (sourceFo.isFolder()) {
                         FileObject[] children = sourceFo.getChildren();
@@ -319,20 +332,20 @@ public abstract class CopySupport {
                     } else {
                         prepareForCopy(sourceFo);
                     }
-                    
+
                     File target = targetForSource(sourceFo);
                     StringBuilder sb = new StringBuilder();
                     sb.append(fe.getName());
-                    String ext = fe.getExt();                    
+                    String ext = fe.getExt();
                     if ( ext != null && ext.trim().length() > 0) {
                         sb.append('.').append(ext);//NOI18N
                     }
-                    File toDelete = new File(target.getParent(),sb.toString());                     
+                    File toDelete = new File(target.getParent(),sb.toString());
                     prepareOperation(SourceTargetPair.forDelete(sourceFo, toDelete));
                 }
             }
 	}
-        
+
         private synchronized void prepareInitCopy() {
             //SourceTargetPair<FileObject, File> forInit = SourceTargetPair.forInit(config);
             //prepareOperation(forInit);
@@ -349,15 +362,15 @@ public abstract class CopySupport {
         }
 
         private boolean existsEmptyFolder(FileObject target) {
-            assert target != null;            
+            assert target != null;
             assert target.isFolder();
             return existsEmptyFolder(FileUtil.toFile(target));
         }
-        
+
         private boolean existsEmptyFolder(File target) {
             assert target.isDirectory();
             String[] childNames = target.list();
-            return (childNames != null && childNames.length == 0);            
+            return (childNames != null && childNames.length == 0);
         }
 
 	private void prepareOperation(FileObject source, boolean forDelete) {
@@ -373,8 +386,8 @@ public abstract class CopySupport {
 	private void prepareOperation(SourceTargetPair<FileObject, File> srcTargetPair) {
             allPairs.offer(srcTargetPair);
             task.schedule(300);
-        }   
-        
+        }
+
 	synchronized private void start(boolean initCopy) {
 	    stop();
 	    final SourceTargetPair<FileObject, FileObject> config = getConfig();
@@ -435,8 +448,12 @@ public abstract class CopySupport {
 	    final FileObject sourceRoot = getSourceRoot();
 	    final FileObject targetRoot = isCopyEnabled() ? getTargetRoot(true) : getTargetRoot(false);
 	    if (sourceRoot != null && targetRoot != null && sourceRoot != targetRoot && targetRoot.canWrite()) {
+                showMessage = true;
 		config = SourceTargetPair.forConfig(sourceRoot, targetRoot, copyEnabled);
 	    } else {
+                if (showMessage && copyEnabled && sourceRoot != null && targetRoot != null) {
+                    CopySupport.showProblem(new Exception(""));
+                }
 		config = CopyImpl.INVALID_CONFIG;
 	    }
 	    antProjectHelper = project.getHelper();
@@ -508,7 +525,7 @@ public abstract class CopySupport {
 	    assert targetRoot.isDirectory();
 	    return new SourceTargetPair<FileObject, File>(sourceRoot, targetRoot, Modifier.INIT);
 	}
-        
+
 	static SourceTargetPair<FileObject, FileObject> forConfig(FileObject sourceRoot, FileObject targetRoot, boolean copyEnabled) {
 	    assert sourceRoot.isFolder();
 	    assert targetRoot.isFolder();
@@ -565,6 +582,6 @@ public abstract class CopySupport {
 	}
 	boolean isInitModifier() {
 	    return modifier.equals(Modifier.INIT);
-	}        
+	}
     }
 }
