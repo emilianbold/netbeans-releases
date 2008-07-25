@@ -184,7 +184,7 @@ public class NodeMemberEvent extends NodeEvent {
         Node[] deltaNodes = delta;
         int[] deltaIndices = getDeltaIndices();
 
-        for (int i = 0; i < deltaNodes.length; i++) {
+        for (int i = 0; i < deltaIndices.length; i++) {
             sb.append("\n  "); // NOI18N
             sb.append(i);
             sb.append(" at "); // NOI18N
