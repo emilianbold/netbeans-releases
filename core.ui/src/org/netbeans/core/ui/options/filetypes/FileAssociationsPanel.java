@@ -194,16 +194,16 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                                     .add(layout.createSequentialGroup()
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(layout.createSequentialGroup()
-                                                .add(cbExtension, 0, 212, Short.MAX_VALUE)
+                                                .add(cbExtension, 0, 236, Short.MAX_VALUE)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))
-                                            .add(cbType, 0, 212, Short.MAX_VALUE))
+                                            .add(cbType, 0, 236, Short.MAX_VALUE))
                                         .add(10, 10, 10)
                                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(layout.createSequentialGroup()
-                                                .add(btnNew, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                                .add(btnNew)
                                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                                .add(btnRemove, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                                            .add(btnDefault, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))))
+                                                .add(btnRemove))
+                                            .add(btnDefault)))))
                             .add(layout.createSequentialGroup()
                                 .add(lblFilesIgnored)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -212,9 +212,9 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
                                 .add(10, 10, 10)
                                 .add(lblPattern)
                                 .add(37, 37, 37)
-                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                                .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                .add(btnDefaultIgnored, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 80, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))))
+                                .add(btnDefaultIgnored))))
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(162, 162, 162)
                         .add(txtPatternError, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 391, Short.MAX_VALUE)))
@@ -284,7 +284,6 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         if(cbExtension.getItemAt(0).equals(chooseExtensionItem)) {
             // remove initial hint item
             cbExtension.removeItem(chooseExtensionItem);
-            cbExtension.setForeground(UIManager.getDefaults().getColor("ComboBox.foreground"));  //NOI18N
             cbType.setEnabled(true);
         }
         cbType.setSelectedItem(model.getMimeItem(newExtension));
@@ -327,6 +326,10 @@ private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         for (int i = 0; i < cbExtension.getItemCount(); i++) {
             newItems.add(cbExtension.getItemAt(i).toString());
         }
+        if(newItems.remove(chooseExtensionItem)) {
+            // initial hint removed, so enable file types combo box
+            cbType.setEnabled(true);
+        }
         newItems.add(newExtensionPanel.getExtension());
         Collections.sort(newItems, String.CASE_INSENSITIVE_ORDER);
         cbExtension.removeAllItems();
@@ -352,7 +355,6 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
 
     void load() {
         cbExtension.removeAllItems();
-        cbExtension.setForeground(UIManager.getDefaults().getColor("ComboBox.disabledForeground"));  //NOI18N
         cbType.removeAllItems();
         cbType.setEnabled(false);
         btnDefault.setEnabled(false);
