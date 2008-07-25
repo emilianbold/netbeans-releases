@@ -47,6 +47,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.tasklist.impl.ScannerDescriptor;
 
 /**
  *
@@ -54,27 +55,26 @@ import java.util.prefs.Preferences;
  */
 class TypesFilter {
     
-    private Set<String> enabledProviders = new HashSet<String>();
+    private Set<String> disabledProviders = new HashSet<String>();
     private int countLimit = 100;
     
     public TypesFilter() {
-        addDefaultTypes();
     }
     
     private TypesFilter( TypesFilter src ) {
         this.countLimit = src.countLimit;
-        this.enabledProviders.addAll( src.enabledProviders );
+        this.disabledProviders.addAll( src.disabledProviders );
     }
     
     public boolean isEnabled( String type ) {
-        return enabledProviders.contains( type );
+        return !disabledProviders.contains( type );
     }
     
     public void setEnabled( String type, boolean enabled ) {
-        if( enabled ) {
-            enabledProviders.add( type );
+        if( !enabled ) {
+            disabledProviders.add( type );
         } else {
-            enabledProviders.remove( type );
+            disabledProviders.remove( type );
         }
     }
     
@@ -96,30 +96,22 @@ class TypesFilter {
     
     void load( Preferences prefs, String prefix ) throws BackingStoreException {
         countLimit = prefs.getInt( prefix+"_countLimit", 100 ); //NOI18N
-        enabledProviders.clear();
-        String enabled = prefs.get( prefix+"_enabled", "" ); //NOI18N //NOI18N
-        if( enabled.trim().length() > 0 ) {
-            StringTokenizer tokenizer = new StringTokenizer( enabled, "\n" ); //NOI18N
-            while( tokenizer.hasMoreTokens() ) {
-                enabledProviders.add( tokenizer.nextToken() );
-            }
-        } else {
-            addDefaultTypes();
+        disabledProviders.clear();
+        String disabled = prefs.get( prefix+"_disabled", "" ); //NOI18N //NOI18N
+        StringTokenizer tokenizer = new StringTokenizer( disabled, "\n" ); //NOI18N
+        while( tokenizer.hasMoreTokens() ) {
+            disabledProviders.add( tokenizer.nextToken() );
         }
     }
     
     void save( Preferences prefs, String prefix ) throws BackingStoreException {
         prefs.putInt( prefix+"_countLimit", countLimit );
         StringBuffer buffer = new StringBuffer();
-        for( Iterator<String> type = enabledProviders.iterator(); type.hasNext(); ) {
+        for( Iterator<String> type = disabledProviders.iterator(); type.hasNext(); ) {
             buffer.append( type.next() );
             if( type.hasNext() )
                 buffer.append( "\n" ); //NOI18N
         }
-        prefs.put( prefix+"_enabled", buffer.toString() ); //NOI18N
-    }
-    
-    private void addDefaultTypes() {
-        enabledProviders.add("org.netbeans.modules.java.source.tasklist.JavaTaskProvider"); //NOI18N
+        prefs.put( prefix+"_disabled", buffer.toString() ); //NOI18N
     }
 } 
