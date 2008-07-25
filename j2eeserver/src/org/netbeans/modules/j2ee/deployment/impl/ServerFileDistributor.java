@@ -597,6 +597,10 @@ public class ServerFileDistributor extends ServerProgress {
                 serverDescriptorChanged = true;
                 return;
             }
+            if (!manifestChanged && relativePath.equals("META-INF/MANIFEST.MF")) { // NOI18N
+                manifestChanged = true;
+                return;
+            }
         }
 
         private void record(ModuleChangeReporter mcr, long since) {
