@@ -116,11 +116,13 @@ public final class PullUpRefactoringPlugin extends JavaRefactoringPlugin {
             // increase progress (step 2)
             fireProgressListenerStep();
             // #2 - check if there are any members to pull up
-            Element el = treePathHandle.resolveElement(cc);
-            for (Element element : el.getEnclosedElements()) {
+            for (Element element : e.getEnclosedElements()) {
                 if (element.getKind() != ElementKind.CONSTRUCTOR) {
                     return null;
                 }
+            }
+            if (!e.getInterfaces().isEmpty()) {
+                return null;
             }
             problem = new Problem(true, NbBundle.getMessage(PullUpRefactoringPlugin.class, "ERR_PullUp_NoMembers")); // NOI18N
             // increase progress (step 3)
