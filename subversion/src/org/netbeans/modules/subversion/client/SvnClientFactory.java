@@ -50,6 +50,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.svnclientadapter.SvnClientAdapterFactory;
 import org.netbeans.modules.subversion.Subversion;
+import org.netbeans.modules.subversion.SvnModuleConfig;
 import org.netbeans.modules.subversion.config.SvnConfigFiles;
 import org.openide.filesystems.FileUtil;
 import org.tigris.subversion.svnclientadapter.ISVNClientAdapter;
@@ -76,8 +77,7 @@ public class SvnClientFactory {
     private static ClientAdapterFactory factory;
     /** if an exception occured */
     private static SVNClientException exception = null;
-    /** possible executable locations; fallback alternatives to $PATH */
-    private static final String[] CMDLINE_LOCATIONS = new String[] {"/usr/local/bin"};
+
     /** indicates that something went terribly wrong with javahl init during the previous nb session */
     private static boolean javahlCrash = false;
     private final static int JAVAHL_INIT_SUCCESS = 1;
@@ -282,9 +282,9 @@ public class SvnClientFactory {
         for (String loc : locations) {
             File file = new File(loc, name);
             LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
-            if (file.exists()) {
-                LOG.log(Level.FINE, " found javahl library. Setting subversion.native.library={0}", new Object[] { file.getAbsolutePath() });
+            if (file.exists()) {                
                 System.setProperty("subversion.native.library", file.getAbsolutePath());
+                LOG.log(Level.FINE, " found javahl library. Setting subversion.native.library={0}", new Object[] { file.getAbsolutePath() });
                 return;
             }
         }
@@ -426,14 +426,8 @@ public class SvnClientFactory {
     }
 
     public void setupCommandline () {
-        exception = null;
-        CommandlineClient cc = new CommandlineClient();
-        try {
-            cc.checkSupportedVersion();
-        } catch (SVNClientException ex) {
-            exception = ex;
-            return;
-        }
+        if(!checkCLIExecutable()) return;
+        
         factory = new ClientAdapterFactory() {
             protected ISVNClientAdapter createAdapter() {
                 return new CommandlineClient(); //SVNClientAdapterFactory.createSVNClient(CmdLineClientAdapterFactory.COMMANDLINE_CLIENT);
@@ -449,6 +443,38 @@ public class SvnClientFactory {
             }
         };
         LOG.info("running on commandline");
+    }
+
+    private boolean checkCLIExecutable() {
+        exception = null;
+        CommandlineClient cc = new CommandlineClient();
+        SVNClientException ex = null;
+        try {
+            cc.checkSupportedVersion();
+        } catch (SVNClientException e) {
+            ex = e;
+        }
+        if(ex == null) {
+            // works on first shot
+            LOG.fine("svn client returns correct version");
+            return true;
+        }
+        if(Utilities.isUnix()) {
+            LOG.fine("svn client isn't set on path yet. Will check known locations...");
+            String[] locations = new String[] {"/usr/local/bin/", "/usr/bin/"};
+            String name = "svn";
+            for (String loc : locations) {
+                File file = new File(loc, name);
+                LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
+                if (file.exists()) {                
+                    SvnModuleConfig.getDefault().setExecutableBinaryPath(loc);
+                    LOG.log(Level.FINE, " found svn executable library. Setting executable binary path to {0}", new Object[] { loc });
+                    return true;
+                }
+            }
+        }
+        LOG.fine("svn client isn't set on path yet. Will check known locations...");
+        return false;
     }
 
     private abstract class ClientAdapterFactory {
