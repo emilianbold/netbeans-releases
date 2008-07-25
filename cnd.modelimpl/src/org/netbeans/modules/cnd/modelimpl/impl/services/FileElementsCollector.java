@@ -97,7 +97,7 @@ public class FileElementsCollector {
             visibleUsedDeclarations = null;
             visibleNamespaces = null;
         } else if (startOffset > destOffset) {
-            throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset);
+            throw new IllegalArgumentException("Start offset "+startOffset+" > destination offset "+destOffset); // NOI18N
         }
     }
     

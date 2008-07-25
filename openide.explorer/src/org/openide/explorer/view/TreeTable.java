@@ -356,6 +356,13 @@ class TreeTable extends JTable implements Runnable {
                     return TreeTable.super.getPreferredSize();
                 case 6:
                     //return getToolTipTextImpl((MouseEvent) p1);
+                case 10:
+                    Object[] arr = (Object[]) p1;
+                    return TreeTable.super.processKeyBinding(
+                            (KeyStroke) arr[0],
+                            (KeyEvent) arr[1],
+                            (Integer) arr[2],
+                            (Boolean) arr[3]);                
                 default:
                     throw new IllegalStateException("type: " + type);
             }
@@ -405,9 +412,17 @@ class TreeTable extends JTable implements Runnable {
 
     @Override
     protected void processEvent(AWTEvent e) {
-        new GuardedActions(4, e);
+        if (e instanceof KeyEvent) {
+            super.processEvent(e);
+        } else {
+            new GuardedActions(4, e);
+        }
     }
 
+    @Override
+    protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+        return (Boolean) new GuardedActions(10, new Object[]{ks, e, condition, pressed}).ret;
+    }
 
     
     //   private static final sun.misc.Perf perf = sun.misc.Perf.getPerf();

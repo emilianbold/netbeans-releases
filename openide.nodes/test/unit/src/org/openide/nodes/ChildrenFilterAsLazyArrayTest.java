@@ -41,23 +41,23 @@
 
 package org.openide.nodes;
 
-public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
 
-    public ChildrenFilterAsLazyKeysTest(java.lang.String testName) {
-        super(testName);
-    }
 
-//    public static ChildrenFilterAsLazyKeysTest suite() {
-//        return new ChildrenFilterAsLazyKeysTest("testProblemsWithRefereshAfterInitializationInReadAccessIssue140313");
-//    }
-
-    @Override
-    protected boolean lazy() {
-        return true;
+/** Test whether Children.Keys inherited all functionality from Children.Array.
+ * @author Jaroslav Tulach
+ */
+public class ChildrenFilterAsLazyArrayTest extends ChildrenArrayTest {
+    public ChildrenFilterAsLazyArrayTest (String s) {
+        super (s);
     }
 
     @Override
-    protected Node createNode (Children ch) {
-        return new FilterNode (new AbstractNode (ch));
+    protected Children.Array createChildren () {
+        // the demonstrate issue #141356, uncomment and use next line with Keys(true)
+        //Node orig = new AbstractNode (new ChildrenKeysTest.Keys (true));
+        Node orig = new AbstractNode (new ChildrenKeysTest.Keys (false));
+        return new FilterNode.Children (orig);
     }
+    
 }
+
