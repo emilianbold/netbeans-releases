@@ -70,7 +70,7 @@ import org.netbeans.modules.web.client.tools.common.dbgp.Stack.*;
 public class DebuggerProxy {
     private volatile Socket sessionSocket;
     private String sessionID;
-    private BlockingQueue<Message> suspensionPointQueue = new ArrayBlockingQueue<Message>(8);
+    private BlockingQueue<Message> suspensionPointQueue = new ArrayBlockingQueue<Message>(128);
     private BlockingQueue<HttpMessage> httpQueue = new ArrayBlockingQueue<HttpMessage>(200); //this queue may be a lot larger.
     private BlockingQueue<ResponseMessage> responseQueue = new ArrayBlockingQueue<ResponseMessage>(8);
     public static final List<DebuggerProxy> proxies = new CopyOnWriteArrayList<DebuggerProxy>();
