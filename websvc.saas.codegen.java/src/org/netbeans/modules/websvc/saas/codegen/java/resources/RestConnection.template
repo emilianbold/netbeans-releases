@@ -1,14 +1,13 @@
-/*
- * RestConnection.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,26 +26,26 @@ import java.util.logging.Logger;
 
 
 /**
- * RestConnection
+ * ${name}
  *
- * @author __USER__
+ * @author ${user}
  */
-public class RestConnection {
+public class ${name} {
 
     private HttpURLConnection conn;
     private String date;
 
-    public RestConnection(String baseUrl) {
+    public ${name}(String baseUrl) {
         this(baseUrl, null);
     }
 
-    /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] params) {
+    /** Creates a new instance of ${name} */
+    public ${name}(String baseUrl, String[][] params) {
         this(baseUrl, null, params);
     }
 
-    /** Creates a new instance of RestConnection */
-    public RestConnection(String baseUrl, String[][] pathParams, String[][] params) {
+    /** Creates a new instance of ${name} */
+    public ${name}(String baseUrl, String[][] pathParams, String[][] params) {
         try {
             String urlStr = baseUrl;
             if (pathParams != null && pathParams.length > 0) {
@@ -64,7 +63,7 @@ public class RestConnection {
             date = format.format(new Date());
             conn.setRequestProperty("Date", date);
         } catch (Exception ex) {
-            Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -247,7 +246,7 @@ public class RestConnection {
                     try {
                         p += key + "=" + URLEncoder.encode(value, "UTF-8") + "&";
                     } catch (UnsupportedEncodingException ex) {
-                        Logger.getLogger(RestConnection.class.getName()).log(Level.SEVERE, null, ex);
+                        Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
             }

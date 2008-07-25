@@ -80,7 +80,8 @@ END_SINK_MAP()
     DECLARE_PROTECT_FINAL_CONSTRUCT()
 
     HRESULT FinalConstruct();
-    void FinalRelease();
+    void FinalRelease(){
+    }
 
 public:
     //IObjectWithSite
@@ -90,9 +91,6 @@ public:
     void STDMETHODCALLTYPE OnNavigateComplete(IDispatch *pDisp, VARIANT *pvarURL);
     void STDMETHODCALLTYPE OnDocumentComplete(IDispatch *pDisp, VARIANT *pvarURL);
     void OpenURI(string url);
-    //ScriptDebugger *getScriptDebugger() {
-    //    return m_pScriptDebugger;
-    //}
     DbgpConnection *getDbgpConnection() {
         return m_pDbgpConnection;
     }
@@ -102,7 +100,6 @@ private:
     DWORD m_dwWebBrowserCookie;
     DWORD m_dwThreadID;
     BOOL m_bAdvised;
-    //ScriptDebugger *m_pScriptDebugger;
     DbgpConnection *m_pDbgpConnection;
     BOOL debuggerStarted;
 
@@ -110,7 +107,7 @@ private:
     void initializeNetbeansDebugging(tstring port, tstring sessionId);
     static DWORD WINAPI DebuggerProc(LPVOID param);
     HRESULT getWebBrowser(IWebBrowser2 **ppRemoteDebugApp);
-    HANDLE m_hEvent;
+    void setDebuggerStopped();
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(NetBeansBHO), CNetBeansBHO)

@@ -51,7 +51,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
@@ -74,12 +74,12 @@ final class ComponentDocument extends JComponent {
 
   private void init() {
 //out();
-    myWrapLines = Option.getDefault().isWrapLines();
-    myLineNumbers = Option.getDefault().isLineNumbers();
-    myTextColor = Option.getDefault().getTextColor();
-    myTextFont = Option.getDefault().getTextFont();
-    myBackgroundColor = Option.getDefault().getBackgroundColor();
-    myLineSpacing = Option.getDefault().getLineSpacing();
+    myWrapLines = Config.getDefault().isWrapLines();
+    myLineNumbers = Config.getDefault().isLineNumbers();
+    myTextColor = Config.getDefault().getTextColor();
+    myTextFont = Config.getDefault().getTextFont();
+    myBackgroundColor = Config.getDefault().getBackgroundColor();
+    myLineSpacing = Config.getDefault().getLineSpacing();
     myLines = new LinkedList<ComponentLine>();
   }
 
@@ -173,7 +173,7 @@ final class ComponentDocument extends JComponent {
   }
 
   private void prepareWrapLines() {
-    myWidth = Option.getDefault().getPageWidth();
+    myWidth = Config.getDefault().getPageWidth();
 //out("Width: " + myWidth);
     List<ComponentLine> lines = new LinkedList<ComponentLine>();
 
@@ -277,7 +277,7 @@ final class ComponentDocument extends JComponent {
     myLeading = new int [size];
     myCorrection = new int [size];
 
-    int pageHeight = Option.getDefault().getPageHeight();
+    int pageHeight = Config.getDefault().getPageHeight();
     int breakPosition = pageHeight;
     int prevPos;
 //out();
@@ -318,7 +318,7 @@ final class ComponentDocument extends JComponent {
  
   @Override
   protected void paintComponent(Graphics graphics) {
-    Graphics2D g = Option.getDefault().getGraphics(graphics);
+    Graphics2D g = Config.getDefault().getGraphics(graphics);
 
     g.setColor(myBackgroundColor);
     g.fillRect(0, 0, myWidth, myHeight);

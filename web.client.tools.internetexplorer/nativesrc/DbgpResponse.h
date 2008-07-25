@@ -62,7 +62,8 @@ static const tstring BREAKPOINT =       _T("breakpoint");
 static const tstring FILE_NAME =        _T("filename");
 static const tstring LINE_NO =          _T("lineno");
 static const tstring ID =               _T("id");
-
+static const tstring ENCODING =         _T("encoding");
+static const tstring BASE64 =           _T("base64");
 
 class DbgpResponse {
 public:
@@ -119,9 +120,15 @@ public:
     DbgpWindowTag &addWindow() {
         return tag.addWindowTag();
     }
+
+    void addAttribute(tstring name, tstring value) {
+        tag.addAttribute(name, value);
+    }
+
     tstring toString(){
         return tag.toString();
     }
+
 private:
     DbgpWindowsTag tag;
 };
@@ -131,9 +138,15 @@ public:
     DbgpSourceTag &addSource() {
         return tag.addSourceTag();
     }
+
+    void addAttribute(tstring name, tstring value) {
+        tag.addAttribute(name, value);
+    }
+
     tstring toString(){
         return tag.toString();
     }
+
 private:
     DbgpSourcesTag tag;
 };

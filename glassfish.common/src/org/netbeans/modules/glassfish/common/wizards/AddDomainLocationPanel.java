@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.util.NbBundle;
 
 public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeListener {
@@ -95,7 +96,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     return true;
                 }
                 File domainsDir = domainDirCandidate.getParentFile();
-                if (domainsDir.canWrite() && dex < 0) {
+                if (domainsDir.canWrite() && dex < 0 && !ServerUtilities.isTP2(gfRoot)) {
                     wizardIterator.setDomainLocation(domainDirCandidate.getAbsolutePath());
                     wizard.putProperty(PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(this.getClass(), "MSG_CreateEmbedded",domainField));  // NOI18N
@@ -112,7 +113,7 @@ public class AddDomainLocationPanel implements WizardDescriptor.Panel, ChangeLis
                     AddServerLocationPanel.readServerConfiguration(domainDirCandidate, wizardIterator);
                     return true;
                 }
-                if (AddServerLocationPanel.canCreate(domainDirCandidate)) {
+                if (AddServerLocationPanel.canCreate(domainDirCandidate) && !ServerUtilities.isTP2(gfRoot)) {
                     wizardIterator.setDomainLocation(domainLoc);
                     wizard.putProperty(PROP_ERROR_MESSAGE, 
                             NbBundle.getMessage(this.getClass(), "MSG_CreateDomain",domainField)); // NOI18N

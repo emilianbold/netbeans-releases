@@ -1,21 +1,20 @@
-/*
- * RefConverter.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.net.URI;
 import javax.xml.bind.annotation.XmlAttribute;
 
 /**
  * Converter class for reference.
  *
- * @author __USER__
+ * @author ${user}
  */
 
 public class RefConverter {

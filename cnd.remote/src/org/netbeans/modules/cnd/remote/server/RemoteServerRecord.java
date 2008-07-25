@@ -120,11 +120,11 @@ public class RemoteServerRecord implements ServerRecord {
                 state = STATE_ONLINE;
             }
         }
-        if (state == STATE_ONLINE) {
-            // Trigger creation of the CSM if it doesn't already exist...
-            CompilerSetManager.getDefault(name);
-        }
         if (pcs != null) {
+            if (state == STATE_ONLINE) {
+                // Trigger creation of the CSM if it doesn't already exist...
+                CompilerSetManager.getDefault(name);
+            }
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
     }

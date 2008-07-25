@@ -51,6 +51,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.designer.cssengine</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
                 <friend>org.netbeans.modules.visualweb.designer.markup</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.project.importpage</friend>
                 <friend>org.netbeans.modules.visualweb.xhtml</friend>

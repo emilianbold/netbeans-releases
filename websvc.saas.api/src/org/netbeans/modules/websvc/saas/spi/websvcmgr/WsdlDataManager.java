@@ -84,11 +84,6 @@ public interface WsdlDataManager {
     void removeWsdlData(String wsdlUrl, String serviceName);
     
     /**
-     * Save WSDL data
-     */
-    void save(WsdlData data);
-    
-    /**
      * Refresh WSDL artifacts from given data.
      */
     void refresh(WsdlData data);

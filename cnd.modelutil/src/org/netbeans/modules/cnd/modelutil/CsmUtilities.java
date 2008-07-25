@@ -750,7 +750,7 @@ public class CsmUtilities {
         if( pointOrOffsetable.getOffsetable() != null ) {
             return getElementJumpName(pointOrOffsetable.getOffsetable());
         } else {
-            return String.format("[%i:%i]", pointOrOffsetable.getPoint().line, pointOrOffsetable.getPoint().column);
+            return String.format("[%i:%i]", pointOrOffsetable.getPoint().line, pointOrOffsetable.getPoint().column); // NOI18N
         }
     }
 

@@ -1,14 +1,13 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
@@ -29,26 +28,26 @@ import javax.swing.JTextField;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ extends Authenticator {
+public class ${name} extends Authenticator {
 
     private static String username;
     private static String password;
-    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+    private static final String PROP_FILE = ${name}.class.getSimpleName().toLowerCase() + ".properties";
     
     static {
         try {
             Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+            props.load(${name}.class.getResourceAsStream(PROP_FILE));
             username = props.getProperty("username");
             password = props.getProperty("password");
         } catch (IOException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
-    private static __NAME__ singleton = new __NAME__();
+    private static ${name} singleton = new ${name}();
     
     public static void login() throws IOException {
         if (!isValidUsernamePassword()) {
@@ -66,7 +65,7 @@ public class __NAME__ extends Authenticator {
                 password != null && password.length() > 0);
     }
 
-    private __NAME__() {
+    private ${name}() {
     }
 
     protected PasswordAuthentication getPasswordAuthentication() {

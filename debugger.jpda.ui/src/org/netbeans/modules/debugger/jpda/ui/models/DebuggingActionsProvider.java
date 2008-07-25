@@ -134,7 +134,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ANY
     );
 
-    private static Action GO_TO_SOURCE_ACTION = Models.createAction (
+    static Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
