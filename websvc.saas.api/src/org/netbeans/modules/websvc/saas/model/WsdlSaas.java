@@ -123,7 +123,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
         if (wsData == null) {
             String serviceName = getDefaultServiceName();
             wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N
-
+ 
             // first-time the call will return null
             if (wsData == null) {
                 wsData = WsdlUtil.addWsdlData(getUrl(), getPackageName());
@@ -166,7 +166,7 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
         Object newValue = evt.getNewValue();
-      
+     
         // these are transitions out of the temporary state INITIALIZING
         // we are only interested in transition to ready and retrieved states.
         // when compile fail we fallback to retrieved to allow user examine the wsdl

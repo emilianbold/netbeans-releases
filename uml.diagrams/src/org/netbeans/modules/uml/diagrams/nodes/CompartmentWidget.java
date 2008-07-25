@@ -45,12 +45,14 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.ResizeControlPointResolver;
 import org.netbeans.api.visual.action.ResizeProvider;
 import org.netbeans.api.visual.action.ResizeStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
+import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.SeparatorWidget;
@@ -320,6 +322,25 @@ public abstract class CompartmentWidget extends Widget implements PropertyChange
         compositeWidget.notifyCompartmentWidgetAdded();
     }
 
+    public void remove(Widget w)
+    {
+        List<Widget> children = new ArrayList<Widget>();
+        children.addAll(w.getChildren());
+        for (Widget child: children)
+        {
+            if (scene instanceof GraphScene)
+            {
+                Object obj = ((GraphScene)scene).findObject(child);
+                if (((GraphScene)scene).isNode(obj))
+                {
+                    ((GraphScene)scene).removeNodeWithEdges(obj);
+                }              
+            }
+            remove(child);
+        }
+        w.removeFromParent();
+    }
+    
     public void save(NodeWriter nodeWriter)
     {
         setNodeWriterValues(nodeWriter, this);

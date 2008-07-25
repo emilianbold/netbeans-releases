@@ -342,6 +342,9 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
 
             AstPath path = new AstPath(root, astOffset);
             Node closest = path.leaf();
+            if (closest == null) {
+                return DeclarationLocation.NONE;
+            }
 
             // See if the hyperlink is over a method reference in an rdoc comment
             DeclarationLocation rdoc = findRDocMethod(info, doc, astOffset, lexOffset, root, path, closest, index);
@@ -2175,7 +2178,7 @@ public class RubyDeclarationFinder implements org.netbeans.modules.gsf.api.Decla
         return null;
     }
     
-    private class RubyAltLocation implements AlternativeLocation {
+    private static class RubyAltLocation implements AlternativeLocation {
         private IndexedElement element;
         private boolean isPreferred;
         private String cachedDisplayItem;

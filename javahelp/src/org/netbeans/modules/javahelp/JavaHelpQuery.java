@@ -81,8 +81,10 @@ class JavaHelpQuery implements Comparator<SearchTOCItem> {
     }
     
     public List<SearchTOCItem> search( String searchString ) {
-        if( null == engine ) {
-            engine = createSearchEngine();
+        synchronized( this ) {
+            if( null == engine ) {
+                engine = createSearchEngine();
+            }
         }
         abort();
         List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();

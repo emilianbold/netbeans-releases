@@ -50,11 +50,12 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
-import org.netbeans.modules.cnd.api.utils.Path;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.openide.util.Lookup;
 
 public abstract class CCCCompiler extends BasicCompiler {
@@ -104,27 +105,34 @@ public abstract class CCCCompiler extends BasicCompiler {
             if (path == null) {
                 path = ""; // NOI18N
             }
-            ArrayList<String> envp = new ArrayList<String>();
-            for (String key : System.getenv().keySet()) {
-                String value = System.getenv().get(key);
-                if (key.equals(Path.getPathName())) {
-                    envp.add(Path.getPathName() + "=" + path + File.pathSeparatorChar + value); // NOI18N
-                }
-                else {
-                    String entry = key + "=" + (value != null ? value : ""); // NOI18N
-                    envp.add(entry);
-                }
-            }
+            PlatformInfo pi = PlatformInfo.getDefault(getHostKey());
+            Map<String, String> env = pi.getEnv();
             if (!getHostKey().equals(CompilerSetManager.LOCALHOST)) {
                 CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
                 if (provider != null) {
-                    provider.run(getHostKey(), remote_command(command, stdout));
+                    String newPath = env.get(pi.getPathName());
+                    newPath = newPath == null? "" : newPath + pi.pathSeparator();
+                    newPath += path;
+                    env.put(pi.getPathName(), newPath);
+
+                    provider.run(getHostKey(), remote_command(command, stdout), env);
                     reader = new BufferedReader(new StringReader(provider.toString()));
                 } else {
                     return;
                 }
             } else {
-                process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])envp.toArray(new String[envp.size()])); // NOI18N
+                List<String> newEnv = new ArrayList<String>();
+                for (String key : env.keySet()) {
+                    String value = env.get(key);
+                    if (key.equals(pi.getPathName())) {
+                        newEnv.add(pi.getPathName() + "=" + path + pi.pathSeparator() + value); // NOI18N
+                    }
+                    else {
+                        String entry = key + "=" + (value != null ? value : ""); // NOI18N
+                        newEnv.add(entry);
+                    }
+                }
+                process = Runtime.getRuntime().exec(command + " " + tmpFile(), (String[])newEnv.toArray(new String[newEnv.size()])); // NOI18N
                 if (stdout) {
                     is = process.getInputStream();
                 } else {

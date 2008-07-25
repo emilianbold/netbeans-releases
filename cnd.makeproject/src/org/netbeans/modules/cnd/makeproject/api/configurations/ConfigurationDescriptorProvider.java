@@ -44,7 +44,12 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -64,7 +69,7 @@ public class ConfigurationDescriptorProvider {
         this.relativeOffset = relativeOffset;
     }
     
-    private Object readLock = new Object();
+    private final Object readLock = new Object();
     public ConfigurationDescriptor getConfigurationDescriptor() {
         if (projectDescriptor == null) {
             // attempt to read configuration descriptor
@@ -91,6 +96,7 @@ public class ConfigurationDescriptorProvider {
                         }
                         
                         hasTried = true;
+                        recordMetrics("USG_PROJECT_OPEN_CND", projectDescriptor);
                     }
                 }
             }
@@ -136,5 +142,40 @@ public class ConfigurationDescriptorProvider {
         }
 //      System.err.println("-------------------------------auxObjectProviders " + auxObjectProviders);
         return (ConfigurationAuxObjectProvider[])auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
+    }
+
+    static void recordMetrics(String msg, ConfigurationDescriptor descr) {
+        if (!(descr instanceof MakeConfigurationDescriptor)) {
+            return;
+        }
+        Logger logger = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
+        if (logger.isLoggable(Level.INFO)) {
+            LogRecord rec = new LogRecord(Level.INFO, msg);
+            StringBuilder projectInfo = new StringBuilder();
+            Configuration[] confs = descr.getConfs().getConfs();
+            projectInfo.append(confs.length).append(" configurations\n"); // NOI18N
+            for (int i = 0; i < confs.length; i++) {
+                projectInfo.append("[");
+                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
+                projectInfo.append("TYPE:").append(makeConfiguration.getConfigurationType().getName());
+                projectInfo.append(", TOOLCHAIN:").append(makeConfiguration.getCompilerSet().getDisplayName(true));
+                projectInfo.append(", LOCALHOST:").append(makeConfiguration.getDevelopmentHost().isLocalhost());
+                Platform platform = Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform());
+                if (platform != null) {
+                    projectInfo.append(", PLATFORM:").append(platform.getName());
+                }
+//                projectInfo.append(", C:").append(makeConfiguration.getCRequired().getValue());
+//                projectInfo.append(", C++:").append(makeConfiguration.getCppRequired().getValue());
+//                projectInfo.append(", Fortran:").append(makeConfiguration.getFortranRequired().getValue());
+                int size = ((MakeConfigurationDescriptor)descr).getProjectItemsMap().size();
+                projectInfo.append(", FILES:").append(size);
+                size = ((MakeConfigurationDescriptor)descr).getExternalFileItems().size();
+                projectInfo.append(", EXT_FILES:").append(size);
+                projectInfo.append("]\n");
+            }
+            rec.setParameters(new Object[] { projectInfo });
+            rec.setLoggerName(logger.getName());
+            logger.log(rec);
+        }
     }
 }

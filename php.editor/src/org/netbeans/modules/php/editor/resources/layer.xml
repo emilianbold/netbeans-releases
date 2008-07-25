@@ -74,7 +74,9 @@
                     <file name="org-netbeans-modules-editor-html-HTMLCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
                 </folder>
-                
+                <folder name="FoldManager">
+                    <file name="org-netbeans-editor-CustomFoldManager$Factory.instance"/>
+                </folder>
                 <!--issue #127161:-->
                 <folder name="Popup">
                     <file name="in-place-refactoring">

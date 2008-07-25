@@ -1238,6 +1238,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         }
     }
 
+    @Override
+    public String toString() {
+        return "'"+getName()+"' ("+Integer.toHexString(System.identityHashCode(this))+") from DBG("+Integer.toHexString(debugger.hashCode())+")";
+    }
+
+
+
     private static class ThreadListDelegate extends AbstractList<JPDAThread> {
 
         private List<ThreadReference> threads;

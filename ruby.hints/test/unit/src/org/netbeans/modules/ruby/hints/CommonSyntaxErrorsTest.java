@@ -28,6 +28,8 @@
 
 package org.netbeans.modules.ruby.hints;
 
+import org.netbeans.modules.ruby.hints.infrastructure.RubyErrorRule;
+
 /**
  *
  * @author Tor Norbye
@@ -38,20 +40,21 @@ public class CommonSyntaxErrorsTest extends HintTestBase {
         super(testName);
     }
 
+    private RubyErrorRule createRule() {
+        return new CommonSyntaxErrors();
+    }
+
+    //public void testRegistered() throws Exception {
+    //    ensureRegistered(createRule());
+    //}
+    
     public void testHint1() throws Exception {
-        checkHints(this, new CommonSyntaxErrors(), "testfiles/beginend.rb", null);
+        checkHints(this, createRule(), "testfiles/beginend.rb", null);
     }
 
     public void testApplyFix() throws Exception {
-        applyHint(this, new CommonSyntaxErrors(), "testfiles/beginend.rb", 
+        applyHint(this, createRule(), "testfiles/beginend.rb",
                 "=be^gin",
                 "Move documentation block to the leftmost column");
     }
-
-//    public void testInsertParens() throws Exception {
-//        List<FileObject> files = getBigSourceFiles();
-//        for (FileObject f : files) {
-//            checkHints(this, new InsertParens(), f, null);
-//        }
-//    }
 }

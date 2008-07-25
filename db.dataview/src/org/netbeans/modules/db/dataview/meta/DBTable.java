@@ -193,12 +193,18 @@ public final class DBTable extends DBObject<DBModel> {
             buf.append(quoter.quoteIfNeeded(schema.trim()));
             buf.append(FQ_TBL_NAME_SEPARATOR);
         }
+        if(quoter!=null)
         buf.append(quoter.quoteIfNeeded(name.trim()));
+        else
+            buf.append(name);
         return buf.toString();
     }
 
     public String getQualifiedName() {
+        if(quoter!=null)
         return quoter.quoteIfNeeded(name.trim());
+        else
+            return name.trim();
     }
 
     public String getName() {
