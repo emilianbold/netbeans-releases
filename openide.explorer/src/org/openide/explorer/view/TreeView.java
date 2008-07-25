@@ -41,6 +41,7 @@
 package org.openide.explorer.view;
 
 import java.awt.AWTEvent;
+import javax.swing.plaf.TreeUI;
 import org.openide.awt.MouseUtils;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.Children;
@@ -1661,16 +1662,13 @@ public abstract class TreeView extends JScrollPane {
         }
 
         @Override
-        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-            return (Boolean)new GuardedActions(10, new Object[] { ks, e, condition, pressed }).ret;
-        }
-
-        @Override
-        protected void processEvent(AWTEvent e) {
-            if (e instanceof KeyEvent) {
-                super.processEvent(e);
-            } else {
-                new GuardedActions(4, e);
+        public void setUI(TreeUI ui) {
+            super.setUI(ui);
+            for (Object key : getActionMap().allKeys()) {
+                Action a = getActionMap().get(key);
+                if (a.getClass().getName().contains("TreeUI")) {
+                    getActionMap().put(key, new GuardedActions(99, a));
+                }
             }
         }
 
@@ -1749,12 +1747,7 @@ public abstract class TreeView extends JScrollPane {
 
         @Override
         protected void processFocusEvent(FocusEvent fe) {
-            super.processFocusEvent(fe);
-
-            //Since the selected when focused is different, we need to force a
-            //repaint of the entire selection, but let's do it in guarded more
-            //as any other repaint
-            new GuardedActions(3, null);
+            new GuardedActions(3, fe);
         }
 
         private void repaintSelection() {
@@ -2029,7 +2022,7 @@ public abstract class TreeView extends JScrollPane {
             return accessibleContext;
         }
 
-        private class GuardedActions implements Mutex.Action<Object> {
+        private class GuardedActions implements Mutex.Action<Object>, Action {
             private int type;
             private Object p1;
             final Object ret;
@@ -2037,6 +2030,10 @@ public abstract class TreeView extends JScrollPane {
             public GuardedActions(int type, Object p1) {
                 this.type = type;
                 this.p1 = p1;
+                if (type == 99) {
+                    ret = null;
+                    return;
+                }
                 if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
                     ret = run();
                 } else {
@@ -2056,6 +2053,10 @@ public abstract class TreeView extends JScrollPane {
                     guardedDoLayout();
                     break;
                 case 3:
+                    ExplorerTree.super.processFocusEvent((FocusEvent)p1);
+                    //Since the selected when focused is different, we need to force a
+                    //repaint of the entire selection, but let's do it in guarded more
+                    //as any other repaint
                     repaintSelection();
                     break;
                 case 4:
@@ -2086,6 +2087,37 @@ public abstract class TreeView extends JScrollPane {
 
                 return null;
             }
+
+            public Object getValue(String key) {
+                return ((Action)p1).getValue(key);
+            }
+
+            public void putValue(String key, Object value) {
+                ((Action)p1).putValue(key, value);
+            }
+
+            public void setEnabled(boolean b) {
+                ((Action)p1).setEnabled(b);
+            }
+
+            public boolean isEnabled() {
+                return ((Action)p1).isEnabled();
+            }
+
+            public void addPropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            public void removePropertyChangeListener(PropertyChangeListener listener) {
+            }
+
+            public void actionPerformed(final ActionEvent e) {
+                Children.MUTEX.readAccess(new Runnable() {
+                    public void run() {
+                        ((Action)p1).actionPerformed(e);
+                    }
+                });
+            }
+            
         }
 
         private class SearchFieldListener extends KeyAdapter implements DocumentListener, FocusListener {

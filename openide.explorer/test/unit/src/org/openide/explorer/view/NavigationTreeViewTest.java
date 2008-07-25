@@ -132,10 +132,12 @@ public class NavigationTreeViewTest extends NbTestCase {
         assertEquals("Selected node is A", 1, em.getSelectedNodes().length);
         assertEquals("Selected node is A", "A", em.getSelectedNodes()[0].getName());
 
-        /*
         sendKey(KeyEvent.VK_ENTER);
-        assertEquals("One invocation", 1, ((Keys)first.getChildren()).actionPerformed);
-         */
+
+        Keys keys = (Keys)first.getChildren();
+        assertEquals("One invocation", 1, keys.actionPerformed);
+        assertFalse("No write access", keys.writeAccess);
+        assertFalse("No read access", keys.readAccess);
     }
 
     private void sendKey(final int keyCode) throws Exception {
@@ -160,7 +162,7 @@ public class NavigationTreeViewTest extends NbTestCase {
 
                 KeyEvent ke = new KeyEvent(
                     owner, KeyEvent.KEY_PRESSED, System.currentTimeMillis(),
-                    0, KeyEvent.VK_RIGHT, KeyEvent.CHAR_UNDEFINED,
+                    0, keyCode, KeyEvent.CHAR_UNDEFINED,
                     KeyEvent.KEY_LOCATION_STANDARD
                 );
                 owner.dispatchEvent(ke);
@@ -185,6 +187,8 @@ public class NavigationTreeViewTest extends NbTestCase {
     */
     private class Keys extends Children.Keys<String> {
         public int actionPerformed;
+        public boolean writeAccess;
+        public boolean readAccess;
 
         /** Constructor.
          */
@@ -234,9 +238,9 @@ public class NavigationTreeViewTest extends NbTestCase {
                 }
 
                 public void actionPerformed(ActionEvent e) {
-                    assertFalse("No write access", Children.MUTEX.isWriteAccess());
-                    assertFalse("No read access", Children.MUTEX.isReadAccess());
                     actionPerformed++;
+                    readAccess = Children.MUTEX.isReadAccess();
+                    writeAccess = Children.MUTEX.isWriteAccess();
                 }
             }
             AbstractNode an = new An();
