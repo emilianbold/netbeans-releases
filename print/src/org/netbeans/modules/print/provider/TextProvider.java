@@ -57,7 +57,7 @@ import org.openide.cookies.EditorCookie;
 import org.openide.text.AttributedCharacters;
 import org.netbeans.editor.BaseDocument;
 
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
@@ -73,7 +73,7 @@ public final class TextProvider extends ComponentProvider {
 
   @Override
   protected JComponent getComponent() {
-    if (Option.getDefault().isAsEditor()) {
+    if (Config.getDefault().isAsEditor()) {
       JEditorPane[] panes = myEditor.getOpenedPanes();
 
       if (panes != null && panes.length != 0) {

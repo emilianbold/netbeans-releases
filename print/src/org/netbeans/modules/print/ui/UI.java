@@ -330,14 +330,14 @@ public final class UI {
   }
   
   public static void setWidth(JComponent component, int width) {
-    setDimension(component, new Dimension(width, component.getPreferredSize().height));
+    setSize(component, new Dimension(width, component.getPreferredSize().height));
   }
 
   public static void setHeight(JComponent component, int height) {
-    setDimension(component, new Dimension(component.getPreferredSize().width, height));
+    setSize(component, new Dimension(component.getPreferredSize().width, height));
   }
 
-  private static void setDimension(JComponent component, Dimension dimension) {
+  public static void setSize(JComponent component, Dimension dimension) {
     component.setMinimumSize(dimension);
     component.setPreferredSize(dimension);
   }
@@ -407,10 +407,13 @@ public final class UI {
 
     c.weightx = 1.0;
     c.weighty = 1.0;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, 0, MEDIUM_INSET);
+    c.insets = new Insets(0, SMALL_INSET, 0, SMALL_INSET);
     c.anchor = GridBagConstraints.NORTHWEST;
     c.fill = GridBagConstraints.HORIZONTAL;
     p.add(panel, c);
+
+//  p.setBorder(new javax.swing.border.LineBorder(java.awt.Color.blue));
+//  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
     return p;
   }
@@ -611,6 +614,7 @@ public final class UI {
   public abstract static class Dialog extends WindowAdapter {
 
     protected void opened() {}
+    protected void closed() {}
     protected void resized() {}
     protected void updated() {}
    
@@ -628,7 +632,7 @@ public final class UI {
       if (myDialog == null) {
         myDialog = DialogDisplayer.getDefault().createDialog(createDescriptor());
         myDialog.addWindowListener(this);
-        setCorner();
+//      setCorner();
         myDialog.addComponentListener(
           new ComponentAdapter() {
             public void componentResized(ComponentEvent event) {
@@ -663,6 +667,11 @@ public final class UI {
       opened();
     }
 
+    @Override
+    public void windowClosed(WindowEvent event) {
+      closed();
+    }
+
     protected final String i18n(String key) {
       return UI.i18n(getClass(), key);
     }
@@ -684,7 +693,7 @@ public final class UI {
   private static final class CornerBorder extends EmptyBorder {
 
     public CornerBorder() {
-      super(0, SMALL_INSET, SMALL_INSET, SMALL_INSET);
+      super(0, TINY_INSET * 2, TINY_INSET * 2, TINY_INSET * 2);
     }
 
     @Override
