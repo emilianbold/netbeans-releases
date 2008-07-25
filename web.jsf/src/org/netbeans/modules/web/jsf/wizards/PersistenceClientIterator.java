@@ -96,7 +96,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
-    private static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
+    static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
     static final String UTIL_FOLDER_NAME = "util"; //NOI18N
     
     public Set instantiate(TemplateWizard wizard) throws IOException
