@@ -356,6 +356,7 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
         cbType.removeAllItems();
         cbType.setEnabled(false);
         btnDefault.setEnabled(false);
+        btnRemove.setEnabled(false);
         lblAssociatedAlsoExt.setText(null);
         
         model = new FileAssociationsModel();
