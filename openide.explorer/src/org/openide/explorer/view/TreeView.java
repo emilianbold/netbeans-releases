@@ -1671,7 +1671,7 @@ public abstract class TreeView extends JScrollPane {
                 }
             }
         }
-
+/*
         @Override
         public void expandPath(TreePath path) {
             new GuardedActions(7, path);
@@ -1686,7 +1686,7 @@ public abstract class TreeView extends JScrollPane {
         public TreePath getPathForRow(int row) {
             return (TreePath) new GuardedActions(9, row).ret;
         }
-        
+        */
 
         private void doProcessEvent(AWTEvent e) {
             super.processEvent(e);

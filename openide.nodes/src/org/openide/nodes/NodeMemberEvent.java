@@ -69,7 +69,7 @@ public class NodeMemberEvent extends NodeEvent {
 
     /** previous snapshot or null */
     private final List<Node> previous;
-    
+ 
     org.openide.nodes.Children.Entry sourceEntry;
 
     /** Package private constructor to allow construction only
@@ -99,14 +99,14 @@ public class NodeMemberEvent extends NodeEvent {
      * @param indices the indicies that changed
      * @param previous snaphost of the state before this event happened or null
      */
-    NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> previous) {
-        super(n);
+    NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> current, List<Node> previous) {
+        super(n, current);
         this.add = add;
         this.indices = indices;
         Arrays.sort(this.indices);
         this.previous = previous;
     }    
-
+    
     /** Get a list of children that changed.
     * @return array of nodes that changed
     */
