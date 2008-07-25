@@ -272,6 +272,7 @@ public class SvnClientFactory {
     }
 
     private void presetJavahlUnix() {
+        LOG.log(Level.FINE, "looking for svn native library...");
         String libPath = System.getProperty(SUBVERSION_NATIVE_LIBRARY);
         if (libPath != null && !libPath.trim().equals("")) {
             LOG.log(Level.FINE, "won't preset javahl due to subversion.native.library={0}", new Object[] { libPath });
@@ -281,10 +282,10 @@ public class SvnClientFactory {
         String[] locations = new String[] {"/usr/lib/", "/usr/lib/jni/", "/usr/local/lib/"};
         for (String loc : locations) {
             File file = new File(loc, name);
-            LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
+            LOG.log(Level.FINE, " checking existence of {0}", new Object[] { file.getAbsolutePath() });
             if (file.exists()) {                
                 System.setProperty("subversion.native.library", file.getAbsolutePath());
-                LOG.log(Level.FINE, " found javahl library. Setting subversion.native.library={0}", new Object[] { file.getAbsolutePath() });
+                LOG.log(Level.FINE, "   found javahl library. Setting subversion.native.library={0}", new Object[] { file.getAbsolutePath() });
                 return;
             }
         }
@@ -465,10 +466,10 @@ public class SvnClientFactory {
             String name = "svn";
             for (String loc : locations) {
                 File file = new File(loc, name);
-                LOG.log(Level.FINE, "checking existence of {0}", new Object[] { file.getAbsolutePath() });
+                LOG.log(Level.FINE, " checking existence of {0}", new Object[] { file.getAbsolutePath() });
                 if (file.exists()) {                
                     SvnModuleConfig.getDefault().setExecutableBinaryPath(loc);
-                    LOG.log(Level.FINE, " found svn executable library. Setting executable binary path to {0}", new Object[] { loc });
+                    LOG.log(Level.FINE, "  found svn executable library. Setting executable binary path to {0}", new Object[] { loc });
                     return true;
                 }
             }
