@@ -114,7 +114,7 @@ public class CompilerSetManager {
     public static final String Sun = "SunStudio"; // NOI18N
     public static final String GNU = "GNU"; // NOI18N
 
-    private ArrayList<CompilerSet> sets = new ArrayList<CompilerSet>();
+    private List<CompilerSet> sets = new ArrayList<CompilerSet>();
     private final String hkey;
     private Object state;
     private int platform = -1;
@@ -204,14 +204,12 @@ public class CompilerSetManager {
         init();
     }
 
-    private CompilerSetManager(String hkey, ArrayList<CompilerSet> sets, int current) {
+    private CompilerSetManager(String hkey, List<CompilerSet> sets, int current, int platform) {
         this.hkey = hkey;
         this.sets = sets;
         this.current = current;
-        state = STATE_COMPLETE;
-        if (hkey.equals(LOCALHOST)) {
-            platform = computeLocalPlatform();
-        }
+        this.state = STATE_COMPLETE;
+        this.platform = platform;
     }
 
     private void init() {
@@ -271,12 +269,11 @@ public class CompilerSetManager {
 
     public CompilerSetManager deepCopy() {
         waitForCompletion(); // in case its a remote connection...
-        // FIXUP: need a real deep copy..
-        CompilerSetManager copy = new CompilerSetManager(hkey, new ArrayList<CompilerSet>(), current);
-        copy.platform = this.platform;
+        List<CompilerSet> setsCopy =  new ArrayList<CompilerSet>();
         for (CompilerSet set : getCompilerSets()) {
-            copy.add(set.createCopy());
+            setsCopy.add(set.createCopy());
         }
+        CompilerSetManager copy = new CompilerSetManager(this.hkey, setsCopy, this.current, this.platform);
         return copy;
     }
 
@@ -818,9 +815,7 @@ public class CompilerSetManager {
             css.add(cs);
         }
 
-        CompilerSetManager csm = new CompilerSetManager(hkey, css, current);
-        csm.current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
-        csm.platform = pform;
+        CompilerSetManager csm = new CompilerSetManager(hkey, css, current, pform);
         return csm;
     }
 
@@ -875,8 +870,7 @@ public class CompilerSetManager {
             completeCompilerSet(CompilerSetManager.LOCALHOST, cs, css);
             css.add(cs);
         }
-        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0);
-        csm.platform = computeLocalPlatform();
+        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0, computeLocalPlatform());
         return csm;
     }
 

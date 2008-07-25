@@ -223,7 +223,7 @@ public final class Percent extends JComboBox implements ActionListener {
     setValue(getCustomValue(index), index);
   }
 
-  private void setValue(double value) {
+  public void setValue(double value) {
 //out("SET value: " + value);
     setValue(value, getCustomIndex(value));
   }
