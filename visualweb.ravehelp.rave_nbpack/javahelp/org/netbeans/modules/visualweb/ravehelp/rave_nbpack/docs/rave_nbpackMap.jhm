@@ -71,6 +71,7 @@
 	<mapID target="framework_spring_add" url="web/create/tag/framework/spring/add.html"/>	
         <mapID target="framework_grails_about" url="web/create/tag/framework/grails/about.html"/>
         <mapID target="framework_grails_create" url="web/create/tag/framework/grails/create.html"/>
+        <mapID target="framework_grails_install" url="web/create/tag/framework/grails/install.html"/>
         <mapID target="html_create" url="web/create/html/html_create.html"/>
 	<mapID target="jsp_compile" url="web/create/jsp/jsp_compile.html"/>
 	<mapID target="jsp_create" url="web/create/jsp/jsp_create.html"/>

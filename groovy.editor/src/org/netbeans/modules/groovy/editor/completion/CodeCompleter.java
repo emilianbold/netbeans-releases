@@ -59,7 +59,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -70,11 +69,7 @@ import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler.QueryType;
 import org.netbeans.modules.gsf.api.CompletionProposal;
 import org.netbeans.modules.gsf.api.ElementHandle;
-import org.netbeans.modules.gsf.api.ElementKind;
-import org.netbeans.modules.gsf.api.HtmlFormatter;
-import org.netbeans.modules.gsf.api.Modifier;
 import org.netbeans.modules.gsf.api.ParameterInfo;
-import org.netbeans.modules.groovy.editor.elements.KeywordElement;
 import org.openide.filesystems.FileObject;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -110,13 +105,10 @@ import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
-import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.groovy.editor.elements.AstMethodElement;
-import org.netbeans.modules.groovy.editor.elements.ElementHandleSupport;
-import org.netbeans.modules.groovy.editor.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.elements.IndexedClass;
 import org.netbeans.modules.groovy.editor.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.lexer.LexUtilities;
@@ -131,9 +123,6 @@ import org.openide.util.Utilities;
 public class CodeCompleter implements CodeCompletionHandler {
 
     private static volatile boolean testMode = false;   // see setTesting(), thanks Petr. ;-)
-    private static ImageIcon groovyIcon;
-    private static ImageIcon javaIcon;
-    private static ImageIcon newConstructorIcon;
     private int anchor;
     private final Logger LOG = Logger.getLogger(CodeCompleter.class.getName());
     private String jdkJavaDocBase = null;
@@ -1928,7 +1917,7 @@ private void printMethod(MetaMethod mm) {
     }
     
     
-    private String getParameterListForMethod(ExecutableElement exe){
+    static String getParameterListForMethod(ExecutableElement exe){
         StringBuffer sb = new StringBuffer();
 
         if (exe != null) {
@@ -2426,7 +2415,7 @@ private void printMethod(MetaMethod mm) {
      * flat on our face.
      * 
      */
-    String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
+    static String getMethodSignature(MetaMethod method, boolean forURL, boolean isGDK) {
         String methodSignature = method.getSignature();
         methodSignature = methodSignature.trim();
 
@@ -2460,7 +2449,7 @@ private void printMethod(MetaMethod mm) {
     /**
      * This is more a less the reverse function for Class.getName() 
      */
-    String decodeTypes(final String encodedType, boolean forURL) {
+    static String decodeTypes(final String encodedType, boolean forURL) {
 
 
         String DELIMITER = ",";
@@ -2663,659 +2652,20 @@ private void printMethod(MetaMethod mm) {
         return ParameterInfo.NONE;
     }
 
-    public static class CompletionRequest {
-        private CompilationInfo info;
-        private int lexOffset;
-        private int astOffset;
-        private BaseDocument doc;
-        private String prefix = "";
-        private CaretLocation location;
-        private boolean behindDot;
-        private boolean scriptMode;
-        private boolean behindImport;
-        private CompletionContext ctx;
-        private AstPath path;
-    }
-
-    private abstract class GroovyCompletionItem implements CompletionProposal {
-
-        protected CompletionRequest request;
-        protected GroovyElement element;
-        protected int anchorOffset;
-        protected boolean symbol;
-        protected boolean smart;
-
-        private GroovyCompletionItem(GroovyElement element, int anchorOffset, CompletionRequest request) {
-            this.element = element;
-            this.anchorOffset = anchorOffset;
-            this.request = request;
-        }
-
-        public int getAnchorOffset() {
-            return anchorOffset;
-        }
-
-        public String getName() {
-            return element.getName();
-        }
-
-        public void setSymbol(boolean symbol) {
-            this.symbol = symbol;
-        }
-
-        public String getInsertPrefix() {
-            if (symbol) {
-                return "." + getName();
-            } else {
-                return getName();
-            }
-        }
-
-        public String getSortText() {
-            return getName();
-        }
-
-        public ElementHandle getElement() {
-            LOG.log(Level.FINEST, "getElement() request.info : {0}", request.info);
-            LOG.log(Level.FINEST, "getElement() element : {0}", element);
-
-            return null;
-        }
-
-        public ElementKind getKind() {
-            return element.getKind();
-        }
-
-        public ImageIcon getIcon() {
-            return null;
-        }
-
-        public String getLhsHtml(HtmlFormatter formatter) {
-            ElementKind kind = getKind();
-            formatter.name(kind, true);
-            formatter.appendText(getName());
-            formatter.name(kind, false);
-
-            return formatter.getText();
-        }
-
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        public Set<Modifier> getModifiers() {
-            return element.getModifiers();
-        }
-
-        @Override
-        public String toString() {
-            String cls = getClass().getName();
-            cls = cls.substring(cls.lastIndexOf('.') + 1);
-
-            return cls + "(" + getKind() + "): " + getName();
-        }
-
-        void setSmart(boolean smart) {
-            this.smart = smart;
-        }
-
-        public boolean isSmart() {
-            return smart;
-        }
-
-        public List<String> getInsertParams() {
-            return null;
-        }
-
-        public String[] getParamListDelimiters() {
-            return new String[]{"(", ")"}; // NOI18N
-        }
-
-        public String getCustomInsertTemplate() {
-            return null;
-        }
-    }
-
-    
-        /**
-     * 
-     */
-    private class JavaMethodItem extends GroovyCompletionItem {
-
-        private final javax.lang.model.element.Element javaElement;
-
-        JavaMethodItem(javax.lang.model.element.Element element, int anchorOffset, CompletionRequest request) {
-            super(null, anchorOffset, request);
-            this.javaElement = element;
-        }
-
-        @Override
-        public String getName() {
-            return javaElement.getSimpleName().toString() + "()";
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            
-            String params = "";
-            
-            if (javaElement instanceof ExecutableElement) {
-                params = getParameterListForMethod((ExecutableElement) javaElement);
-            }
-            
-            return javaElement.getSimpleName().toString() + "(" + params + ")";
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            
-            String retType = ((ExecutableElement) javaElement).getReturnType().getClass().toString();
-            retType = NbUtilities.stripPackage(retType);
-
-            formatter.appendHtml(retType);
-
-            return formatter.getText();
-        }
-        
-        
-        @Override
-        public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.METHOD, null);
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            return null;
-        }
-    }
-    
-    
-    
-    
-    private class MethodItem extends GroovyCompletionItem {
-
-        private static final String GROOVY_METHOD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
-        MetaMethod method;
-        boolean isGDK;
-        AstMethodElement methodElement;
-
-        MethodItem(Class clz, MetaMethod method, int anchorOffset, CompletionRequest request, boolean isGDK) {
-            super(null, anchorOffset, request);
-            this.method = method;
-            this.isGDK = isGDK;
-
-            // This is an artificial, new ElementHandle which has no real
-            // equivalent in the AST. It's used to match the one passed to super.document()
-            methodElement = new AstMethodElement(new ASTNode(), clz, method, isGDK);
-        }
-
-        public MetaMethod getMethod() {
-            return method;
-        }
-        
-        @Override
-        public String getName() {
-            return method.getName() + "()";
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.METHOD;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-
-            ElementKind kind = getKind();
-            boolean emphasize = false;
-
-            if (method.isStatic()) {
-                emphasize = true;
-                formatter.emphasis(true);
-            }
-            formatter.name(kind, true);
-
-            if (isGDK) {
-                formatter.appendText(method.getName());
-
-                // construct signature by removing package names.
-
-                String signature = method.getSignature();
-                int start = signature.indexOf("(");
-                int end = signature.indexOf(")");
-
-                String sig = signature.substring(start + 1, end);
-
-                StringBuffer buf = new StringBuffer();
-
-                for (String param : sig.split(",")) {
-                    if (buf.length() > 0) {
-                        buf.append(", ");
-                    }
-                    buf.append(NbUtilities.stripPackage(param));
-                }
-
-                String simpleSig = buf.toString();
-                formatter.appendText("(" + simpleSig + ")");
-            } else {
-                formatter.appendText(getMethodSignature(method, false, isGDK));
-            }
-
-
-            formatter.name(kind, false);
-
-            if (emphasize) {
-                formatter.emphasis(false);
-            }
-            return formatter.getText();
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            // no FQN return types but only the classname, please:
-
-            String retType = method.getReturnType().toString();
-            retType = NbUtilities.stripPackage(retType);
-
-            formatter.appendHtml(retType);
-
-            return formatter.getText();
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-
-            if (!isGDK) {
-                return null;
-            }
-
-            if (groovyIcon == null) {
-                groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_METHOD));
-            }
-
-            return groovyIcon;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-
-            // to display the documentation box for each element, the completion-
-            // element needs to implement this method. Otherwise document(...)
-            // won't even be called at all.
-
-            return methodElement;
-        }
-    }
-
-    private class KeywordItem extends GroovyCompletionItem {
-
-        private static final String GROOVY_KEYWORD = "org/netbeans/modules/groovy/editor/resources/groovydoc.png"; //NOI18N
-        private static final String JAVA_KEYWORD   = "org/netbeans/modules/groovy/editor/resources/duke.png"; //NOI18N
-        private final String keyword;
-        private final String description;
-        private final boolean isGroovy;
-
-        KeywordItem(String keyword, String description, int anchorOffset, CompletionRequest request, boolean isGroovy) {
-            super(null, anchorOffset, request);
-            this.keyword = keyword;
-            this.description = description;
-            this.isGroovy = isGroovy;
-        }
-
-        @Override
-        public String getName() {
-            return keyword;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.KEYWORD;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            if (description != null) {
-                //formatter.appendText(description);
-                formatter.appendHtml(description);
-
-                return formatter.getText();
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            
-            if (isGroovy) {
-                if (groovyIcon == null) {
-                    groovyIcon = new ImageIcon(org.openide.util.Utilities.loadImage(GROOVY_KEYWORD));
-                }
-                return groovyIcon;
-            } else {
-                if (javaIcon == null) {
-                    javaIcon = new ImageIcon(org.openide.util.Utilities.loadImage(JAVA_KEYWORD));
-                }
-                return javaIcon;
-            }
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
-        }
-    }
-
-    /**
-     * 
-     */
-    private class PackageItem extends GroovyCompletionItem {
-
-        private final String keyword;
-
-        PackageItem(String keyword, int anchorOffset, CompletionRequest request) {
-            super(null, anchorOffset, request);
-            this.keyword = keyword;
-        }
-
-        @Override
-        public String getName() {
-            return keyword;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.PACKAGE;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.PACKAGE, null);
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(keyword));
-        }
-    }
-
-    /**
-     * 
-     */
-    private class TypeItem extends GroovyCompletionItem {
-
-        private final String name;
-        private final javax.lang.model.element.ElementKind ek;
-
-        TypeItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek) {
-            super(null, anchorOffset, request);
-            this.name = name;
-            this.ek = ek;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.CLASS;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            // For completion documentation
-            // return ElementHandleSupport.createHandle(request.info, new ClassElement(name));
-            return null;
-        }
-    }
-
-    private class ConstructorItem extends GroovyCompletionItem {
-
-        private final String name;
-        private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
-        private boolean expand; // should this item expand to a constructor body?
-        private final String paramString;
-
-        ConstructorItem(String name, String paramString, int anchorOffset, CompletionRequest request, boolean expand) {
-            super(null, anchorOffset, request);
-            this.name = name;
-            this.expand = expand;
-            this.paramString = paramString;
-        }
-
-        @Override
-        public String getLhsHtml(HtmlFormatter formatter) {
-            if(expand){
-                return name + " - generate"; // NOI18N
-            } else {
-                return name + "(" + paramString +  ")";
-            }            
-        }
-
-        @Override
-        public String getName() {
-            if(expand){
-                return name  + "()\n{\n}";
-            } else {
-                return name;
-            }
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.CONSTRUCTOR;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-
-            if (newConstructorIcon == null) {
-                newConstructorIcon = new ImageIcon(org.openide.util.Utilities.loadImage(NEW_CSTR));
-            }
-            return newConstructorIcon;
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            // For completion documentation
-            // return ElementHandleSupport.createHandle(request.info, new ClassElement(name));
-            return null;
-        }
+    static class CompletionRequest {
+
+        CompilationInfo info;
+        int lexOffset;
+        int astOffset;
+        BaseDocument doc;
+        String prefix = "";
+        CaretLocation location;
+        boolean behindDot;
+        boolean scriptMode;
+        boolean behindImport;
+        CompletionContext ctx;
+        AstPath path;
     }
 
 
-    /**
-     * 
-     */
-    private class FieldItem extends GroovyCompletionItem {
-
-        private final String name;
-        private final javax.lang.model.element.ElementKind ek;
-        private final String typeName;
-
-        FieldItem(String name, int anchorOffset, CompletionRequest request, javax.lang.model.element.ElementKind ek, String typeName) {
-            super(null, anchorOffset, request);
-            this.name = name;
-            this.ek = ek;
-            this.typeName = typeName;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.FIELD;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return typeName;
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            // todo: what happens, if i get a CCE here?
-            return (ImageIcon) ElementIcons.getElementIcon(ek, null);
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            // For completion documentation
-            return ElementHandleSupport.createHandle(request.info, new KeywordElement(name));
-        }
-    }
-
-    /**
-     * 
-     */
-    private class LocalVarItem extends GroovyCompletionItem {
-
-        private final Variable var;
-
-        LocalVarItem(Variable var, int anchorOffset, CompletionRequest request) {
-            super(null, anchorOffset, request);
-            this.var = var;
-        }
-
-        @Override
-        public String getName() {
-            return var.getName();
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.VARIABLE;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return var.getType().getNameWithoutPackage();
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            // todo: what happens, if i get a CCE here?
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            return null;
-        }
-    }
-
-    /**
-     *
-     */
-    private class NewVarItem extends GroovyCompletionItem {
-
-        private final String var;
-
-        NewVarItem(String var, int anchorOffset, CompletionRequest request) {
-            super(null, anchorOffset, request);
-            this.var = var;
-        }
-
-        @Override
-        public String getName() {
-            return var;
-        }
-
-        @Override
-        public ElementKind getKind() {
-            return ElementKind.VARIABLE;
-        }
-
-        @Override
-        public String getRhsHtml(HtmlFormatter formatter) {
-            return null;
-        }
-
-        @Override
-        public ImageIcon getIcon() {
-            return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.LOCAL_VARIABLE, null);
-        }
-
-        @Override
-        public Set<Modifier> getModifiers() {
-            return Collections.emptySet();
-        }
-
-        @Override
-        public ElementHandle getElement() {
-            return null;
-        }
-    }
 }
