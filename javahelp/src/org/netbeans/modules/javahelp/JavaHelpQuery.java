@@ -67,32 +67,45 @@ import org.openide.util.NbBundle;
  */
 class JavaHelpQuery implements Comparator<SearchTOCItem> {
 
-    JavaHelpQuery() {
+    private static JavaHelpQuery theInstance;
+    private SearchEngine engine;
+    
+    private JavaHelpQuery() {
+    }
+    
+    public static JavaHelpQuery getDefault() {
+        if( null == theInstance )
+            theInstance = new JavaHelpQuery();
+        return theInstance;
     }
     
     public List<SearchTOCItem> search( String searchString ) {
-        SearchEngine engine = createSearchEngine();
-        List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();
-        Thread searchThread = new Thread( createSearch( engine, searchString, res ) );
-        searchThread.start();
-        try {
-            //the first search can take a moment before all the helpsets are merged
-            searchThread.join(60*1000); 
-        } catch( InterruptedException iE ) {
-            //ignore
+        synchronized( this ) {
+            if( null == engine ) {
+                engine = createSearchEngine();
+            }
+            List<SearchTOCItem> res = new ArrayList<SearchTOCItem>();
+            Thread searchThread = new Thread( createSearch( searchString, res ) );
+            searchThread.start();
+            try {
+                //the first search can take a moment before all the helpsets are merged
+                searchThread.join(60*1000); 
+            } catch( InterruptedException iE ) {
+                //ignore
+            }
+            return res;
         }
-        return res;
     }
     
-    private Runnable createSearch( final SearchEngine engine, final String searchString, final List<SearchTOCItem> items ) {
+    private Runnable createSearch( final String searchString, final List<SearchTOCItem> items ) {
         Runnable res = new Runnable() {
 
             public void run() {
                 if( null == engine ) {
                     return;
                 }
-                SearchQuery query = engine.createQuery();
                 final Object SEARCH_DONE = new Object();
+                SearchQuery query = engine.createQuery();
                 query.addSearchListener( new SearchListener() {
 
                     public void itemsFound(SearchEvent arg0) {
