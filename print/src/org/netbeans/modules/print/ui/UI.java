@@ -407,10 +407,13 @@ public final class UI {
 
     c.weightx = 1.0;
     c.weighty = 1.0;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, 0, MEDIUM_INSET);
+    c.insets = new Insets(0, SMALL_INSET, 0, SMALL_INSET);
     c.anchor = GridBagConstraints.NORTHWEST;
     c.fill = GridBagConstraints.HORIZONTAL;
     p.add(panel, c);
+
+//  p.setBorder(new javax.swing.border.LineBorder(java.awt.Color.blue));
+//  panel.setBorder(new javax.swing.border.LineBorder(java.awt.Color.red));
 
     return p;
   }
