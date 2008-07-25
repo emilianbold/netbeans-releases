@@ -264,7 +264,7 @@ public class SvnClientFactory {
     }
 
     private void presetJavahl() {
-        if(Utilities.isUnix() /*&& !Utilities.isMac() */) { // javahl for mac is already bundled
+        if(Utilities.isUnix() && !Utilities.isMac() ) { // javahl for mac is already bundled
             presetJavahlUnix();
         } else if(Utilities.isWindows()) {
             presetJavahlWindows();
