@@ -78,6 +78,10 @@ public class SingleThreadWatcher implements Runnable {
                 return ;
             }
         }
+        if (t.getDebugger().getState() == JPDADebuggerImpl.STATE_DISCONNECTED) {
+            destroy();
+            return;
+        }
         boolean areLocks = t.checkForBlockingThreads();
         //if (!areLocks) {
             synchronized (this) {

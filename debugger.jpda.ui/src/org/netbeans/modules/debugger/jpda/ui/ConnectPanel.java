@@ -109,7 +109,7 @@ import org.openide.util.RequestProcessor;
 public class ConnectPanel extends JPanel implements 
 Controller, ActionListener {
 
-    private static final Logger UILOGGER = Logger.getLogger("org.netbeans.ui.debugger"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
 
     /** List of all AttachingConnectors.*/
     private List                    connectors;
@@ -398,12 +398,12 @@ Controller, ActionListener {
     }
 
     private static void log(Connector c, Map<Object, Object> args) {
-        LogRecord record = new LogRecord(Level.CONFIG, "UI_LOG_ATTACH");
+        LogRecord record = new LogRecord(Level.INFO, "USG_DEBUG_ATTACH_JPDA");
         record.setResourceBundle(NbBundle.getBundle(ConnectPanel.class));
         record.setResourceBundleName(ConnectPanel.class.getPackage().getName() + ".Bundle"); // NOI18N
-        record.setLoggerName(UILOGGER.getName());
+        record.setLoggerName(USG_LOGGER.getName());
         List params = new ArrayList();
-        params.add(c);
+        params.add(c.name());
         StringBuilder arguments = new StringBuilder();
         for (Map.Entry argEntry : args.entrySet()) {
             //arguments.append(argEntry.getKey());
@@ -416,7 +416,7 @@ Controller, ActionListener {
         }
         params.add(arguments);
         record.setParameters(params.toArray(new Object[params.size()]));
-        UILOGGER.log(record);
+        USG_LOGGER.log(record);
     }
     
     /**

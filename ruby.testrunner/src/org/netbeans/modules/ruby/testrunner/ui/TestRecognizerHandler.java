@@ -58,7 +58,7 @@ public abstract class TestRecognizerHandler {
     protected Matcher matcher;
 
     public TestRecognizerHandler(String regex) {
-        this.pattern = Pattern.compile(regex);
+        this.pattern = Pattern.compile(regex, Pattern.DOTALL);
     }
 
     final boolean matches(String line) {

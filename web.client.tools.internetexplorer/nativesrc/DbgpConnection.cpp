@@ -86,20 +86,34 @@ void DbgpConnection::sendResponse(tstring xmlString) {
     const TCHAR *xmlResponse = xmlString.c_str();
     if(xmlResponse != NULL) {
         char *messageData = NULL;
-        int messageDataLen = WideCharToMultiByte(CP_UTF8, 0, xmlResponse, -1, messageData, 0, 0, 0);
-        messageData = new char[messageDataLen];
-        messageDataLen = WideCharToMultiByte(CP_UTF8, 0, xmlResponse, -1, messageData, messageDataLen, 0, 0);
-
-        //Format of message: <length of data><null terminator><XML response><null terminator>
-        int approxDataLen = messageDataLen + 16;
-        char *data = new char[approxDataLen]; //16 bytes for length of data
-        sprintf_s(data, approxDataLen, "%d%c%s", messageDataLen-1, '\0', messageData);
-        int dataLen = (int)strlen(data) + 1 + messageDataLen;
-        int iResult = send(m_socket, data, dataLen, 0);
-        //Utils::log(4, _T("Response: %s\n"), data);
-        delete []messageData;
-        delete []data;
+        int messageDataLen;
+        if(stringToBytes(xmlString, &messageData, &messageDataLen)) {
+            //Format of message: <length of data><null><XML response><null>
+            int approxDataLen = messageDataLen + 16;
+            char *data = new char[approxDataLen]; //16 bytes for length of data
+            sprintf_s(data, approxDataLen, "%d%c%s", messageDataLen-1, '\0', messageData);
+            int dataLen = (int)strlen(data) + 1 + messageDataLen;
+            int iResult = send(m_socket, data, dataLen, 0);
+            //Utils::log(4, _T("Response: %s\n"), data);
+            delete []messageData;
+            delete []data;
+        }
     }
+}
+
+BOOL DbgpConnection::stringToBytes(tstring str, char **ppBytes, int *pBytesLen) {
+    char *data = NULL;
+    int dataLen = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, data, 0, 0, 0);
+    if(dataLen) {
+        data = new char[dataLen];
+        dataLen = WideCharToMultiByte(CP_UTF8, 0, str.c_str(), -1, data, dataLen, 0, 0);
+        if(dataLen) {
+            *ppBytes = data;
+            *pBytesLen = dataLen;
+            return TRUE;
+        }
+    }
+    return FALSE;
 }
 
 void DbgpConnection::sendInitMessage() {
@@ -119,25 +133,44 @@ void DbgpConnection::sendInitMessage() {
 void DbgpConnection::handleDocumentComplete(IHTMLDocument2 *pHTMLDocument) {
     sendWindowsMessage(pHTMLDocument);
     sendSourcesMessage(pHTMLDocument);
-    sendStatusMessage(STATE_RUNNING_STR, OK);
+    if(m_pScriptDebugger->getStatus() != STATE_RUNNING) {
+        m_pScriptDebugger->changeState(STATE_RUNNING, OK);
+    }
 }
 
 void DbgpConnection::sendWindowsMessage(IHTMLDocument2 *pHTMLDocument) {
     CComBSTR bstrURL;
     DbgpWindowsMessage message;
+    message.addAttribute(ENCODING, BASE64);
     DbgpWindowTag &windowTag = message.addWindow();
     HRESULT hr = pHTMLDocument->get_URL(&bstrURL);
-    windowTag.addAttribute(FILE_URI, (TCHAR *)(bstrURL));
+    windowTag.addAttribute(FILE_URI, encodeToBase64((TCHAR *)(bstrURL)));
 
     set<tstring> frameURLs = getFrameURLs(pHTMLDocument);
     set<tstring>::iterator iter = frameURLs.begin();
     while(iter != frameURLs.end()) {
         DbgpWindowTag &frameTag = windowTag.addWindowTag();
-        frameTag.addAttribute(FILE_URI, *iter);
+        frameTag.addAttribute(FILE_URI, encodeToBase64(*iter));
         ++iter;
     }
     sendResponse(message.toString());
 }
+
+tstring DbgpConnection::encodeToBase64(tstring value) {
+    USES_CONVERSION;
+    char *data = NULL;
+    int dataLen;
+    if(stringToBytes(value, &data, &dataLen)) {
+        int destLen = Base64EncodeGetRequiredLength(dataLen, ATL_BASE64_FLAG_NOCRLF);
+        char *dest = new char[destLen+1];
+        if(Base64Encode((BYTE *)data, dataLen, dest, &destLen, ATL_BASE64_FLAG_NOCRLF)) {
+            dest[destLen] = 0;
+            return tstring(A2T(dest));
+        }
+    }
+    return NULL;
+}
+
 
 set<tstring> DbgpConnection::getFrameURLs(IHTMLDocument2 *pHTMLDocument) {
     CComPtr<IDispatch> spDisp = pHTMLDocument;
@@ -176,8 +209,9 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
     CComBSTR bstrURL;
     pHTMLDocument->get_URL(&bstrURL);
     DbgpSourcesMessage message;
+    message.addAttribute(ENCODING, BASE64);
     DbgpSourceTag &sourceTag = message.addSource();
-    sourceTag.addAttribute(FILE_URI, (TCHAR *)(bstrURL));
+    sourceTag.addAttribute(FILE_URI, encodeToBase64((TCHAR *)(bstrURL)));
 
     long items;
     spHTMLElementCollection->get_length(&items);
@@ -200,7 +234,7 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
                     uri = docURL.substr(0, pos+1).append(location);
                 }
             }
-            sourceTag.addAttribute(FILE_URI, uri);
+            sourceTag.addAttribute(FILE_URI, encodeToBase64(uri));
         }
     }
 
@@ -208,7 +242,7 @@ void DbgpConnection::sendSourcesMessage(IHTMLDocument2 *pHTMLDocument) {
     set<tstring>::iterator iter = frameURLs.begin();
     while(iter != frameURLs.end()) {
         DbgpSourceTag &sourceTag = message.addSource();
-        sourceTag.addAttribute(FILE_URI, *iter);
+        sourceTag.addAttribute(FILE_URI, encodeToBase64(*iter));
         ++iter;
     }
     sendResponse(message.toString());
@@ -351,7 +385,6 @@ DWORD WINAPI DbgpConnection::commandHandler(LPVOID param) {
             pDbgpConnection->processCommand(cmdString, pDbgpConnection);
         }
         pDbgpConnection->getScriptDebugger()->endSession();
-        delete pDbgpConnection;
     }
     
     ::CoUninitialize();

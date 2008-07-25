@@ -260,13 +260,15 @@ public class CallGraphPanel extends JPanel implements ExplorerManager.Provider, 
         jSplitPane1.setOneTouchExpandable(true);
         jSplitPane1.setRightComponent(graphView);
 
-        jSplitPane2.setDividerLocation(-1);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setLeftComponent(treeView);
+        treeView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AN")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_TreeView_AD")); // NOI18N
 
-        contextPanel.setPreferredSize(new java.awt.Dimension(10, 10));
         jSplitPane2.setRightComponent(contextPanel);
+        contextPanel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
+        contextPanel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
 
         jSplitPane1.setLeftComponent(jSplitPane2);
 
@@ -499,6 +501,8 @@ private void focusOnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
         private ExplorerManager managerCtx = new ExplorerManager();
         private ContextPanel(){
             ListView listView = new ListView();
+            listView.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AM")); // NOI18N
+            listView.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CallGraphPanel.class, "CGP_ListView_AD")); // NOI18N
             setLayout(new java.awt.BorderLayout());
             add(listView, java.awt.BorderLayout.CENTER);
         }

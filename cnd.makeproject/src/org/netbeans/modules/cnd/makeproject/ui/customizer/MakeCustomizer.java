@@ -1054,7 +1054,7 @@ public class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.Provid
         }
         @Override
         public Sheet getSheet(Project project, ConfigurationDescriptor configurationDescriptor, Configuration configuration) {
-            return ((MakeConfiguration)configuration).getPackagingConfiguration().getGeneralSheet();
+            return ((MakeConfiguration)configuration).getPackagingConfiguration().getGeneralSheet(makeCustomizer);
         }
         @Override
         public HelpCtx getHelpCtx() {

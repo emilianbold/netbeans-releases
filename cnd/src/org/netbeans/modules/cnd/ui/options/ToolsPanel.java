@@ -79,6 +79,7 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.remote.ServerUpdateCache;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
@@ -244,7 +245,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         String compilerSetName = panel.getCompilerSetName().trim();
         
         CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-        CompilerSetManager.getDefault().initCompilerSet(cs);
+        CompilerSetManager.getDefault(hkey).initCompilerSet(cs);
         csm.add(cs);
         changed = true;
         update(false, cs);
@@ -535,6 +536,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
             if (serverUpdateCache != null) {
+                String nukey = serverUpdateCache.getHostKeyList()[serverUpdateCache.getDefaultIndex()];
+                if (!nukey.equals(hkey)) {
+                    ServerRecord record = serverList.get(nukey);
+                    if (record.isOnline()) {
+
+                    }
+                }
                 for (String key : serverUpdateCache.getHostKeyList()) {
                     serverList.add(key);
                 }
@@ -618,11 +626,14 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
             boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
             
+            ServerRecord record = serverList.get(hkey);
+            boolean devhostValid = record != null & record.isOnline();
+            
             if (!initialized) {
-                valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid);
+                valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && devhostValid);
             }
 
-            if (valid != (csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid)) {
+            if (valid != (csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && devhostValid)) {
                 valid = !valid;
                 firePropertyChange(PROP_VALID, !valid, valid);
             }
@@ -632,11 +643,13 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             errorTextArea.setRows(0);
             if (!valid) {
                 ArrayList<String> errors = new ArrayList<String>();
+                if (!devhostValid) {
+                    errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_BadDevHost", hkey));
+                }
                 if (cbMakeRequired.isSelected() && !makeValid) {
                     if (!isPathFieldValid(tfMakePath)) {
                         errors.add(NbBundle.getBundle(ToolsPanel.class).getString("TP_ErrorMessage_MissedMake"));
-                    }
-                    else {
+                    } else {
                         errors.add(NbBundle.getMessage(ToolsPanel.class, "TP_ErrorMessage_UnsupportedMake", "mingw32-make")); // NOI18N
                     }
                 }
@@ -913,7 +926,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
             String selection = (String) cbDevHost.getSelectedItem();
             if (selection != null) {
-                serverList.get(selection); // this will ensure the remote host is setup
+                ServerRecord record = serverList.get(selection); // this will ensure the remote host is setup
+                if (record != null && !record.isOnline()) {
+                    
+                }
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }

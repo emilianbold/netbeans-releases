@@ -738,6 +738,10 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
             return instantiatedType.isInstantiation();
         }
 
+        public boolean isTemplateBased() {
+            return true;
+        }
+
         public boolean isReference() {
             return originalType.isReference() || instantiatedType.isReference();
         }
@@ -834,9 +838,9 @@ public abstract class Instantiation<T> implements CsmOffsetableDeclaration<T>, C
         
         @Override
         public String toString() {
-            String res = "INSTANTIATION OF TYPE: " + originalType + " with types (" + instantiation.getMapping() + ")";
+            String res = "INSTANTIATION OF TYPE: " + originalType + " with types (" + instantiation.getMapping() + ")"; // NOI18N
             if (instantiationHappened()) {
-                res += " becomes " + instantiatedType;
+                res += " becomes " + instantiatedType; // NOI18N
             }
             return res;
         }

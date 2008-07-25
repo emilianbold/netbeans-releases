@@ -257,6 +257,9 @@ public:
     tstring getStatusString() {
         return statesMap.find(state)->second;
     }
+    State getStatus() {
+        return state;
+    }
 private:
     CComPtr<IRemoteDebugApplication> m_spRemoteDebugApplication;
     DWORD m_dwRemoteDebugAppCookie, m_dwRemoteDebugAppThreadCookie, m_dwDebugAppCookie;

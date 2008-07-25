@@ -39,6 +39,9 @@
 
 package org.netbeans.modules.php.editor;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
 import org.netbeans.modules.gsf.api.DeclarationFinder;
@@ -63,6 +66,10 @@ import org.netbeans.modules.php.editor.parser.GSFPHPParser;
 import org.netbeans.modules.php.editor.parser.PhpStructureScanner;
 import org.netbeans.modules.php.editor.parser.SemanticAnalysis;
 import org.netbeans.modules.php.editor.verification.PHPHintsProvider;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  *
@@ -173,4 +180,11 @@ public class PHPLanguage extends DefaultLanguageConfig {
     public HintsProvider getHintsProvider() {
         return new PHPHintsProvider();
     }
+
+    @Override
+    public Collection<FileObject> getCoreLibraries() {
+        return PhpSourcePath.getPreindexedFolders();
+    }
+
+
 }

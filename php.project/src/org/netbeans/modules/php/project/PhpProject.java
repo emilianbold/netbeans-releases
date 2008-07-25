@@ -140,13 +140,20 @@ public class PhpProject implements Project, AntProjectListener {
     }
 
     public FileObject getSourcesDirectory() {
+        if (sourcesDirectory == null) {
+            // get the first source root
+            //  in fact, there should *always* be only 1 source root but see #141200, #141204 or #141229
+            FileObject[] sourceObjects = Utils.getSourceObjects(this);
+            assert sourceObjects != null && sourceObjects.length > 0;
+            sourcesDirectory = sourceObjects[0];
+        }
         assert sourcesDirectory != null;
         return sourcesDirectory;
     }
 
     public FileObject getWebRootDirectory() {
         String webRootPath = getEvaluator().getProperty(PhpProjectProperties.WEB_ROOT);
-        FileObject webRoot = sourcesDirectory;
+        FileObject webRoot = getSourcesDirectory();
         if (webRootPath != null && webRootPath.trim().length() > 0 && !webRootPath.equals(".")) {//NOI18N
             webRoot = sourcesDirectory.getFileObject(webRootPath);
         }
@@ -304,7 +311,7 @@ public class PhpProject implements Project, AntProjectListener {
             }
 
             // #139159 - we need to hold sources FO to prevent gc
-            sourcesDirectory = Utils.getSourceObjects(PhpProject.this)[0];
+            getSourcesDirectory();
         }
 
         protected void projectClosed() {

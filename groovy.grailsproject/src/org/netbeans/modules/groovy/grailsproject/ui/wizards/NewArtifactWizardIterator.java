@@ -129,16 +129,16 @@ public class NewArtifactWizardIterator implements  WizardDescriptor.Instantiatin
                 Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                         serverCommand, GrailsProjectConfig.forProject(project), pls.getDomainClassName());
 
-                ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-                builder.frontWindow(true).inputVisible(true);
-                builder.outProcessorFactory(new InputProcessorFactory() {
+                ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                        .frontWindow(true).inputVisible(true);
+                descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
                     public InputProcessor newInputProcessor() {
                         return InputProcessors.bridge(new ProgressSnooper(handle, 100, 2));
                     }
                 });
-                builder.postExecution(new RefreshProjectRunnable(project));
+                descriptor = descriptor.postExecution(new RefreshProjectRunnable(project));
 
-                ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+                ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
                 Future<Integer> future = service.run();
                 try {
                     // TODO handle return value

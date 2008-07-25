@@ -57,4 +57,8 @@ public class HintsAdvancedOption extends AdvancedOption {
         return panelController;
     }
 
+    //TODO: temporary solution, this should be solved on GSF level
+    public static  OptionsPanelController createStatic(){
+        return new HintsAdvancedOption().create();
+    }
 }

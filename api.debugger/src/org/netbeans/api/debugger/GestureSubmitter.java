@@ -56,21 +56,20 @@ import java.util.logging.Logger;
 class GestureSubmitter {
     //~ Static fields/initializers -----------------------------------------------------------------------------------------------
 
-    private static final Logger UILOGGER = Logger.getLogger("org.netbeans.ui.debugger"); // NOI18N
+    private static final Logger USG_LOGGER = Logger.getLogger("org.netbeans.ui.metrics.debugger"); // NOI18N
 
     //~ Methods ------------------------------------------------------------------------------------------------------------------
 
     static void logDebugStart(Session s, List<DebuggerEngine> engines) {
-        LogRecord record = new LogRecord(Level.CONFIG, "UI_DEBUG_SESSION_START"); // NOI18N
+        LogRecord record = new LogRecord(Level.INFO, "USG_DEBUG_SESSION_START"); // NOI18N
         record.setResourceBundle(NbBundle.getBundle(GestureSubmitter.class));
         record.setResourceBundleName(GestureSubmitter.class.getPackage().getName() + ".Bundle"); // NOI18N
-        record.setLoggerName(UILOGGER.getName());
+        record.setLoggerName(USG_LOGGER.getName());
         List params = new ArrayList();
         params.add(s.getName());
         params.add(s.getLocationName());
-        params.add(Arrays.asList(s.getSupportedLanguages()));
-        params.add(engines);
+        params.add(s.getCurrentLanguage());
         record.setParameters(params.toArray(new Object[params.size()]));
-        UILOGGER.log(record);
+        USG_LOGGER.log(record);
     }
 }

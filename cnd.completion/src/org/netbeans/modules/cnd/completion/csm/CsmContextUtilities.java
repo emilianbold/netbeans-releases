@@ -71,6 +71,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmMember;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.CsmVariableDefinition;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilterBuilder;
@@ -487,6 +490,17 @@ public class CsmContextUtilities {
             // check if we in one of class's method
             CsmFunction fun = getFunction(context);
             clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
+        }
+        if (clazz == null) {
+            // IZ #141107 References to parent class field in static field initializers are unresolved
+            // for static field definition, take into account (static) class context
+            CsmObject last = context.getLastObject();
+            if(CsmKindUtilities.isVariableDefinition(last)) {
+                CsmVariable decl = ((CsmVariableDefinition) last).getDeclaration();
+                if (CsmKindUtilities.isClassMember(decl)) {
+                    clazz = ((CsmMember) decl).getContainingClass();
+                }
+            }
         }
         return clazz;
     }    

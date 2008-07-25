@@ -86,34 +86,45 @@ public final class Utils {
         return URL_PATTERN.matcher(url).matches();
     }
 
-    public static String browseLocationAction(final Component parent, String path, String title) {
+    /**
+     * @return the selected folder or <code>null</code>.
+     */
+    public static File browseLocationAction(final Component parent, File currentDirectory, String title) {
         JFileChooser chooser = new JFileChooser();
         FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
         chooser.setDialogTitle(title);
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        if (path != null && path.length() > 0) {
-            File f = new File(path);
-            if (f.exists()) {
-                chooser.setSelectedFile(f);
-            }
+        if (currentDirectory != null
+                && currentDirectory.exists()) {
+            chooser.setSelectedFile(currentDirectory);
         }
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(parent)) {
-            return FileUtil.normalizeFile(chooser.getSelectedFile()).getAbsolutePath();
+            return FileUtil.normalizeFile(chooser.getSelectedFile());
         }
         return null;
     }
 
-    public static void browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
-            final MutableComboBoxModel localServerComboBoxModel, String newSubfolderName, String title) {
-        LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
-        String newLocation = browseLocationAction(parent, ls.getDocumentRoot(), title);
-        if (newLocation == null) {
-            return;
+    /**
+     * @return the selected folder or <code>null</code>.
+     */
+    public static File browseLocalServerAction(final Component parent, final JComboBox localServerComboBox,
+            final MutableComboBoxModel localServerComboBoxModel, File preselected, String newSubfolderName, String title) {
+        if (preselected == null) {
+            LocalServer ls = (LocalServer) localServerComboBox.getSelectedItem();
+            if (ls.getDocumentRoot() != null && ls.getDocumentRoot().length() > 0) {
+                preselected = new File(ls.getDocumentRoot());
+            }
         }
+        File newLocation = browseLocationAction(parent, preselected, title);
+        if (newLocation == null) {
+            return null;
+        }
+
+        LastUsedFolders.setCopyFiles(newLocation);
 
         File file = null;
         if (newSubfolderName == null) {
-            file = new File(newLocation);
+            file = newLocation;
         } else {
             file = new File(newLocation, newSubfolderName);
         }
@@ -122,12 +133,13 @@ public final class Utils {
             LocalServer element = (LocalServer) localServerComboBoxModel.getElementAt(i);
             if (projectLocation.equals(element.getSrcRoot())) {
                 localServerComboBox.setSelectedIndex(i);
-                return;
+                break;
             }
         }
-        LocalServer localServer = new LocalServer(newLocation, projectLocation);
+        LocalServer localServer = new LocalServer(newLocation.getAbsolutePath(), projectLocation);
         localServerComboBoxModel.addElement(localServer);
         localServerComboBox.setSelectedItem(localServer);
+        return newLocation;
     }
 
     public static List getAllItems(final JComboBox comboBox) {

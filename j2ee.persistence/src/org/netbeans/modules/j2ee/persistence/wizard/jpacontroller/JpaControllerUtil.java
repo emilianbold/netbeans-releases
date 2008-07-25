@@ -55,6 +55,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -82,7 +83,10 @@ import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Utilities;
@@ -92,6 +96,50 @@ import org.openide.util.Utilities;
  * @author mbohm
  */
 public class JpaControllerUtil {
+    
+    /**
+     * Get the encoding of the supplied project as a Charset object
+     * @param project The project
+     * @param file A file in the project
+     * @return The project encoding, or a suitable default if the project encoding cannot be determined. Never null
+     */
+    public static Charset getProjectEncoding(Project project, FileObject file) {
+        Charset encoding = project.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(file);
+        if (encoding == null) {
+            encoding = FileEncodingQuery.getDefaultEncoding();
+            if (encoding == null) {
+                return Charset.forName("UTF-8");
+            }
+            else {
+                return encoding;
+            }
+        }
+        else {
+            return encoding;
+        }
+    }
+    
+    /**
+     * Get the encoding of the supplied project as a String (by performing a lookup and invoking Charset.name).
+     * @param project The project
+     * @param file A file in the project
+     * @return The project encoding, or a suitable default if the project encoding cannot be determined. Never null
+     */
+    public static String getProjectEncodingAsString(Project project, FileObject file) {
+        Charset encoding = project.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(file);
+        if (encoding == null) {
+            encoding = FileEncodingQuery.getDefaultEncoding();
+            if (encoding == null) {
+                return "UTF-8";
+            }
+            else {
+                return encoding.name();
+            }
+        }
+        else {
+            return encoding.name();
+        }
+    }
     
     public static String simpleClassName(String fqn) {
         int lastDot = fqn.lastIndexOf('.');
@@ -146,7 +194,7 @@ public class JpaControllerUtil {
             typeElement = getSuperclassTypeElement(typeElement);
         }
         if (!accessTypeDetected) {
-            Logger.getLogger("global").log(Level.WARNING, "Failed to detect correct access type for class: " + qualifiedName); // NOI18N
+            Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Failed to detect correct access type for class: " + qualifiedName); // NOI18N
         }
         return fieldAccess;
     }
@@ -415,7 +463,7 @@ public class JpaControllerUtil {
                 }
             }
         }
-        Logger.getLogger("global").log(Level.WARNING, "Cannot find ID getter in class: " + typeElement.getQualifiedName());
+        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot find ID getter in class: " + typeElement.getQualifiedName());
         return null;
     }
     
@@ -453,7 +501,7 @@ public class JpaControllerUtil {
                 return variableElement;
             }
         }
-        Logger.getLogger("global").log(Level.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
+        Logger.getLogger(JpaControllerUtil.class.getName()).log(Level.WARNING, "Cannot detect the field associated with property: " + guessFieldName);
         return null;
     }
     

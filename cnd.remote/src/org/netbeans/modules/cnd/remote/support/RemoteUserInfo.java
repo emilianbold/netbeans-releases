@@ -70,7 +70,14 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
     private boolean cancelled = false;
     private final static Object DLGLOCK = new Object();
     
-    public static synchronized RemoteUserInfo getUserInfo(String key) {
+    /**
+     * Get the UserInfo for the remote host.
+     * 
+     * @param key The host key to loo for
+     * @param reset Reset password information if true
+     * @return The RemoteHostInfo instance for this key
+     */
+    public static synchronized RemoteUserInfo getUserInfo(String key, boolean retry) {
         if (map == null) {
             map = new HashMap<String, RemoteUserInfo>();
         }
@@ -79,8 +86,19 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         if (ui == null) {
             ui = new RemoteUserInfo();
             map.put(key, ui);
+        } else if (ui.isCancelled()) {
+            ui.cancelled = false;
+        }
+        if (retry) {
+            ui.reset();
         }
         return ui;
+    }
+    
+    private void reset() {
+        passwd = null;
+        passwordField.setText(""); // clear textfield
+        cancelled = false;
     }
 
     public String getPassword() {
@@ -122,7 +140,6 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
                     passwd = passwordField.getText();
                     return true;
                 } else {
-                    System.err.println("RUI.promptPassword: Password cancelled on " + Thread.currentThread().getName());
                     cancelled = true;
                     return false; 
                 }

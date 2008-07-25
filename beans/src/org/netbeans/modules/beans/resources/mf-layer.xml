@@ -51,15 +51,19 @@ made subject to such option by the copyright holder.
       <file name="Bean.java" url="templates/Bean.template">
          <attr name="position" intvalue="100"/>
          <attr name="template" boolvalue="true" />
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Bean.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="BeanInfo.java" url="templates/BeanInfo.template">
          <attr name="position" intvalue="200"/>
          <attr name="template" boolvalue="true" />
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="templateCategory" stringvalue="java-beans"/>
@@ -67,14 +71,17 @@ made subject to such option by the copyright holder.
       <file name="NoIconBeanInfo.java" url="templates/BeanInfoNoIcon.template">
          <attr name="position" intvalue="300"/>
          <attr name="template" boolvalue="true" />
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/BeanInfo.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="Customizer.java" url="templates/Customizer.template">
          <attr name="position" intvalue="400"/>
          <attr name="template" boolvalue="true" />
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/Customizer.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
@@ -90,9 +97,11 @@ made subject to such option by the copyright holder.
       <file name="PropertyEditor.java" url="templates/PropertyEditor.template">
          <attr name="position" intvalue="600"/>
          <attr name="template" boolvalue="true" />
+         <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
          <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/beans/resources/PropertyEditor.html" />
          <attr name="instantiatingIterator" methodvalue="org.netbeans.spi.java.project.support.ui.templates.JavaTemplates.createJavaTemplateIterator" />
          <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.beans.Bundle"/>
+         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:org/netbeans/modules/java/resources/class.gif"/>
          <attr name="templateCategory" stringvalue="java-beans"/>
       </file>
       <file name="Package.shadow">

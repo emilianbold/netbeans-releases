@@ -48,21 +48,13 @@
 
 HRESULT CNetBeansBHO::FinalConstruct() {
     m_dwThreadID = GetCurrentThreadId();
-    debuggerStarted = FALSE;
-	m_hEvent = CreateEvent(NULL, false, false, NULL);
-//    m_pScriptDebugger = NULL;
-    m_pDbgpConnection = NULL;
+    setDebuggerStopped();
     return S_OK;
 }
 
-void CNetBeansBHO::FinalRelease() {
-    /*
-    if(m_pDbgpConnection != NULL) {
-        delete m_pDbgpConnection;
-    }
-    */
+void CNetBeansBHO::setDebuggerStopped() {
+    m_pDbgpConnection = NULL;
     debuggerStarted = FALSE;
-    SetEvent(m_hEvent);
 }
 
 STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
@@ -85,6 +77,9 @@ STDMETHODIMP CNetBeansBHO::SetSite(IUnknown* pUnkSite) {
         }
         Utils::revokeInterfaceFromGlobal(m_dwWebBrowserCookie);
         m_spWebBrowser.Release();
+        if(m_pDbgpConnection != NULL) {
+            m_pDbgpConnection->close();
+        }
     }
 
     return IObjectWithSiteImpl<CNetBeansBHO>::SetSite(pUnkSite);
@@ -166,6 +161,7 @@ void CNetBeansBHO::initializeNetbeansDebugging(tstring port, tstring sessionId) 
 DWORD WINAPI CNetBeansBHO::DebuggerProc(LPVOID param) {
     ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
     CNetBeansBHO *pNetbeansBHO = (CNetBeansBHO*)param;
+    pNetbeansBHO->AddRef();
     ScriptDebugger *pScriptDebugger = ScriptDebugger::createScriptDebugger();
     DbgpConnection *pDbgpConnection = pNetbeansBHO->m_pDbgpConnection;
     if(pScriptDebugger != NULL && pDbgpConnection != NULL) {
@@ -176,14 +172,17 @@ DWORD WINAPI CNetBeansBHO::DebuggerProc(LPVOID param) {
             Utils::log(4, _T("Connected to debugger\n"));
             DWORD threadID;
             //Thread for DBGP command and responses
-            CreateThread(NULL, 0, DbgpConnection::commandHandler, 
-                            pNetbeansBHO->m_pDbgpConnection, 0, &threadID);
-            AtlWaitWithMessageLoop(pNetbeansBHO->m_hEvent);
+            HANDLE hThread = CreateThread(NULL, 0, DbgpConnection::commandHandler, 
+                                pNetbeansBHO->m_pDbgpConnection, 0, &threadID);
+            AtlWaitWithMessageLoop(hThread);
+            //cleanup
+            delete pDbgpConnection;
+            pNetbeansBHO->setDebuggerStopped();
         }else {
             Utils::log(1, _T("Unable to connect to debugger, error code - %x\n"), hr);
         }
     }
-    //pScriptDebugger->Release();
-	::CoUninitialize();
+    pNetbeansBHO->Release();
+    ::CoUninitialize();
     return 0;
 }

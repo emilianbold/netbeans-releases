@@ -1266,7 +1266,7 @@ made subject to such option by the copyright holder.
         <api type="import" group="preferences"  name="org.netbeans.core.usageStatisticsEnabled" category="private">
             Key "usageStatisticsEnabled" is read and controls if metrics logging is enabled or disabled.
             Installer has also similar UI to set this and stores it into NetBeans install dir
-            <code>nb6.1/config/Preferences/org/netbeans/core.proerties</code>
+            <code>nb6.5/config/Preferences/org/netbeans/core.proerties</code>
         </api>
     </answer>
     

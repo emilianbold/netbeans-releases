@@ -182,7 +182,10 @@ public class ConfigurationMakefileWriter {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet(); 
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return;
+        }
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
@@ -338,9 +341,13 @@ public class ConfigurationMakefileWriter {
 	    String additionalDep = null;
             for (int i = 0; i < items.length; i++) {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-                if (itemConfiguration.getExcluded().getValue())
+                if (itemConfiguration.getExcluded().getValue()) {
                     continue;
+                }
                 CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if (compilerSet == null) {
+                    continue;
+                }
                 file = IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
@@ -469,11 +476,14 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
-            if (conf.getCompilerSet().getCompilerSet().isSunCompiler() &&
-                    conf.hasCPPFiles(projectDescriptor))
+            if (conf.getCompilerSet().getCompilerSet() != null &&
+                    conf.getCompilerSet().getCompilerSet().isSunCompiler() &&
+                    conf.hasCPPFiles(projectDescriptor)) {
 		bw.write("\t${CCADMIN} -clean" + "\n"); // NOI18N
-            if (conf.hasFortranFiles(projectDescriptor))
+            }
+            if (conf.hasFortranFiles(projectDescriptor)) {
 		bw.write("\t${RM} *.mod" + "\n"); // NOI18N
+            }
             
             // Also clean output from custom tool
             Item[] items = projectDescriptor.getProjectItems();

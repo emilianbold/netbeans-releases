@@ -109,7 +109,7 @@ public class GdbProxy implements GdbMiDefinitions {
         engine = new GdbProxyEngine(debugger, this, dc, debuggerEnvironment, workingDirectory, termpath, cspath);
     }
 
-    protected GdbProxyEngine getProxyEngine() {
+    public GdbProxyEngine getProxyEngine() {
         return engine;
     }
 
@@ -288,6 +288,15 @@ public class GdbProxy implements GdbMiDefinitions {
         int src = withSource ? 1 : 0;
         return engine.sendCommand("-data-disassemble -s $pc -e \"$pc+" + size + "\" -- " + src); // NOI18N
     }
+
+    public static final int MEMORY_READ_WIDTH = 16;
+
+    /*
+     * @param addr - address to read from
+     */
+    public int data_read_memory(CommandBuffer cb, String addr, int lines) {
+        return engine.sendCommand(cb, "-data-read-memory " + addr + " x 1 " + lines + " " + MEMORY_READ_WIDTH + " ."); // NOI18N
+    }
     
     public int print(CommandBuffer cb, String expression) {
         return engine.sendCommand(cb, "print " + expression); // NOI18N
@@ -351,8 +360,15 @@ public class GdbProxy implements GdbMiDefinitions {
     /**
      * Execute single instruction
      */
-    public int exec_instruction() {
+    public int exec_step_instruction() {
         return engine.sendCommand("-exec-step-instruction"); // NOI18N
+    }
+
+    /**
+     * Execute next instruction
+     */
+    public int exec_next_instruction() {
+        return engine.sendCommand("-exec-next-instruction"); // NOI18N
     }
 
     /**

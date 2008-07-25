@@ -56,94 +56,127 @@ import org.openide.util.NbBundle;
  */
 public class RemoteServerSetup {
     
-    private static Logger log = Logger.getLogger("cnd.remote.logger");
+    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     private static final String REMOTE_SCRIPT_DIR = ".netbeans/6.5/cnd2/scripts/"; // NOI18N
     private static final String LOCAL_SCRIPT_DIR = "src/scripts/"; // NOI18N
     private static final String GET_SCRIPT_INFO = "PATH=/bin:/usr/bin:$PATH  grep VERSION= " + REMOTE_SCRIPT_DIR + "* /dev/null 2> /dev/null"; // NOI18N
     private static final String DOS2UNIX_CMD = "PATH=/bin:/usr/bin:$PATH  dos2unix " + REMOTE_SCRIPT_DIR; // NOI18N
     
-    private static Map<String, Double> setupMap;
-    private static Map<String, List<String>> updateMap;
+    private Map<String, Double> setupMap;
+    private Map<String, List<String>> updateMap;
+    private String hkey;
+    private boolean cancelled;
+    private boolean failed;
+    private String reason;
     
-    static {
+    protected RemoteServerSetup(String hkey) {
+        this.hkey = hkey;
         setupMap = new HashMap<String, Double>();
         setupMap.put("getCompilerSets.bash", Double.valueOf(0.3)); // NOI18N
         updateMap = new HashMap<String, List<String>>();
     }
-    
-    protected static void setup(String name) {
-        List<String> list = updateMap.remove(name);
-        boolean ok = true;
-        String err = null;
-        
-        for (String script : list) {
-            if (script.equals(REMOTE_SCRIPT_DIR)) {
-                log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
-                int exit_status = RemoteCommandSupport.run(name,
-                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
-                if (exit_status == 0) {
-                    for (String key : setupMap.keySet()) {
-                        log.fine("RSS.setup: Copying" + script + " to " + name);
-                        File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
-                        ok |= RemoteCopySupport.copyTo(name, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                        RemoteCommandSupport.run(name, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
-                    }
-                } else {
-                    err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", name, exit_status);
-                    ok = false;
-                }
-            } else {
-                log.fine("RSS.setup: Updating \"" + script + "\" on " + name);
-                File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
-                ok |= RemoteCopySupport.copyTo(name, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                RemoteCommandSupport.run(name, DOS2UNIX_CMD + script + ' ' + REMOTE_SCRIPT_DIR + script);
-                err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", name, script);
-            }
-        }
-        if (!ok && err != null) {
-            throw new IllegalStateException(err);
-        }
-    }
 
-    static boolean needsSetupOrUpdate(String name) {
+    protected boolean needsSetupOrUpdate() {
         List<String> updateList = new ArrayList<String>();
         
         updateMap.clear(); // remote entries if run for other remote systems
-        RemoteCommandSupport support = new RemoteCommandSupport(name, GET_SCRIPT_INFO);
-        log.fine("RSS.needsSetupOrUpdate: GET_SCRIPT_INFO returned " + support.getExitStatus());
-        if (support.getExitStatus() == 0) {
-            String val = support.toString();
-            for (String line : val.split("\n")) { // NOI18N
-                try {
-                    int pos = line.indexOf(':');
-                    if (pos > 0 && line.length() > 0) {
-                        String script = line.substring(REMOTE_SCRIPT_DIR.length(), pos);
-                        Double installedVersion = Double.valueOf(line.substring(pos + 9));
-                        Double expectedVersion = setupMap.get(script);
-                        if (expectedVersion != null && expectedVersion > installedVersion) {
-                            log.fine("RSS.needsSetupOrUpdate: Need to update " + script);
-                            updateList.add(script);
+        RemoteCommandSupport support = new RemoteCommandSupport(hkey, GET_SCRIPT_INFO);
+        if (!support.isFailed()) {
+            log.fine("RSS.needsSetupOrUpdate: GET_SCRIPT_INFO returned " + support.getExitStatus());
+            if (support.getExitStatus() == 0) {
+                String val = support.toString();
+                for (String line : val.split("\n")) { // NOI18N
+                    try {
+                        int pos = line.indexOf(':');
+                        if (pos > 0 && line.length() > 0) {
+                            String script = line.substring(REMOTE_SCRIPT_DIR.length(), pos);
+                            Double installedVersion = Double.valueOf(line.substring(pos + 9));
+                            Double expectedVersion = setupMap.get(script);
+                            if (expectedVersion != null && expectedVersion > installedVersion) {
+                                log.fine("RSS.needsSetupOrUpdate: Need to update " + script);
+                                updateList.add(script);
+                            }
+                        } else {
+                            log.warning("RSS.needsSetupOrUpdatep: Grep returned [" + line + "]");
                         }
-                    } else {
-                        log.warning("RSS.needsSetupOrUpdatep: Grep returned [" + line + "]");
+                    } catch (NumberFormatException nfe) {
+                        log.warning("RSS.needsSetupOrUpdate: Bad response from remote grep comand (NFE parsing version)");
+                    } catch (Exception ex) {
+                        log.warning("RSS.needsSetupOrUpdate: Bad response from remote grep comand: " + ex.getClass().getName());
                     }
-                } catch (NumberFormatException nfe) {
-                    log.warning("RSS.needsSetupOrUpdate: Bad response from remote grep comand (NFE parsing version)");
-                } catch (Exception ex) {
-                    log.warning("RSS.needsSetupOrUpdate: Bad response from remote grep comand: " + ex.getClass().getName());
+                }
+            } else {
+                if (!support.isCancelled()) {
+                    log.fine("RSS.needsSetupOrUpdate: Need to create ~/" + REMOTE_SCRIPT_DIR);
+                    updateList.add(REMOTE_SCRIPT_DIR);
+                } else if (support.isCancelled()) {
+                        cancelled = true;
+                } else {
+                    log.warning("RSS.needsSetupOrUpdates: Unexpected  exit code [" + support.getExitStatus() + "]");
                 }
             }
         } else {
-            if (!support.isCancelled()) {
-                log.fine("RSS.needsSetupOrUpdate: Need to create ~/" + REMOTE_SCRIPT_DIR);
-                updateList.add(REMOTE_SCRIPT_DIR);
-            }
+            // failed
+            failed = true;
+            reason = support.getFailureReason();
         }
+        
         if (!updateList.isEmpty()) {
-            updateMap.put(name, updateList);
+            updateMap.put(hkey, updateList);
             return true;
         } else {
             return false;
         }
+    }
+    
+    protected  void setup() {
+        List<String> list = updateMap.remove(hkey);
+        
+        for (String script : list) {
+            if (script.equals(REMOTE_SCRIPT_DIR)) {
+                log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
+                int exit_status = RemoteCommandSupport.run(hkey,
+                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
+                if (exit_status == 0) {
+                    for (String key : setupMap.keySet()) {
+                        log.fine("RSS.setup: Copying" + script + " to " + hkey);
+                        File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
+                        RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                        RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
+                    }
+                } else {
+                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
+                }
+            } else {
+                log.fine("RSS.setup: Updating \"" + script + "\" on " + hkey);
+                File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
+                RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + script + ' ' + REMOTE_SCRIPT_DIR + script);
+                reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, script);
+            }
+        }
+    }
+    
+    public String getReason() {
+        String msg;
+        
+        if (reason.contains("UnknownHostException")) {
+            int pos = reason.lastIndexOf(' ');
+            String host = reason.substring(pos + 1);
+            msg = NbBundle.getMessage(RemoteServerSetup.class, "REASON_UnknownHost", host);
+        } else if (reason.equals("Auth failed")) {
+            msg = NbBundle.getMessage(RemoteServerSetup.class, "REASON_AuthFailed");
+        } else {
+            msg = reason;
+        }
+        return msg;
+    }
+    
+    protected boolean isCancelled() {
+        return cancelled;
+    }
+    
+    protected boolean isFailed() {
+        return failed;
     }
 }

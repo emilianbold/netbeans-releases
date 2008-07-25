@@ -47,7 +47,7 @@ import org.openide.loaders.ExtensionList;
  */
 public class CsmIncludeCompletionQuery {
     private static final Collection<String> EXCLUDED_DIR_NAMES = Arrays.asList(new String[] {
-        "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"});// NOI8N
+        "CVS", ".hg", "nbproject", "SCCS", "SunWS_cache"});// NOI8N // NOI18N
     private Map<String, CsmIncludeCompletionItem> results;
     private final CsmFile file;
     public CsmIncludeCompletionQuery(CsmFile file) {

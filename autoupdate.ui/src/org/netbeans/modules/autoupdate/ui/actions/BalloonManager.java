@@ -56,6 +56,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
@@ -63,6 +64,8 @@ import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowStateListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Area;
 import java.awt.geom.GeneralPath;
@@ -92,6 +95,8 @@ public class BalloonManager {
     private static Balloon currentBalloon;
     private static JLayeredPane currentPane;
     private static ComponentListener listener;
+    private static WindowStateListener windowListener;
+    private static Window ownerWindow;
     
     /**
      * Show balloon-like tooltip pointing to the given component. The balloon stays
@@ -127,6 +132,15 @@ public class BalloonManager {
                 dismiss();
             }
         };
+        windowListener = new WindowStateListener() {
+            public void windowStateChanged(WindowEvent e) {
+                dismiss();
+            }
+        };
+        ownerWindow = SwingUtilities.getWindowAncestor(owner);
+        if( null != ownerWindow ) {
+            ownerWindow.addWindowStateListener(windowListener);
+        }
         currentPane.addComponentListener( listener );
         configureBalloon( currentBalloon, currentPane, owner );
         currentPane.add( currentBalloon, new Integer(JLayeredPane.POPUP_LAYER-1) );
@@ -142,9 +156,14 @@ public class BalloonManager {
             currentPane.remove( currentBalloon );
             currentPane.repaint();
             currentPane.removeComponentListener( listener );
+            if( null != ownerWindow ) {
+                ownerWindow.removeWindowStateListener(windowListener);
+            }
             currentBalloon = null;
             currentPane = null;
             listener = null;
+            ownerWindow = null;
+            windowListener = null;
         }
     }
     

@@ -48,6 +48,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.HyperlinkEvent;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -214,6 +215,11 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jUsageInfo.setEditable(false);
         jUsageInfo.setText("<html>\n<head>\n</head>\n<body>\n<p style=\"margin-top: 0\"> The usage statistics help us better understand user \nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects. \n<a href=\"http://www.netbeans.org/about/usage-tracking.html\">Learn more</a>.\n</p>\n</body>\n</html>"); // NOI18N
         jUsageInfo.setFocusable(false);
+        jUsageInfo.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                hyperlinkHandler(evt);
+            }
+        });
         jScrollPane1.setViewportView(jUsageInfo);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -226,7 +232,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lWebBrowser)
                         .add(18, 18, 18)
-                        .add(cbWebBrowser, 0, 981, Short.MAX_VALUE)
+                        .add(cbWebBrowser, 0, 983, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editBrowserButton))
                     .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
@@ -357,6 +363,14 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         tfProxyHost.setCaretPosition (0);
         tfProxyHost.selectAll ();
     }//GEN-LAST:event_tfProxyHostFocusGained
+
+    private void hyperlinkHandler(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_hyperlinkHandler
+        if (jUsageInfo.equals(evt.getSource())) {
+            if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
+            }
+        }
+}//GEN-LAST:event_hyperlinkHandler
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

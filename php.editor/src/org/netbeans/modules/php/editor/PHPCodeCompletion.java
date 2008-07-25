@@ -43,6 +43,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -514,24 +515,27 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     public Collection<IndexedConstant> getVariables(PHPParseResult context,  PHPIndex index, Collection<Statement> statementList,
             String namePrefix, int position, String localFileURL){
         Collection<IndexedConstant> localVars = getLocalVariables(statementList, namePrefix, position, localFileURL);
-        Collection<IndexedConstant> allVars = new ArrayList<IndexedConstant>(localVars);
-        Map<String, IndexedConstant> localVarsByName = new HashMap(localVars.size());
+        Map<String, IndexedConstant> allVars = new LinkedHashMap<String, IndexedConstant>();
         
-        for (IndexedConstant localVar : localVars){
-            localVarsByName.put(localVar.getName(), localVar);
+        for (IndexedConstant var : localVars){
+            allVars.put(var.getName(), var);
         }
         
         for (IndexedConstant topLevelVar : index.getTopLevelVariables(context, namePrefix, NameKind.PREFIX)){
             if (!localFileURL.equals(topLevelVar.getFilenameUrl())){
-                IndexedConstant localVar = localVarsByName.get(topLevelVar.getName());
+                IndexedConstant localVar = allVars.get(topLevelVar.getName());
 
                 if (localVar == null || localVar.getOffset() != topLevelVar.getOffset()){
-                    allVars.add(topLevelVar);
+                    allVars.put(topLevelVar.getName(), topLevelVar);
                 }
             }
         }
         
-        return allVars;
+        for (IndexedConstant var : allVars.values()){
+            CodeUtils.resolveFunctionType(context, index, allVars, var);
+        }
+        
+        return allVars.values();
     }
     
     private void getLocalVariables_indexVariable(Variable var,

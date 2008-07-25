@@ -72,7 +72,7 @@ public class MiscellaneousTest extends AbstractTestCase {
     
     //issue 133819
     public void testCompletionContext1() throws Exception {
-        setupCompletion("resources/Context1.xml", null);
+        setupCompletion("resources/Context.xml", null);
         
         //at offset 320
         CompletionContextImpl context = getContextAtOffset(320);

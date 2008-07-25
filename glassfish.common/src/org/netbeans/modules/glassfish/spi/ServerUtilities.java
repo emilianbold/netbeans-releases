@@ -212,8 +212,8 @@ public final class ServerUtilities {
             url = FileUtil.getArchiveRoot(url);
         }
         return url;
-    }  
-    
+    }    
+
     /**
      * Surround the submitted string with quotes if it contains any embedded
      * whitespace characters.
@@ -231,6 +231,7 @@ public final class ServerUtilities {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
 
+
     /**
      *  Determine if the named directory is a TP2 install.
      * 
@@ -240,5 +241,4 @@ public final class ServerUtilities {
     static public boolean isTP2(String gfRoot) {
         return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_PREFIX_JAR_NAME).getName().indexOf("-tp-2-") > -1; // NOI18N
     }
-   
 }

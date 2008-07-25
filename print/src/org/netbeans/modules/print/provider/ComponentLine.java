@@ -53,7 +53,7 @@ import java.util.List;
 
 import org.openide.text.AttributedCharacters;
 
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
@@ -84,7 +84,7 @@ final class ComponentLine {
   }
 
   private Font createFont(Font attrFont, Font defaultFont) {
-    if ( !Option.getDefault().isUseFont()) {
+    if ( !Config.getDefault().isUseFont()) {
       return defaultFont;
     }
     String name = defaultFont.getName();
@@ -94,7 +94,7 @@ final class ComponentLine {
   }
 
   private Color createColor(Color attrColor, Color defaultColor) {
-    if (Option.getDefault().isUseColor()) {
+    if (Config.getDefault().isUseColor()) {
       return attrColor;
     }
     return defaultColor;
@@ -188,7 +188,7 @@ final class ComponentLine {
     if (myTextLayout == null) {
 //out();
 //out("TEXT : '" + this + "'");
-      myTextLayout = new TextLayout(getIterator(), Option.FONT_RENDER_CONTEXT);
+      myTextLayout = new TextLayout(getIterator(), Config.FONT_RENDER_CONTEXT);
     }
     return myTextLayout;
   }

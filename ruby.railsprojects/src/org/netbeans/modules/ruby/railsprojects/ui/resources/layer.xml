@@ -91,7 +91,7 @@ made subject to such option by the copyright holder.
                 <attr name="template" boolvalue="true"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.railsprojects.ui.resources.Bundle"/>
                 <attr name="templateCategory" stringvalue="rails"/>
-                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rubyproject/ui/resources/rjs.html"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/railsprojects/ui/resources/rjs.html"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.ruby.rubyproject.templates.RubyTemplates.createRubyTemplateIterator"/>
             </file>
         </folder>

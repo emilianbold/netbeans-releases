@@ -65,7 +65,6 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
@@ -156,23 +155,23 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private static final String MSG_BREAKPOINT_ERROR = "Cannot insert breakpoint"; // NOI18N
     
     private GdbProxy gdb;
-    private ContextProvider lookupProvider;
+    private final ContextProvider lookupProvider;
     private String state = STATE_NONE;
-    private PropertyChangeSupport pcs;
+    private final PropertyChangeSupport pcs;
     private String runDirectory;
-    private ArrayList<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
-    private GdbEngineProvider gdbEngineProvider;
+    private final ArrayList<CallStackFrame> callstack = new ArrayList<CallStackFrame>();
+    private final GdbEngineProvider gdbEngineProvider;
     private CallStackFrame currentCallStackFrame;
     public final Object LOCK = new Object();
     private long programPID = 0;
     private double gdbVersion = 6.4;
     private boolean continueAfterFirstStop = true;
-    private ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
-    private Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
-    private Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
-    private List<String> temporaryBreakpoints = new ArrayList<String>();
-    private static Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
-    private static Logger log = Logger.getLogger("gdb.logger"); // NOI18N
+    private final ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
+    private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
+    private final Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
+    private final List<String> temporaryBreakpoints = new ArrayList<String>();
+    private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
+    private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     private int currentToken = 0;
     private String currentThreadID = "1"; // NOI18N
     private static final String[] emptyThreadsList = new String[0];
@@ -198,19 +197,22 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         firstOutput = true;
         dlopenPending = false;
         addPropertyChangeListener(this);
-        List l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
-        int i, k = l.size();
-        for (i = 0; i < k; i++) {
-            if (l.get(i) instanceof GdbEngineProvider) {
-                gdbEngineProvider = (GdbEngineProvider) l.get(i);
+
+        GdbEngineProvider dep = null;
+        List<? extends DebuggerEngineProvider> l = lookupProvider.lookup(null, DebuggerEngineProvider.class);
+        for (DebuggerEngineProvider curDep : l) {
+            if (curDep instanceof GdbEngineProvider) {
+                dep = (GdbEngineProvider) curDep;
             }
         }
-        if (gdbEngineProvider == null) {
+        if (dep == null) {
             throw new IllegalArgumentException(
                     "GdbEngineProvider must be used to start GdbDebugger!"); // NOI18N
         }
+        this.gdbEngineProvider = dep;
+
         threadsViewInit();
-        disassembly = new Disassembly(this);
+        this.disassembly = new Disassembly(this);
     }
     
     public ContextProvider getLookup() {
@@ -847,6 +849,12 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (cb != null) {
                 cb.done();
             }
+        } else if (msg.startsWith("^done,addr=")) { // NOI18N
+            cb = gdb.getCommandBuffer(itok);
+            if (cb != null) {
+                cb.append(msg.substring(6));
+                cb.done();
+            }
         } else if (msg.startsWith("^done,shlib-info=") && Utilities.isMac()) { // NOI18N
             String info = msg.substring(17);
             cb = gdb.getCommandBuffer(itok);
@@ -1266,14 +1274,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void stepI() {
         setState(STATE_RUNNING);
-        gdb.exec_instruction();
+        gdb.exec_step_instruction();
     }
     
     /**
      * Step over function inside dis
      */
     public void stepOverInstr() {
-        Disassembly dis = Disassembly.getCurrent();
+        setState(STATE_RUNNING);
+        gdb.exec_next_instruction();
+        /*Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return;
         }
@@ -1287,7 +1297,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else {
             gdb.break_insert(GDB_TMP_BREAKPOINT, "*" + newAddress); // NOI18N
             resume();
-        }
+        }*/
     }
     
     /**
@@ -1876,8 +1886,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public Map<String, TypeInfo> getTypeInfoCache() {
         return ticache;
     }
-    
+
+    /**
+     * @deprecated use requestValueEx instead
+     */
     public String requestValue(String name) {
+        try {
+            return requestValueEx(name);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+    
+    public String requestValueEx(String name) throws GdbErrorException {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
         
         if (state.equals(STATE_STOPPED)) {
@@ -1887,7 +1908,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
                 if (cb.getState() == CommandBuffer.STATE_ERROR) {
                     log.fine("GD.requestValue[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
-                    return '>' + cb.getError() + '<';
+                    // TODO: do not enclose the message in ><
+                    throw new GdbErrorException('>' + cb.getError() + '<');
                 } else {
                     log.fine("GD.requestValue[" + cb.getID() + "]: Failure [" + // NOI18N
                             info.length() + ", " + cb.getState() + "]"); // NOI18N

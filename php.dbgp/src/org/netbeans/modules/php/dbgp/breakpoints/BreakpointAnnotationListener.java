@@ -52,7 +52,10 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.modules.php.dbgp.annotations.BrkpntAnnotation;
 import org.netbeans.modules.php.dbgp.annotations.DisabledBrkpntAnnotation;
 import org.openide.text.Annotation;
+import org.openide.text.AnnotationProvider;
 import org.openide.text.Line;
+import org.openide.text.Line.Set;
+import org.openide.util.Lookup;
 
 
 /**
@@ -63,7 +66,7 @@ import org.openide.text.Line;
  * @author ads
  */
 public class BreakpointAnnotationListener extends DebuggerManagerAdapter
-    implements PropertyChangeListener 
+    implements PropertyChangeListener, AnnotationProvider
 {
 
     @Override
@@ -124,4 +127,8 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
         = new HashMap<Breakpoint, Annotation>();
 
     private String[] myProperties;
+
+    public void annotate(Set set, Lookup context) {
+        DebuggerManager.getDebuggerManager().getBreakpoints();
+    }
 }

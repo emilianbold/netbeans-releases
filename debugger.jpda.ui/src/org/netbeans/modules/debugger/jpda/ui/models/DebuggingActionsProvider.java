@@ -58,6 +58,7 @@ import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.ui.SourcePath;
+import org.netbeans.modules.debugger.jpda.ui.debugging.FiltersDescriptor;
 import org.netbeans.spi.viewmodel.NodeActionsProvider;
 import org.netbeans.spi.viewmodel.ModelListener;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
@@ -133,7 +134,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
         Models.MULTISELECTION_TYPE_ANY
     );
 
-    private static Action GO_TO_SOURCE_ACTION = Models.createAction (
+    static Action GO_TO_SOURCE_ACTION = Models.createAction (
         NbBundle.getBundle(DebuggingActionsProvider.class).getString("CTL_ThreadAction_GoToSource_Label"),
         new Models.ActionPerformer () {
             public boolean isEnabled (Object node) {
@@ -266,7 +267,7 @@ public class DebuggingActionsProvider implements NodeActionsProvider {
     
     public Action[] getActions (Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT)
-            return new Action [0];
+            return FiltersDescriptor.getInstance().getFilterActions();
         if (node instanceof JPDAThreadGroup) {
             return new Action [] {
                 RESUME_ACTION,

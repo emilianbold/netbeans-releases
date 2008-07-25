@@ -187,15 +187,15 @@ public class GdbProxyEngine {
      *
      * @param cmd - a command to be sent to the debugger
      */
-    int sendCommand(String cmd) {
+    public int sendCommand(String cmd) {
         return sendCommand(null, cmd, false);
     }
     
-    int sendCommand(CommandBuffer cb, String cmd) {
+    public int sendCommand(CommandBuffer cb, String cmd) {
         return sendCommand(cb, cmd, false);
     }
     
-    int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
+    public int sendCommand(CommandBuffer cb, String cmd, boolean consoleCommand) {
         if (active) {
             String time;
             if (timerOn) {
@@ -223,7 +223,7 @@ public class GdbProxyEngine {
         }
     }
     
-    int sendConsoleCommand(String cmd) {
+    public int sendConsoleCommand(String cmd) {
         return sendCommand(null, cmd, true);
     }
     

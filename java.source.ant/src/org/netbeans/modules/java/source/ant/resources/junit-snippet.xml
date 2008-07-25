@@ -43,10 +43,12 @@ made subject to such option by the copyright holder.
 <project name="Quick Run" default="execute" basedir=".">
     <target name="execute">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
+        <property name="run.jvmargs" value="" />
         <junit showoutput="true" fork="true">
             <test name="${classname}" />
             <classpath path="${classpath-translated}" />
             <jvmarg value="-ea"/>
+            <jvmarg line="${run.jvmargs}"/>
             <formatter type="brief" usefile="false"/>
             <formatter type="xml"/>
         </junit>

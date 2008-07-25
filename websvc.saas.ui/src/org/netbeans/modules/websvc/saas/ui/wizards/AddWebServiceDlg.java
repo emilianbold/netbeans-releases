@@ -59,6 +59,7 @@ import java.net.MalformedURLException;
 
 import javax.swing.filechooser.FileFilter;
 import javax.swing.*;
+import org.netbeans.modules.websvc.saas.model.Saas;
 import org.netbeans.modules.websvc.saas.model.SaasGroup;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.SaasServicesModel.State;
@@ -69,6 +70,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Enables searching for Web Services, via an URL, on the local file system
@@ -407,28 +409,28 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         dialog.dispose();
         dialog = null;
 
-        // Run the add W/S asynchronously
-        String checking = url.toLowerCase();
-        if (checking.endsWith("wsdl")) { //NOI18N
-
-            SaasServicesModel.getInstance().createWsdlService(group, url, packageName);
-        } else if (checking.endsWith("wadl")) { //NOI18N
-
-            SaasServicesModel.getInstance().createWadlService(group, url, packageName);
-        }
+        try {
+            SaasServicesModel.getInstance().createSaasService(group, url, packageName);
+        } catch (Exception ex) {
+             NotifyDescriptor.Message msg = new NotifyDescriptor.Message(ex.getMessage());
+                    DialogDisplayer.getDefault().notify(msg);
+        }   
     }
 
     private void checkServicesModel() {
         if (SaasServicesModel.getInstance().getState() != State.READY) {
             setErrorMessage(NbBundle.getMessage(AddWebServiceDlg.class, "INIT_WEB_SERVICES_MANAGER"));
             disableAllControls();
-            SwingUtilities.invokeLater(new Runnable() {
-
+            RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     SaasServicesModel.getInstance().initRootGroup();
-                    enableAllControls();
-                    enableControls();
-                    setErrorMessage(defaultMsg);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            enableAllControls();
+                            enableControls();
+                            setErrorMessage(defaultMsg);
+                        }
+                    });
                 }
             });
         }
@@ -677,16 +679,18 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private static class ServiceFileFilter extends javax.swing.filechooser.FileFilter {
 
         public boolean accept(File f) {
-            boolean result;
-            if (f.isDirectory() ||
-                    "wsdl".equalsIgnoreCase(FileUtil.getExtension(f.getName())) ||
-                    "wadl".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
-
-                result = true;
-            } else {
-                result = false;
+            if (f.isDirectory()) {
+                return true;
             }
-            return result;
+            
+            String ext = FileUtil.getExtension(f.getName());
+            for (int i = 0; i < Saas.SUPPORTED_EXTENSIONS.length; i++) {
+                if (Saas.SUPPORTED_EXTENSIONS[i].equalsIgnoreCase(ext)) {
+                    return true;
+                }
+            }
+             
+            return false;
         }
 
         public String getDescription() {

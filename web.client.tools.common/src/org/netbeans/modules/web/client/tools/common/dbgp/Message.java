@@ -82,7 +82,8 @@ public abstract class Message {
     private static final String WINDOWS             = "windows";         // NOI18N
     private static final String RESPONSE            = "response";        // NOI18N
     private static final String STREAM              = "stream";          // NOI18N
-    private static final String HTTP                = "http";
+    private static final String HTTP                = "http";            // NOI18N 
+    static final String FILE_URI                    = "fileuri";         // NOI18N    
     static final String             ISO_CHARSET     = "ISO-8859-1";      // NOI18N
     private static final int        MAX_PACKET_SIZE = 1024;
     protected static final String     HTML_APOS     = "&apos;";       // NOI18N

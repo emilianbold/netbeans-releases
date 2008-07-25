@@ -47,7 +47,6 @@ import java.io.IOException;
 import java.util.Enumeration;
 import java.util.List;
 import org.netbeans.modules.websvc.saas.model.jaxb.SaasServices;
-import org.netbeans.modules.websvc.saas.spi.websvcmgr.WsdlData;
 import org.netbeans.modules.websvc.saas.util.SaasUtil;
 import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
@@ -55,6 +54,7 @@ import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -93,7 +93,7 @@ public class SaasServicesModel {
     /**
      * @return low-cost preliminary root group, might not fully populated
      */
-    public synchronized SaasGroup getInitialRootGroup() {
+    public SaasGroup getInitialRootGroup() {
         if (rootGroup == null) {
             loadUserDefinedGroups();
         }
@@ -246,7 +246,7 @@ public class SaasServicesModel {
         return rootGroup;
     }
 
-    public synchronized State getState() {
+    public State getState() {
         return state;
     }
 
@@ -336,11 +336,23 @@ public class SaasServicesModel {
         return service;
     }
 
-    public WsdlSaas createWsdlService(SaasGroup parent, String url, String packageName) {
+    public Saas createSaasService(SaasGroup parent, String url, String packageName) {
+        String saasType = SaasUtil.getSaasType(url);
+        
+        if (Saas.NS_WSDL.equals(saasType)) {
+            return createWsdlService(parent, url, packageName);
+        } else if (Saas.NS_WADL.equals(saasType)) {
+            return createWadlService(parent, url, packageName);
+        } else {
+            throw new RuntimeException(NbBundle.getMessage(SaasServicesModel.class, "MSG_UnknownSaasType"));
+        }
+    }
+    
+    private WsdlSaas createWsdlService(SaasGroup parent, String url, String packageName) {
         return createWsdlService(parent, WsdlUtil.getServiceDirName(url), url, packageName);
     }
 
-    public WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
+    private WadlSaas createWadlService(SaasGroup parent, String url, String packageName) {
         initRootGroup();
         String displayName = SaasUtil.getWadlServiceDirName(url);
         WadlSaas service = new WadlSaas(parent, url, displayName, packageName);

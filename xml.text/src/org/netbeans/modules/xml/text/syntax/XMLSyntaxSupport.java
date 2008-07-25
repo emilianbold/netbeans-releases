@@ -666,7 +666,7 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
     }
     
     /**
-     * No completion inside CDATA or comment section.
+     * No completion inside PI, CDATA, comment section.
      * 
      * @param target
      */
@@ -686,8 +686,12 @@ public class XMLSyntaxSupport extends ExtSyntaxSupport implements XMLTokenIDs {
                 if(token == null)
                     return false;
             }
-            if(token.id() == XMLTokenId.CDATA_SECTION ||
-               token.id() == XMLTokenId.BLOCK_COMMENT) {
+            if( token.id() == XMLTokenId.CDATA_SECTION ||
+               token.id() == XMLTokenId.BLOCK_COMMENT ||
+               token.id() == XMLTokenId.PI_START ||
+               token.id() == XMLTokenId.PI_END ||
+               token.id() == XMLTokenId.PI_CONTENT ||
+               token.id() == XMLTokenId.PI_TARGET ) {
                return true;
             }
         } finally {

@@ -47,10 +47,10 @@ import org.netbeans.modules.php.project.Utils;
 import org.netbeans.modules.php.project.connections.RemoteClient;
 import org.netbeans.modules.php.project.connections.RemoteException;
 import org.netbeans.modules.php.project.connections.TransferFile;
+import org.netbeans.modules.php.project.connections.TransferInfo;
 import org.netbeans.modules.php.project.connections.ui.TransferFilter;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.windows.InputOutput;
@@ -59,7 +59,7 @@ import org.openide.windows.InputOutput;
  * Download files from remote connection.
  * @author Tomas Mysik
  */
-public class DownloadCommand extends Command implements Displayable {
+public class DownloadCommand extends FtpCommand implements Displayable {
     public static final String ID = "download"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(DownloadCommand.class, "LBL_DownloadCommand");
 
@@ -73,7 +73,15 @@ public class DownloadCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    protected Runnable getContextRunnable(final Lookup context) {
+        return new Runnable() {
+            public void run() {
+                invokeActionImpl(context);
+            }
+        };
+    }
+
+    private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
@@ -81,13 +89,16 @@ public class DownloadCommand extends Command implements Displayable {
 
         // XXX project name could be cached - but is it correct?
 
-        InputOutput ftpLog = getFtpLog();
+        InputOutput ftpLog = getFtpLog(getRemoteConfiguration().getDisplayName());
         RemoteClient remoteClient = getRemoteClient(ftpLog);
         String progressTitle = NbBundle.getMessage(UploadCommand.class, "MSG_DownloadingFiles", getProject().getName());
         ProgressHandle progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
+        TransferInfo transferInfo = null;
         try {
             progressHandle.start();
             Set<TransferFile> forDownload = remoteClient.prepareDownload(sources[0], selectedFiles);
+            // avoid timeout errors
+            remoteClient.disconnect();
 
             forDownload = TransferFilter.showDownloadDialog(forDownload);
             if (forDownload.size() == 0) {
@@ -98,26 +109,23 @@ public class DownloadCommand extends Command implements Displayable {
                 progressHandle.finish();
                 progressHandle = ProgressHandleFactory.createHandle(progressTitle, remoteClient);
                 progressHandle.start();
-                remoteClient.download(sources[0], forDownload);
+                transferInfo = remoteClient.download(sources[0], forDownload);
                 StatusDisplayer.getDefault().setStatusText(
                         NbBundle.getMessage(UploadCommand.class, "MSG_DownloadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                processRemoteException(ex);
+            }
+            if (transferInfo != null) {
+                processTransferInfo(transferInfo, ftpLog);
             }
             progressHandle.finish();
         }
-    }
-
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        // XXX add support for source directories&files
-        return isRemoteConfigSelected();
     }
 
     public String getDisplayName() {

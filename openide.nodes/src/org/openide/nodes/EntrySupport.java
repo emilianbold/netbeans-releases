@@ -858,10 +858,11 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
 
             }
-            this.array = new ChArrRef(chArr, weak);
+            synchronized (LOCK) {
+                this.array = new ChArrRef(chArr, weak);
+            }
             if (IS_LOG_GET_ARRAY) {
                 LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
-
             }
         }
 
@@ -881,6 +882,8 @@ abstract class EntrySupport {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         children.callRemoveNotify();
+                        assert array.get() == null;
+                        array = EMPTY;
                     }
                 }
             } finally {
@@ -1019,13 +1022,13 @@ abstract class EntrySupport {
                     class Notify implements Runnable {
                         public void run() {
                             synchronized (LOCK) {
-                                inited = true;
                                 initThread = null;
                                 LOCK.notifyAll();
                             }
                         }
                     }
                     Notify notify = new Notify();
+                    inited = true;
                     if (Children.MUTEX.isReadAccess()) {
                         Children.MUTEX.postWriteRequest(notify);
                     } else {
@@ -1287,6 +1290,15 @@ abstract class EntrySupport {
             while (it.hasNext()) {
                 EntryInfo info = entryToInfo.get(it.next());
                 if (!retain.contains(info.entry)) {
+                    // remove the entry from collection
+                    it.remove();
+                    if (previousEntryToInfo == null) {
+                        previousEntryToInfo = new HashMap<Entry,EntryInfo>(entryToInfo);
+                    }
+                    entryToInfo.remove(info.entry);
+                    if (info.isHidden()) {
+                        continue;
+                    }
                     removedIdxs.add(new Integer(index));
                     // unassign from parent
                     Node node = info.currentNode();
@@ -1299,12 +1311,6 @@ abstract class EntrySupport {
                         }
                         removedNodes.add(node);
                     }
-                    // remove the entry from collection
-                    it.remove();
-                    if (previousEntryToInfo == null) {
-                        previousEntryToInfo = new HashMap<Entry,EntryInfo>(entryToInfo);
-                    }
-                    entryToInfo.remove(info.entry);
                 } else {
                     if (info.isHidden()) {
                         continue;
