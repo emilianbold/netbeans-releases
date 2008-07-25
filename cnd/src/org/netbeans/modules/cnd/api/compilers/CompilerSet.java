@@ -351,19 +351,6 @@ public class CompilerSet {
         return new CompilerSet(platform);
     }
     
-    private String mapNameToDisplayName(CompilerFlavor flavor) {
-        StringBuffer label = new StringBuffer("LBL_"); // NOI18N
-        
-        label.append(flavor);
-        label.append("CompilerSet_"); // NOI18N
-        label.append("0"); // There is now only one of each // NOI18N
-        try {
-            return NbBundle.getMessage(CompilerSet.class, label.toString());
-        } catch (MissingResourceException e){
-            return flavor.getToolchainDescriptor().getDisplayName();
-        }
-    }
-    
     public boolean isGnuCompiler() {
         return flavor.isGnuCompiler();
     }
