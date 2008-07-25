@@ -105,11 +105,7 @@ public class CommandEvaluator {
 
         model.setContent(l);
 
-        Wait4AllTask wt = new Wait4AllTask(tasks);
-        // start waiting on all providers execution
-        RequestProcessor.getDefault().post(wt);
-
-        return wt;
+        return new Wait4AllTask(tasks);
     }
 
     public static Category getEvalCat () {
@@ -211,6 +207,9 @@ public class CommandEvaluator {
      * for all given RequestProcessor tasks to finish and then it finishes as well.
      */
     private static class Wait4AllTask extends org.openide.util.Task implements Runnable {
+
+        private static final long TIMEOUT = 60000;
+
         private List<Task> tasks;
 
         private Wait4AllTask (List<Task> tasks) {
@@ -223,7 +222,12 @@ public class CommandEvaluator {
             try {
                 notifyRunning();
                 for (Task task : tasks) {
-                    task.waitFinished();
+                    try {
+                        // wait no longer then one minute
+                        task.waitFinished(TIMEOUT);
+                    } catch (InterruptedException ex) {
+                        // ignore, we are not interested
+                    }
                 }
             } finally {
                 notifyFinished();
