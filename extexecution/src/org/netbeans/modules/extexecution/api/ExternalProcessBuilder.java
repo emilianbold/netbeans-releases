@@ -107,9 +107,9 @@ public final class ExternalProcessBuilder implements Callable<Process> {
      * subsequently created by the {@link #call()} method on returned builder
      * will be executed with this directory as current working dir.
      * <p>
-     * The default value is <code>null</code>. Note that each process has
-     * always working directory even when not configured explicitly (the value
-     * of <code>user.dir</code> system property).
+     * The default value is undefined. Note that in such case each process has
+     * working directory corresponding to the value of <code>user.dir</code>
+     * system property.
      * <p>
      * All other properties of the returned builder are inherited from
      * <code>this</code>.
