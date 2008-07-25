@@ -282,6 +282,9 @@ final class TaskListTopComponent extends TopComponent {
                                     tableScroll.getViewport().setBackground( background );
                                 tableScroll.setBorder( BorderFactory.createEmptyBorder() );
                                 statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
+                                toolbarSeparator.setVisible(true);
+                                statusSeparator.setVisible(true);
+                                rebuildToolbar();
                             }
                         };
                         model.removeTableModelListener(this);
@@ -296,10 +299,6 @@ final class TaskListTopComponent extends TopComponent {
             model.addTableModelListener(listener);
             tableScroll.setViewportView( createNoTasksMessage() );
             tableScroll.setBorder( BorderFactory.createEmptyBorder() );
-            
-            toolbarSeparator.setVisible(true);
-            statusSeparator.setVisible(true);
-            rebuildToolbar();
         }
         ScanningScopeList.getDefault().addPropertyChangeListener( getScopeListListener() );
         ScannerList.getFileScannerList().addPropertyChangeListener( getScannerListListener() );
