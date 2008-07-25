@@ -45,6 +45,7 @@ import java.util.Set;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  * @author Radek Matous
@@ -58,6 +59,11 @@ public class PhpMimeResolver extends MIMEResolver {
     private static final String UNKNOWN_MIME_TYPE = null;
     private static final String[] PHP_WELL_KNOWN_EXTENSION_PREFIXES = {"php", "phtml"};//NOI18N
     private static final String[] OTHER_WELL_KNOWN_EXTENSION_PREFIXES = {"java", "rb", "rhtml"};//NOI18N
+
+    private static final String[] WELL_KNOWN_WINDOWS_TROUBLE_FILES = {
+        "ntuser.dat",
+        "ntuser.dat.log"};//NOI18N
+
 
     //looking for
     private static final byte[] OPEN_TAG = "<?php".getBytes();//NOI18N
@@ -78,7 +84,12 @@ public class PhpMimeResolver extends MIMEResolver {
         }
         MutableInteger openTagIdx = new MutableInteger();
         MutableInteger shortOpenTagIdx = new MutableInteger();
-        if (!fo.canRead() || fo.getNameExt().equalsIgnoreCase("ntuser.dat")) {//NOI18N
+        if (!fo.canRead()) {//NOI18N
+            return UNKNOWN_MIME_TYPE;
+        }
+
+        if (Utilities.isWindows() && existsInArray(fo.getNameExt().toLowerCase(), 
+                WELL_KNOWN_WINDOWS_TROUBLE_FILES)) {
             return UNKNOWN_MIME_TYPE;
         }
         try {
@@ -150,17 +161,17 @@ public class PhpMimeResolver extends MIMEResolver {
     }
 
     private static boolean isWellKnownPhpExtension(String ext) {
-        return isWellKnownExtension(ext, PHP_WELL_KNOWN_EXTENSION_PREFIXES);
+        return existsInArray(ext, PHP_WELL_KNOWN_EXTENSION_PREFIXES);
     }
 
     private static boolean isWellKnownOtherExtension(String ext) {
-        return isWellKnownExtension(ext, OTHER_WELL_KNOWN_EXTENSION_PREFIXES);
+        return existsInArray(ext, OTHER_WELL_KNOWN_EXTENSION_PREFIXES);
     }
 
-    private static boolean isWellKnownExtension(String ext, String[] extensionList) {
-        if (ext != null && ext.trim().length() > 0) {
-            for (String phpPrefix : extensionList) {
-                if (ext.startsWith(phpPrefix)) {
+    private static boolean existsInArray(String elem, String[] array) {
+        if (elem != null && elem.trim().length() > 0) {
+            for (String phpPrefix : array) {
+                if (elem.startsWith(phpPrefix)) {
                     return true;
                 }
             }
