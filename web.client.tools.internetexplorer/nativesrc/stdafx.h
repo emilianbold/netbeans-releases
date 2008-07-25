@@ -75,6 +75,7 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <comdef.h>
+#include <atlenc.h>
 #include <winsock2.h>
 #include <ws2tcpip.h>
 #include <activscp.h>

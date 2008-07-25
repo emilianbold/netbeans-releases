@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.project.connections.ui;
 
 import java.util.Comparator;
@@ -53,8 +52,9 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class TransferFileUploadModel extends TransferFileTableModel {
-    private final Logger err = Logger.getLogger ("org.netbeans.modules.php.project.connections.ui.FileConfirmationTableModelImpl");
-    
+
+    private final Logger err = Logger.getLogger("org.netbeans.modules.php.project.connections.ui.FileConfirmationTableModelImpl");
+
     public TransferFileUploadModel(List<TransferFileUnit> fileUnits) {
         setData(fileUnits);
     }
@@ -67,108 +67,105 @@ public class TransferFileUploadModel extends TransferFileTableModel {
         return super.getToolTipText(row, col);
     }
 
-    
     @Override
     public void setValueAt(Object anValue, int row, int col) {
         super.setValueAt(anValue, row, col);
-        
+
         if (col == 1) {
             // second column handles buttons
-            return ;
+            return;
         }
         assert col == 0 : "First column.";
         if (anValue == null) {
-            return ;
+            return;
         }
         //assert getCategoryAtRow(row).isExpanded();
         TransferFileUnit u = getUnitAtRow(row);
         assert anValue instanceof Boolean : anValue + " must be instanceof Boolean.";
         boolean beforeMarked = u.isMarked();
         if ((Boolean) anValue != beforeMarked) {
-            u.setMarked(! beforeMarked);
+            u.setMarked(!beforeMarked);
             fireUpdataUnitChange();
             if (u.isMarked() != beforeMarked) {
                 fireButtonsChange();
             } else {
                 //TODO: message should contain spec.version
-                String message = getBundle ("NotificationAlreadyPreparedToIntsall", u.getDisplayName ()); // NOI18N
+                String message = getBundle("NotificationAlreadyPreparedToIntsall", u.getDisplayName()); // NOI18N
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
             }
         }
-        
+
     }
-    
+
     public Object getValueAt(int row, int col) {
         Object res = null;
-        
+
         TransferFileUnit u = getUnitAtRow(row);
         switch (col) {
-        case 0 :
-            res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
-            break;
-        case 1 :
-            res = u.getDisplayName();
-            break;
+            case 0:
+                res = u.isMarked() ? Boolean.TRUE : Boolean.FALSE;
+                break;
+            case 1:
+                res = u.getDisplayName();
+                break;
         }
-        
+
         return res;
     }
 
     public int getColumnCount() {
         return 2;
     }
-    
+
     public Class getColumnClass(int c) {
         Class res = null;
-        
+
         switch (c) {
-        case 0 :
-            res = Boolean.class;
-            break;
-        case 1 :
-            res = String.class;
-            break;            
+            case 0:
+                res = Boolean.class;
+                break;
+            case 1:
+                res = String.class;
+                break;
         }
-        
+
         return res;
     }
-    
+
     @Override
     public String getColumnName(int column) {
         switch (column) {
-        case 0 :
-            return getBundle ("FileConfirmationTableModel_Columns_Upload");
-        case 1 :
-            return getBundle ("FileConfirmationTableModel_Columns_RelativePath");
+            case 0:
+                return getBundle("FileConfirmationTableModel_Columns_Upload");
+            case 1:
+                return getBundle("FileConfirmationTableModel_Columns_RelativePath");
         }
-        
+
         assert false;
-        return super.getColumnName( column );
+        return super.getColumnName(column);
     }
 
     @Override
     public int getMinWidth(JTableHeader header, int col) {
         return super.getMinWidth(header, col);
     }
-    
-    
+
     public int getPreferredWidth(JTableHeader header, int col) {
         switch (col) {
-        case 1:
-            return super.getMinWidth(header, col)*4;
+            case 1:
+                return super.getMinWidth(header, col) * 4;
         }
         return super.getMinWidth(header, col);
     }
-    
-    
 
     public boolean isSortAllowed(Object columnIdentifier) {
         boolean isUpload = getColumnName(0).equals(columnIdentifier);
         return isUpload ? false : true;
     }
 
-    protected Comparator<TransferFileUnit> getComparator (final Object columnIdentifier, final boolean sortAscending) {
-        return new Comparator<TransferFileUnit>(){
+    protected Comparator<TransferFileUnit> getComparator(final Object columnIdentifier, final boolean sortAscending) {
+        return new Comparator<TransferFileUnit>() {
+
             public int compare(TransferFileUnit o1, TransferFileUnit o2) {
                 TransferFileUnit unit1 = sortAscending ? o1 : o2;
                 TransferFileUnit unit2 = sortAscending ? o2 : o1;
@@ -176,19 +173,18 @@ public class TransferFileUploadModel extends TransferFileTableModel {
                     assert false : columnIdentifier.toString();
                 } else if (getColumnName(1).equals(columnIdentifier)) {
                     return TransferFileUnit.compare(unit1, unit2);
-                }                 
+                }
                 return 0;
             }
         };
     }
 
-    protected String getBundle (String key, Object... params) {
-        return NbBundle.getMessage (this.getClass (), key, params);
+    protected String getBundle(String key, Object... params) {
+        return NbBundle.getMessage(this.getClass(), key, params);
     }
 
-
     public String getTabTitle() {
-        return NbBundle.getMessage (TransferFileUploadModel.class,
+        return NbBundle.getMessage(TransferFileUploadModel.class,
                 "FileConfirmationTableModel_Upload_Title");//NOI18N
     }
 

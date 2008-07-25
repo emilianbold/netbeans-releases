@@ -173,7 +173,7 @@ public final class RakeRunner {
     }
 
     private void run(final RakeTask... tasks) {
-        assert tasks.length > 0 : "must pass at least on task";
+        assert tasks.length > 0 : "must pass at least one task";
 
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
             return;

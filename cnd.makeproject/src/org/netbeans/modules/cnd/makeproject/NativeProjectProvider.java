@@ -347,6 +347,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         if (!newConf.isDefault())
             return;
+
+        ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_CONFIG_CND, getMakeConfigurationDescriptor());
         
         if (oldConf == null) {
             // What else can we do?

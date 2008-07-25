@@ -1203,5 +1203,9 @@ public final class GemManager {
         return hash;
     }
 
+    @Override
+    public String toString() {
+        return "RubyPlatform[platform:" + platform + "]"; // NOI18N
+    }
 
 }

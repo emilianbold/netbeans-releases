@@ -68,6 +68,7 @@ made subject to such option by the copyright holder.
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
+        <property name="run.jvmargs" value="" />
         <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true">
             <classpath>
                 <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
@@ -76,6 +77,7 @@ made subject to such option by the copyright holder.
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg value="-ea"/>
+            <jvmarg line="${run.jvmargs}"/>
             <arg value="${classname}"/>
             <arg value="showoutput=true"/>
             <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>

@@ -1054,7 +1054,7 @@ public final class CsmProjectContentResolver {
                 CsmDeclaration.Kind.STRUCT,
                 CsmDeclaration.Kind.CLASS,
             };
-            CsmFilter nestedClassifierFilter = CsmContextUtilities.createFilter(memberKinds, "*", true, false, true);
+            CsmFilter nestedClassifierFilter = CsmContextUtilities.createFilter(memberKinds, "*", true, false, true); // NOI18N
             it = CsmSelect.getDefault().getClassMembers(csmClass, nestedClassifierFilter);
             while (it.hasNext()) {
                 CsmMember member = it.next();

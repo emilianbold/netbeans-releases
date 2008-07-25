@@ -55,6 +55,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.ProjectNameProvider;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.openide.awt.Mnemonics;
@@ -192,9 +193,10 @@ public class ProjectFolder extends JPanel implements ActionListener, DocumentLis
     }// </editor-fold>//GEN-END:initComponents
 
     private void projectFolderBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_projectFolderBrowseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, getProjectFolder(), NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
+        File newLocation = Utils.browseLocationAction(this, LastUsedFolders.getProject(), NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
             setProjectFolder(new File(newLocation, projectNameProvider.getProjectName()).getAbsolutePath());
+            LastUsedFolders.setProject(newLocation);
         }
     }//GEN-LAST:event_projectFolderBrowseButtonActionPerformed
 

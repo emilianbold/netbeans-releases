@@ -67,6 +67,7 @@ public class RemoteServerRecord implements ServerRecord {
     private String name;
     private boolean editable;
     private Object state;
+    private String reason;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -77,6 +78,7 @@ public class RemoteServerRecord implements ServerRecord {
      */
     protected RemoteServerRecord(final String name) {
         this.name = name;
+        reason = null;
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
             editable = false;
@@ -113,15 +115,16 @@ public class RemoteServerRecord implements ServerRecord {
                 state = STATE_CANCELLED;
             } else if (rss.isFailed()) {
                 state = STATE_OFFLINE;
+                reason = rss.getReason();
             } else {
                 state = STATE_ONLINE;
             }
         }
-        if (state == STATE_ONLINE) {
-            // Trigger creation of the CSM if it doesn't already exist...
-            CompilerSetManager.getDefault(name);
-        }
         if (pcs != null) {
+            if (state == STATE_ONLINE) {
+                // Trigger creation of the CSM if it doesn't already exist...
+                CompilerSetManager.getDefault(name);
+            }
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
     }
@@ -169,5 +172,9 @@ public class RemoteServerRecord implements ServerRecord {
 
     public String getUserName() {
         return user;
+    }
+    
+    public String getReason() {
+        return reason;
     }
 }

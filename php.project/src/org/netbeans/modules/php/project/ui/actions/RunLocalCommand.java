@@ -77,20 +77,15 @@ public class RunLocalCommand extends Command implements Displayable {
             //TODO mising error handling
             return;
         }
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(isControllable()).frontWindow(true).inputVisible(false);
-        builder.showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                .controllable(isControllable()).frontWindow(true).inputVisible(false)
+                    .showProgress(true).optionsPath(PHPOptionsCategory.PATH_IN_LAYER);
         try {
             InOutPostRedirector redirector = new InOutPostRedirector(scriptFile);
-            builder.outProcessorFactory(redirector);
-            Callable<Process> callable = new Callable<Process>() {
-                public Process call() throws Exception {
-                    return getBuilder(command, scriptFile).create();
-                }
-            };
-            builder.postExecution(redirector);
-            final ExecutionService service = ExecutionService.newService(callable,
-                    builder.create(), getOutputTabTitle(command, scriptFile));
+            descriptor = descriptor.outProcessorFactory(redirector);
+            descriptor = descriptor.postExecution(redirector);
+            final ExecutionService service = ExecutionService.newService(getBuilder(command, scriptFile),
+                    descriptor, getOutputTabTitle(command, scriptFile));
             service.run();
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
@@ -98,16 +93,16 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     private ExternalProcessBuilder getBuilder(String command, File scriptFile) {
-        final ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(command);
-        processBuilder.addArgument(scriptFile.getName());
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(command);
+        processBuilder = processBuilder.addArgument(scriptFile.getName());
         String argProperty = getProperty(PhpProjectProperties.ARGS);
         if (argProperty != null && argProperty.length() > 0) {
             for (String argument : Arrays.asList(argProperty.split(" "))) {
-                processBuilder.addArgument(argument);
+                processBuilder = processBuilder.addArgument(argument);
             }
         }
-        processBuilder.workingDirectory(scriptFile.getParentFile());
-        initProcessBuilder(processBuilder);
+        processBuilder = processBuilder.workingDirectory(scriptFile.getParentFile());
+        processBuilder = initProcessBuilder(processBuilder);
         return processBuilder;
     }
 
@@ -131,7 +126,8 @@ public class RunLocalCommand extends Command implements Displayable {
     }
 
     //designed to set env.variables for debugger to resuse this code
-    protected  void initProcessBuilder(ExternalProcessBuilder processBuilder) {
+    protected  ExternalProcessBuilder initProcessBuilder(ExternalProcessBuilder processBuilder) {
+        return processBuilder;
     }
 
     private static File tempFileForScript(File scriptFile) throws IOException {

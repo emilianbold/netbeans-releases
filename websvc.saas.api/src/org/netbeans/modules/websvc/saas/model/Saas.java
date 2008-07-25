@@ -84,7 +84,14 @@ public class Saas {
     private static final String JAVA_TARGETS = "java,servlet,resource,jsp";     //NOI18N
     private static final String PHP_TARGETS = "php";        //NOI18N
 
-    private static final String[] SUPPORTED_TARGETS = {JAVA_TARGETS, PHP_TARGETS};
+    public static final String[] SUPPORTED_TARGETS = {JAVA_TARGETS, PHP_TARGETS};
+    
+    public static final String WSDL_EXT = "wsdl";      //NOI18N
+    public static final String WADL_EXT = "wadl";      //NOI18N
+    public static final String ASMX_EXT = "asmx";       //NOI18N
+    public static final String XML_EXT = "xml";         //NOI18N
+    
+    public static final String[] SUPPORTED_EXTENSIONS = {WSDL_EXT, WADL_EXT, ASMX_EXT, XML_EXT};
     
     protected final SaasServices delegate;
     private SaasGroup parentGroup;

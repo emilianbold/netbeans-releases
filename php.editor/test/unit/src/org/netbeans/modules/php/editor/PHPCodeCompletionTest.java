@@ -56,7 +56,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     }
 
     public void testPhpContext2() throws Exception {
-        checkCompletion("testfiles/completion/lib/tst.php", "^$GL", false);
+        checkCompletion("testfiles/completion/lib/tst.php", "$GL^", false);
     }
     
     public void testHTML() throws Exception {
