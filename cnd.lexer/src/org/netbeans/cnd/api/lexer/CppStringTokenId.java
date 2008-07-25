@@ -63,9 +63,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 public enum CppStringTokenId implements TokenId {
 
     TEXT(null, "string"), //NOI18N
-    PREFIX("L", "string"),
-    SINGLE_QUOTE("'", "string"),
-    DOUBLE_QUOTE("\"", "string"),
+    PREFIX("L", "string"), // NOI18N
+    SINGLE_QUOTE("'", "string"), // NOI18N
+    DOUBLE_QUOTE("\"", "string"), // NOI18N
     BACKSPACE("\\b", "string-escape"), //NOI18N
     ANSI_COLOR(null, "string-escape"), //NOI18N
     FORM_FEED("\\f","string-escape"), //NOI18N

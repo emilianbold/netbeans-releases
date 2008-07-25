@@ -53,7 +53,7 @@ import java.util.Properties;
 
 /**
  *
- * @author luke
+ * @author jawed
  */
 public class TestCaseContext {
     private Properties prop=new Properties();

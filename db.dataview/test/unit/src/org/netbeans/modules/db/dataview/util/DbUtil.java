@@ -74,7 +74,7 @@ public class DbUtil {
             File[] jars = context.getJars();
             ArrayList list = new java.util.ArrayList();
             for (int i = 0; i < jars.length; i++) {
-                list.add(jars[i].toURI().toURL());
+                list.add((URL)jars[i].toURI().toURL());
             }
             URL[] urls = (URL[]) list.toArray(new URL[0]);
             Class.forName(AXION_DRIVER);
@@ -187,7 +187,6 @@ public class DbUtil {
         } catch (Exception ex) {
             //Exceptions.printStackTrace(ex);
             if (ex.getMessage().indexOf("Specified JDBC Driver not found in DB Explorer: ") != -1) {
-                //mLogger.warnNoloc(ex.getMessage());
             }
         }
         return conn;
@@ -232,10 +231,6 @@ public class DbUtil {
                 }
                 dbconn = DatabaseConnection.create(drv, url, username, schema, password, true);
 
-                //Fix for 6697129: No mashup database found when try to add external table Tools - MashupDatabase.
-                //ETLEditorSupport.PRJ_PATH  is "" and url.indexOf(ETLEditorSupport.PRJ_PATH) returns 0 if no projects are 
-                //opened in the netbeans and gives a warning no mashup db found if we try to add an external table from Tools menu.
-                //if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 && url.indexOf(ETLEditorSupport.PRJ_PATH)) {
                  if (url.indexOf("InstanceDB") == -1 && url.indexOf("MonitorDB") == -1 ) {
                     ConnectionManager.getDefault().addConnection(dbconn);
                 }
@@ -288,7 +283,7 @@ public class DbUtil {
             File[] jars = cxt.getJars();
             ArrayList list = new java.util.ArrayList();
             for (int i = 0; i < jars.length; i++) {
-                list.add(jars[i].toURI().toURL());
+                list.add((URL)jars[i].toURI().toURL());
             }
             URL[] url = (URL[]) list.toArray(new URL[0]);
             driver = JDBCDriver.create(driverName, "Mashup DB", driverName, url);

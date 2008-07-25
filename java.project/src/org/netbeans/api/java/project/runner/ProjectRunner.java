@@ -93,7 +93,10 @@ public final class ProjectRunner {
      * "Test" run the given test. Classfiles produced by the Java infrastructure will be
      * executed.
      *
-     * Supported properties: none.
+     * Supported properties:
+     * <ul>
+     * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
+     * </ul>
      *
      * @since 1.19
      */
@@ -103,7 +106,10 @@ public final class ProjectRunner {
      * "Test" run the given test in the debugging mode. Classfiles produced by the Java infrastructure will be
      * executed.
      *
-     * Supported properties: none.
+     * Supported properties:
+     * <ul>
+     * <li><strong>run.jvmargs</strong> arguments that will be passed to the Java Virtual Machine</li>
+     * </ul>
      *
      * @since 1.19
      */

@@ -445,10 +445,12 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
         if (elt == null)
         {
             elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
-        }   
-        if (elt != null && elt instanceof IActivityPartition)
+        }
+        if ((elt != null) && (elt instanceof IActivityPartition)) 
         {
-            if (elt.getOwner() instanceof IActivity || elt.getOwner() instanceof IPackage)
+            if ((elt.getOwner() instanceof IActivity
+                    || elt.getOwner() instanceof IPackage)
+                     && (this.getSubPartitionWidget((IActivityPartition)elt) == null))//last condition is for partition with NO sub-partitions
             {
                 String or = nodeReader.getProperties().get("Orientation").toString();
                 this.setOrientation(SeparatorWidget.Orientation.valueOf(or));
@@ -463,6 +465,21 @@ public class ActivityPartitionWidget extends UMLNodeWidget implements CompositeW
                 IPresentationElement pElt = PersistenceUtil.getPresentationElement(subPart);
                 nodeReader.setPresentationElement(pElt);
             }
+        }
+    }
+
+    @Override
+    public void addContainedChild(Widget widget)
+    {
+        //this is only to add contained elements when there is an empty activity partition
+        if (compartmentWidgets != null && compartmentWidgets.size() == 1)
+        {
+            widget.removeFromParent();
+            compartmentWidgets.get(0).getContainerWidget().addChild(widget);
+        }
+        else
+        {
+            super.addContainedChild(widget);
         }
     }
 

@@ -2166,7 +2166,7 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="FinalState">
                     <folder name="AbortedFinalState">                       
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-FinalStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-AbortedFinalStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.AbortedFinalStateInitializer"/>
                     </folder>
                     <folder name="FinalState">
@@ -2175,31 +2175,31 @@ made subject to such option by the copyright holder.
                 </folder>
                 <folder name="PseudoState">              
                     <folder name="InitialState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-InitialStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.InitialStateInitializer"/>
                     </folder>
                     <folder name="JoinState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-JoinStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ForkStateInitializer"/>
                     </folder>
                     <folder name="ChoicePseudoState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-ChoicePseudoStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ChoicePseudoStateInitializer"/>
                     </folder>
                     <folder name="ShallowHistoryState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-ShallowHistoryStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.ShallowHistoryStateInitializer"/>
                     </folder>
                     <folder name="DeepHistoryState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-DeepHistoryStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.DeepHistoryStateInitializer"/>
                     </folder>
                     <folder name="EntryPointState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-EntryPointStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.EntryPointStateInitializer"/>
                     </folder>
                     <folder name="JunctionState">
-                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-PseudoStateNodeFactory.instance"/>
+                        <file name="org-netbeans-modules-uml-diagrams-nodes-state-factories-JunctionStateNodeFactory.instance"/>
                         <attr name="initializer" newvalue="org.netbeans.modules.uml.diagrams.nodes.initializers.JunctionStateInitializer"/>
                     </folder>
                 </folder>

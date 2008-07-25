@@ -886,6 +886,15 @@ public class ListView extends JScrollPane implements Externalizable {
                         return NbList.super.indexToLocation((Integer) p1);
                     case 8:
                         return NbList.super.locationToIndex((Point) p1);
+                    case 9:
+                        return NbList.super.getSelectedValues();
+                    case 10:
+                        Object[] arr = (Object[]) p1;
+                        return NbList.super.processKeyBinding(
+                                (KeyStroke) arr[0],
+                                (KeyEvent) arr[1],
+                                (Integer) arr[2],
+                                (Boolean) arr[3]);                      
                     default:
                         throw new IllegalStateException("type: " + type);
                 }
@@ -905,8 +914,17 @@ public class ListView extends JScrollPane implements Externalizable {
         }
 
         @Override
+        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
+            return (Boolean)new GuardedActions(10, new Object[] { ks, e, condition, pressed }).ret;
+        }
+
+        @Override
         protected void processEvent(AWTEvent e) {
-            new GuardedActions(4, e);
+            if (e instanceof KeyEvent) {
+                super.processEvent(e);
+            } else {
+                new GuardedActions(4, e);
+            }     
         }
 
         @Override
@@ -922,6 +940,11 @@ public class ListView extends JScrollPane implements Externalizable {
         @Override
         public int locationToIndex(Point location) {
             return (Integer) new GuardedActions(8, location).ret;
+        }
+
+        @Override
+        public Object[] getSelectedValues() {
+            return (Object[]) new GuardedActions(9, null).ret;
         }
 
         private void repaintSelection() {

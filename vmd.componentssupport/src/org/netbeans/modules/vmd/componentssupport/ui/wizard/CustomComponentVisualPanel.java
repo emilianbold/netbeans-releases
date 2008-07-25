@@ -76,6 +76,7 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
     public CustomComponentVisualPanel(CustomComponentWizardPanel panel) {
         initComponents();
         this.myPanel = panel;
+        putClientProperty("NewProjectWizard_Title", NbBundle.getMessage(CustomComponentVisualPanel.class, "TXT_MobileDesigner"));
         // Register listener on the textFields to make the automatic updates
         projectNameTextField.getDocument().addDocumentListener(this);
         projectLocationTextField.getDocument().addDocumentListener(this);

@@ -42,7 +42,7 @@ package org.netbeans.modules.db.dataview.meta;
 import org.netbeans.junit.NbTestCase;
 /**
  *
- * @author navaneeth
+ * @author jawed
  */
 public class DBColumnTest extends NbTestCase {
     

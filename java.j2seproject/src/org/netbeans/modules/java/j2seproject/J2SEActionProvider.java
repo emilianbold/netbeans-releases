@@ -345,7 +345,10 @@ class J2SEActionProvider implements ActionProvider {
                     if (  isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)
                             && ((files = findTestSources(context, false)) != null)) {
                         try {
-                            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, evaluator.evaluate(J2SEProjectProperties.RUN_JVM_ARGS));
+                            String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
+                            if (prop != null) {
+                                p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                            }
                             ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, p, files[0]);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
@@ -361,7 +364,10 @@ class J2SEActionProvider implements ActionProvider {
                      && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
                     FileObject[] files = findSources(context);
                     try {
-                        p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, evaluator.evaluate(J2SEProjectProperties.RUN_JVM_ARGS));
+                        String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
+                        if (prop != null) {
+                            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                        }
                         ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, p, files[0]);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -979,10 +985,16 @@ class J2SEActionProvider implements ActionProvider {
             toRun = files[0];
         }
         boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
-        p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS));
+        String val = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
+        if (val != null) {
+            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, val);
+        }
         try {
             if (run) {
-                p.setProperty(J2SEProjectProperties.APPLICATION_ARGS, evaluator.getProperty(J2SEProjectProperties.APPLICATION_ARGS));
+                val = evaluator.getProperty(J2SEProjectProperties.APPLICATION_ARGS);
+                if (val != null) {
+                    p.setProperty(J2SEProjectProperties.APPLICATION_ARGS, val);
+                }
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, p, toRun);

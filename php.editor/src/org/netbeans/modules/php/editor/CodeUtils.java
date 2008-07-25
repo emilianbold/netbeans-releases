@@ -44,8 +44,11 @@ import org.netbeans.modules.php.editor.index.IndexedConstant;
 import org.netbeans.modules.php.editor.index.IndexedFunction;
 import org.netbeans.modules.php.editor.index.PHPIndex;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.api.Utils;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -100,6 +103,22 @@ public class CodeUtils {
         return true;
     }
     
+    private static String findClassNameEnclosingDeclaration(PHPParseResult context,
+            IndexedConstant variable) {
+        // this function is only supposed to be called for the currently edited file
+        assert context.getFile().getFileObject().equals(variable.getFileObject());
+        
+        ASTNode node = Utils.getNodeAtOffset(context.getProgram(),
+                variable.getOffset(), ClassDeclaration.class);
+
+        if (node instanceof ClassDeclaration) {
+            ClassDeclaration classDeclaration = (ClassDeclaration) node;
+            return classDeclaration.getName().getName();
+        }
+
+        return null;
+    }
+    
     public static void resolveFunctionType(PHPParseResult context,
             PHPIndex index,
             Map<String, IndexedConstant> varStack,
@@ -121,6 +140,11 @@ public class CodeUtils {
             } else if (rawType.startsWith(STATIC_METHOD_TYPE_PREFIX)){
                 String parts[] = rawType.substring(STATIC_METHOD_TYPE_PREFIX.length()).split("\\.");
                 String className = parts[0];
+                
+                if ("self".equals(className) || "parent".equals(className)){ //NOI18N
+                    className = findClassNameEnclosingDeclaration(context, variable);
+                }
+                
                 String methodName = parts[1];
                 
                 for (IndexedFunction func : index.getAllMethods(context, className,
@@ -128,18 +152,23 @@ public class CodeUtils {
                     
                     varType = func.getReturnType();
                 }
-            } else if (rawType.startsWith(METHOD_TYPE_PREFIX)){
+            } else if (rawType.startsWith(METHOD_TYPE_PREFIX)) {
                 String parts[] = rawType.substring(METHOD_TYPE_PREFIX.length()).split("\\.");
                 String varName = parts[0];
                 String methodName = parts[1];
                 String className = null;
-                IndexedConstant dispatcher = varStack.get(varName);
-                
-                if (dispatcher != null){
-                    resolveFunctionType(context, index, varStack, dispatcher);
-                    className = dispatcher.getTypeName();
+
+                if ("$this".equals(varName)) { //NOI18N
+                    className = findClassNameEnclosingDeclaration(context, variable);
+                } else {
+                    IndexedConstant dispatcher = varStack.get(varName);
+
+                    if (dispatcher != null) {
+                        resolveFunctionType(context, index, varStack, dispatcher);
+                        className = dispatcher.getTypeName();
+                    }
                 }
-                
+
                 if (className != null) {
                     for (IndexedFunction func : index.getAllMethods(context, className,
                             methodName, NameKind.EXACT_NAME, Integer.MAX_VALUE)) {

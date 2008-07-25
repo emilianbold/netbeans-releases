@@ -526,15 +526,17 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         @Override
         public void approveSelection() {
-            File dir = FileUtil.normalizeFile(getSelectedFile());
+            File selectedFile = getSelectedFile();
+            if (selectedFile != null) {
+                File dir = FileUtil.normalizeFile(selectedFile);
 
-            if ( isProjectDir( dir ) && getProject( dir ) != null ) {
-                super.approveSelection();
+                if ( isProjectDir( dir ) && getProject( dir ) != null ) {
+                    super.approveSelection();
+                }
+                else {
+                    setCurrentDirectory( dir );
+                }
             }
-            else {
-                setCurrentDirectory( dir );
-            }
-
         }
 
 
