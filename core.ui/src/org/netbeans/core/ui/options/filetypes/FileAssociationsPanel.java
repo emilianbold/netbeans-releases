@@ -284,7 +284,6 @@ final class FileAssociationsPanel extends javax.swing.JPanel {
         if(cbExtension.getItemAt(0).equals(chooseExtensionItem)) {
             // remove initial hint item
             cbExtension.removeItem(chooseExtensionItem);
-            cbExtension.setForeground(UIManager.getDefaults().getColor("ComboBox.foreground"));  //NOI18N
             cbType.setEnabled(true);
         }
         cbType.setSelectedItem(model.getMimeItem(newExtension));
@@ -352,7 +351,6 @@ private void btnDefaultIgnoredActionPerformed(java.awt.event.ActionEvent evt) {/
 
     void load() {
         cbExtension.removeAllItems();
-        cbExtension.setForeground(UIManager.getDefaults().getColor("ComboBox.disabledForeground"));  //NOI18N
         cbType.removeAllItems();
         cbType.setEnabled(false);
         btnDefault.setEnabled(false);
