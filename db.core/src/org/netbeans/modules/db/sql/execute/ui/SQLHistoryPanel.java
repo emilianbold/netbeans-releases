@@ -121,6 +121,9 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
         }       
         // Make sure the save limit is considered
+        if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
+            savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
+        }
         SQLHistoryPersistenceManager.getInstance().updateSQLSaved(Integer.parseInt(savedLimit), Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
         // Check SQL statements limit
         verifySQLLimit();
