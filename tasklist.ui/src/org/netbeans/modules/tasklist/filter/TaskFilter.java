@@ -58,7 +58,7 @@ public class TaskFilter {
     
     private String name;
     private KeywordsFilter keywords;
-    private TypesFilter types;
+    private TypesFilter types = new TypesFilter();
     
     TaskFilter( String name ) {
         this.name = name;
