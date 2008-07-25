@@ -11,7 +11,7 @@
     <property name="appname" value="NetBeans Dev ${buildnumber}"/> 
     <property name="mpkg.name_nb" value="NetBeans Dev ${buildnumber}"/> 
     <property name="app.name" value="${install.dir}/${appname}.app"/>
-    <property name="nbClusterDir" value="nb6.1"/>      
+    <property name="nbClusterDir" value="nb6.5"/>      
 
     <property name="appversion" value="Development Version"/>
     

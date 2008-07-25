@@ -117,9 +117,8 @@ public class ProjectHelper {
     public static final int PROJECT_TYPE_J2SE = 0;
     public static final int PROJECT_TYPE_EJB = 1;
     public static final int PROJECT_TYPE_WEB = 2;
-    private static final String JAXB_ANT_XTN_NAME = "jaxb";
+    private static final String JAXB_ANT_XTN_NAME = "jaxb"; //NOI18n
     
-    //private static final String JAXB_LIB_NAME = "jaxb21"; //NOI18N
     private static final String JAXB_LIB_NAME = "jaxb"; //NOI18N
     private static final String PROP_BUILD_DIR = "build.dir"; //NOI18N
     private static final String PROP_SRC_DIR = "src.dir"; //NOI18N
@@ -139,7 +138,6 @@ public class ProjectHelper {
     private static final String PROP_XJC_DEF_CLASSPATH = "jaxbwiz.xjcdef.classpath" ;//NOI18N
     private static final String PROP_XJC_RUN_CLASSPATH = "jaxbwiz.xjcrun.classpath" ;//NOI18N
     private static final String PROP_JAXB_GEN_SRC_CLASSPATH = "jaxbwiz.gensrc.classpath";//NOI18N
-    //private static final String PROP_VAL_JAXB_LIB_CLASSPATH = "${libs.jaxb21.classpath}";//NOI18N
     private static final String PROP_VAL_JAXB_LIB_CLASSPATH = "${libs.jaxb.classpath}";//NOI18N
     private static final String RUN_JVM_ARGS_VAL_PREFIX = "-Djava.endorsed.dirs"; //NOI18N    
     private static final String RUN_JVM_ARGS_VAL = RUN_JVM_ARGS_VAL_PREFIX + "=${" + PROP_ENDORSED + "}"; //NOI18N
@@ -799,7 +797,7 @@ public class ProjectHelper {
         //String ret = "\"${netbeans.home}/../java2/modules/ext/jaxws21/api" //NOI18N
         //        + File.pathSeparator 
         //        + "${netbeans.home}/../java2/modules/ext/jaxws21\""; //NOI18N
-        String ret = "\"${netbeans.home}/../ide9/modules/ext/jaxb"; //NOI18N
+        String ret = "\"${netbeans.home}/../ide9/modules/ext/jaxb/api\""; //NOI18N
 
         return ret;
     }

@@ -21,7 +21,7 @@
                   <Group type="102" alignment="1" attributes="0">
                       <Component id="lWebBrowser" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
-                      <Component id="cbWebBrowser" pref="981" max="32767" attributes="0"/>
+                      <Component id="cbWebBrowser" pref="986" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="editBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
@@ -40,7 +40,7 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Component id="lProxyHost" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                                      <Component id="tfProxyHost" pref="807" max="32767" attributes="2"/>
+                                      <Component id="tfProxyHost" pref="873" max="32767" attributes="2"/>
                                       <EmptySpace min="-2" pref="12" max="-2" attributes="0"/>
                                       <Component id="lProxyPort" min="-2" max="-2" attributes="0"/>
                                       <EmptySpace type="unrelated" max="-2" attributes="0"/>
@@ -55,10 +55,10 @@
                       <Component id="lUsage" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="jScrollPane1" alignment="0" pref="1021" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" alignment="0" pref="1057" max="32767" attributes="0"/>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="jUsageCheck" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="540" max="32767" attributes="0"/>
+                              <EmptySpace pref="690" max="32767" attributes="0"/>
                           </Group>
                       </Group>
                   </Group>
@@ -216,6 +216,14 @@
           <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_GeneralOptionsPanel_bMoreProxy" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_GeneralOptionsPanel_bMoreProxy.AN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="LBL_GeneralOptionsPanel_bMoreProxy.AD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="bMoreProxyActionPerformed"/>
       </Events>
@@ -226,6 +234,14 @@
           <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="GeneralOptionsPanel.editBrowserButton.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="GeneralOptionsPanel.editBrowserButton.AN" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="GeneralOptionsPanel.editBrowserButton.AD" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="editBrowserButtonActionPerformed"/>
       </Events>
@@ -268,6 +284,9 @@
             <Property name="text" type="java.lang.String" value="&lt;html&gt;&#xa;&lt;head&gt;&#xa;&lt;/head&gt;&#xa;&lt;body&gt;&#xa;&lt;p style=&quot;margin-top: 0&quot;&gt; The usage statistics help us better understand user &#xa;requirements and prioritize improvements in future releases. We will never&#xa;reverse-engineer the collected data to find specific details about your projects. &#xa;&lt;a href=&quot;http://www.netbeans.org/about/usage-tracking.html&quot;&gt;Learn more&lt;/a&gt;.&#xa;&lt;/p&gt;&#xa;&lt;/body&gt;&#xa;&lt;/html&gt;" noResource="true"/>
             <Property name="focusable" type="boolean" value="false"/>
           </Properties>
+          <Events>
+            <EventHandler event="hyperlinkUpdate" listener="javax.swing.event.HyperlinkListener" parameters="javax.swing.event.HyperlinkEvent" handler="hyperlinkHandler"/>
+          </Events>
         </Component>
       </SubComponents>
     </Container>

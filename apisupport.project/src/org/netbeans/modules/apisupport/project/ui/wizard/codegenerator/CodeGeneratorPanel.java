@@ -260,7 +260,7 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
         final String fileName = fileNametextField.getText().trim();
         final String mimeType = mimeTypeTextField.getText().trim();
         if(fileName.length() == 0) {
-            setError(getMessage("ERR_FN_EMPTY"));
+            setWarning(getMessage("ERR_FN_EMPTY"), false);
             return false;
         }
         if(!Utilities.isJavaIdentifier(normalize(fileName))) {
@@ -268,20 +268,20 @@ private void cpCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FI
             return false;
         }
         if(mimeType.length() == 0) {
-            setError(getMessage("ERR_MT_EMPTY"));
+            setWarning(getMessage("ERR_MT_EMPTY"), false);
             return false;
         }
         
         String packName = packageNameCombo.getEditor().getItem().toString();
         if(packName.equals("")) {
-            setError(getMessage("EMPTY_PACKAGE"));
-            return true;
+            setWarning(getMessage("EMPTY_PACKAGE"), false);
+            return false;
         }
         
         if (cpCheckBox.isSelected()) {
             String cpFileName = cpFileNameField.getText().trim();
             if (cpFileName.length() == 0) {
-                setError(getMessage("ERR_FN_EMPTY"));
+                setWarning(getMessage("ERR_FN_EMPTY"), false);
                 return false;
             }
             if (!Utilities.isJavaIdentifier(normalize(cpFileName))) {

@@ -81,6 +81,9 @@ public class HintsTask extends ScanningCancellableTask<CompilationInfo> {
             }
 
             GsfHintsManager manager = language.getHintsManager();
+            if (manager == null) {
+                continue;
+            }
             RuleContext ruleContext = manager.createRuleContext(info, language, -1, -1, -1);
             List<Hint> hints = new ArrayList<Hint>();
 

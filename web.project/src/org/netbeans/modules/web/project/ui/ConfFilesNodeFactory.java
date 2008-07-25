@@ -54,9 +54,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import javax.swing.Icon;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -84,6 +82,7 @@ import org.openide.filesystems.FileStatusEvent;
 import org.openide.filesystems.FileStatusListener;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -92,13 +91,11 @@ import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
-import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 import org.openide.util.WeakListeners;
-import org.openide.util.actions.CookieAction;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -178,7 +175,6 @@ public final class ConfFilesNodeFactory implements NodeFactory {
     private static final class ConfFilesNode extends org.openide.nodes.AbstractNode implements Runnable, FileStatusListener, ChangeListener, PropertyChangeListener {
 
         private static final Image CONFIGURATION_FILES_BADGE = Utilities.loadImage("org/netbeans/modules/web/project/ui/resources/config-badge.gif", true); // NOI18N
-        private Node projectNode;
 
         // icon badging >>>
         private Set files;
@@ -190,65 +186,40 @@ public final class ConfFilesNodeFactory implements NodeFactory {
         private ChangeListener sourcesListener;
         private Map groupsListeners;
         private final Project project;
-        // icon badging <<<
-        private String iconbase = "org/openide/loaders/defaultFolder.gif";
+        private  Node iconDelegate;
 
         public ConfFilesNode(Project prj) {
             super(ConfFilesChildren.forProject(prj), createLookup(prj));
             this.project = prj;
             setName("configurationFiles"); // NOI18N
-            setIconBaseWithExtension(iconbase);
-
-            FileObject projectDir = prj.getProjectDirectory();
-            try {
-                DataObject projectDo = DataObject.find(projectDir);
-                if (projectDo != null) {
-                    projectNode = projectDo.getNodeDelegate();
-                }
-            } catch (DataObjectNotFoundException e) {
-            }
+            iconDelegate = DataFolder.findFolder (Repository.getDefault().getDefaultFileSystem().getRoot()).getNodeDelegate();
         }
 
+        @Override
         public Image getIcon(int type) {
-            Image img = computeIcon(false, type);
-            return (img != null) ? img : super.getIcon(type);
+            return computeIcon(false, type);
         }
 
+        @Override
         public Image getOpenedIcon(int type) {
-            Image img = computeIcon(true, type);
-            return (img != null) ? img : super.getIcon(type);
+            return computeIcon(true, type);
         }
 
         private Image computeIcon(boolean opened, int type) {
-            if (projectNode == null) {
-                return null;
-            }
-            Image image = opened ? icon2image("Tree.openIcon") : icon2image("Tree.closedIcon"); //NOI18N
-            if (null == image) {
-                image = opened ? super.getOpenedIcon(type) : super.getIcon(type);
-            }
+            Image image;
+
+            image = opened ? iconDelegate.getOpenedIcon(type) : iconDelegate.getIcon(type);
             image = Utilities.mergeImages(image, CONFIGURATION_FILES_BADGE, 7, 7);
-            return image;
+
+            return image;        
         }
 
-        private static Image icon2image(String key) {
-            Object obj = UIManager.get(key);
-            if (obj instanceof Image) {
-                return (Image) obj;
-            }
-
-            if (obj instanceof Icon) {
-                Icon icon = (Icon) obj;
-                return Utilities.icon2Image(icon);
-            }
-
-            return null;
-        }
-
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(ConfFilesNodeFactory.class, "LBL_Node_Config"); //NOI18N
         }
 
+        @Override
         public javax.swing.Action[] getActions(boolean context) {
             return new javax.swing.Action[]{SystemAction.get(FindAction.class)};
         }

@@ -207,7 +207,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
      * @param sourceWidget - message from this widget
      * @param targetWidget - message to this widget
      * @param sourcePoint - message from this point on source point in scene coordinates
-     * @param targetPoint - message to this point on target widget in scene coordinates
+     * @param targetPoint - message to this point on target widget in scene coordinates, in general isn't used much and may be the same as source often
      * @return accept if connection is possible
      */
     public ConnectorState isTargetWidget(Widget sourceWidget, Widget targetWidget,Point sourcePoint,Point targetPoint)
@@ -274,7 +274,7 @@ public class MessagesConnectProvider implements SQDMessageConnectProvider
                         }
                         else
                         {
-                            //TBD how to check if there any messages which prevent creation, should it be as in previous release when any message block creation?
+                            //TODO how to check if there any messages which prevent creation, should it be as in previous release when any message block creation?
                             Lifeline tmpE=(Lifeline) target.getFirstSubject();
                             if(tmpE.getEvents().size()>1)retVal=ConnectorState.REJECT;//TBD, not perfect, need separate check if 1 event is destroy or receive of asycnh message
                         }

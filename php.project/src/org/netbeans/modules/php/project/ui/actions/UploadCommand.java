@@ -59,7 +59,7 @@ import org.openide.windows.InputOutput;
  * Upload files to remote connection.
  * @author Tomas Mysik
  */
-public class UploadCommand extends Command implements Displayable {
+public class UploadCommand extends FtpCommand implements Displayable {
     public static final String ID = "upload"; // NOI18N
     public static final String DISPLAY_NAME = NbBundle.getMessage(UploadCommand.class, "LBL_UploadCommand");
 
@@ -73,7 +73,15 @@ public class UploadCommand extends Command implements Displayable {
     }
 
     @Override
-    public void invokeAction(Lookup context) throws IllegalArgumentException {
+    protected Runnable getContextRunnable(final Lookup context) {
+        return new Runnable() {
+            public void run() {
+                invokeActionImpl(context);
+            }
+        };
+    }
+    
+    private void invokeActionImpl(Lookup context) throws IllegalArgumentException {
         FileObject[] selectedFiles = CommandUtils.filesForSelectedNodes();
         assert selectedFiles.length > 0 : "At least one node must be selected for Upload action";
 
@@ -103,22 +111,17 @@ public class UploadCommand extends Command implements Displayable {
                         NbBundle.getMessage(UploadCommand.class, "MSG_UploadFinished", getProject().getName()));
             }
         } catch (RemoteException ex) {
-            Exceptions.printStackTrace(ex);
+            processRemoteException(ex);
         } finally {
             try {
                 remoteClient.disconnect();
             } catch (RemoteException ex) {
-                Exceptions.printStackTrace(ex);
+                processRemoteException(ex);
             }
             progressHandle.finish();
         }
     }
 
-    @Override
-    public boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        // XXX add support for source directories&files
-        return isRemoteConfigSelected();
-    }
 
     public String getDisplayName() {
         return DISPLAY_NAME;

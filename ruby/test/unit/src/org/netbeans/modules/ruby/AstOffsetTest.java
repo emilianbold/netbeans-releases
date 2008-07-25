@@ -148,4 +148,15 @@ public class AstOffsetTest extends RubyTestBase {
     public void testRails1() throws Exception {
         checkOffsets("testfiles/action_controller.rb");
     }
+
+    // These tests fail!!
+    //    public void testStringOffset1() throws Exception {
+    //        // AstUtilities generated an assertion for this
+    //        checkOffsets("testfiles/attribute_accessors.rb");
+    //    }
+    //
+    //    public void testStringOffset2() throws Exception {
+    //        // AstUtilities generated an assertion for this
+    //        checkOffsets("testfiles/aliasing.rb");
+    //    }
 }

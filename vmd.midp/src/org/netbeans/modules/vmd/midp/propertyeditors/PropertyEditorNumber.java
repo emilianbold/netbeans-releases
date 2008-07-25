@@ -41,11 +41,15 @@
 package org.netbeans.modules.vmd.midp.propertyeditors;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.HierarchyEvent;
+import java.awt.event.HierarchyListener;
 import java.util.Collections;
 import java.util.regex.Pattern;
 import javax.swing.JComponent;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JSpinner;
@@ -459,10 +463,46 @@ public class PropertyEditorNumber extends PropertyEditorUserCode implements Prop
             radioButton.addFocusListener(this);
             initComponents();
             
-            getAccessibleContext().setAccessibleName( 
-                    radioButton.getAccessibleContext().getAccessibleName());
-            getAccessibleContext().setAccessibleDescription(
-                    radioButton.getAccessibleContext().getAccessibleDescription());
+            /* 
+             * Fix for #140843. I don't know why but
+             * setting A11Y properties to <code>this</code> component
+             * doesn't propagated to NbDialog.
+             * It seems this is due presence on more JPanel between
+             * Dialog content pane and this component.
+             * Mentioned JPanel doesn't use A11Y from here.   
+             */
+            addHierarchyListener( new HierarchyListener(){
+
+                public void hierarchyChanged( HierarchyEvent evt ) {
+                    JDialog dialog = getDialog();
+                    if( dialog == null ){
+                        return;
+                    }
+                    else {
+                        dialog.getAccessibleContext().setAccessibleName(
+                                radioButton.getAccessibleContext().
+                                getAccessibleName());
+                        dialog.getAccessibleContext().setAccessibleDescription(
+                                radioButton.getAccessibleContext().
+                                getAccessibleDescription());
+                    }
+                }
+                
+            });
+        }
+        
+        private JDialog getDialog(){
+            Component comp = this;
+            while ( true ) {
+                comp = comp.getParent();
+                if ( comp == null ){
+                    break;
+                }
+                if ( comp instanceof JDialog ){
+                    return (JDialog)comp;
+                }
+            }
+            return null;
         }
 
         private void initComponents() {
