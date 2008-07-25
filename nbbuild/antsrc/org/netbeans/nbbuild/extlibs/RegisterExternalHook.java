@@ -90,7 +90,7 @@ public class RegisterExternalHook extends Task {
         try {
             List<String> commandAndArgs = new ArrayList<String>(hgExecutable);
             commandAndArgs.add("showconfig");
-            Process p = new ProcessBuilder(commandAndArgs).start();
+            Process p = new ProcessBuilder(commandAndArgs).directory(root).start();
             BufferedReader r = new BufferedReader(new InputStreamReader(p.getInputStream()));
             String line;
             while ((line = r.readLine()) != null) {
