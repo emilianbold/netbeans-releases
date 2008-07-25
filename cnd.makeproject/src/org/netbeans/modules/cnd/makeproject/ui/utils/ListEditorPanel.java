@@ -59,6 +59,7 @@ public class ListEditorPanel extends javax.swing.JPanel {
     private JList targetList = null;
     protected Vector listData = new Vector();
     private boolean allowedToRemoveAll = true;
+    protected JButton[] extraButtons;
     
     private boolean isChanged = false;
     
@@ -68,6 +69,8 @@ public class ListEditorPanel extends javax.swing.JPanel {
 
     public ListEditorPanel(Object[] objects, JButton[] extraButtons) {
         initComponents();
+        
+        this.extraButtons = extraButtons;
 
 	scrollPane.getViewport().setBackground(java.awt.Color.WHITE);
 

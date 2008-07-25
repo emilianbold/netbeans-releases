@@ -132,6 +132,14 @@ public abstract class CsmUsingResolver {
         return extractNamespaces(findUsingDirectives(namespace));
     }
 
+//    /**
+//     * Finds all direct visible namespace definitions.
+//     * 
+//     * @param namespace  namespace of interest
+//     * @return unmodifiable collection of namespace definitions direct visible in includes
+//     */
+//    public abstract Collection<CsmNamespaceDefinition> findDirectVisibleNamespaceDefinitions(CsmFile file, int offset, CsmProject onlyInProject);
+
     /**
      * return all namespace aliases visible for offsetable element, i.e.
      *  namespace B = A;
@@ -249,9 +257,13 @@ public abstract class CsmUsingResolver {
         public Collection<CsmNamespace> findVisibleNamespaces(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespace>emptyList();
         }
-
+        
+//        public Collection<CsmNamespaceDefinition> findDirectVisibleNamespaceDefinitions(CsmFile file, int offset, CsmProject onlyInProject) {
+//            return Collections.<CsmNamespaceDefinition>emptyList();
+//        }
+    
         public Collection<CsmNamespaceAlias> findNamespaceAliases(CsmFile file, int offset, CsmProject onlyInProject) {
             return Collections.<CsmNamespaceAlias>emptyList();
-        }
+        }        
     }    
 }

@@ -75,40 +75,6 @@ public class RemoteServerSetup {
         setupMap.put("getCompilerSets.bash", Double.valueOf(0.3)); // NOI18N
         updateMap = new HashMap<String, List<String>>();
     }
-    
-    protected  void setup() {
-        List<String> list = updateMap.remove(hkey);
-        boolean ok = true;
-        String err = null;
-        
-        for (String script : list) {
-            if (script.equals(REMOTE_SCRIPT_DIR)) {
-                log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
-                int exit_status = RemoteCommandSupport.run(hkey,
-                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
-                if (exit_status == 0) {
-                    for (String key : setupMap.keySet()) {
-                        log.fine("RSS.setup: Copying" + script + " to " + hkey);
-                        File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
-                        ok |= RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                        RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
-                    }
-                } else {
-                    err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
-                    ok = false;
-                }
-            } else {
-                log.fine("RSS.setup: Updating \"" + script + "\" on " + hkey);
-                File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
-                ok |= RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
-                RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + script + ' ' + REMOTE_SCRIPT_DIR + script);
-                err = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, script);
-            }
-        }
-        if (!ok && err != null) {
-            throw new IllegalStateException(err);
-        }
-    }
 
     protected boolean needsSetupOrUpdate() {
         List<String> updateList = new ArrayList<String>();
@@ -161,6 +127,49 @@ public class RemoteServerSetup {
         } else {
             return false;
         }
+    }
+    
+    protected  void setup() {
+        List<String> list = updateMap.remove(hkey);
+        
+        for (String script : list) {
+            if (script.equals(REMOTE_SCRIPT_DIR)) {
+                log.fine("RSS.setup: Creating ~/" + REMOTE_SCRIPT_DIR);
+                int exit_status = RemoteCommandSupport.run(hkey,
+                        "PATH=/bin:/usr/bin:$PATH mkdir -p " + REMOTE_SCRIPT_DIR); // NOI18N
+                if (exit_status == 0) {
+                    for (String key : setupMap.keySet()) {
+                        log.fine("RSS.setup: Copying" + script + " to " + hkey);
+                        File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + key, null, false);
+                        RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                        RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + key + ' ' + REMOTE_SCRIPT_DIR + key);
+                    }
+                } else {
+                    reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_DirectorySetupFailure", hkey, exit_status);
+                }
+            } else {
+                log.fine("RSS.setup: Updating \"" + script + "\" on " + hkey);
+                File file = InstalledFileLocator.getDefault().locate(LOCAL_SCRIPT_DIR + script, null, false);
+                RemoteCopySupport.copyTo(hkey, file.getAbsolutePath(), REMOTE_SCRIPT_DIR);
+                RemoteCommandSupport.run(hkey, DOS2UNIX_CMD + script + ' ' + REMOTE_SCRIPT_DIR + script);
+                reason = NbBundle.getMessage(RemoteServerSetup.class, "ERR_UpdateSetupFailure", hkey, script);
+            }
+        }
+    }
+    
+    public String getReason() {
+        String msg;
+        
+        if (reason.contains("UnknownHostException")) {
+            int pos = reason.lastIndexOf(' ');
+            String host = reason.substring(pos + 1);
+            msg = NbBundle.getMessage(RemoteServerSetup.class, "REASON_UnknownHost", host);
+        } else if (reason.equals("Auth failed")) {
+            msg = NbBundle.getMessage(RemoteServerSetup.class, "REASON_AuthFailed");
+        } else {
+            msg = reason;
+        }
+        return msg;
     }
     
     protected boolean isCancelled() {

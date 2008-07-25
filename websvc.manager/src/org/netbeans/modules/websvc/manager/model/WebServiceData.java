@@ -353,7 +353,7 @@ public class WebServiceData implements WsdlData {
      * - David Botterill 9/29/2004
      */
     private void setModelDirty() {
-        WebServiceListModel.setDirty(true);
+        WebServiceListModel.getInstance().setDirty(true);
     }
     
     public boolean isJaxRpcEnabled() {
@@ -370,6 +370,14 @@ public class WebServiceData implements WsdlData {
     
     public void setJaxWsEnabled(boolean b) {
         jaxWsEnabled = b;
+    }
+    
+    public int getStateOrdinal() {
+        return wsdlState.ordinal();
+    }
+    
+    public void setStateOrdinal(int ordinal) {
+        wsdlState = State.values()[ordinal];
     }
     
     public State getState() {

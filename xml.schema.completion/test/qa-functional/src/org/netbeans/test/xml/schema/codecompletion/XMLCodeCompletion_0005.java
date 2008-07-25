@@ -51,6 +51,12 @@ import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.*;
 
+import org.netbeans.junit.NbTestCase;
+import java.util.Properties;
+import org.netbeans.junit.RandomlyFails;
+import junit.framework.Test;
+import org.netbeans.junit.NbModuleSuite;
+
 /**
  *
  * @author michaelnazarov@netbeans.org
@@ -60,26 +66,24 @@ public class XMLCodeCompletion_0005 extends XMLCodeCompletion {
     
     static final String TEST_JAVA_APP_NAME = "java4xmlcodecompletion_0005";
 
-    static final String [] m_aTestMethods = {
-        "CreateJavaApplication",
-        "CreateConstrained",
-        "StartTag"
-    };
-
     public XMLCodeCompletion_0005(String arg0) {
         super(arg0);
     }
     
-    public static TestSuite suite() {
-        TestSuite testSuite = new TestSuite(XMLCodeCompletion_0005.class.getName());
-        
-        for (String strMethodName : m_aTestMethods) {
-            testSuite.addTest(new XMLCodeCompletion_0005(strMethodName));
-        }
-        
-        return testSuite;
+    public static Test suite( )
+    {
+      return NbModuleSuite.create(
+          NbModuleSuite.createConfiguration( XMLCodeCompletion_0005.class ).addTest(
+            "CreateJavaApplication",
+            "CreateConstrained",
+            "StartTag"
+           )
+           .enableModules( ".*" )
+           .clusters( ".*" )
+           //.gui( true )
+        );
     }
-    
+
     public void CreateJavaApplication( )
     {
         startTest( );

@@ -212,5 +212,22 @@ public final class ServerUtilities {
         }
         return url;
     }    
-   
+
+    /**
+     * Surround the submitted string with quotes if it contains any embedded
+     * whitespace characters.
+     *
+     * Implementation note: Do not trim the submitted string.  Assume all
+     * whitespace character are part of a file name or path that requires
+     * quotes.
+     *
+     * !PW FIXME handles only spaces right now.  Should handle all whitespace.
+     *
+     * @param path
+     * @return
+     */
+    public static final String quote(String path) {
+        return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
+    }
+    
 }

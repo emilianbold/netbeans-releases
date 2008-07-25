@@ -40,7 +40,7 @@
 package org.netbeans.modules.cnd.makeproject.packaging;
 
 public class FileElement {
-    public enum FileType {FILE, DIRECTORY, SOFTLINK};
+    public enum FileType {FILE, DIRECTORY, SOFTLINK, UNKNOWN};
     
     private FileType type;
     private String from;

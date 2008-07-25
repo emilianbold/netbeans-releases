@@ -92,14 +92,7 @@ public class WsdlUtil {
             manager.removeWsdlData(url, null);
         }
     }
-    
-    public static void saveWsdlData(WsdlData data) {
-        WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
-        if (manager != null) {
-            manager.save(data);
-        }
-    }
-
+  
     public static void refreshWsdlData(WsdlData data) {
         WsdlDataManager manager = Lookup.getDefault().lookup(WsdlDataManager.class);
         if (manager != null) {

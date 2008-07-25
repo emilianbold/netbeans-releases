@@ -264,7 +264,7 @@ public class TraceXRef extends TraceModel {
             }
             analyzeFile(file, params, bag, printOut, printErr, canceled);
             if (canceled.get()) {
-                printOut.println("Cancelled");
+                printOut.println("Cancelled"); // NOI18N
                 break;
             }            
         }
@@ -769,7 +769,7 @@ public class TraceXRef extends TraceModel {
             }
         }
         double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * numUnresolvedPoints) / ((double) numProjectProints);
-        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) of %d checkpoints", numUnresolvedPoints, unresolvedRatio, numProjectProints);
+        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) of %d checkpoints", numUnresolvedPoints, unresolvedRatio, numProjectProints); // NOI18N
         printOut.println(unresolvedStatistics);
         if (!params.analyzeSmartAlgorith) {
             // dump unresolved statistics
@@ -781,7 +781,7 @@ public class TraceXRef extends TraceModel {
                 });
                 for (UnresolvedEntry unresolvedEntry : unresolvedEntries) {
                     double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed())/ ((double) numUnresolvedPoints);
-                    String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio);
+                    String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio); // NOI18N
                     try {
                         printErr.println(msg, unresolvedEntry.getLink(), false);
                     } catch (IOException ex) {

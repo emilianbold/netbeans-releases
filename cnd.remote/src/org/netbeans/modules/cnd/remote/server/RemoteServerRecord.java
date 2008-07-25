@@ -41,6 +41,8 @@ package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.NbBundle;
@@ -65,6 +67,7 @@ public class RemoteServerRecord implements ServerRecord {
     private String name;
     private boolean editable;
     private Object state;
+    private String reason;
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -75,6 +78,7 @@ public class RemoteServerRecord implements ServerRecord {
      */
     protected RemoteServerRecord(final String name) {
         this.name = name;
+        reason = null;
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
             editable = false;
@@ -84,7 +88,11 @@ public class RemoteServerRecord implements ServerRecord {
             state = STATE_UNINITIALIZED;
             
             if (!SwingUtilities.isEventDispatchThread()) {
+                ProgressHandle phandle = ProgressHandleFactory.createHandle(
+                        NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+                phandle.start();
                 init();
+                phandle.finish();
             }
         }
     }
@@ -107,6 +115,7 @@ public class RemoteServerRecord implements ServerRecord {
                 state = STATE_CANCELLED;
             } else if (rss.isFailed()) {
                 state = STATE_OFFLINE;
+                reason = rss.getReason();
             } else {
                 state = STATE_ONLINE;
             }
@@ -163,5 +172,9 @@ public class RemoteServerRecord implements ServerRecord {
 
     public String getUserName() {
         return user;
+    }
+    
+    public String getReason() {
+        return reason;
     }
 }

@@ -120,9 +120,9 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     public String getName() {
         String nameKey;
         if (analyzeStatistics) {
-            nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction";
+            nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction"; // NOI18N
         } else {
-            nameKey = (allReferences ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectDirectUsageReferencesAction");
+            nameKey = (allReferences ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectDirectUsageReferencesAction"); // NOI18N
         }
         return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }

@@ -949,6 +949,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                             if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
                                 res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
+//                                res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, "", false, false, false)); // namespace elements //NOI18N
                             }
                         }
                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',  //NOI18N
@@ -1220,6 +1221,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                     } else { // package doesn't exist
                                         res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
+//                                        if(res.isEmpty()) {
+//                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
+//                                        }
                                         CsmObject obj = res.isEmpty() ? null : (CsmObject)res.iterator().next();
                                         lastType = CsmCompletion.getObjectType(obj);
                                         cont = (lastType != null);
@@ -1229,6 +1233,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     if (last) { // get all matching fields/methods/packages
                                         List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                         res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
+//                                        res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, var, openingSource, false, false));
                                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed());
                                     }
                                 }

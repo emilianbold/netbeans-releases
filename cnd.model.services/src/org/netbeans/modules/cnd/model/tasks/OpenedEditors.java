@@ -136,7 +136,9 @@ class OpenedEditors implements PropertyChangeListener {
             FileObject fo = editor != null ? getFileObject(editor) : null;
 
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
-                visibleEditors.add(editor);
+                if (editor.isValid()) { // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                    visibleEditors.add(editor);
+                }
             }
         }
 

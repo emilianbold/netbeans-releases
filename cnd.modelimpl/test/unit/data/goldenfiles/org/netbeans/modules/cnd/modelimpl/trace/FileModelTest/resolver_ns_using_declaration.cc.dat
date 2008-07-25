@@ -85,7 +85,7 @@ FUNCTION DEFINITION main  [52:1/678-59:2/800] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [56:5/743-56:22/760] SCOPE: Stmt  [52:13/690-59:2/800]
             VARIABLE bb [56:5/743-56:22/760]  TYPE: *rnud::A::B TEXT=B*  [56:5/743-56:7/745]  INIT: text='new AA()'  SCOPE: Stmt  [52:13/690-59:2/800]
         STATEMENT DECLARATION  [57:5/765-57:23/783] SCOPE: Stmt  [52:13/690-59:2/800]
-            USING DECL. rnud_2::C::c  [57:5/765-57:23/783]; REF DECL: rnud_2::C::c  [20:9/264-20:32/287] SCOPE: null
+            USING DECL. rnud_2::C::c  [57:5/765-57:23/783]; REF DECL: null  SCOPE: null
         STATEMENT RETURN  [58:5/789-58:14/798] SCOPE: Stmt  [52:13/690-59:2/800] text: 'return c;'
 
 ========== Dumping model of PROJECT DummyProject
@@ -107,7 +107,7 @@ FUNCTION DEFINITION main  [52:1/678-59:2/800] FunctionDDImpl SCOPE: $Global$
         STATEMENT DECLARATION  [56:5/743-56:22/760] SCOPE: Stmt  [52:13/690-59:2/800]
             VARIABLE bb [56:5/743-56:22/760]  TYPE: *rnud::A::B TEXT=B*  [56:5/743-56:7/745]  INIT: text='new AA()'  SCOPE: Stmt  [52:13/690-59:2/800]
         STATEMENT DECLARATION  [57:5/765-57:23/783] SCOPE: Stmt  [52:13/690-59:2/800]
-            USING DECL. rnud_2::C::c  [57:5/765-57:23/783]; REF DECL: rnud_2::C::c  [20:9/264-20:32/287] SCOPE: null
+            USING DECL. rnud_2::C::c  [57:5/765-57:23/783]; REF DECL: null  SCOPE: null
         STATEMENT RETURN  [58:5/789-58:14/798] SCOPE: Stmt  [52:13/690-59:2/800] text: 'return c;'
 NAMESPACE DEFINITIONS for rnud (rnud) 
     resolver_ns_using_declaration.cc  [1:1/0-10:2/129]
@@ -137,7 +137,6 @@ NAMESPACE rnud_2 (rnud_2)
     NAMESPACE DEFINITIONS for C (rnud_2::C) 
         resolver_ns_using_declaration.cc  [19:5/242-31:6/504]
     NAMESPACE C (rnud_2::C) 
-        VARIABLE c [20:9/264-20:32/287]  TYPE: const int TEXT=const int  [20:9/264-20:25/280]  INIT: text='5'  SCOPE: C 
         STRUCT CC (rnud_2::C::CC ) [21:9/296-29:11/497] lcurly=306 SCOPE: C 
             BASE CLASSES:
             MEMBERS:

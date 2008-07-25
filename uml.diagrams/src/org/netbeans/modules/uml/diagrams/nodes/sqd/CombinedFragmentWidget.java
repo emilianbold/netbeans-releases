@@ -77,6 +77,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.BaseElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.dynamics.ICombinedFragment;
+import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionFragment;
 import org.netbeans.modules.uml.core.support.umlutils.ETList;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
@@ -861,7 +862,7 @@ public class CombinedFragmentWidget extends ContainerNode implements PropertyCha
         {
             elt = locator.findByID(nodeReader.getProject(), nodeReader.getMEID());
         }            
-        if (elt != null && elt instanceof ICombinedFragment)
+        if (elt != null && (elt instanceof ICombinedFragment || elt instanceof IInteraction))
         {            
             super.load(nodeReader); 
             setPreferredSize(nodeReader.getSize());
