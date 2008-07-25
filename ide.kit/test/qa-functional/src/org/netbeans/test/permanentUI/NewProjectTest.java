@@ -39,6 +39,8 @@
 
 package org.netbeans.test.permanentUI;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -96,7 +98,7 @@ public class NewProjectTest extends JellyTestCase{
     public void tearDown() {
     }
     
-    private static final String CATEGORIES_GOLDEN_FILE = "data/newprojects-Categories.txt";
+    private static final String CATEGORIES_GOLDEN_FILE = "newprojects-Categories.txt";
     
     private class ComparationReturnValues{
 
@@ -140,7 +142,7 @@ public class NewProjectTest extends JellyTestCase{
         String standardLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
         npwo.selectCategory(standardLabel);
 
-        String goldenfile = this.getClass().getResource(CATEGORIES_GOLDEN_FILE).getFile();
+        String goldenfile = getDataDir().getPath()+File.separator + "permanentUI" + File.separator+"newproject"+File.separator+CATEGORIES_GOLDEN_FILE;
         ArrayList<String> permanentCategories = Utilities.parseFileByLinesLeaveSpaces(goldenfile);
         System.out.println("======== Permanent UI Categories: ========");
         for(String actual: permanentCategories){
@@ -292,7 +294,7 @@ public class NewProjectTest extends JellyTestCase{
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         boolean assertValue = true;
         String assertString = "";
-        String goldenfile = this.getClass().getResource(getCategoryGoldenFile(goldenFileName)).getFile();
+        String goldenfile = getCategoryGoldenFile(goldenFileName);
         ArrayList<String> permanentProjects = Utilities.parseFileByLines(goldenfile);        
         newProjectOperator.selectCategory(categoryName);        
         JListOperator jlo = newProjectOperator.lstProjects();
@@ -333,7 +335,13 @@ public class NewProjectTest extends JellyTestCase{
     }
     
     private String getCategoryGoldenFile(String categoryName) {
-        return "data/newproject-" + categoryName + ".txt";
+        String dataDir = "";
+        try {
+            dataDir = getDataDir().getCanonicalPath();
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return dataDir + File.separator + "permanentUI" + File.separator + "newproject" + File.separator+ categoryName + ".txt";
     }
 
     
