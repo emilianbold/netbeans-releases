@@ -648,13 +648,14 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         /** queue of all requests (Runnable) that should be processed
          * AWT-Event queue.
          */
-        RunnableQueue queue;
+        EventQueue queue;
+        int delayedCount = 0;
 
-        class RunnableQueue implements Runnable {
+        class EventQueue implements Runnable {
 
             private LinkedList<Runnable> runList = new LinkedList<Runnable>();
 
-            public RunnableQueue() {
+            public EventQueue() {
             }
 
             /** Processes the queue. */
@@ -677,6 +678,25 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             }
         }
 
+        private class DelayedEvent implements Runnable {
+
+            private Runnable run;
+
+            public DelayedEvent(Runnable run) {
+                delayedCount++;
+                this.run = run;
+            }
+
+            public void run() {
+                LOG.log(Level.FINER, "Running delayed event {0}", run); // NOI18N
+                Children.MUTEX.readAccess(run);
+                LOG.log(Level.FINER, "Finished {0}", run); // NOI18N
+                synchronized (QP.this) {
+                    delayedCount--;
+                }
+            }
+        }
+
         QP() {
         }
         
@@ -684,44 +704,47 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             return run instanceof VisualizerEvent.Removed && 
                     ((VisualizerEvent) run).originalEvent.getSnapshot().getClass().getName().contains("DelayedLazySnapshot");
         }
-
+        
         /** Runs the runnable in event thread.
          * @param run what should run
          */
         public void runSafe(final Runnable run) {
             boolean isNew = false;
+            EventQueue holdQueue;
 
             synchronized (this) {
                 if (SwingUtilities.isEventDispatchThread() && shouldBeInvokedLater(run)) {
-                    SwingUtilities.invokeLater(new Runnable() {
-
-                        public void run() {
-                            LOG.log(Level.FINER, "Running via invokeLater {0}", run); // NOI18N
-                            Children.MUTEX.readAccess(run);
-                            LOG.log(Level.FINER, "Finished {0}", run); // NOI18N
-                        }
-                    });
+                    SwingUtilities.invokeLater(new DelayedEvent(run));
                     queue = null;
                     return;
                 }
-
+                
+                if (delayedCount > 0) {
+                    // still some delayed events unprocessed => invokeLater
+                    assert queue == null;
+                    SwingUtilities.invokeLater(new DelayedEvent(run));
+                    return;
+                }
+                
                 if (queue == null) {
-                    queue = new RunnableQueue();
+                    queue = new EventQueue();
                     isNew = true;
                 }
                 queue.runList.add(run);
-                
+
+                // if not in AWT thread invoke later while holding lock
                 if (isNew && !SwingUtilities.isEventDispatchThread()) {
                     SwingUtilities.invokeLater(queue);
                     return;
                 }
+                holdQueue = queue;
             }
 
             if (isNew) {
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                Mutex.EVENT.writeAccess(queue);
+                Mutex.EVENT.writeAccess(holdQueue);
             }
         }
     }
