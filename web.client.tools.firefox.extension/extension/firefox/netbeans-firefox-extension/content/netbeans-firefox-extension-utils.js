@@ -223,6 +223,35 @@
         }
         return null;
     }
+    
+    this.isFF2 = function() {
+        return getFirefoxVersion() == 2;
+    }
+    
+    this.isFF3 = function() {
+        return getFirefoxVersion() == 3;
+    }
+    
+    const ffUserAgentRegExp = /Firefox[\/\s](\d+\.\d+)/;
+    function getFirefoxVersion() {
+        if (this.firefoxVersion) {
+            return this.firefoxVersion;
+        }
+        
+        if (ffUserAgentRegExp.test(navigator.userAgent)) {
+            var version = new Number(RegExp.$1);
+            if (version >= 3) {
+                this.firefoxVersion = 3;
+                return 3;
+            } else if (version >= 2) {
+                this.firefoxVersion = 2;
+                return 2;
+            }
+        }
+        NetBeans.Logger.logMessage("Could not detect Firefox version");
+        
+        return null;
+    }
 
     // ************************************************************************************************
 }).apply(NetBeans.Utils);

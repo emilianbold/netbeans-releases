@@ -51,7 +51,7 @@ NetBeans.Logger = {};
             NetBeans.Constants.ConsoleServiceCID,
             NetBeans.Constants.ConsoleServiceIF);
         }
-        consoleService.logStringMessage(message);
+        consoleService.logStringMessage("NETBEANS-LOGGER-MSG: " + message);
     }
     
     this.log = function( message, level ){
@@ -67,4 +67,12 @@ NetBeans.Logger = {};
         }
     }
     
+    this.logException = function(exception) {
+        if (typeof exception == 'string') {
+            exception = new Error(exception);
+        }
+        
+        this.logMessage(exception.toString());
+        this.logMessage(exception.stack);
+    }    
 }).apply(NetBeans.Logger);
