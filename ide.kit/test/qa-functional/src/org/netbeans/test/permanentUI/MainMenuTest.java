@@ -432,6 +432,8 @@ public class MainMenuTest extends JellyTestCase {
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         ArrayList<NbMenuItem> newSubmenu = Utilities.filterOutSeparators(permanentMenu.getSubmenu()); //TODO: fix the getMainMenuItem(.) to return even separators
         permanentMenu.setSubmenu(newSubmenu); //TODO: remove when getMainMenuItem(.) fixed
+        System.out.println("GOLDEN FILE:");            
+        Utilities.printMenuStructure(System.out, permanentMenu, "--", 100);
         try {
             goldenFile = new PrintStream(permuiLogsFile);
 
@@ -446,7 +448,9 @@ public class MainMenuTest extends JellyTestCase {
             //Utilities.printMenuStructure(System.out, mainM, "---", 100);
 
             NbMenuItem submenuItem = Utilities.getMenuByName(submenuItems[submenuItems.length-1], mainM);
-            Utilities.printMenuStructure(ideFile, submenuItem, "---", 1);
+            System.out.println("IDE MENU:");
+            Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
+            Utilities.printMenuStructure(ideFile, submenuItem, "---", 2);
             //System.out.println("-------------SUBMENU-----------------");
             //Utilities.printMenuStructure(System.out, submenuItem, "---", 100);
             assertNotNull("Cannot find submenu " + submenuPath, submenuItem);//is there such submenu?
