@@ -119,10 +119,10 @@ public class PackagingConfiguration {
         this.files = files;
     }
     
-    public void setOutputZip(StringConfiguration output) {
+    public void setOutput(StringConfiguration output) {
 	this.output = output;
     }
-    public StringConfiguration getOutputZip() {
+    public StringConfiguration getOutput() {
 	return output;
     }
     
@@ -146,7 +146,7 @@ public class PackagingConfiguration {
         getType().assign(conf.getType());
         getHeader().assign(conf.getHeader());
         getFiles().assign(conf.getFiles());
-	getOutputZip().assign(conf.getOutputZip());
+	getOutput().assign(conf.getOutput());
 	getTool().assign(conf.getTool());
 	getOptions().assign(conf.getOptions());
     }
@@ -157,7 +157,7 @@ public class PackagingConfiguration {
         clone.setType((IntConfiguration)getType().clone());
         clone.setHeader((VectorConfiguration)getHeader().clone());
         clone.setFiles((VectorConfiguration)getFiles().clone());
-	clone.setOutputZip((StringConfiguration)getOutputZip().clone());
+	clone.setOutput((StringConfiguration)getOutput().clone());
 	clone.setTool((StringConfiguration)getTool().clone());
 	clone.setOptions((StringConfiguration)getOptions().clone());
         return clone;
@@ -178,7 +178,7 @@ public class PackagingConfiguration {
         set.setShortDescription(getString("GeneralHint"));
         
         set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "Package Type ...")); // NOI18N
-	set.put(outputNodeProp = new OutputNodeProp(getOutputZip(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+	set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
         String[] texts = new String[] {"Files", "Files", "Files..."};
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
@@ -221,6 +221,13 @@ public class PackagingConfiguration {
         }
     }
     
+    public String getOutputValue() {
+        if (getOutput().getModified())
+            return getOutput().getValue();
+        else
+            return getOutputDefault();
+    }
+    
     private String getOutputDefault() {
 	String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
 	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION)
@@ -248,6 +255,13 @@ public class PackagingConfiguration {
         return outputPath;
     }
     
+    public String getToolValue() {
+        if (getTool().getModified())
+            return getTool().getValue();
+        else
+            return getToolDefault();
+    }
+    
     private String getToolDefault() {
         String tool = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
@@ -263,6 +277,13 @@ public class PackagingConfiguration {
         }
         
         return tool;
+    }
+    
+    public String getOptionsValue() {
+        if (getOptions().getModified())
+            return getOptions().getValue();
+        else
+            return getOptionsDefault();
     }
     
     private String getOptionsDefault() {
