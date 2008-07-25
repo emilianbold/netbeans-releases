@@ -67,6 +67,7 @@ public final class ServerUtilities {
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     public static final String GFV3_PREFIX_JAR_NAME = "glassfish-10.0"; // NOI18N"
+    static public final String PROP_FIRST_RUN = "first_run";
     
     
     private ServerUtilities() {
@@ -213,6 +214,23 @@ public final class ServerUtilities {
         return url;
     }  
     
+    /**
+     * Surround the submitted string with quotes if it contains any embedded
+     * whitespace characters.
+     *
+     * Implementation note: Do not trim the submitted string.  Assume all
+     * whitespace character are part of a file name or path that requires
+     * quotes.
+     *
+     * !PW FIXME handles only spaces right now.  Should handle all whitespace.
+     *
+     * @param path
+     * @return
+     */
+    public static final String quote(String path) {
+        return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
+    }
+
     /**
      *  Determine if the named directory is a TP2 install.
      * 
