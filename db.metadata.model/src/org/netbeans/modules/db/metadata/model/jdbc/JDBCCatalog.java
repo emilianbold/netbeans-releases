@@ -118,8 +118,8 @@ public class JDBCCatalog implements CatalogImplementation {
             try {
                 while (rs.next()) {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
-                    // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
-                    // in DatabaseMetaData.getSchemas().
+                    // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
+                    // only returns a TABLE_SCHEM column.
                     String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
                     LOGGER.log(Level.FINE, "Read schema {0} in catalog {1}", new Object[] { schemaName, catalogName });
                     if (MetadataUtilities.equals(catalogName, name)) {
