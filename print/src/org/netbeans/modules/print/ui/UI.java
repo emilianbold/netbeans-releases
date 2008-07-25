@@ -690,7 +690,7 @@ public final class UI {
   private static final class CornerBorder extends EmptyBorder {
 
     public CornerBorder() {
-      super(0, SMALL_INSET, SMALL_INSET, SMALL_INSET);
+      super(0, TINY_INSET * 2, TINY_INSET * 2, TINY_INSET * 2);
     }
 
     @Override
