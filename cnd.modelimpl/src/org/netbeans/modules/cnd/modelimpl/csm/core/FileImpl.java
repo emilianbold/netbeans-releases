@@ -147,7 +147,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 
     private int fileType = UNDEFINED_FILE;
     
-    private Object stateLock = new Object();
+    private final Object stateLock = new Object();
     
     private Collection<FunctionImplEx> fakeRegistrationsOLD = new ArrayList<FunctionImplEx>();
     private Collection<CsmUID<FunctionImplEx>> fakeRegistrationUIDs = new CopyOnWriteArrayList<CsmUID<FunctionImplEx>>();
@@ -298,7 +298,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
     }
     
-    private Object changeStateLock = new Object();
+    private final Object changeStateLock = new Object();
     public void stateChanged(javax.swing.event.ChangeEvent e) {
         stateChanged(false);
     }
@@ -1059,7 +1059,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         // TODO: remove this dirty hack!
 	if( decl instanceof VariableImpl ) {
             VariableImpl v = (VariableImpl) decl;
-	    if( isOfFileScope(v) ) {
+	    if( ! NamespaceImpl.isNamespaceScope(v, true) ) {
 		v.setScope(this);
                 addStaticVariableDeclaration(uidDecl);
 	    }
@@ -1141,31 +1141,6 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
         return out;
     }
 
-    /**
-     * Determines whether this variable has file linkage
-     * in assumption that it is declared in the file as such
-     * (not in namespace, etc).
-     * @param v file-level variable.
-     * @return true if the variable has file linkage, otherwise false
-     */
-    public static boolean isOfFileScope(VariableImpl v) {
-	if( v.isStatic() ) {
-	    return true;
-	}
-	else if( v.isConst() ) {
-	    if( ! v.isExtern() ) {
-		return true;
-	    }
-	}
-	else {
-	    return false;
-//	    if( ! v.isExtern() ) {
-//		return true;
-//	    }
-	}
-	return false;
-    }
-    
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         _removeDeclaration(declaration);
     }
@@ -1207,7 +1182,7 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
             // TODO: remove this dirty hack!
             if( decl instanceof VariableImpl ) {
                 VariableImpl v = (VariableImpl) decl;
-                if( isOfFileScope(v) ) {
+                if( ! NamespaceImpl.isNamespaceScope(v, true) ) {
                     l.add(v);
                 }
             }

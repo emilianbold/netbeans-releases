@@ -335,6 +335,11 @@ public class RubyElementCtx {
         return simpleName;
     }
 
+    public void setNames(String name, String simpleName) {
+        this.name = name;
+        this.simpleName = simpleName;
+    }
+
     public Arity getArity() {
         if (arity == null) {
             if (node instanceof MethodDefNode) {

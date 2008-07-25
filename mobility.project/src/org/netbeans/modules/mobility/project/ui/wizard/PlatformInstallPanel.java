@@ -46,10 +46,12 @@
  */
 package org.netbeans.modules.mobility.project.ui.wizard;
 
+import java.awt.Component;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.MissingResourceException;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -276,6 +278,11 @@ public class PlatformInstallPanel extends javax.swing.JPanel {
         
         public void readSettings(final Object obj) {
             wizard = (TemplateWizard) obj;
+            Component component = getComponent();
+            Object substitute = ((JComponent)component).getClientProperty ("NewProjectWizard_Title"); // NOI18N
+            if (substitute != null) {
+                wizard.putProperty ("NewProjectWizard_Title", substitute); // NOI18N
+            }
         }
         
         public void storeSettings(final Object obj) {

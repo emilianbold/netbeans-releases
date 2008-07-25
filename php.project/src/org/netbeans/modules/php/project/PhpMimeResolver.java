@@ -57,17 +57,14 @@ public class PhpMimeResolver extends MIMEResolver {
     private static final String MIME_TYPE = "text/x-php5";//NOI18N
     private static final String UNKNOWN_MIME_TYPE = null;
     private static final String[] PHP_WELL_KNOWN_EXTENSION_PREFIXES = {"php", "phtml"};//NOI18N
-    private static final String[] OTHER_WELL_KNOWN_EXTENSION_PREFIXES = {"java"};//NOI18N
+    private static final String[] OTHER_WELL_KNOWN_EXTENSION_PREFIXES = {"java", "rb", "rhtml"};//NOI18N
 
     //looking for
     private static final byte[] OPEN_TAG = "<?php".getBytes();//NOI18N
     private static final byte[] SHORT_OPEN_TAG = "<?".getBytes();//NOI18N
 
     //html signs
-    private int openTagIdx;
-    private int shortOpenTagIdx;
-    private Set<String> resolvedExt = new HashSet<String>();
-    private Sign[] signs = null;
+    private static final Set<String> resolvedExt = new HashSet<String>();
 
     @Override
     public String findMIMEType(FileObject fo) {
@@ -79,8 +76,8 @@ public class PhpMimeResolver extends MIMEResolver {
         } else if (resolvedExt.contains(ext)) {
             return MIME_TYPE;
         }
-        openTagIdx = 0;
-        shortOpenTagIdx = 0;
+        MutableInteger openTagIdx = new MutableInteger();
+        MutableInteger shortOpenTagIdx = new MutableInteger();
         if (!fo.canRead() || fo.getNameExt().equalsIgnoreCase("ntuser.dat")) {//NOI18N
             return UNKNOWN_MIME_TYPE;
         }
@@ -89,21 +86,21 @@ public class PhpMimeResolver extends MIMEResolver {
             try {
                 byte[] bytes = new byte[BYTES_FOR_PRECHECK];
                 int len = inputStream.read(bytes);
-                signs = new Sign[]{
+                Sign[] signs = new Sign[]{
                             new Sign("<!DOCTYPE HTML"),
                             new Sign("<!DOCTYPE HTML".toLowerCase()),
                             new Sign("<HTML>"),
                             new Sign("<HTML>".toLowerCase())
                         };
-                if (len > 0 && resolve(bytes, len)) {
+                if (len > 0 && resolve(bytes, len,openTagIdx, shortOpenTagIdx, signs)) {
                     return returnMimeType(fo, MIME_TYPE);
-                } else if (isSigned()) {
+                } else if (isSigned(signs)) {
                     //just once 4000 bytes
                     //while (len > 0) {
                     bytes = new byte[BYTES_FOR_CHECK_IF_HTML_SIGNED];
                     len = inputStream.read(bytes);
                     signs = EMPTY_SIGNS;
-                    if (len > 0 && resolve(bytes, len)) {
+                    if (len > 0 && resolve(bytes, len,openTagIdx, shortOpenTagIdx, signs)) {
                         return returnMimeType(fo, MIME_TYPE);
                     }
                 //}
@@ -117,10 +114,11 @@ public class PhpMimeResolver extends MIMEResolver {
         return returnMimeType(fo, UNKNOWN_MIME_TYPE);
     }
 
-    private boolean resolve(byte[] bytes, int len) {
+    private boolean resolve(byte[] bytes, int len, MutableInteger openTagIdx,
+            MutableInteger shortOpenTagIdx, Sign[] signs) {
         for (int i = 0; i < len; i++) {
             byte b = bytes[i];
-            if (isOpenTag(b) || isShortOpenTag(b)) {
+            if (isOpenTag(b, openTagIdx) || isShortOpenTag(b,shortOpenTagIdx)) {
                 return true;
             }
             for (int j = 0; j < signs.length; j++) {
@@ -131,7 +129,7 @@ public class PhpMimeResolver extends MIMEResolver {
         return false;
     }
 
-    private boolean isSigned() {
+    private boolean isSigned(Sign[] signs) {
         for (int j = 0; j < signs.length; j++) {
             Sign s = signs[j];
             if (s.isSigned()) {
@@ -140,7 +138,7 @@ public class PhpMimeResolver extends MIMEResolver {
         }
         return false;
     }
-    
+
     public String returnMimeType(final FileObject fo, final String mimeType) {
         String ext = fo.getExt();
         if (ext != null && ext.trim().length() > 0) {
@@ -170,27 +168,48 @@ public class PhpMimeResolver extends MIMEResolver {
         return false;
     }
 
-    private boolean isOpenTag(byte b) {
-        if (openTagIdx < OPEN_TAG.length) {
-            if (b == OPEN_TAG[openTagIdx]) {
-                openTagIdx++;
+    private boolean isOpenTag(byte b, MutableInteger openTagIdx) {
+        if (openTagIdx.getValue() < OPEN_TAG.length) {
+            if (b == OPEN_TAG[openTagIdx.getValue()]) {
+                openTagIdx.incr();
             } else {
-                openTagIdx = 0;
+                openTagIdx.setValue(0);
             }
         }
-        return (openTagIdx >= OPEN_TAG.length);
+        return (openTagIdx.getValue() >= OPEN_TAG.length);
     }
 
-    private boolean isShortOpenTag(byte b) {
-        if (shortOpenTagIdx < SHORT_OPEN_TAG.length &&
-                b == SHORT_OPEN_TAG[shortOpenTagIdx]) {
-            shortOpenTagIdx++;
-        } else if (shortOpenTagIdx >= SHORT_OPEN_TAG.length && Character.isWhitespace((char) b)) {
-            shortOpenTagIdx++;
+    private boolean isShortOpenTag(byte b, MutableInteger shortOpenTagIdx) {
+        if (shortOpenTagIdx.getValue() < SHORT_OPEN_TAG.length &&
+                b == SHORT_OPEN_TAG[shortOpenTagIdx.getValue()]) {
+            shortOpenTagIdx.incr();
+        } else if (shortOpenTagIdx.getValue() >= SHORT_OPEN_TAG.length && Character.isWhitespace((char) b)) {
+            shortOpenTagIdx.incr();
         } else {
-            shortOpenTagIdx = 0;
+            shortOpenTagIdx.setValue(0);
         }
-        return (shortOpenTagIdx >= SHORT_OPEN_TAG.length + 1);
+        return (shortOpenTagIdx.getValue() >= SHORT_OPEN_TAG.length + 1);
+    }
+
+    private static class MutableInteger {
+        private int value = 0;
+        /**
+         * @return the value
+         */
+        public int getValue() {
+            return value;
+        }
+
+        /**
+         * @param value the value to set
+         */
+        public void setValue(int value) {
+            this.value = value;
+        }
+
+        public void incr() {
+            this.value += 1;
+        }
     }
 
     private static class Sign {

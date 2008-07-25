@@ -40,7 +40,17 @@
  */
 
 package org.netbeans.modules.cnd.makeproject.api.configurations;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
+import org.netbeans.modules.cnd.makeproject.ui.customizer.MakeCustomizer;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
 
@@ -49,19 +59,20 @@ public class PackagingConfiguration {
     
     // Types
     private static String[] TYPE_NAMES = {
-        getString("SCR4Package"),
-        getString("IPSPackage"),
-        getString("Tar"),
         getString("Zip"),
+        getString("Tar"),
+        getString("SCR4Package")
     };
-    public static final int TYPE_SVR4_PACKAGE = 0;
-    public static final int TYPE_IPS_PACKAGE = 1;
-    public static final int TYPE_TAR = 2;
-    public static final int TYPE_ZIP = 3;
+    public static final int TYPE_ZIP = 0;
+    public static final int TYPE_TAR = 1;
+    public static final int TYPE_SVR4_PACKAGE = 2;
     
     private IntConfiguration type;
     private VectorConfiguration header;
     private VectorConfiguration files;
+    private StringConfiguration output;
+    private StringConfiguration tool;
+    private StringConfiguration options;
     
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
@@ -69,6 +80,9 @@ public class PackagingConfiguration {
         type = new IntConfiguration(null, TYPE_ZIP, TYPE_NAMES, null);
         header = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
+	output = new StringConfiguration(null, ""); // NOI18N
+	tool = new StringConfiguration(null, ""); // NOI18N
+	options = new StringConfiguration(null, ""); // NOI18N
     }
     
     // MakeConfiguration
@@ -105,12 +119,36 @@ public class PackagingConfiguration {
         this.files = files;
     }
     
+    public void setOutputZip(StringConfiguration output) {
+	this.output = output;
+    }
+    public StringConfiguration getOutputZip() {
+	return output;
+    }
+    
+    public void setTool(StringConfiguration output) {
+	this.tool = output;
+    }
+    public StringConfiguration getTool() {
+	return tool;
+    }
+    
+    public void setOptions(StringConfiguration options) {
+	this.options = options;
+    }
+    public StringConfiguration getOptions() {
+	return options;
+    }
+    
     // Clone and assign
     public void assign(PackagingConfiguration conf) {
         setMakeConfiguration(conf.getMakeConfiguration());
         getType().assign(conf.getType());
         getHeader().assign(conf.getHeader());
         getFiles().assign(conf.getFiles());
+	getOutputZip().assign(conf.getOutputZip());
+	getTool().assign(conf.getTool());
+	getOptions().assign(conf.getOptions());
     }
     
     @Override
@@ -119,22 +157,147 @@ public class PackagingConfiguration {
         clone.setType((IntConfiguration)getType().clone());
         clone.setHeader((VectorConfiguration)getHeader().clone());
         clone.setFiles((VectorConfiguration)getFiles().clone());
+	clone.setOutputZip((StringConfiguration)getOutputZip().clone());
+	clone.setTool((StringConfiguration)getTool().clone());
+	clone.setOptions((StringConfiguration)getOptions().clone());
         return clone;
     }
     
+    TypePropertyChangeListener typePropertyChangeListener;
     // Sheet
-    public Sheet getGeneralSheet() {
+    public Sheet getGeneralSheet(MakeCustomizer makeCustomizer) {
+        IntNodeProp intNodeprop;
+        OutputNodeProp outputNodeProp;
+        StringNodeProp toolNodeProp;
+        StringNodeProp optionsNodeProp;
+    
         Sheet sheet = new Sheet();
         Sheet.Set set = new Sheet.Set();
         set.setName("General"); // NOI18N
         set.setDisplayName(getString("GeneralTxt"));
         set.setShortDescription(getString("GeneralHint"));
-        String[] texts = new String[] {"Packaging", "Packaging", "Packaging..."};
+        
+        set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "Package Type ...")); // NOI18N
+	set.put(outputNodeProp = new OutputNodeProp(getOutputZip(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
+        String[] texts = new String[] {"Files", "Files", "Files..."};
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
+        set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
+        set.put(optionsNodeProp = new StringNodeProp(getOptions(), getToolDefault(), "AdditionalOptions", getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"))); // NOI18N
+        
         sheet.put(set);
+        
+        intNodeprop.getPropertyEditor().addPropertyChangeListener(typePropertyChangeListener = new TypePropertyChangeListener(makeCustomizer, outputNodeProp, toolNodeProp, optionsNodeProp));
         return sheet;
     }
     
+    class TypePropertyChangeListener implements PropertyChangeListener {
+        private MakeCustomizer makeCustomizer;
+        private OutputNodeProp outputNodeProp;
+        private StringNodeProp toolNodeProp;
+        private StringNodeProp optionsNodeProp;
+        
+        TypePropertyChangeListener(MakeCustomizer makeCustomizer, OutputNodeProp outputNodeProp, StringNodeProp toolNodeProp, StringNodeProp optionsNodeProp) {
+            this.makeCustomizer = makeCustomizer;
+            this.outputNodeProp = outputNodeProp;
+            this.toolNodeProp = toolNodeProp;
+            this.optionsNodeProp = optionsNodeProp;
+        }
+
+        public void propertyChange(PropertyChangeEvent arg0) {
+            if (!output.getModified()) {
+                outputNodeProp.setDefaultValue(getOutputDefault());
+                output.reset();
+            }
+            if (!tool.getModified()) {
+                toolNodeProp.setDefaultValue(getToolDefault());
+                tool.reset();
+            }
+            if (!options.getModified()) {
+                optionsNodeProp.setDefaultValue(getOptionsDefault());
+                options.reset();
+            }
+            makeCustomizer.validate(); // this swill trigger repainting of the property
+            makeCustomizer.repaint();
+        }
+    }
+    
+    private String getOutputDefault() {
+	String outputName = IpeUtils.getBaseName(getMakeConfiguration().getBaseDir());
+	if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_APPLICATION)
+	    outputName = outputName.toLowerCase();
+	else if (getMakeConfiguration().getConfigurationType().getValue() == MakeConfiguration.TYPE_DYNAMIC_LIB) {
+            Platform platform = Platforms.getPlatform(getMakeConfiguration().getPlatform().getValue());
+            outputName = platform.getLibraryName(outputName);
+        }
+        outputName = ConfigurationSupport.makeNameLegal(outputName);
+	String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/"; // NOI18N 
+        
+        if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            outputPath += "<TBD>"; // NOI18N // FIXUP 
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            outputPath += outputName + ".tar"; // NOI18N
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            outputPath += outputName + ".zip"; // NOI18N
+        }
+        else {
+            assert false;
+        }
+        
+        return outputPath;
+    }
+    
+    private String getToolDefault() {
+        String tool = null;
+        if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            tool = "<TBD>"; // NOI18N // FIXUP 
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            tool = "tar"; // NOI18N
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            tool = "zip"; // NOI18N
+        } else {
+            assert false;
+        }
+        
+        return tool;
+    }
+    
+    private String getOptionsDefault() {
+        String option = null;
+        if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            option = "<TBD>"; // NOI18N // FIXUP 
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            option = "-v"; // NOI18N
+        }
+        else if (getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            option = ""; // NOI18N
+        } 
+        else {
+            assert false;
+        }
+        
+        return option;
+    }
+    
+    private class OutputNodeProp extends StringNodeProp {
+        public OutputNodeProp(StringConfiguration stringConfiguration, String def, String txt1, String txt2, String txt3) {
+            super(stringConfiguration, def, txt1, txt2, txt3);
+        }
+        
+        @Override
+        public void setValue(Object v) {
+            if (IpeUtils.hasMakeSpecialCharacters((String)v)) {
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("SPECIAL_CHARATERS_ERROR"), NotifyDescriptor.ERROR_MESSAGE));
+                return;
+            }
+            super.setValue(v);
+        }
+        }
+
     public String[] getDisplayNames() {
         return TYPE_NAMES;
     }

@@ -42,4 +42,11 @@ made subject to such option by the copyright holder.
 -->
 <project basedir="." default="netbeans" name="php.project">
     <import file="../nbbuild/templates/projectized.xml"/>
+    
+    <target name="release" depends="init">
+        <!-- unziping signature files -->
+        <unzip dest="${cluster}" src="external/phpsigfiles.zip"/>
+        <unzip dest="${cluster}" src="external/preindexed-php.zip"/>
+    </target>
+    
 </project>

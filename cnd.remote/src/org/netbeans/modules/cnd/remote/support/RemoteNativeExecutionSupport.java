@@ -92,6 +92,10 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
         } catch (JSchException jse) {
         } catch (IOException ex) {
+        } catch (NullPointerException npe) { // DEBUG
+            // I mistyped password and after failed validation, pressed Run button and
+            // got NPE
+            System.err.println("Got NPE");
         } finally {
             disconnect();
         } 

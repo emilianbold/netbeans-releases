@@ -86,6 +86,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         initServerList(cache);
         desc = null;
         buttonsEnabled = true;
+        lbReason.setText(" "); // this keeps the dialog from resizing
+        tfReason.setVisible(false);
         pbarStatusPanel.setVisible(false);
     }
     
@@ -144,6 +146,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
      */
     private void showAddServerDialog() {
         assert desc != null : "Internal Error: Set DialogDescriptor before calling AddServer";
+        final int idx = lstDevHosts.getSelectedIndex();
         AddServerDialog dlg = new AddServerDialog();
         
         dlg.addPropertyChangeListener(AddServerDialog.PROP_VALID, this);
@@ -187,9 +190,19 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                             tfStatus.setText(record.getStateAsText());
                             phandle.finish();
                             pbarStatusPanel.setVisible(false);
+                            if (record.getState() == RemoteServerRecord.STATE_OFFLINE) {
+                                showReason(record.getReason());
+                                btRetry.setEnabled(true);
+                            } else {
+                                hideReason();
+                                btRetry.setEnabled(false);
+                            }
                             if (record.getState() == RemoteServerRecord.STATE_CANCELLED) {
                                 pcs.firePropertyChange(new PropertyChangeEvent(record, RemoteServerRecord.PROP_STATE_CHANGED,
                                         null, RemoteServerRecord.STATE_CANCELLED));
+                                if (idx >= 0 && lstDevHosts.getModel().getSize() > idx) {
+                                    lstDevHosts.setSelectedIndex(idx);
+                                }
                             }
                         }
                     });
@@ -229,10 +242,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         } else if (source instanceof DialogDescriptor && prop.equals(DialogDescriptor.PROP_VALID)) {
             ((DialogDescriptor) source).setValid(false);
         } else if (source instanceof EditServerListDialog && prop.equals(RemoteServerRecord.PROP_STATE_CHANGED)) {
-            Object state = evt.getNewValue();
-            if (state == RemoteServerRecord.STATE_OFFLINE) {
-                System.err.println("Offline");
-            }
             setButtons(true);
         } else if (source instanceof RemoteServerRecord && prop.equals(RemoteServerRecord.PROP_STATE_CHANGED)) {
             Object state = evt.getNewValue();
@@ -256,9 +265,27 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
             btRemoveServer.setEnabled(idx > 0 && buttonsEnabled);
             btSetAsDefault.setEnabled(idx != defaultIndex && buttonsEnabled);
             btPathMapper.setEnabled(!CompilerSetManager.LOCALHOST.equals(lstDevHosts.getSelectedValue()) && buttonsEnabled);
+            if (record.getState() == RemoteServerRecord.STATE_OFFLINE) {
+                showReason(record.getReason());
+                btRetry.setEnabled(true);
+            } else {
+                hideReason();
+                btRetry.setEnabled(false);
+            }
         } else {
             log.warning("ESLD.valueChanged: No selection in Dev Hosts list");
         }
+    }
+    
+    private void showReason(String reason) {
+        lbReason.setText(NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason"));
+        tfReason.setText(reason);
+        tfReason.setVisible(true);
+    }
+    
+    private void hideReason() {
+        lbReason.setText(" ");
+        tfReason.setVisible(false);
     }
     
     public void actionPerformed(ActionEvent evt) {
@@ -291,6 +318,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
         lbDevHosts = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -299,110 +327,152 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         btRemoveServer = new javax.swing.JButton();
         btSetAsDefault = new javax.swing.JButton();
         btPathMapper = new javax.swing.JButton();
-        pbarArea = new javax.swing.JPanel();
         lbStatus = new javax.swing.JLabel();
         tfStatus = new javax.swing.JTextField();
+        btRetry = new javax.swing.JButton();
+        lbReason = new javax.swing.JLabel();
+        tfReason = new javax.swing.JTextField();
         pbarStatusPanel = new javax.swing.JPanel();
-        pbPlaceHolder = new javax.swing.JProgressBar();
+
+        setMinimumSize(new java.awt.Dimension(258, 315));
+        setLayout(new java.awt.GridBagLayout());
 
         lbDevHosts.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_ServerList").charAt(0));
         lbDevHosts.setLabelFor(lstDevHosts);
         lbDevHosts.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_ServerList")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(lbDevHosts, gridBagConstraints);
+
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(200, 200));
 
         lstDevHosts.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        lstDevHosts.setMinimumSize(new java.awt.Dimension(200, 200));
         lstDevHosts.setSelectedIndex(0);
         jScrollPane1.setViewportView(lstDevHosts);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1000.0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(jScrollPane1, gridBagConstraints);
 
         btAddServer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_AddServer").charAt(0));
         btAddServer.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_AddServer")); // NOI18N
         btAddServer.setActionCommand("Add"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btAddServer, gridBagConstraints);
 
         btRemoveServer.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_RemoveServer").charAt(0));
         btRemoveServer.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_RemoveServer")); // NOI18N
         btRemoveServer.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btRemoveServer, gridBagConstraints);
 
         btSetAsDefault.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_SetAsDefault").charAt(0));
         btSetAsDefault.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_SetAsDefault")); // NOI18N
         btSetAsDefault.setActionCommand("SetAsDefault"); // NOI18N
         btSetAsDefault.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btSetAsDefault, gridBagConstraints);
 
         btPathMapper.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_PathMapper").charAt(0));
         btPathMapper.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_PathMapper")); // NOI18N
         btPathMapper.setActionCommand("PathMapper"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 6);
+        add(btPathMapper, gridBagConstraints);
 
         lbStatus.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Status").charAt(0));
         lbStatus.setLabelFor(tfStatus);
         lbStatus.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Status")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(lbStatus, gridBagConstraints);
 
+        tfStatus.setColumns(20);
         tfStatus.setEditable(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1000.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 6);
+        add(tfStatus, gridBagConstraints);
 
-        pbarStatusPanel.setPreferredSize(new java.awt.Dimension(100, 24));
+        btRetry.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Retry").charAt(0));
+        btRetry.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Retry")); // NOI18N
+        btRetry.setEnabled(false);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 6, 0, 6);
+        add(btRetry, gridBagConstraints);
+
+        lbReason.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_Reason").charAt(0));
+        lbReason.setLabelFor(lbReason);
+        lbReason.setText(org.openide.util.NbBundle.getMessage(EditServerListDialog.class, "LBL_Reason")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 0, 0);
+        add(lbReason, gridBagConstraints);
+
+        tfReason.setEditable(false);
+        tfReason.setPreferredSize(new java.awt.Dimension(40, 21));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 2, 0, 6);
+        add(tfReason, gridBagConstraints);
+
         pbarStatusPanel.setLayout(new java.awt.BorderLayout());
-
-        pbPlaceHolder.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
-        pbPlaceHolder.setPreferredSize(new java.awt.Dimension(0, 20));
-        pbarStatusPanel.add(pbPlaceHolder, java.awt.BorderLayout.CENTER);
-
-        org.jdesktop.layout.GroupLayout pbarAreaLayout = new org.jdesktop.layout.GroupLayout(pbarArea);
-        pbarArea.setLayout(pbarAreaLayout);
-        pbarAreaLayout.setHorizontalGroup(
-            pbarAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pbarAreaLayout.createSequentialGroup()
-                .add(lbStatus)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(tfStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 132, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 26, Short.MAX_VALUE)
-                .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 122, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-        );
-        pbarAreaLayout.setVerticalGroup(
-            pbarAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(pbarAreaLayout.createSequentialGroup()
-                .add(pbarAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(pbarAreaLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                        .add(lbStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 27, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .add(tfStatus, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                    .add(pbarStatusPanel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 24, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(13, Short.MAX_VALUE))
-        );
-
-        org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, pbarArea, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, layout.createSequentialGroup()
-                        .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                        .add(18, 18, 18)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(btSetAsDefault, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                            .add(btRemoveServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                            .add(org.jdesktop.layout.GroupLayout.TRAILING, btAddServer, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)
-                            .add(btPathMapper, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 122, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.LEADING, lbDevHosts))
-                .addContainerGap())
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(layout.createSequentialGroup()
-                .add(lbDevHosts)
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(btAddServer)
-                        .add(12, 12, 12)
-                        .add(btRemoveServer)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(btSetAsDefault)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(btPathMapper))
-                    .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                .add(pbarArea, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
-        );
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 6, 6, 6);
+        add(pbarStatusPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -410,14 +480,15 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     private javax.swing.JButton btAddServer;
     private javax.swing.JButton btPathMapper;
     private javax.swing.JButton btRemoveServer;
+    private javax.swing.JButton btRetry;
     private javax.swing.JButton btSetAsDefault;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lbDevHosts;
+    private javax.swing.JLabel lbReason;
     private javax.swing.JLabel lbStatus;
     private javax.swing.JList lstDevHosts;
-    private javax.swing.JProgressBar pbPlaceHolder;
-    private javax.swing.JPanel pbarArea;
     private javax.swing.JPanel pbarStatusPanel;
+    private javax.swing.JTextField tfReason;
     private javax.swing.JTextField tfStatus;
     // End of variables declaration//GEN-END:variables
 }

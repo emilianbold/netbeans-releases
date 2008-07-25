@@ -858,10 +858,11 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
 
             }
-            this.array = new ChArrRef(chArr, weak);
+            synchronized (LOCK) {
+                this.array = new ChArrRef(chArr, weak);
+            }
             if (IS_LOG_GET_ARRAY) {
                 LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
-
             }
         }
 
@@ -881,6 +882,8 @@ abstract class EntrySupport {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         children.callRemoveNotify();
+                        assert array.get() == null;
+                        array = EMPTY;
                     }
                 }
             } finally {
@@ -1019,13 +1022,13 @@ abstract class EntrySupport {
                     class Notify implements Runnable {
                         public void run() {
                             synchronized (LOCK) {
-                                inited = true;
                                 initThread = null;
                                 LOCK.notifyAll();
                             }
                         }
                     }
                     Notify notify = new Notify();
+                    inited = true;
                     if (Children.MUTEX.isReadAccess()) {
                         Children.MUTEX.postWriteRequest(notify);
                     } else {

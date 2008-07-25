@@ -128,6 +128,10 @@ public class UsingResolverImpl extends CsmUsingResolver implements CsmProgressLi
         }
     }
 
+//    public Collection<CsmNamespaceDefinition> findDirectVisibleNamespaceDefinitions(CsmFile file, int offset, CsmProject onlyInProject) {
+//        return getCollector(file, offset, onlyInProject).getDirectVisibleNamespaceDefinitions();
+//    }
+    
     public Collection<CsmUsingDirective> findUsingDirectives(CsmNamespace namespace) {
         CsmDeclaration.Kind[] kinds = { CsmDeclaration.Kind.USING_DIRECTIVE };
         CsmSelect select = CsmSelect.getDefault();

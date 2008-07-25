@@ -140,6 +140,11 @@ public final class EventSourceSupport {
 
         public String getEditableName (DesignComponent component) {
             DesignComponent refComponent = component.readProperty(PROP_COMMAND).getComponent();
+            if (refComponent == null || refComponent.readProperty(ClassCD.PROP_INSTANCE_NAME) == null) {
+                Debug.warning("EventSource referenced " + component.toString() + " is null "); //NOI18N
+                return null;
+            }
+            
             String name = (String) refComponent.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue ();
             
             return name;

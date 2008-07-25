@@ -139,6 +139,11 @@ public class AddServerDialog extends JPanel implements DocumentListener {
         lbLogin.setToolTipText(org.openide.util.NbBundle.getMessage(AddServerDialog.class, "DESC_LoginTF")); // NOI18N
 
         tfLogin.setText(System.getProperty("user.name"));
+        tfLogin.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent evt) {
+                onLoginFocus(evt);
+            }
+        });
 
         lbPasswordSource.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/cnd/remote/ui/Bundle").getString("MNEM_PasswordSource").charAt(0));
         lbPasswordSource.setLabelFor(cbPasswordSource);
@@ -201,6 +206,10 @@ public class AddServerDialog extends JPanel implements DocumentListener {
 private void cbxSetAsDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxSetAsDefaultActionPerformed
 // TODO add your handling code here:
 }//GEN-LAST:event_cbxSetAsDefaultActionPerformed
+
+private void onLoginFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_onLoginFocus
+    tfLogin.selectAll();
+}//GEN-LAST:event_onLoginFocus
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

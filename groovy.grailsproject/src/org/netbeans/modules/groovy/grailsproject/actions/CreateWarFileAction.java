@@ -88,19 +88,19 @@ public class CreateWarFileAction extends AbstractAction implements LineProcessor
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 GrailsActionProvider.COMMAND_WAR, GrailsProjectConfig.forProject(prj)); // NOI18N
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
+        ExecutionDescriptor descriptor = new ExecutionDescriptor()
+                .controllable(true).inputVisible(true).showProgress(true).frontWindow(true);
         if (autodeploy) {
-            builder.outProcessorFactory(new InputProcessorFactory() {
+            descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
                 public InputProcessor newInputProcessor() {
                     return InputProcessors.bridge(CreateWarFileAction.this);
                 }
             });
         }
-        builder.postExecution(new RefreshProjectRunnable(prj));
-        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
+        descriptor = descriptor.postExecution(new RefreshProjectRunnable(prj));
+        descriptor = descriptor.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
 
-        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
 

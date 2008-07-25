@@ -118,8 +118,9 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
 
     @Override
     public void toStateReady(boolean synchronous) {
-        if (getState() == State.REMOVED) return;
-        
+        if (getState() == State.REMOVED) {
+            return;
+        }
         if (wsData == null) {
             String serviceName = getDefaultServiceName();
             wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N
@@ -166,20 +167,21 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
         Object newValue = evt.getNewValue();
-      
+
         // these are transitions out of the temporary state INITIALIZING
         // we are only interested in transition to ready and retrieved states.
         // when compile fail we fallback to retrieved to allow user examine the wsdl
 
         if (property.equals("resolved") && getState() == State.INITIALIZING) { //NOI18N
+
             if (Boolean.FALSE.equals(newValue)) {
                 setState(State.RETRIEVED);
             } else if (wsData.isReady()) {
                 setState(State.READY); // compiled in previous IDE run
+
             }
         } else if (WsdlData.Status.WSDL_SERVICE_COMPILED.equals(newValue)) {
             setState(State.READY);
-            WsdlUtil.saveWsdlData(getWsdlData());
         } else if (WsdlData.Status.WSDL_SERVICE_COMPILE_FAILED.equals(newValue)) {
             setState(State.RETRIEVED);
         } else if (WsdlData.Status.WSDL_UNRETRIEVED.equals(newValue)) {

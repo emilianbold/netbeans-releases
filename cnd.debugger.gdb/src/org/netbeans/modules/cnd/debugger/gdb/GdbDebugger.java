@@ -1882,8 +1882,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     public Map<String, TypeInfo> getTypeInfoCache() {
         return ticache;
     }
-    
+
+    /**
+     * @deprecated use requestValueEx instead
+     */
     public String requestValue(String name) {
+        try {
+            return requestValueEx(name);
+        } catch (Exception e) {
+            return e.getMessage();
+        }
+    }
+    
+    public String requestValueEx(String name) throws GdbErrorException {
         assert !Thread.currentThread().getName().equals("GdbReaderRP"); // NOI18N
         
         if (state.equals(STATE_STOPPED)) {
@@ -1893,7 +1904,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             if (info.length() == 0 || cb.getState() != CommandBuffer.STATE_OK) {
                 if (cb.getState() == CommandBuffer.STATE_ERROR) {
                     log.fine("GD.requestValue[" + cb.getID() + "]: Error [" + cb.getError() + "]"); // NOI18N
-                    return '>' + cb.getError() + '<';
+                    // TODO: do not enclose the message in ><
+                    throw new GdbErrorException('>' + cb.getError() + '<');
                 } else {
                     log.fine("GD.requestValue[" + cb.getID() + "]: Failure [" + // NOI18N
                             info.length() + ", " + cb.getState() + "]"); // NOI18N

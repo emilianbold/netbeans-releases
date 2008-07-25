@@ -149,6 +149,7 @@ public abstract class CCCCompiler extends BasicCompiler {
             }
         }
     
+    //TODO: move to a more convenient place and remove fixed tempfile name
     private String remote_command(String command, boolean use_stdout) {
         String diversion = use_stdout ? "" : "2>&1 > /dev/null";
         return "touch /tmp/xyz.c; " + command + " /tmp/xyz.c " + diversion + "; rm -f /tmp/xyz.c"; // NOI18N

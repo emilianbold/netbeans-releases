@@ -1363,7 +1363,7 @@
     function sendWindowsMessage(windows)
     {
         var windowsMessage =
-        <windows></windows>;
+        <windows encoding="base64"></windows>;
         for each (var aWindow in windows) {
             if (aWindow.top == aWindow) {
                 buildWindowsMessage([aWindow], windowsMessage);
@@ -1379,7 +1379,7 @@
         }
         for each (var aWindow in windows) {
             var windowMessage = <window fileuri={
-            aWindow.document.location.href
+            window.btoa(aWindow.document.location.href)
             } />;
 
             var frameWindows = aWindow.frames;
@@ -1401,12 +1401,12 @@
     function sendSourcesMessage(sources)
     {
         var sourcesMessage =
-        <sources></sources>;
+        <sources encoding="base64"></sources>;
 
         for (var source in sources) {
             sourcesMessage.source +=
             <source fileuri={
-            source
+            window.btoa(source)
             } />;
         }
 

@@ -191,6 +191,8 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // SystemIncludesUtils.load(record);
         
         // Register the new server
+        // TODO: Save the state as well as name. On restart, only try connecting to
+        // ONLINE hosts.
         if (!name.equals(CompilerSetManager.LOCALHOST)) {
             String slist = getPreferences().get(REMOTE_SERVERS, null);
             if (slist == null) {

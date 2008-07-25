@@ -87,6 +87,12 @@ public class GrailsActionProvider implements ActionProvider {
     public static final String COMMAND_UPGRADE = "upgrade"; // NOI18N
     public static final String COMMAND_WAR = "war"; // NOI18N
 
+    private static final ExecutionDescriptor GRAILS_DESCRIPTOR = new ExecutionDescriptor()
+            .controllable(true).frontWindow(true).inputVisible(true)
+                .showProgress(true).optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N;
+
+    private static final ExecutionDescriptor RUN_DESCRIPTOR = GRAILS_DESCRIPTOR.showSuspended(true);
+
     private static final Logger LOGGER = Logger.getLogger(GrailsActionProvider.class.getName());
 
     private static final String[] supportedActions = {
@@ -194,17 +200,15 @@ public class GrailsActionProvider implements ActionProvider {
             }
         };
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspended(true);
-        builder.outProcessorFactory(new InputProcessorFactory() {
+        ExecutionDescriptor descriptor = RUN_DESCRIPTOR;
+        descriptor = descriptor.outProcessorFactory(new InputProcessorFactory() {
             public InputProcessor newInputProcessor() {
                 return InputProcessors.bridge(new ServerURLProcessor(project, debug));
             }
         });
-        builder.postExecution(runnable);
-        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
+        descriptor = descriptor.postExecution(runnable);
 
-        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
 
@@ -225,12 +229,10 @@ public class GrailsActionProvider implements ActionProvider {
         ProjectInformation inf = project.getLookup().lookup(ProjectInformation.class);
         String displayName = inf.getDisplayName() + " (shell)"; // NOI18N
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true).showSuspended(true);
-        builder.postExecution(new RefreshProjectRunnable(project));
-        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
+        ExecutionDescriptor execDescriptor = RUN_DESCRIPTOR.postExecution(
+                new RefreshProjectRunnable(project));
 
-        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+        ExecutionService service = ExecutionService.newService(callable, execDescriptor, displayName);
         service.run();
     }
 
@@ -241,12 +243,10 @@ public class GrailsActionProvider implements ActionProvider {
         Callable<Process> callable = ExecutionSupport.getInstance().createSimpleCommand(
                 command, GrailsProjectConfig.forProject(project));
 
-        ExecutionDescriptor.Builder builder = new ExecutionDescriptor.Builder();
-        builder.controllable(true).frontWindow(true).inputVisible(true).showProgress(true);
-        builder.postExecution(new RefreshProjectRunnable(project));
-        builder.optionsPath("org-netbeans-modules-groovy-support-options-GroovyOptionsCategory"); // NOI18N
+        ExecutionDescriptor descriptor = GRAILS_DESCRIPTOR.postExecution(
+                new RefreshProjectRunnable(project));
 
-        ExecutionService service = ExecutionService.newService(callable, builder.create(), displayName);
+        ExecutionService service = ExecutionService.newService(callable, descriptor, displayName);
         service.run();
     }
 

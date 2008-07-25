@@ -523,7 +523,7 @@ public final class GemManager {
      */
     public List<Gem> getInstalledGems(List<String> errors) {
         reloadIfNeeded(errors);
-        return installed != null ? installed : Collections.<Gem>emptyList();
+        return getInstalledGems();
     }
 
     /**
@@ -536,6 +536,28 @@ public final class GemManager {
      */
     public List<Gem> getRemoteGems(List<String> errors) {
         reloadIfNeeded(errors);
+        return getRemoteGems();
+    }
+
+    /**
+     * Gets the available <b>cached</b> installed gems. Clients must be sure
+     * reload was triggered.
+     *
+     * @return list of the available installed gems. Returns an empty list if
+     *         they could not be read, never null.
+     */
+    public List<Gem> getInstalledGems() {
+        return installed != null ? installed : Collections.<Gem>emptyList();
+    }
+
+    /**
+     * Gets the available <b>cached</b> remote gems. Clients must be sure reload
+     * was triggered.
+     *
+     * @return list of the available remote gems. Returns an empty list if they
+     *         could not be read, never null.
+     */
+    public List<Gem> getRemoteGems() {
         return remote != null ? remote : Collections.<Gem>emptyList();
     }
 
@@ -553,6 +575,10 @@ public final class GemManager {
             return false;
         }
         return true;
+    }
+
+    boolean needsReload() {
+        return installed == null || remote == null;
     }
 
     /**
@@ -1154,4 +1180,28 @@ public final class GemManager {
          */
         boolean isRight(String version);
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final GemManager other = (GemManager) obj;
+        if (this.platform != other.platform && (this.platform == null || !this.platform.equals(other.platform))) {
+            return false;
+        }
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        hash = 53 * hash + (this.platform != null ? this.platform.hashCode() : 0);
+        return hash;
+    }
+
+
 }
