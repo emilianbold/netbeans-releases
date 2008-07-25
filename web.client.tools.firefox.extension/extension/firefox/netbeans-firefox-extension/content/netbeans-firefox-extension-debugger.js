@@ -980,7 +980,17 @@
 
     // 7. run until
     function runUntil(url, lineno) {
-        Firebug.Debugger.runUntil(currentFirebugContext, url, lineno);
+        var src = url;
+        if (NetBeans.Utils.isFF2()) {
+            if (currentFirebugContext) {
+                src = currentFirebugContext.sourceFileMap[href];
+            }
+            if (!src) {
+                src = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+            }
+        }
+        
+        Firebug.Debugger.runUntil(currentFirebugContext, src, lineno);
     }
 
     function suspend(reason)
@@ -988,7 +998,6 @@
         if ( reason )
             debugState.suspendReason = reason;
         stepping = true;
-
         Firebug.Debugger.suspend(currentFirebugContext);
     }
 
@@ -2260,8 +2269,13 @@
             return;
         }
         
-        var context = currentFirebugContext;
-        var sourceFile = context.sourceFileMap[href];
+        var sourceFile;
+        if (currentFirebugContext) {
+            sourceFile = currentFirebugContext.sourceFileMap[href];
+        }
+        if (!sourceFile) {
+            sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+        }
         
         if (sourceFile) {
             firebugDebuggerService.setBreakpointCondition(sourceFile, line, condition, Firebug.Debugger);
@@ -2273,16 +2287,22 @@
     function fbsSetBreakpoint(href, line, props) {
         line = parseInt(line);
         if (NetBeans.Utils.isFF2()) {
-            firebugDebuggerService.setBreakpoint(href, line, props);
-            return;
+            return firebugDebuggerService.setBreakpoint(href, line, props);
         }
         
-        var sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+        var sourceFile;
+        if (currentFirebugContext) {
+            sourceFile = currentFirebugContext.sourceFileMap[href];
+        }
+        if (!sourceFile) {
+            sourceFile = new FBL.NoScriptSourceFile(currentFirebugContext, href);
+        }
         
         if (sourceFile) {
-            firebugDebuggerService.setBreakpoint(sourceFile, line, props, Firebug.Debugger);
+            return firebugDebuggerService.setBreakpoint(sourceFile, line, props, Firebug.Debugger);
         } else {
             NetBeans.Logger.logMessage("setBreakpoint() - No source file found for: " + href);
+            return false;
         }
     }
 
