@@ -326,6 +326,10 @@ private void btnNewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:
         for (int i = 0; i < cbExtension.getItemCount(); i++) {
             newItems.add(cbExtension.getItemAt(i).toString());
         }
+        if(newItems.remove(chooseExtensionItem)) {
+            // initial hint removed, so enable file types combo box
+            cbType.setEnabled(true);
+        }
         newItems.add(newExtensionPanel.getExtension());
         Collections.sort(newItems, String.CASE_INSENSITIVE_ORDER);
         cbExtension.removeAllItems();
