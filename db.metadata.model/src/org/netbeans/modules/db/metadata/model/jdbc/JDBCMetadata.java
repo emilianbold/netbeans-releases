@@ -126,6 +126,7 @@ public class JDBCMetadata implements MetadataImplementation {
         Map<String, Catalog> newCatalogs = new LinkedHashMap<String, Catalog>();
         try {
             String defaultCatalogName = conn.getCatalog();
+            LOGGER.log(Level.FINE, "Default catalog is {0}", defaultCatalogName);
             ResultSet rs = dmd.getCatalogs();
             try {
                 while (rs.next()) {
