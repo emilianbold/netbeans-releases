@@ -681,13 +681,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         PropertyChangeEvent evt;
         synchronized (this) {
             if (methodInvokingDisabledUntilResumed) {
-                throw new PropertyVetoException("disabled until resumed", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_DisabledUntilResumed"), null);
             }
             if (methodInvoking) {
-                throw new PropertyVetoException("Already invoking!", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_AlreadyInvoking"), null);
             }
             if (!isSuspended()) {
-                throw new PropertyVetoException("No current context", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
             methodInvoking = true;
             evt = notifyToBeRunning(false, false);

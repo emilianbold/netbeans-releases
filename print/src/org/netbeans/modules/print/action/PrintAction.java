@@ -59,7 +59,7 @@ import org.netbeans.spi.print.PrintProvider;
 import org.netbeans.modules.print.provider.ComponentProvider;
 import org.netbeans.modules.print.provider.TextProvider;
 import org.netbeans.modules.print.ui.Preview;
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
@@ -85,7 +85,7 @@ public final class PrintAction extends IconAction {
     super(
       i18n(PrintAction.class, name),
       i18n(PrintAction.class, toolTip),
-      icon(Option.class, icon)
+      icon(Config.class, icon)
     );
     setEnabled(enabled);
     myEnabled = enabled;

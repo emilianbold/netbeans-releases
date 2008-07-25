@@ -1272,14 +1272,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     public void stepI() {
         setState(STATE_RUNNING);
-        gdb.exec_instruction();
+        gdb.exec_step_instruction();
     }
     
     /**
      * Step over function inside dis
      */
     public void stepOverInstr() {
-        Disassembly dis = Disassembly.getCurrent();
+        setState(STATE_RUNNING);
+        gdb.exec_next_instruction();
+        /*Disassembly dis = Disassembly.getCurrent();
         if (dis == null) {
             return;
         }
@@ -1293,7 +1295,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         } else {
             gdb.break_insert(GDB_TMP_BREAKPOINT, "*" + newAddress); // NOI18N
             resume();
-        }
+        }*/
     }
     
     /**
