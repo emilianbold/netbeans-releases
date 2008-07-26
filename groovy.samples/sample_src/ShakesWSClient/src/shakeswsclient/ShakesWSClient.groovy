@@ -18,9 +18,9 @@ class ShakesWSClient {
         def xml = proxy.GetSpeech(searchString)
         def XmlParser parser = new XmlParser()
         def speech = parser.parseText (xml)
-        "PLAY: " + speech.PLAY.text() +
-          "\nSPEAKER:" + speech.SPEAKER.text() +
-          "\nTEXT:" + speech.text()
+        ["PLAY: ${speech.PLAY.text()}\n",
+        "SPEAKER: ${speech.SPEAKER.text()}\n",
+        "TEXT: ${speech.text()}"].sum("")
     }
 
 }
