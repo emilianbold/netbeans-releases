@@ -127,13 +127,15 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation{
             return null;
         }
 
+        URL thisClassSource = ProjectRunnerImpl.class.getProtectionDomain().getCodeSource().getLocation();
+        File jarFile = FileUtil.archiveOrDirForURL(thisClassSource);
         File scriptFile = new File(getCacheFolder(), actionName + ".xml");
-        URLConnection connection = script.openConnection();
         
-        if (!scriptFile.canRead() || connection.getLastModified() > scriptFile.lastModified()) {
+        if (!scriptFile.canRead() || (jarFile != null && jarFile.lastModified() > scriptFile.lastModified())) {
             try {
                 scriptFile.delete();
 
+                URLConnection connection = script.openConnection();
                 FileObject target = FileUtil.createData(scriptFile);
 
                 copyFile(connection, target);
