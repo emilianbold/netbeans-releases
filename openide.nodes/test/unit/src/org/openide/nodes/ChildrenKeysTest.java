@@ -60,6 +60,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import junit.framework.AssertionFailedError;
+import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
@@ -79,6 +80,10 @@ public class ChildrenKeysTest extends NbTestCase {
         return false;
     }
     
+//    public static Test suite() {
+//        return new ChildrenKeysTest("testGCKeys");
+//    }
+//
     @Override
     protected Level logLevel() {
         return Level.WARNING;
@@ -713,11 +718,45 @@ public class ChildrenKeysTest extends NbTestCase {
         }
     }
 
+    public void testProblemsWithRefereshAfterInitializationInReadAccessIssue140313() throws Exception {
+        class K extends Keys implements Runnable {
+            Node root = createNode(this);
+            Node[] inRead;
+
+            public K() {
+                super(lazy());
+            }
+
+            @Override
+            protected void addNotify() {
+                keys("A", "B", "C");
+            }
+
+            public void run() {
+                inRead = root.getChildren().getNodes();
+            }
+        }
+
+        K keys = new K();
+        Listener l = new Listener();
+        keys.root.addNodeListener(l);
+        K.MUTEX.readAccess(keys);
+
+        assertEquals("Empty in ReadAccess", 0, keys.inRead.length);
+
+        Node[] now = keys.root.getChildren().getNodes();
+        assertEquals("Three nodes", 3, now.length);
+
+        l.assertAddEvent("Addition notified", 3);
+        l.assertNoEvents("That is all");
+    }
+
     private static Object holder;
     public void testGCKeys () throws Exception {
         class K extends Children.Keys {
             int counterAdd = 0;
             int counterRem = 0;
+            int counterDestroy = 0;
             Object key;
             
             Reference createdNode;
@@ -732,12 +771,18 @@ public class ChildrenKeysTest extends NbTestCase {
                 counterAdd++;
                 setKeys(Collections.singleton(key));
             }
-            
+
             @Override
             protected void removeNotify() {
                 counterRem++;
                 setKeys(Collections.EMPTY_LIST);
                 key = null;
+            }
+
+            @Override
+            protected void destroyNodes(Node[] arr) {
+                counterDestroy++;
+                super.destroyNodes(arr);
             }
             
             protected Node[] createNodes(Object k) {
@@ -756,12 +801,14 @@ public class ChildrenKeysTest extends NbTestCase {
         
         assertEquals("not touched", 0, temp.counterAdd);
         assertEquals("not touched", 0, temp.counterRem);
+        assertEquals("not touched", 0, temp.counterDestroy);
         
         Node[] arr = node.getChildren ().getNodes();
         
         assertEquals("initialized", 1, temp.counterAdd);
         assertEquals("not touched", 0, temp.counterRem);
         assertEquals("one item", 1, arr.length);
+        assertEquals("not touched", 0, temp.counterDestroy);
 
         WeakReference ref = new WeakReference(arr[0]);
         arr = null;
@@ -772,6 +819,7 @@ public class ChildrenKeysTest extends NbTestCase {
 
         assertEquals("initialized", 1, temp.counterAdd);
         assertEquals("removed", 1, temp.counterRem);
+        assertEquals("no destroy on GC nodes", 0, temp.counterDestroy);
 
         ref = new WeakReference(myKey);
         myKey = null;
@@ -784,11 +832,13 @@ public class ChildrenKeysTest extends NbTestCase {
         assertEquals("initialized 2nd time", 2, temp.counterAdd);
         assertEquals("not touched 2nd time", 1, temp.counterRem);
         assertEquals("one item", 1, arr.length);
+        assertEquals("still no destroy", 0, temp.counterDestroy);
     }
 
     static void waitActiveReferenceQueue() throws InterruptedException {
         class W extends WeakReference<Object> implements Runnable {
             boolean cleaned;
+            boolean finalized;
 
             public W(Object obj) {
                 super(obj, Utilities.activeReferenceQueue());
@@ -798,10 +848,29 @@ public class ChildrenKeysTest extends NbTestCase {
                 notifyAll();
             }
 
-            public synchronized void await() throws InterruptedException {
-                while (!cleaned) {
-                    wait(100);
+            public synchronized void notifyFinalize() {
+                finalized = true;
+                notifyAll();
+            }
+            {
+                new Object() {
+                    @Override
+                    public void finalize() {
+                        notifyFinalize();
+                    }
+                };
+            }
+
+            public void await() throws InterruptedException {
+                for (;;) {
+                    synchronized (this) {
+                        if (cleaned && finalized) {
+                            return;
+                        }
+                        wait(100);
+                    }
                     System.gc();
+                    System.runFinalization();
                 }
             }
         }

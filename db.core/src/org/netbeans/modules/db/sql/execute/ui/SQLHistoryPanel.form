@@ -3,7 +3,7 @@
 <Form version="1.6" maxVersion="1.6" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-      <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSD_History" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+      <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSN_SQLHistoryPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
     </Property>
     <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSD_History" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -34,10 +34,10 @@
                               <Component id="connectionComboBox" min="-2" pref="200" max="-2" attributes="0"/>
                               <EmptySpace type="unrelated" max="-2" attributes="0"/>
                               <Component id="jLabel2" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace type="unrelated" max="-2" attributes="0"/>
-                              <Component id="searchTextField" pref="367" max="32767" attributes="0"/>
+                              <EmptySpace type="separate" max="-2" attributes="0"/>
+                              <Component id="searchTextField" pref="346" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="jScrollPane1" pref="761" max="32767" attributes="0"/>
+                          <Component id="jScrollPane1" pref="744" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="insertSQLButton" min="-2" max="-2" attributes="0"/>
@@ -50,9 +50,9 @@
                       <Component id="sqlLimitButton" min="-2" max="-2" attributes="0"/>
                       <EmptySpace type="separate" max="-2" attributes="0"/>
                       <Component id="inputWarningLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -68,15 +68,17 @@
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="insertSQLButton" min="-2" max="-2" attributes="0"/>
-                  <Component id="jScrollPane1" pref="220" max="32767" attributes="0"/>
-              </Group>
-              <EmptySpace max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="sqlLimitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="sqlLimitTextField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="sqlLimitButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="inputWarningLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="insertSQLButton" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Group type="102" alignment="1" attributes="0">
+                      <Component id="jScrollPane1" pref="220" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="3" attributes="0">
+                          <Component id="sqlLimitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="sqlLimitTextField" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="sqlLimitButton" alignment="3" min="-2" max="-2" attributes="0"/>
+                          <Component id="inputWarningLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                  </Group>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -97,6 +99,11 @@
           <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="SQLHistoryPanel.connectionComboBox.actionCommand" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ASCN_ConnectionCombo" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel2">
       <Properties>
@@ -114,6 +121,11 @@
           <Dimension value="[20, 22]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSN_Match" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="insertSQLButton">
       <Properties>
@@ -189,6 +201,11 @@
           <Dimension value="[18, 22]"/>
         </Property>
       </Properties>
+      <AccessibilityProperties>
+        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/db/sql/execute/ui/Bundle.properties" key="ACSN_Save" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JButton" name="sqlLimitButton">
       <Properties>

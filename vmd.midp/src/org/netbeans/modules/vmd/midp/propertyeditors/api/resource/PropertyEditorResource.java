@@ -251,8 +251,11 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
     
     private void setValue(PropertyValue value) {
         super.setValue(value);
-        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component.get())) {
-            perElement.postSetValue(component.get(), value.getComponent());
+        final DesignComponent component_ = component.get();
+        if (!NULL_VALUE.equals(value) && perElement.isPostSetValueSupported(component_)) {
+            perElement.postSetValue(component_, value.getComponent());
+        } else if (NULL_VALUE.equals(value)) {
+            perElement.nullValueSet(component_);
         }
     }
 
@@ -392,7 +395,11 @@ public class PropertyEditorResource extends PropertyEditorUserCode implements Pr
                         }
                     });
                 }
+                
             }
+            final DesignComponent component_ = component.get();
+            perElement.postSaveValue(component_);
+            
         }
     }
 

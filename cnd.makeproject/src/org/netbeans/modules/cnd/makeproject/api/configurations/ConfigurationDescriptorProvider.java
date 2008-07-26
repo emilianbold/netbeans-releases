@@ -48,7 +48,8 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
+import org.netbeans.modules.cnd.api.compilers.CompilerSet;
+import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
 import org.netbeans.modules.cnd.makeproject.configurations.ConfigurationXMLReader;
 import org.openide.filesystems.FileObject;
@@ -56,6 +57,8 @@ import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 
 public class ConfigurationDescriptorProvider {
+    public static final String USG_PROJECT_CONFIG_CND = "USG_PROJECT_CONFIG_CND"; // NOI18N
+    public static final String USG_PROJECT_OPEN_CND = "USG_PROJECT_OPEN_CND"; // NOI18N
     private FileObject projectDirectory;
     private ConfigurationDescriptor projectDescriptor = null;
     boolean hasTried = false;
@@ -91,12 +94,12 @@ public class ConfigurationDescriptorProvider {
                             try {
                                 projectDescriptor = reader.read(relativeOffset);
                             } catch (java.io.IOException x) {
-                                ;	// most likely open failed
+                                // most likely open failed
                             }
                         }
                         
                         hasTried = true;
-                        recordMetrics("USG_PROJECT_OPEN_CND", projectDescriptor);
+                        recordMetrics(USG_PROJECT_OPEN_CND, projectDescriptor);
                     }
                 }
             }
@@ -122,7 +125,7 @@ public class ConfigurationDescriptorProvider {
             try {
                 projectDescriptor = reader.read(relativeOffset);
             } catch (java.io.IOException x) {
-                ;	// most likely open failed
+                // most likely open failed
             }
         }
     }
@@ -144,38 +147,122 @@ public class ConfigurationDescriptorProvider {
         return (ConfigurationAuxObjectProvider[])auxObjectProviders.toArray(new ConfigurationAuxObjectProvider[auxObjectProviders.size()]);
     }
 
-    static void recordMetrics(String msg, ConfigurationDescriptor descr) {
+    public static void recordMetrics(String msg, ConfigurationDescriptor descr) {
         if (!(descr instanceof MakeConfigurationDescriptor)) {
             return;
         }
         Logger logger = Logger.getLogger("org.netbeans.ui.metrics.cnd"); // NOI18N
         if (logger.isLoggable(Level.INFO)) {
             LogRecord rec = new LogRecord(Level.INFO, msg);
-            StringBuilder projectInfo = new StringBuilder();
-            Configuration[] confs = descr.getConfs().getConfs();
-            projectInfo.append(confs.length).append(" configurations\n"); // NOI18N
-            for (int i = 0; i < confs.length; i++) {
-                projectInfo.append("[");
-                MakeConfiguration makeConfiguration = (MakeConfiguration) confs[i];
-                projectInfo.append("TYPE:").append(makeConfiguration.getConfigurationType().getName());
-                projectInfo.append(", TOOLCHAIN:").append(makeConfiguration.getCompilerSet().getDisplayName(true));
-                projectInfo.append(", LOCALHOST:").append(makeConfiguration.getDevelopmentHost().isLocalhost());
-                Platform platform = Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform());
-                if (platform != null) {
-                    projectInfo.append(", PLATFORM:").append(platform.getName());
+                MakeConfiguration makeConfiguration = (MakeConfiguration) descr.getConfs().getActive();
+                String type;
+                switch (makeConfiguration.getConfigurationType().getValue()) {
+                    case MakeConfiguration.TYPE_MAKEFILE:
+                        type = "MAKEFILE"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_APPLICATION:
+                        type = "APPLICATION"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_DYNAMIC_LIB:
+                        type = "DYNAMIC_LIB"; // NOI18N
+                        break;
+                    case MakeConfiguration.TYPE_STATIC_LIB:
+                        type = "STATIC_LIB"; // NOI18N
+                        break;
+                    default:
+                        type = "UNKNOWN"; // NOI18N
                 }
-//                projectInfo.append(", C:").append(makeConfiguration.getCRequired().getValue());
-//                projectInfo.append(", C++:").append(makeConfiguration.getCppRequired().getValue());
-//                projectInfo.append(", Fortran:").append(makeConfiguration.getFortranRequired().getValue());
-                int size = ((MakeConfigurationDescriptor)descr).getProjectItemsMap().size();
-                projectInfo.append(", FILES:").append(size);
-                size = ((MakeConfigurationDescriptor)descr).getExternalFileItems().size();
-                projectInfo.append(", EXT_FILES:").append(size);
-                projectInfo.append("]\n");
-            }
-            rec.setParameters(new Object[] { projectInfo });
-            rec.setLoggerName(logger.getName());
-            logger.log(rec);
+                CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+                String flavor;
+                String[] families;
+                if (compilerSet != null) {
+                    families = compilerSet.getCompilerFlavor().getToolchainDescriptor().getFamily();
+                    flavor = compilerSet.getCompilerFlavor().toString();
+                } else {
+                    families = new String[0];
+                    flavor = makeConfiguration.getCompilerSet().getFlavor();
+                }
+                String family;
+                if (families.length == 0) {
+                    family = "UKNOWN"; // NOI18N
+                } else {
+                    StringBuilder buffer = new StringBuilder();
+                    for (int i = 0; i < families.length; i++) {
+                        buffer.append(families[i]);
+                        if (i < families.length - 1) {
+                            buffer.append(",");
+                        }
+                    }
+                    family = buffer.toString();
+                }
+                String host;
+                if (makeConfiguration.getDevelopmentHost().isLocalhost()) {
+                    host = "LOCAL"; // NOI18N
+                } else {
+                    host = "REMOTE"; // NOI18N
+                }
+                String platform;
+                if (Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()) != null) {
+                    platform = Platforms.getPlatform(makeConfiguration.getCompilerSet().getPlatform()).getName();
+                } else {
+                    platform = "UNKNOWN_PLATFORM"; // NOI18N
+                }
+                makeConfiguration.reCountLanguages((MakeConfigurationDescriptor) descr);
+                Item[] projectItems = ((MakeConfigurationDescriptor) descr).getProjectItems();
+                int size = 0;
+                int allItems = projectItems.length;
+                boolean cLang = false;
+                boolean ccLang = false;
+                boolean fLang = false;
+                for (Item item : projectItems) {
+                    ItemConfiguration itemConfiguration = item.getItemConfiguration(makeConfiguration);
+                    if (!itemConfiguration.getExcluded().getValue()) {
+                        size++;
+                        switch (itemConfiguration.getTool()) {
+                            case Tool.CCompiler:
+                                cLang = true;
+                                break;
+                            case Tool.CCCompiler:
+                                ccLang = true;
+                                break;
+                            case Tool.FortranCompiler:
+                                fLang = true;
+                                break;
+                        }
+                    }
+                }
+                String ccUsage = ccLang ? "USE_C++" : "NO_C++"; // NOI18N
+                String cUsage = cLang ? "USE_C" : "NO_C"; // NOI18N
+                String fUsage = fLang ? "USE_FORTRAN" : "NO_FORTRAN"; // NOI18N
+                rec.setParameters(new Object[] { type, flavor, family, host, platform, toSizeString(allItems), toSizeString(size), ccUsage, cUsage, fUsage});
+                rec.setLoggerName(logger.getName());
+                logger.log(rec);
         }
+    }
+
+    private static String toSizeString(int size) {
+        String strSize;
+        if (size < 25) {
+            strSize = "0"; // NOI18N
+        } else if (size < 100) {
+            strSize = "1"; // NOI18N
+        } else if (size < 500) {
+            strSize = "5"; // NOI18N
+        } else if (size < 1000) {
+            strSize = "10"; // NOI18N
+        } else if (size < 2000) {
+            strSize = "20"; // NOI18N
+        } else if (size < 5000) {
+            strSize = "50"; // NOI18N
+        } else if (size < 10000) {
+            strSize = "100"; // NOI18N
+        } else if (size < 20000) {
+            strSize = "200"; // NOI18N
+        } else if (size < 50000) {
+            strSize = "500"; // NOI18N
+        } else {
+            strSize = "999"; // NOI18N
+        }
+        return strSize;
     }
 }

@@ -84,7 +84,7 @@ public class OracleCatalog extends JDBCCatalog {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
                     // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
                     // in DatabaseMetaData.getSchemas().
-                    LOGGER.log(Level.FINE, "Read schema {0}", schemaName);
+                    LOGGER.log(Level.FINE, "Read schema ''{0}''", schemaName);
                     if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                         defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
                         newSchemas.put(defaultSchema.getName(), defaultSchema);

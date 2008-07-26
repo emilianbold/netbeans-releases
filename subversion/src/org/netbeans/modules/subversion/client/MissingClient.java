@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.subversion.client;
 
+import org.netbeans.api.autoupdate.OperationSupport.Restarter;
 import org.netbeans.modules.subversion.client.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -93,6 +94,7 @@ public class MissingClient implements ActionListener, HyperlinkListener {
         } else {
             panel.cliRadioButton.setSelected(true);
             panel.downloadRadioButton.setEnabled(false);
+            panel.forceGlobalCheckBox.setEnabled(false);
         }
         radioSwitch();
     }
@@ -176,15 +178,31 @@ public class MissingClient implements ActionListener, HyperlinkListener {
                     InstallCancellable ic = new InstallCancellable();
                     OperationContainer<InstallSupport> oc = OperationContainer.createForInstall();
                     oc.add(updateElement);
-                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), true);
+                    Validator v = oc.getSupport().doDownload(ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Downloading") + updateElement.getDisplayName(), ic), panel.forceGlobalCheckBox.isSelected());
                     if(ic.cancelled) return;
                     Installer i = oc.getSupport().doValidate(v, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Validating") + updateElement.getDisplayName(), ic));
                     if(ic.cancelled) return;
-                    oc.getSupport().doInstall(i, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Installing") + updateElement.getDisplayName(), ic));
+                    Restarter rest = oc.getSupport().doInstall(i, ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Installing") + updateElement.getDisplayName(), ic));
+                    if(rest != null) {
+                        JButton restart = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Restart"));
+                        JButton cancel = new JButton(NbBundle.getMessage(SvnClientExceptionHandler.class, "CTL_Action_Cancel"));
+                        NotifyDescriptor descriptor = new NotifyDescriptor(
+                                NbBundle.getMessage(MissingClient.class, "MSG_NeedsRestart"),
+                                NbBundle.getMessage(MissingClient.class, "LBL_DownloadJavahl"),
+                                    NotifyDescriptor.OK_CANCEL_OPTION,
+                                    NotifyDescriptor.QUESTION_MESSAGE,
+                                    new Object [] { restart, cancel },
+                                    restart);
+                        if(DialogDisplayer.getDefault().notify(descriptor) == restart) {
+                            oc.getSupport().doRestart(
+                                rest,
+                                ProgressHandleFactory.createHandle(NbBundle.getMessage(MissingClient.class, "LBL_Restarting")));
+                        }
+                    }
                 } catch (OperationException e) {
                     Subversion.LOG.log(Level.SEVERE, null, e);
                     SvnClientExceptionHandler.notifyException(new SVNClientException(e), true, true);
-                } 
+                }
             }
         });
     }

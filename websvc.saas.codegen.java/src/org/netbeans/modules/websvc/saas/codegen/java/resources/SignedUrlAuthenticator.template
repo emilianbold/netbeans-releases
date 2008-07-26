@@ -1,14 +1,13 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
@@ -21,24 +20,24 @@ import javax.crypto.spec.SecretKeySpec;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ {
+public class ${name} {
     
     private static String accessKey;
     
     private static String secret;
 
-    private static final String PROP_FILE = __NAME__.class.getSimpleName().toLowerCase() + ".properties";
+    private static final String PROP_FILE = ${name}.class.getSimpleName().toLowerCase() + ".properties";
 
     static {
         try {
             Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+            props.load(${name}.class.getResourceAsStream(PROP_FILE));
             accessKey = props.getProperty("access_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -130,7 +129,7 @@ public class __NAME__ {
             //printBytes(data.getBytes("UTF-8"));
             return data.getBytes("UTF-8");
         } catch (UnsupportedEncodingException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

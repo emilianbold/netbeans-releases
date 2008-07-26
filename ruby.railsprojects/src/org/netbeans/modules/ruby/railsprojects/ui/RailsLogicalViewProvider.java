@@ -474,12 +474,11 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
         
         // Private methods -------------------------------------------------------------
         
-        @SuppressWarnings("unchecked")
         private Action[] getAdditionalActions() {
             
             ResourceBundle bundle = NbBundle.getBundle(RailsLogicalViewProvider.class);
             
-            List actions = new ArrayList();
+            List<Action> actions = new ArrayList<Action>();
             
             actions.add(SystemAction.get(GenerateAction.class));
             actions.add(null);
@@ -526,7 +525,7 @@ public class RailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(CommonProjectActions.customizeProjectAction());
             
-            return (Action[]) actions.toArray(new Action[actions.size()]);
+            return actions.toArray(new Action[actions.size()]);
         }
 
         public @Override String toString() {

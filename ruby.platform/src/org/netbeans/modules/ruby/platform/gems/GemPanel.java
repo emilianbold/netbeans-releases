@@ -52,8 +52,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
@@ -82,6 +80,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * @todo Use a table instead of a list for the gem lists, use checkboxes to choose
@@ -95,10 +94,10 @@ public final class GemPanel extends JPanel {
     private static final String LAST_GEM_DIRECTORY = "lastLocalGemDirectory"; // NOI18N
 
     private static final String LAST_PLATFORM_ID = "gemPanelLastPlatformID"; // NOI18N
-
     static enum TabIndex { UPDATED, INSTALLED, NEW; }
     
-    private ExecutorService updateTasksQueue;
+    private RequestProcessor updateTasksQueue;
+    
     private boolean closed;
     
     private boolean gemsModified;
@@ -116,7 +115,7 @@ public final class GemPanel extends JPanel {
      * may be <code>null</code> in which case the last selected platform is preselected.
      */
     public GemPanel(String availableFilter, RubyPlatform preselected) {
-        updateTasksQueue = Executors.newSingleThreadExecutor();
+        updateTasksQueue = new RequestProcessor("Gem Updater", 5);
         initComponents();
         if (preselected == null) {
             Util.preselectPlatform(platforms, LAST_PLATFORM_ID);
@@ -189,8 +188,7 @@ public final class GemPanel extends JPanel {
     
     private void cancelRunningTasks() {
         LOGGER.finest("Cancelling all running GemPanel tasks");
-        updateTasksQueue.shutdown();
-        updateTasksQueue = Executors.newSingleThreadExecutor();
+        // TODO: implement
     }
     
     public void run() {
@@ -1139,6 +1137,7 @@ public final class GemPanel extends JPanel {
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {
             public void run() {
+                LOGGER.finest("Update of " + gemManager + " scheduled");
                 assert !EventQueue.isDispatchThread();
 
                 final List<String> errors = new ArrayList<String>();
@@ -1147,23 +1146,27 @@ public final class GemPanel extends JPanel {
                 // Update UI
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
+                        LOGGER.finest("Update of " + gemManager + " finished");
                         if (closed) {
                             return;
                         }
+                        boolean platformHasChanged = !gemManager.equals(getGemManager());
                         if (!errors.isEmpty()) {
-                            hideProgressBars();
                             showGemErrors(errors);
+                            if (!platformHasChanged) {
+                                hideProgressBars();
+                            }
                             return;
                         }
-                        if (gemManager.equals(getGemManager())) {
+                        if (!platformHasChanged) {
                             notifyGemsUpdated();
                         } // else platform has changed, ignore UI update
                     }
                 });
             }
         };
-        LOGGER.finest("Submitting refreshing of gems");
-        updateTasksQueue.submit(updateTask);
+        LOGGER.finest("Submitting refreshing of gems for: " + gemManager);
+        updateTasksQueue.post(updateTask);
     }
 
     private String getGemFilter(TabIndex tab) {
