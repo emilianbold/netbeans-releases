@@ -59,7 +59,6 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogProvider;
 import org.netbeans.modules.autoupdate.updateprovider.AutoupdateCatalogFactory;
 import org.netbeans.modules.autoupdate.updateprovider.LocalNBMsProvider;
@@ -69,7 +68,6 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
-import org.openide.util.Cancellable;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.netbeans.api.autoupdate.UpdateUnitProvider.CATEGORY;
@@ -148,31 +146,15 @@ public final class UpdateUnitProviderImpl {
      */
     public boolean refresh (ProgressHandle handle, boolean force) throws IOException {
         boolean res = false;
-        ProgressHandle ownHandle = null;
-        if (handle == null) {
-            CancellableProgress cancelProgress = new CancellableProgress();
-            ownHandle = ProgressHandleFactory.createHandle (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_CheckingForUpdates"), cancelProgress);
-            cancelProgress.setHandle(ownHandle);
-            ownHandle.setInitialDelay (0);
-            ownHandle.start ();
+        if (handle != null) {
+            handle.progress (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_FormatCheckingForUpdates", getDisplayName ()));
         }
-        try {
-            if (handle != null) {
-                handle.progress (NbBundle.getMessage (UpdateUnitProviderImpl.class, "UpdateUnitProviderImpl_FormatCheckingForUpdates", getDisplayName ()));
-            } else if (ownHandle != null) {
-                ownHandle.progress (getDisplayName ());
-            }
-            final UpdateProvider updateProvider = getUpdateProvider();
-            updateProvider.refresh (force);
-            if (force) {
-                // store time of the last check
-                AutoupdateSettings.setLastCheck (new Date ());
-                AutoupdateSettings.setLastCheck (updateProvider.getName(),new Date ());
-            }
-        } finally {
-            if (ownHandle != null) {
-                ownHandle.finish ();
-            }
+        final UpdateProvider updateProvider = getUpdateProvider();
+        updateProvider.refresh (force);
+        if (force) {
+            // store time of the last check
+            AutoupdateSettings.setLastCheck (new Date ());
+            AutoupdateSettings.setLastCheck (updateProvider.getName(),new Date ());
         }
         // don't remember update units while refreshing the content
         UpdateManagerImpl.getInstance().clearCache ();
@@ -447,19 +429,6 @@ public final class UpdateUnitProviderImpl {
                 }
             }
         }
-    }
-    
-    private static class CancellableProgress implements Cancellable {
-        private ProgressHandle handle;        
-        public boolean cancel() {
-            assert handle != null;
-            handle.finish();
-            return true;
-        }
-        
-        private void setHandle(ProgressHandle handle) {
-            this.handle = handle;
-        }        
     }
     
     private static class LookupListenerImpl implements LookupListener {

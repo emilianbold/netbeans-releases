@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
  *
  * @author treyspiva
  */
-public class UMLNameWidget extends Widget implements PropertyChangeListener,org.netbeans.modules.uml.drawingarea.widgets.UMLNameWidget
+public class UMLNameWidget extends Widget implements PropertyChangeListener,org.netbeans.modules.uml.drawingarea.widgets.NameFontHandler
 {
 
     public static final int BORDER_SIZE = 4;

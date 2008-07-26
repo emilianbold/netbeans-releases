@@ -76,6 +76,7 @@ import org.netbeans.modules.vmd.midpnb.components.SVGImageAcceptTrensferableKind
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormFileChangePresneter;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
@@ -186,9 +187,11 @@ public class SVGFormCD extends ComponentDescriptor {
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
-                new SVGPlayerDisplayPresenter (),
+                new SVGPlayerDisplayPresenter (false),
                 //actions
-                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class))
+                ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
+                //other
+                new SVGFormFileChangePresneter()
                 );
     }
     

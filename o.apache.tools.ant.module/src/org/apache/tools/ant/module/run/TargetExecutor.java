@@ -200,7 +200,7 @@ public final class TargetExecutor implements Runnable {
 
         private AntProjectCookie pcookie;
         private List<String> targetNames;
-        private int verbosity;
+        //private int verbosity;
         private Map<String,String> properties;
 
         public RerunAction(TargetExecutor prototype) {
@@ -215,7 +215,7 @@ public final class TargetExecutor implements Runnable {
         private void reinit(TargetExecutor prototype) {
             pcookie = prototype.pcookie;
             targetNames = prototype.targetNames;
-            verbosity = prototype.verbosity;
+            //verbosity = prototype.verbosity;
             properties = prototype.properties;
         }
 
@@ -235,7 +235,7 @@ public final class TargetExecutor implements Runnable {
             try {
                 TargetExecutor exec = new TargetExecutor(pcookie,
                         targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null);
-                exec.setVerbosity(verbosity);
+                //exec.setVerbosity(verbosity);
                 exec.setProperties(properties);
                 exec.execute();
             } catch (IOException x) {
@@ -417,8 +417,9 @@ public final class TargetExecutor implements Runnable {
             err.println(NbBundle.getMessage(TargetExecutor.class, "EXC_non_local_proj_file"));
             return;
         }
-        
-        LastTargetExecuted.record(buildFile, verbosity, targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null, properties);
+
+        // #139185: do not record verbosity level; always pick it up from Ant Settings.
+        LastTargetExecuted.record(buildFile, /*verbosity,*/ targetNames != null ? targetNames.toArray(new String[targetNames.size()]) : null, properties);
         
         // Don't hog the CPU, the build might take a while:
         Thread.currentThread().setPriority((Thread.MIN_PRIORITY + Thread.NORM_PRIORITY) / 2);

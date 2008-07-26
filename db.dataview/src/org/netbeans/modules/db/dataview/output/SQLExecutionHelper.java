@@ -51,7 +51,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.table.TableModel;
@@ -530,7 +529,7 @@ class SQLExecutionHelper {
     }
 
     private void executeSQLStatement(Statement stmt, String sql) throws SQLException {
-        sql = sql.replaceAll("\\n", "").replaceAll("\\t", ""); // NOI18N
+        sql = sql.replaceAll("\\n", " ").replaceAll("\\t", " "); // NOI18N
         if (dataView.isLimitSupported() && isSelectStatement(sql)) {
             if (sql.toUpperCase().indexOf("LIMIT") == -1) {
                 sql += " LIMIT " + dataView.getDataViewPageContext().getPageSize(); // NOI18N

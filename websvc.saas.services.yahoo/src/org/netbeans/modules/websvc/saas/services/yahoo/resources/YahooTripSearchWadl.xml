@@ -42,20 +42,20 @@
                         the keywords in the trip plans' title, description, or tags.
                         </doc>
                     </param>
-                    <param name="results" type="xsd:integer" style="query" required="false">
+                    <param name="results" type="xsd:integer" style="query"  default="10" required="false">
                         <doc xml:lang="en">
                         The number of trip plans to return. 
                         The default value is 10, and the maximum allowed
                         number is 50.
                         </doc>
                     </param>
-                    <param name="start" type="xsd:integer" style="query" required="false">
+                    <param name="start" type="xsd:integer" style="query" default="1" required="false">
                         <doc xml:lang="en">
                         The result from which to start the block of trip plan results. 
                         By default the results start from 1.
                         </doc>
                     </param>
-                    <param name="output" type="xsd:string" style="query" required="false">
+                    <param name="output" type="xsd:string" style="query" default="xml" required="false">
                         <doc xml:lang="en">
                         The output format. The default is xml. You can also specify json or php.
                         XML format is described at http://developer.yahoo.com/travel/tripservice/V1/tripSearch.html .

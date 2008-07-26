@@ -45,9 +45,9 @@ import java.io.File;
 import java.util.List;
 import java.util.Vector;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.CompilerDescriptor;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 import org.openide.filesystems.FileUtil;
 
 public abstract class BasicCompiler extends Tool {
@@ -55,9 +55,16 @@ public abstract class BasicCompiler extends Tool {
     /** Creates a new instance of GenericCompiler */
     public BasicCompiler(String hkey, CompilerFlavor flavor, int kind, String name, String displayName, String path) {
         super(hkey, flavor, kind, name, displayName, path);
+        storagePrefix += RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
     }
 
-    protected abstract CompilerDescriptor getCompilerDescription();
+   private String storagePrefix = System.getProperty("user.home") + "/.netbeans/6.5/cnd2/includes-cache/"; //NOI18N
+
+   public String getStoragePrefix() {
+       return storagePrefix;
+   }
+
+   protected abstract CompilerDescriptor getCompilerDescription();
     
     public String getDevelopmentModeOptions(int value) {
         CompilerDescriptor compiler = getCompilerDescription();
@@ -114,20 +121,18 @@ public abstract class BasicCompiler extends Tool {
     }
 
     protected void normalizePaths(List<String> paths) {
-        //TODO: remote?
-        if (CompilerSetManager.LOCALHOST.equals(getHostKey())) {
-            for (int i = 0; i < paths.size(); i++) {
-                paths.set(i, FileUtil.normalizeFile(new File(paths.get(i))).getAbsolutePath());
-            }
+        for (int i = 0; i < paths.size(); i++) {
+            paths.set(i, normalizePath(paths.get(i)));
         }
     }
 
+ 
     protected String normalizePath(String path) {
-        //TODO: remote?
-        if (CompilerSetManager.LOCALHOST.equals(getHostKey())) {
+        if (RemoteUtils.isLocalhost(getHostKey())) {
             return FileUtil.normalizeFile(new File(path)).getAbsolutePath();
         } else {
-            return path;
+            //TODO: this hardly can be called normalization but this place is too handy for such kind of conversion
+            return storagePrefix + path;
         }
     }
 }

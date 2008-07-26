@@ -1,17 +1,21 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.Beans;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.beans.*;
 import java.io.Serializable;
 
 /**
- * @author __USER__
+ *
+ * @author ${user}
  */
-public class Bean extends Object implements Serializable {
+public class ${name} implements Serializable {
 
     public static final String PROP_SAMPLE_PROPERTY = "sampleProperty";
 
@@ -19,7 +23,7 @@ public class Bean extends Object implements Serializable {
 
     private PropertyChangeSupport propertySupport;
 
-    public Bean() {
+    public ${name}() {
         propertySupport = new PropertyChangeSupport(this);
     }
 

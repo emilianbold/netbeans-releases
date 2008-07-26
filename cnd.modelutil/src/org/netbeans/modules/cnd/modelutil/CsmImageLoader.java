@@ -42,6 +42,7 @@
 package org.netbeans.modules.cnd.modelutil;
 
 import java.awt.Image;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import javax.swing.ImageIcon;
@@ -62,7 +63,18 @@ public class CsmImageLoader implements CsmImageName {
     }
     
     public static Image getImage(CsmObject o) {
-        String iconPath = getImagePath(o);
+        return getImage(o, Collections.<CsmDeclaration.Kind, CsmDeclaration.Kind>emptyMap());
+    }
+
+    /**
+     * allow translation of kinds when interested in another icon for object, i.e.
+     * can set translation from FUNCTION icon to FUNCTION_DEFINITION icon
+     * @param o
+     * @param translateKinds
+     * @return
+     */
+    public static Image getImage(CsmObject o, Map<CsmDeclaration.Kind, CsmDeclaration.Kind> translateIcons) {
+        String iconPath = getImagePath(o, translateIcons);
         return Utilities.loadImage(iconPath);
     }
 
@@ -124,8 +136,12 @@ public class CsmImageLoader implements CsmImageName {
         }
         return getCachedImageIcon(iconPath);        
     }
-    
+
     public static String getImagePath(CsmObject o) {
+        return getImagePath(o, Collections.<CsmDeclaration.Kind, CsmDeclaration.Kind>emptyMap());
+    }
+    
+    private static String getImagePath(CsmObject o, Map<CsmDeclaration.Kind, CsmDeclaration.Kind> translateIcons) {
         CsmDeclaration.Kind kind = CsmDeclaration.Kind.BUILT_IN;
         int modifiers = CsmUtilities.getModifiers(o);
         if (CsmKindUtilities.isEnumerator(o)) {
@@ -159,6 +175,9 @@ public class CsmImageLoader implements CsmImageName {
             }
         } else if (CsmKindUtilities.isProject(o)) {
             return getProjectPath(((CsmProject)o).isArtificial(), false);
+        }
+        if (translateIcons.get(kind) != null) {
+            kind = translateIcons.get(kind);
         }
         return getImagePath(kind, modifiers);
     }

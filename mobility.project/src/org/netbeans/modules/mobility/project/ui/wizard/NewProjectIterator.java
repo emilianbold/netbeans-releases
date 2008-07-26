@@ -118,13 +118,18 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     }
     
     public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
-        Object create = Templates.getTemplate(templateWizard).getAttribute("application"); // NOI18N
-        if (!(create instanceof Boolean))
-            create = Boolean.FALSE;
+        boolean create = true;
+        if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) // NOI18N
+            create = false;
+        
         platformInstall =  PlatformInstallPanel.isPlatformInstalled(J2MEPlatform.SPECIFICATION_NAME) ^ true;
-        if (platformInstall)
+        if (platformInstall){
             platformPanel = new PlatformInstallPanel.WizardPanel(J2MEPlatform.SPECIFICATION_NAME);
-        projectPanel = new ProjectPanel.WizardPanel(((Boolean) create).booleanValue(), ((Boolean) create).booleanValue());
+            ((JComponent)platformPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"));
+        }
+        projectPanel = new ProjectPanel.WizardPanel(create, create);
+        ((JComponent)projectPanel.getComponent()).putClientProperty("NewProjectWizard_Title", create ? NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileApplication") : NbBundle.getMessage(NewProjectIterator.class, "TXT_MobileLibrary"));
+        
         psPanel = new PlatformSelectionPanel();
         csPanel = new ConfigurationsSelectionPanel();
         templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, null);

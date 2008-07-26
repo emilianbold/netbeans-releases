@@ -245,7 +245,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         String compilerSetName = panel.getCompilerSetName().trim();
         
         CompilerSet cs = CompilerSet.getCustomCompilerSet(new File(baseDirectory).getAbsolutePath(), flavor, compilerSetName);
-        CompilerSetManager.getDefault().initCompilerSet(cs);
+        CompilerSetManager.getDefault(hkey).initCompilerSet(cs);
         csm.add(cs);
         changed = true;
         update(false, cs);
@@ -851,9 +851,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
                 log.fine("TP.itemStateChanged: About to update");
                 changed = true;
-                if (serverUpdateCache != null) {
-                    serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
+                if (serverUpdateCache == null) {
+                    serverUpdateCache = new ServerUpdateCache();
+                    String[] nulist = new String[cbDevHost.getItemCount()];
+                    for (int i = 0; i < nulist.length; i++) {
+                        nulist[i] = (String) cbDevHost.getItemAt(i);
+                    }
+                    serverUpdateCache.setHostKeyList(nulist);
                 }
+                serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
                 hkey = (String) cbDevHost.getSelectedItem();
                 update(true);
             } else if (o instanceof JCheckBox && !changingCompilerSet) {

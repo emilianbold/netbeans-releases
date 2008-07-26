@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="Quick Debug" default="execute" basedir=".">
+<project name="{0} (debug-test)" default="debug-test" basedir=".">
     <target name="-init-debug-args">
         <property name="version-output" value="java version &quot;${ant.java.version}"/>
         <condition property="have-jdk-older-than-1.4">
@@ -61,13 +61,14 @@ made subject to such option by the copyright holder.
             <isset property="debug.transport"/>
         </condition>
     </target>
-    <target name="execute" depends="-init-debug-args">
+    <target name="debug-test" depends="-init-debug-args">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
             <classpath>
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
+        <property name="run.jvmargs" value="" />
         <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true">
             <classpath>
                 <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
@@ -76,6 +77,7 @@ made subject to such option by the copyright holder.
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg value="-ea"/>
+            <jvmarg line="${run.jvmargs}"/>
             <arg value="${classname}"/>
             <arg value="showoutput=true"/>
             <arg value="formatter=org.apache.tools.ant.taskdefs.optional.junit.BriefJUnitResultFormatter"/>

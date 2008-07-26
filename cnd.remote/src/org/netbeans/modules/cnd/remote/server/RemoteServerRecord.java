@@ -40,7 +40,10 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.openide.util.NbBundle;
@@ -65,6 +68,9 @@ public class RemoteServerRecord implements ServerRecord {
     private String name;
     private boolean editable;
     private Object state;
+    private String reason;
+    
+    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
@@ -75,6 +81,7 @@ public class RemoteServerRecord implements ServerRecord {
      */
     protected RemoteServerRecord(final String name) {
         this.name = name;
+        reason = null;
         
         if (name.equals(CompilerSetManager.LOCALHOST)) {
             editable = false;
@@ -82,10 +89,18 @@ public class RemoteServerRecord implements ServerRecord {
         } else {
             editable = true;
             state = STATE_UNINITIALIZED;
-            
-            if (!SwingUtilities.isEventDispatchThread()) {
-                init();
-            }
+        }
+    }
+    
+    public void validate() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            log.fine("RSR.validate: Validating " + name);
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+            ph.start();
+            init();
+            ph.finish();
+        } else {
+            log.fine("RSR.validate: Skipping validate of " + name + " because we're on the AWT-Event thread");
         }
     }
     
@@ -107,15 +122,16 @@ public class RemoteServerRecord implements ServerRecord {
                 state = STATE_CANCELLED;
             } else if (rss.isFailed()) {
                 state = STATE_OFFLINE;
+                reason = rss.getReason();
             } else {
                 state = STATE_ONLINE;
             }
         }
-        if (state == STATE_ONLINE) {
-            // Trigger creation of the CSM if it doesn't already exist...
-            CompilerSetManager.getDefault(name);
-        }
         if (pcs != null) {
+            if (state == STATE_ONLINE) {
+                // Trigger creation of the CSM if it doesn't already exist...
+                CompilerSetManager.getDefault(name);
+            }
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
     }
@@ -163,5 +179,9 @@ public class RemoteServerRecord implements ServerRecord {
 
     public String getUserName() {
         return user;
+    }
+    
+    public String getReason() {
+        return reason;
     }
 }

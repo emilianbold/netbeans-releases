@@ -108,7 +108,6 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -126,6 +125,7 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
 * Representation of a debugging session.
@@ -687,7 +687,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
             throw new InvalidExpressionException
-                    ("No current context (stack frame)");
+                (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContextStackFrame"));
             
         }
     }
@@ -701,7 +701,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     throws InvalidExpressionException {
         synchronized (LOCK) {
             if (frame == null)
-                throw new InvalidExpressionException ("No current context");
+                throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
 
             // TODO: get imports from the source file
             List<String> imports = new ArrayList<String>();
@@ -833,9 +834,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
         Method method,
         Value[] arguments
     ) throws InvalidExpressionException {
+        return invokeMethod(null, reference, method, arguments);
+    }
+
+    /**
+     * Used by AbstractVariable.
+     */
+    public Value invokeMethod (
+        JPDAThreadImpl thread,
+        ObjectReference reference,
+        Method method,
+        Value[] arguments
+    ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
             if (currentThread == null)
-                throw new InvalidExpressionException ("No current context");
+                throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
         }
         synchronized (LOCK) {
             if (methodCallsUnsupportedExc != null) {
@@ -844,7 +858,6 @@ public class JPDADebuggerImpl extends JPDADebugger {
             boolean threadSuspended = false;
             JPDAThread frameThread = null;
             CallStackFrameImpl csf = null;
-            JPDAThreadImpl thread = null;
             List<EventRequest> l = null;
             try {
                 // Remember the current stack frame, it might be necessary to re-set.
@@ -854,8 +867,13 @@ public class JPDADebuggerImpl extends JPDADebugger {
                         frameThread = csf.getThread();
                     } catch (InvalidStackFrameException isfex) {}
                 }
-                ThreadReference tr = getEvaluationThread();
-                thread = (JPDAThreadImpl) getThread(tr);
+                ThreadReference tr;
+                if (thread == null) {
+                    tr = getEvaluationThread();
+                    thread = (JPDAThreadImpl) getThread(tr);
+                } else {
+                    tr = thread.getThreadReference();
+                }
                 try {
                     thread.notifyMethodInvoking();
                     threadSuspended = true;
