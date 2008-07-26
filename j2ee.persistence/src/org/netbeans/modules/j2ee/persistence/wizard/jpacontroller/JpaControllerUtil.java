@@ -477,6 +477,56 @@ public class JpaControllerUtil {
         return false;
     }
     
+    public static boolean exceptionsThrownIncludes(WorkingCopy workingCopy, String fqClass, String methodName, List<String> formalParamFqTypes, String exceptionFqClassMaybeIncluded) {
+        List<String> exceptionsThrown = getExceptionsThrown(workingCopy, fqClass, methodName, formalParamFqTypes);
+        for (String exception : exceptionsThrown) {
+            if (exceptionFqClassMaybeIncluded.equals(exception)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public static List<String> getExceptionsThrown(WorkingCopy workingCopy, String fqClass, String methodName, List<String> formalParamFqTypes) {
+        if (formalParamFqTypes == null) {
+            formalParamFqTypes = Collections.<String>emptyList();
+        }
+        ExecutableElement desiredMethodElement = null;
+        TypeElement suppliedTypeElement = workingCopy.getElements().getTypeElement(fqClass);
+        TypeElement typeElement = suppliedTypeElement;
+        whileloop:
+        while (typeElement != null) {
+            for (ExecutableElement methodElement : ElementFilter.methodsIn(typeElement.getEnclosedElements())) {
+                if (methodElement.getSimpleName().contentEquals(methodName)) {
+                    List<? extends VariableElement> formalParamElements = methodElement.getParameters();
+                    //for now, just check sizes
+                    if (formalParamElements.size() == formalParamFqTypes.size()) {
+                        desiredMethodElement = methodElement;
+                        break whileloop;
+                    }
+                }
+            }
+            typeElement = getSuperclassTypeElement(typeElement);
+        }
+        if (desiredMethodElement == null) {
+            throw new IllegalArgumentException("Could not find " + methodName + " in " + fqClass);
+        }
+        List<String> result = new ArrayList<String>();
+        List<? extends TypeMirror> thrownTypes = desiredMethodElement.getThrownTypes();
+        for (TypeMirror thrownType : thrownTypes) {
+            if (thrownType.getKind() == TypeKind.DECLARED) {
+                DeclaredType thrownDeclaredType = (DeclaredType)thrownType;
+                TypeElement thrownElement = (TypeElement)thrownDeclaredType.asElement();
+                String thrownFqClass = thrownElement.getQualifiedName().toString();
+                result.add(thrownFqClass);
+            }
+            else {
+                result.add(null);
+            }
+        }
+        return result;
+    }    
+    
     /** Returns all methods in class and its super classes which are entity
      * classes or mapped superclasses.
      */

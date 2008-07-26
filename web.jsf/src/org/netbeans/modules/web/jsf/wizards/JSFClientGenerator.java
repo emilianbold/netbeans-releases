@@ -82,7 +82,6 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -1230,16 +1229,19 @@ public class JSFClientGenerator {
                     
                     String jpaExceptionsPackage = jpaControllerPackage == null || jpaControllerPackage.length() == 0 ? JpaControllerIterator.EXCEPTION_FOLDER_NAME : jpaControllerPackage + "." + JpaControllerIterator.EXCEPTION_FOLDER_NAME;
                     
-                    //fixme(mbohm): examine jpa controller create method to determine if it throws IllegalOrphanException
-                    boolean methodThrowsIllegalOrphanException = true;
+                    String illegalOrphanExceptionClass = jpaExceptionsPackage + ".IllegalOrphanException";
                     
-                    String[] importFqs = methodThrowsIllegalOrphanException ? new String[]{
+                    boolean methodThrowsIllegalOrphanExceptionInCreate = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "create", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                    boolean methodThrowsIllegalOrphanExceptionInEdit = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "edit", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                    boolean methodThrowsIllegalOrphanExceptionInDestroy = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "destroy", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                    
+                    String[] importFqs = (methodThrowsIllegalOrphanExceptionInCreate || methodThrowsIllegalOrphanExceptionInEdit || methodThrowsIllegalOrphanExceptionInDestroy) ? new String[]{
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
                                 "javax.faces.FacesException",
                                 utilPackage + ".JsfUtil",
                                 jpaExceptionsPackage + ".NonexistentEntityException",
-                                jpaExceptionsPackage + ".IllegalOrphanException"
+                                illegalOrphanExceptionClass
                     } : new String[]{
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
@@ -1582,7 +1584,7 @@ public class JSFClientGenerator {
                     bodyText = "try {\n" +
                             "jpaController.create(" + fieldName + ");\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            (methodThrowsIllegalOrphanException ? "} catch (IllegalOrphanException oe) {\n" + 
+                            (methodThrowsIllegalOrphanExceptionInCreate ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (Exception e) {\n" +
@@ -1660,7 +1662,7 @@ public class JSFClientGenerator {
                     bodyText += "try {\n" +
                             "jpaController.edit(" + fieldName + ");\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
-                            (methodThrowsIllegalOrphanException ? "} catch (IllegalOrphanException oe) {\n" + 
+                            (methodThrowsIllegalOrphanExceptionInEdit ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (NonexistentEntityException ne) {\n" +
@@ -1724,7 +1726,7 @@ public class JSFClientGenerator {
                     bodyText += "try {\n" +
                             "jpaController.destroy(id);\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
-                            (methodThrowsIllegalOrphanException ? "} catch (IllegalOrphanException oe) {\n" + 
+                            (methodThrowsIllegalOrphanExceptionInDestroy ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (NonexistentEntityException ne) {\n" +
@@ -1757,13 +1759,13 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     bodyText = "reset(false);\n" +
-                            "pagingInfo.nextPage();\n "+
+                            "getPagingInfo().nextPage();\n "+
                             "return \"" + fieldName + "_list\"";
                     methodInfo = new MethodInfo("next", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
 
                     bodyText = "reset(false);\n" +
-                        "pagingInfo.previousPage();\n" +
+                        "getPagingInfo().previousPage();\n" +
                         "return \"" + fieldName + "_list\";\n";
                     methodInfo = new MethodInfo("prev", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
