@@ -145,7 +145,7 @@ public class ToolTipAnnotation extends Annotation
             return null;
         }
         if ( result != null ){
-            return result;
+            return (result.trim().length()==0) ? null : result;
         }
         boolean notFirst = false;
         StringBuilder builder = new StringBuilder(LEFT_BRACKET);

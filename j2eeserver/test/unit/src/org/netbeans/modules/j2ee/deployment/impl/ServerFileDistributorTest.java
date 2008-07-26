@@ -97,6 +97,18 @@ public class ServerFileDistributorTest extends ServerRegistryTestBase {
                 false, true, false, false, false);
     }
 
+    public void testDistributeOnSaveEjb() throws IOException, ServerException {
+        // class
+        // TODO ejbs changed not working :((
+        singleFileTest("deploytest2", "build/jar/test/TestSessionBeanBean.class",
+                "testplugin/applications/jar/test/TestSessionBeanBean.class",
+                true, false, false, false, false);
+
+        // MANIFEST.MF
+        singleFileTest("deploytest2", "build/jar/META-INF/MANIFEST.MF", "testplugin/applications/jar/META-INF/MANIFEST.MF",
+                false, false, false, true, false);
+    }
+
     private void singleFileTest(String projectName, String testFilePath, String createdFilePath,
             boolean classesChanged, boolean descriptorChanged, boolean ejbChanged, boolean manifestChanged,
             boolean serverDescriptorChanged) throws IOException, ServerException {

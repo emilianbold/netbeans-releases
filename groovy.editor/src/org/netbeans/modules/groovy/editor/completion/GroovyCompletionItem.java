@@ -73,7 +73,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
         protected int anchorOffset;
         protected boolean symbol;
         protected boolean smart;
-        private final Logger LOG = Logger.getLogger(GroovyCompletionItem.class.getName());
+        final Logger LOG = Logger.getLogger(GroovyCompletionItem.class.getName());
         
         static ImageIcon groovyIcon;
         static ImageIcon javaIcon;
@@ -83,6 +83,8 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             this.element = element;
             this.anchorOffset = anchorOffset;
             this.request = request;
+            
+            LOG.setLevel(Level.OFF);
         }
 
         public int getAnchorOffset() {
@@ -517,13 +519,13 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
         private final String name;
         private static final String NEW_CSTR   = "org/netbeans/modules/groovy/editor/resources/new_constructor_16.png"; //NOI18N
         private boolean expand; // should this item expand to a constructor body?
-        private final String paramString;
+        private final ExecutableElement exe;
 
-        ConstructorItem(String name, String paramString, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
+        ConstructorItem(String name, ExecutableElement exe, int anchorOffset, CodeCompleter.CompletionRequest request, boolean expand) {
             super(null, anchorOffset, request);
             this.name = name;
             this.expand = expand;
-            this.paramString = paramString;
+            this.exe = exe;
         }
 
         @Override
@@ -531,7 +533,7 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             if(expand){
                 return name + " - generate"; // NOI18N
             } else {
-                return name + "(" + paramString +  ")";
+                return name + "(" + CodeCompleter.getParameterListForMethod(exe) +  ")";
             }            
         }
 
@@ -573,6 +575,57 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             // For completion documentation
             // return ElementHandleSupport.createHandle(request.info, new ClassElement(name));
             return null;
+        }
+        
+        // Constructors are smart by definition (have to be place above others)
+        @Override
+        public boolean isSmart() {
+            return true;
+        }
+
+
+        // See IDE help-topic: "Creating and Customizing Ruby Code Templates" or
+        // RubyCodeCompleter.MethodItem.getCustomInsertTemplate() for syntax.
+        @Override
+        public String getCustomInsertTemplate() {
+
+            StringBuilder sb = new StringBuilder();
+            
+            List<CodeCompleter.ParamDesc> params = CodeCompleter.getParameterList(exe);
+
+            sb.append(getInsertPrefix());
+            sb.append("(");
+            
+            int id = 1;
+            
+            sb.append("${cursor}"); // NOI18N
+
+            for (CodeCompleter.ParamDesc paramDesc : params) {
+                
+                LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
+                LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.typeName);
+                LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.name);
+                
+//                sb.append("${"); //NOI18N
+//                sb.append("gsf-cc-"); // NOI18N
+//                sb.append(Integer.toString(id++));
+//                sb.append(" default=\""); // NOI18N
+//                sb.append(paramDesc.name);
+//                sb.append("\""); // NOI18N
+//                sb.append("}"); //NOI18N
+
+                sb.append(paramDesc.name);
+
+                if (id < params.size()) {
+                    sb.append(", "); //NOI18N
+                }
+
+                id++;
+            }
+            
+            sb.append(")");
+            return sb.toString();
+
         }
     }
 

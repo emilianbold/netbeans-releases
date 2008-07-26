@@ -90,7 +90,7 @@ public class OracleSchema extends JDBCSchema {
                         newTables.put(tableName, table);
                         LOGGER.log(Level.FINE, "Created table {0}", table);
                     } else {
-                        LOGGER.log(Level.FINE, "Ignoring recycle bin table {0}", tableName);
+                        LOGGER.log(Level.FINE, "Ignoring recycle bin table ''{0}''", tableName);
                     }
                 }
             } finally {

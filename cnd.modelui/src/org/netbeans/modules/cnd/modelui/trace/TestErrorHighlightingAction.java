@@ -380,13 +380,17 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
 
         public void consume(CsmFile file, CsmErrorInfo info) {
+            getCreateEntry(file, info).consume();
+        }
+
+        protected Element getCreateEntry(CsmFile file, CsmErrorInfo info) {
             CharSequence id = getId(file, info);
             Element entry = data.get(id);
             if (entry == null) {
                 entry = createEntry(file, info);
                 data.put(id, entry);
             }
-            entry.consume();
+            return entry;
         }
 
         public void print(OutputWriter out) {
@@ -507,7 +511,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         @Override
         public void startFile(CsmFile file) {
-            createEntry(file, null);
+            getCreateEntry(file, null);
         }
 
         @Override

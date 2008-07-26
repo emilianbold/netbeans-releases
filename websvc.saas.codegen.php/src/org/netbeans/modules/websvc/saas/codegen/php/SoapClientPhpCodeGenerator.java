@@ -43,11 +43,11 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.saas.codegen.SaasClientCodeGenerator;
 import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientOperationInfo;
 import org.netbeans.modules.websvc.saas.codegen.model.SoapClientSaasBean;
+import org.netbeans.modules.websvc.saas.codegen.php.util.PhpUtil;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasMethod;
@@ -70,7 +70,7 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
     @Override
     public Set<FileObject> generate() throws IOException {
         try {
-            insert(getCustomMethodBody(), true);
+            insert(PhpUtil.wrapWithTag(getCustomMethodBody(), getTargetDocument(), getStartPosition()), true);
 
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
@@ -123,6 +123,7 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
 
     @Override
     protected String getCustomMethodBody() throws IOException {
+        String indent2 = "                    ";
         String wsdlUrl = "";
         String methodName = "";
         SoapClientSaasBean bean = this.getBean();
@@ -133,13 +134,16 @@ public class SoapClientPhpCodeGenerator extends SaasClientCodeGenerator {
         }
         String paramDecl = "$params = array( " + "\n" + genPhpParms(bean) + ");";
 
-        String methodBody = "\n<?php\n";
-        methodBody += "$wsdl_url = '" + wsdlUrl + "';\n";
-        methodBody += "$client     = new SOAPClient($wsdl_url);\n";
-        methodBody += paramDecl + "\n";
-        methodBody += "$return = $client->" + methodName + "($params);\n";
-        methodBody += "print_r($return);";
-        methodBody += "\n?>\n";
+        String methodBody = "";
+        methodBody += indent2 + "try {\n";
+        methodBody += indent2 + "$wsdl_url = '" + wsdlUrl + "';\n";
+        methodBody += indent2 + "$client     = new SOAPClient($wsdl_url);\n";
+        methodBody += indent2 + paramDecl + "\n";
+        methodBody += indent2 + "$return = $client->" + methodName + "($params);\n";
+        methodBody += indent2 + "print_r($return);\n";
+        methodBody += indent2 + "} catch(Exception $e) {\n";
+        methodBody += indent2 + "    echo \"Exception occured: \".$e;\n";
+        methodBody += indent2 + "}\n";
         return methodBody;
     }
 
