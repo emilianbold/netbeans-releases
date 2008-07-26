@@ -856,7 +856,9 @@ public final class WebProject implements Project, AntProjectListener {
                     // Usage Logging
                     String serverName = ""; // NOI18N
                     try {
-                        serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                        if (servInstID != null) {
+                            serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                        }
                     }
                     catch (InstanceRemovedException ire) {
                         // do nothing

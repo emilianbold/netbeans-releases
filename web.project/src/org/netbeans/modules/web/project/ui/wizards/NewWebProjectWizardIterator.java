@@ -208,11 +208,14 @@ public class NewWebProjectWizardIterator implements WizardDescriptor.ProgressIns
                 "UI_WEB_PROJECT_CREATE", parameters); // NOI18N
 
         Object[] parameters2 = new Object[5];
+        parameters2[0] = ""; // NOI18N
         try {
-            parameters2[0] = Deployment.getDefault().getServerInstance(createData.getServerInstanceID()).getServerDisplayName();
+            if (servInstID != null) {
+                parameters2[0] = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+            }
         }
         catch (InstanceRemovedException ire) {
-            parameters2[0] = ""; // NOI18N
+            // ignore
         }
         parameters2[1] = createData.getJavaEEVersion();
         parameters2[2] = createData.getSourceLevel();
