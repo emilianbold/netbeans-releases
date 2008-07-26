@@ -103,6 +103,11 @@ public abstract class CustomComponentProducer extends ComponentProducer {
                         SVGFormCD.ICON_PATH, 
                         SVGFormCD.ICON_LARGE_PATH)); // NOI18N
         }
+
+        @Override
+        public Boolean checkValidity(DesignDocument document, boolean useCachedValue) {
+            return true;
+        }
     }
 
     public static final class SVGImageProducer extends CustomComponentProducer {

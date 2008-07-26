@@ -681,13 +681,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         PropertyChangeEvent evt;
         synchronized (this) {
             if (methodInvokingDisabledUntilResumed) {
-                throw new PropertyVetoException("disabled until resumed", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_DisabledUntilResumed"), null);
             }
             if (methodInvoking) {
-                throw new PropertyVetoException("Already invoking!", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_AlreadyInvoking"), null);
             }
             if (!isSuspended()) {
-                throw new PropertyVetoException("No current context", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
             methodInvoking = true;
             evt = notifyToBeRunning(false, false);
@@ -1228,9 +1231,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             threadReference.suspend();
             ObjectReference monitor = threadReference.currentContendedMonitor();
             if (monitor == null) return ;
-            Location l = threadReference.frame(0).location();
-            l = l.method().locationOfCodeIndex(l.codeIndex() + 1);
-            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(l);
+            Location loc = threadReference.frame(0).location();
+            loc = loc.method().locationOfCodeIndex(loc.codeIndex() + 1);
+            if (loc == null) return;
+            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(loc);
             br.addThreadFilter(threadReference);
             submitMonitorEnteredRequest(br);
         } catch (IncompatibleThreadStateException itex) {

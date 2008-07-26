@@ -72,6 +72,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
+// XXX upload files combobox is invisible for NB 6.5
 /**
  * @author Tomas Mysik
  */
@@ -79,7 +80,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5592669886554891271L;
     static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
-    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
+    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.MANUALLY;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
@@ -98,6 +99,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
+        hideUploadFilesFields();
 
         labels = new JLabel[] {
             urlLabel,
@@ -176,6 +178,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
             }
         });
         updateRemoteConnectionHint();
+    }
+
+    private void hideUploadFilesFields() {
+        uploadFilesLabel.setVisible(false);
+        uploadFilesComboBox.setVisible(false);
+        uploadFilesHintLabel.setVisible(false);
     }
 
     @Override

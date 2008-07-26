@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -69,6 +70,8 @@ public class RemoteServerRecord implements ServerRecord {
     private Object state;
     private String reason;
     
+    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
@@ -86,14 +89,18 @@ public class RemoteServerRecord implements ServerRecord {
         } else {
             editable = true;
             state = STATE_UNINITIALIZED;
-            
-            if (!SwingUtilities.isEventDispatchThread()) {
-                ProgressHandle phandle = ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
-                phandle.start();
-                init();
-                phandle.finish();
-            }
+        }
+    }
+    
+    public void validate() {
+        if (!SwingUtilities.isEventDispatchThread()) {
+            log.fine("RSR.validate: Validating " + name);
+            ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+            ph.start();
+            init();
+            ph.finish();
+        } else {
+            log.fine("RSR.validate: Skipping validate of " + name + " because we're on the AWT-Event thread");
         }
     }
     
@@ -120,11 +127,11 @@ public class RemoteServerRecord implements ServerRecord {
                 state = STATE_ONLINE;
             }
         }
-        if (state == STATE_ONLINE) {
-            // Trigger creation of the CSM if it doesn't already exist...
-            CompilerSetManager.getDefault(name);
-        }
         if (pcs != null) {
+            if (state == STATE_ONLINE) {
+                // Trigger creation of the CSM if it doesn't already exist...
+                CompilerSetManager.getDefault(name);
+            }
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
     }

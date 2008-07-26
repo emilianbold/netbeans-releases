@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
- * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
+ * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,13 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
+ * Contributor(s):
+ *
+ * The Original Software is NetBeans. The Initial Developer of the Original
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
+ * Microsystems, Inc. All Rights Reserved.
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +37,61 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
- * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package javahelp.gui;
 
-package org.netbeans.modules.cnd.remote.actions;
+import org.netbeans.jellytools.JellyTestCase;
+import org.netbeans.jellytools.HelpOperator;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import org.netbeans.junit.NbModuleSuite;
+
+import junit.framework.Test; 
 
 /**
+ * JellyTestCase test case with implemented Java Help Test support stuff
  *
- * @author gordonp
+ * @author  juhrik@netbeans.org
  */
-public class DisplayPathMapperAction extends AbstractAction {
-    
-    private RemoteServerRecord record;
-    
-    public DisplayPathMapperAction(RemoteServerRecord record) {
-        super(NbBundle.getMessage(DeleteServerAction.class, "LBL_DisplayPathMapperAction"));
-        this.record = record;
+public class JavaHelpDialogStableTest extends JellyTestCase {
+
+    private HelpOperator helpWindow;
+
+    /** Creates a new instance of JavaHelpDialogTest */
+    public JavaHelpDialogStableTest(String testName) {
+        super(testName);
     }
 
-    public void actionPerformed(ActionEvent e) {
-        NotifyDescriptor nd = new NotifyDescriptor.Message("Not Yet Implemented");
-        DialogDisplayer.getDefault().notify(nd);
+    public static Test suite() {
+        return NbModuleSuite.create(
+                NbModuleSuite.createConfiguration(JavaHelpDialogTest.class)
+                //.addTest("testHelpF1")
+                .addTest("testHelpFromMenu")
+                .addTest("testHelpByButtonNonModal")
+                //.addTest("testHelpByButtonModal")
+                .addTest("testContextualSearch")
+                //.addTest("testHelpByButtonNestedModal")
+                .enableModules(".*")
+                .clusters(".*") );
     }
 
+    public void setUp() {
+    }
+
+    public void tearDown() {
+        closeAllModal();
+
+        if (helpWindow != null && helpWindow.isVisible()) {
+            helpWindow.close();
+        }
+
+        helpWindow = null;
+    }
+
+    
+    /** Test could be executed internaly in Forte without XTest
+     * @param args arguments from command line
+     */
+    public static void main(String[] args) {
+        junit.textui.TestRunner.run(suite());
+    }
 }

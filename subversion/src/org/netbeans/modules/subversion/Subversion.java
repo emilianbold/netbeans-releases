@@ -347,7 +347,9 @@ public class Subversion {
                     }
 
                 } catch (SVNClientException ex)  {
-                    SvnClientExceptionHandler.notifyException(ex, false, false);
+                    if(!SvnClientExceptionHandler.isUnversionedResource(ex.getMessage())) {
+                        SvnClientExceptionHandler.notifyException(ex, false, false);
+                    }
                 }
             }
         }
