@@ -360,8 +360,15 @@ public class GdbProxy implements GdbMiDefinitions {
     /**
      * Execute single instruction
      */
-    public int exec_instruction() {
+    public int exec_step_instruction() {
         return engine.sendCommand("-exec-step-instruction"); // NOI18N
+    }
+
+    /**
+     * Execute next instruction
+     */
+    public int exec_next_instruction() {
+        return engine.sendCommand("-exec-next-instruction"); // NOI18N
     }
 
     /**

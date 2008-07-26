@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -92,11 +93,29 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
 
     @Override
     protected void refresh() {
-        if (wsData == null || getState() == State.INITIALIZING) {
-            throw new IllegalStateException("Could not refresh null WSDL data or while it is initializing");
+        if (getState() == State.INITIALIZING) {
+            throw new IllegalStateException(NbBundle.getMessage(WsdlSaas.class, "MSG_CantRefreshWhileInitializing"));
         }
         super.refresh();
         ports = null;
+        
+        if (wsData == null) {
+            wsData = WsdlUtil.findWsdlData(this.getUrl(), null);
+            
+            if (wsData == null) {
+                // If the wsData has never been retrieved and compiled, we simply call
+                // toStateReady and return.
+                toStateReady(false);
+                return;
+            } else {
+                // If the wsData has been retrieved and compiled but has not
+                // yet been initialized, we initialize it now (which is quick)
+                // and then refresh it.
+                wsData = null;
+                toStateReady(true);
+            }
+        }
+        
         WsdlUtil.refreshWsdlData(wsData);
     }
 

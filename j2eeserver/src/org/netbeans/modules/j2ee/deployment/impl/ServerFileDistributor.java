@@ -303,7 +303,7 @@ public class ServerFileDistributor extends ServerProgress {
                 }
                 // refactor to make the finally easier to write and read in the
                 // future.
-                createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap,lastDeployTime);
+                createOrReplace(sourceFO,targetFO,destRoot,relativePath,mc,destMap, true, lastDeployTime);
             }
 
             ModuleType moduleType = (ModuleType) dtarget.getModule ().getModuleType ();
@@ -363,7 +363,7 @@ public class ServerFileDistributor extends ServerProgress {
                         }
 
                         // FIXME timestamp
-                        createOrReplace(file, targetFO, destRoot, relative, mc, destMap, 0);
+                        createOrReplace(file, targetFO, destRoot, relative, mc, destMap, false, 0);
                     }
                 }
             }
@@ -395,12 +395,14 @@ public class ServerFileDistributor extends ServerProgress {
     }
 
     private static void createOrReplace(FileObject sourceFO, FileObject targetFO,
-            FileObject destRoot, String relativePath, AppChanges mc, Map destMap,long lastDeployTime) throws IOException {
+            FileObject destRoot, String relativePath, AppChanges mc, Map destMap, boolean checkTimeStamps,
+            long lastDeployTime) throws IOException {
+
         FileObject destFolder;
         OutputStream destStream = null;
         InputStream sourceStream = null;
         File dest = FileUtil.toFile(destRoot);
-        
+
         Date ldDate = new Date(lastDeployTime);
         try {
             // double check that the target does not exist... 107526
@@ -416,12 +418,15 @@ public class ServerFileDistributor extends ServerProgress {
 
                 // for web app changes... since the 'copy' was already done by
                 // the build target.
-                if (targetFO.equals(sourceFO) && targetFO.lastModified().after(ldDate))
+                if (targetFO.equals(sourceFO) && targetFO.lastModified().after(ldDate)) {
                     mc.record(dest, relativePath);
+                }
 
                 //check timestamp
-                if (! sourceFO.lastModified().after(targetFO.lastModified())) {
-                    return;
+                if (checkTimeStamps) {
+                    if (!sourceFO.lastModified().after(targetFO.lastModified())) {
+                        return;
+                    }
                 }
                 destFolder = targetFO.getParent();
 
@@ -506,11 +511,11 @@ public class ServerFileDistributor extends ServerProgress {
         private List changedFiles = new ArrayList();
         private List descriptorRelativePaths;
         private List serverDescriptorRelativePaths;
-        
+
         AppChanges() {
             super();
         }
-        
+
         AppChanges(List descriptorRelativePaths, List serverDescriptorRelativePaths, ModuleType moduleType) {
             this.descriptorRelativePaths = descriptorRelativePaths;
             this.serverDescriptorRelativePaths = serverDescriptorRelativePaths;
@@ -540,7 +545,7 @@ public class ServerFileDistributor extends ServerProgress {
         }
 
         /**
-         * 
+         *
          * @param relativePath
          * @deprecated use {@link #record(java.io.File, java.lang.String)}
          */
@@ -592,6 +597,10 @@ public class ServerFileDistributor extends ServerProgress {
                 serverDescriptorChanged = true;
                 return;
             }
+            if (!manifestChanged && relativePath.equals("META-INF/MANIFEST.MF")) { // NOI18N
+                manifestChanged = true;
+                return;
+            }
         }
 
         private void record(ModuleChangeReporter mcr, long since) {
@@ -606,7 +615,7 @@ public class ServerFileDistributor extends ServerProgress {
             }
         }
 
-        public boolean classesChanged() { 
+        public boolean classesChanged() {
             return classesChanged;
         }
 

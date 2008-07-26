@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.project.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -52,6 +53,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.LocalServerController;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
@@ -74,7 +76,7 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, wizardPanel.getSteps()); // NOI18N
 
         initComponents();
-        localServerComponent = LocalServerController.create(localServerComboBox, localServerButton,
+        localServerComponent = LocalServerController.create(localServerComboBox, localServerButton, new BrowseSources(),
                 NbBundle.getMessage(ConfigureNewProjectPanelVisual.class, "LBL_SelectSourceFolderTitle"));
         projectFolderPanel.add(BorderLayout.NORTH, projectFolderComponent);
         init();
@@ -236,5 +238,14 @@ class ConfigureNewProjectPanelVisual extends ConfigurableProjectPanel {
         String hint = localServerComponent.getLocalServer().getHint();
         localServerInfoLabel.setText(hint);
         super.stateChanged(e);
+    }
+
+    private static class BrowseSources implements LocalServerController.BrowseHandler {
+        public File getCurrentDirectory() {
+            return LastUsedFolders.getSources();
+        }
+        public void locationChanged(File location) {
+            LastUsedFolders.setSources(location);
+        }
     }
 }

@@ -1,13 +1,13 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
-package Templates.Classes;
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 import java.io.*;
 import java.lang.reflect.Method;
 import javax.servlet.*;
@@ -15,10 +15,10 @@ import javax.servlet.http.*;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ extends HttpServlet {
-    private static String CLASS_NAME = __NAME__.class.getSimpleName();
+public class ${name} extends HttpServlet {
+    private static String CLASS_NAME = ${name}.class.getSimpleName();
     private static String AUTH_CLASS_NAME = CLASS_NAME.replace("Callback", "Authenticator");
     private static String ATTR_PREFIX = AUTH_CLASS_NAME.toLowerCase();
     private static String USERNAME_ATTR = ATTR_PREFIX + "_username";
