@@ -536,15 +536,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
             if (serverUpdateCache != null) {
-                String nukey = serverUpdateCache.getHostKeyList()[serverUpdateCache.getDefaultIndex()];
-                if (!nukey.equals(hkey)) {
-                    ServerRecord record = serverList.get(nukey);
-                    if (record.isOnline()) {
-
-                    }
-                }
+                serverList.clear();
                 for (String key : serverUpdateCache.getHostKeyList()) {
-                    serverList.add(key);
+                    serverList.addServer(key);
                 }
                 serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
                 serverUpdateCache = null;
@@ -926,10 +920,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(serverUpdateCache.getDefaultIndex());
             String selection = (String) cbDevHost.getSelectedItem();
             if (selection != null) {
-                ServerRecord record = serverList.get(selection); // this will ensure the remote host is setup
-                if (record != null && !record.isOnline()) {
-                    
-                }
+                serverList.get(selection); // this will ensure the remote host is setup
             } else {
                 log.fine("TP.editDevHosts: No selection found");
             }
