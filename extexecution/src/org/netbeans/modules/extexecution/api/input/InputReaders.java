@@ -132,10 +132,12 @@ public final class InputReaders {
     /**
      * Returns the input reader reading data from the given provider.
      * <p>
-     * This means
-     * that the actual file (and the corresponding charset) used can change
-     * during the processing. This is specifically useful for rotating
-     * log files.
+     * This means that the actual file (and the corresponding charset) used
+     * can change during the processing. This is specifically useful for
+     * rotating log files.
+     * <p>
+     * Before each read cycle reader invokes {@link FileInput.Provider#getFileInput()}
+     * to determine the actual file to read.
      * <p>
      * When processing the input {@link InputProcessor#reset()} is called on
      * each file change (when provided file input differs from the previous one).
@@ -200,9 +202,11 @@ public final class InputReaders {
         public interface Provider {
 
             /**
-             * Returns the file input to use.
+             * Returns the file input to use or <code>null</code> if there is
+             * no file to read currently.
              *
-             * @return the file input to use
+             * @return the file input to use or <code>null</code> if there is
+             * no file to read currently
              */
             FileInput getFileInput();
 

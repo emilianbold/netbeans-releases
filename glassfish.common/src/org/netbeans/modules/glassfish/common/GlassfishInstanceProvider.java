@@ -53,6 +53,7 @@ import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.netbeans.spi.server.ServerInstanceProvider;
 import org.openide.filesystems.FileObject;
@@ -73,8 +74,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
 
     static final String DIR_GLASSFISH_INSTANCES = "/GlassFish/Instances"; //NOI18N
     static final String INSTANCE_FO_ATTR = "InstanceFOPath"; // NOI18N
-    static final String PROP_FIRST_RUN = "first_run";
-    
     private static final GlassfishInstanceProvider singleton = new GlassfishInstanceProvider();
     
     private final Map<String, GlassfishInstance> instanceMap = 
@@ -382,7 +381,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
     
     private void registerDefaultInstance() {
         final boolean needToRegisterDefaultServer =
-                !NbPreferences.forModule(this.getClass()).getBoolean(PROP_FIRST_RUN, false);
+                !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
 
         if (needToRegisterDefaultServer) {
             try {
@@ -406,7 +405,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider {
                                     Integer.toString(4848));
                             GlassfishInstance gi = GlassfishInstance.create(ip);
                             addServerInstance(gi);
-                            NbPreferences.forModule(this.getClass()).putBoolean(PROP_FIRST_RUN, true);
+                            NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
                         } else {
                             ip.put(GlassfishModule.DISPLAY_NAME_ATTR,
                                 NbBundle.getMessage(this.getClass(), "PERSONAL_DOMAIN_NAME")); // NOI18N

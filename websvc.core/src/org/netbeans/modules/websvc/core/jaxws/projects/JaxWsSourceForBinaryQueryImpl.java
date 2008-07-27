@@ -89,7 +89,6 @@ public class JaxWsSourceForBinaryQueryImpl implements SourceForBinaryQueryImplem
         public FileObject[] getRoots() {
             FileObject fo = 
                 prj.getProjectDirectory().getFileObject("build/generated/wsimport/client"); // NOI18N
-            System.out.println("getRoots() = "+fo);
             return fo == null ? new FileObject[]{} : new FileObject[]{fo};
         }
 

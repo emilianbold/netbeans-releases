@@ -40,7 +40,7 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="Quick Debug" default="execute" basedir=".">
+<project name="{0} (debug-test)" default="debug-test" basedir=".">
     <target name="-init-debug-args">
         <property name="version-output" value="java version &quot;${ant.java.version}"/>
         <condition property="have-jdk-older-than-1.4">
@@ -61,7 +61,7 @@ made subject to such option by the copyright holder.
             <isset property="debug.transport"/>
         </condition>
     </target>
-    <target name="execute" depends="-init-debug-args">
+    <target name="debug-test" depends="-init-debug-args">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
             <classpath>

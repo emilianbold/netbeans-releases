@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.model.WsdlSaas;
 import org.netbeans.modules.websvc.saas.model.WsdlSaasPort;
 import org.netbeans.modules.websvc.saas.spi.ConsumerFlavorProvider;
@@ -113,17 +114,6 @@ public class WsdlSaasNode extends SaasNode {
         actions.add(SystemAction.get(ViewWSDLAction.class));
 
         return actions.toArray(new Action[actions.size()]);
-    }
-
-    @Override
-    public void destroy() throws IOException{
-        WsdlUtil.removeWsdlData(getSaas().getWsdlData());
-        super.destroy();
-    }
-    
-    @Override
-    public boolean canDestroy() {
-        return true;
     }
     
     /**

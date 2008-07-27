@@ -51,7 +51,6 @@ import java.util.logging.Logger;
 import javax.swing.JTree;
 import javax.swing.tree.*;
 import org.openide.explorer.view.*;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 
 /**
@@ -79,22 +78,17 @@ public class ActionsTree extends JTree implements DragGestureListener, DragSourc
     }
     
     private void expandAll() {
-        Children.MUTEX.readAccess(new Runnable() {
+        int i = 0;
+        int j /*, k = tree.getRowCount()*/;
 
-            public void run() {
-                int i = 0;
-                int j /*, k = tree.getRowCount()*/;
+        do {
+            do {
+                j = getRowCount();
+                expandRow(i);
+            } while (j != getRowCount());
 
-                do {
-                    do {
-                        j = getRowCount();
-                        expandRow(i);
-                    } while (j != getRowCount());
-
-                    i++;
-                } while (i < getRowCount());
-            }
-        });
+            i++;
+        } while (i < getRowCount());
     }
 
     public void dragGestureRecognized(DragGestureEvent dge) {

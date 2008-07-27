@@ -53,6 +53,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JSplitPane;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.UiUtils;
 import org.netbeans.api.javahelp.Help;
@@ -505,14 +506,23 @@ public final class IndexSearch
                     task.cancel();
                 task = RequestProcessor.getDefault().post( new Runnable(){
                     public void run(){
-                        //workaround for #114175 
-                        int divider = splitPanel.getDividerLocation();
-                        quickBrowser.setVisible(false);
-                        quickBrowser.setURL( furl );
-                        quickBrowser.setVisible(true);
-                        splitPanel.setDividerLocation(divider);
+                        synchronized( splitPanel ) {
+                            //workaround for #114175 
+                            final int divider = splitPanel.getDividerLocation();
+                            quickBrowser.setVisible(false);
+                            quickBrowser.setURL( furl );
+                            SwingUtilities.invokeLater( new Runnable() {
+                                public void run() {
+                                    synchronized( splitPanel ) {
+                                        quickBrowser.setVisible(true);
+                                        splitPanel.setDividerLocation(divider);
+                                        task = null;
+                                    }
+                                }
+                            });
+                        }
                     }
-                }, 300 );      
+                }, 600 );      
             }
             else
                 HtmlBrowser.URLDisplayer.getDefault().showURL( url );

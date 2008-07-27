@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,37 +31,63 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.actions;
+package org.netbeans.nbbuild;
 
-import java.awt.event.ActionEvent;
-import javax.swing.AbstractAction;
-import org.netbeans.modules.cnd.remote.server.RemoteServerRecord;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.ExecTask;
+import org.apache.tools.ant.types.Commandline;
 
 /**
- *
- * @author gordonp
+ * Just like &lt;exec> but fixes the executable as <code>hg</code> (Mercurial).
+ * Advantage is that it also checks for variants like <code>hg.cmd</code> etc.
+ * See issue #134636.
  */
-public class DisplayPathMapperAction extends AbstractAction {
-    
-    private RemoteServerRecord record;
-    
-    public DisplayPathMapperAction(RemoteServerRecord record) {
-        super(NbBundle.getMessage(DeleteServerAction.class, "LBL_DisplayPathMapperAction"));
-        this.record = record;
+public class HgExec extends ExecTask {
+
+    public HgExec() {
+        List<String> cmd = hgExecutable();
+        super.setExecutable(cmd.get(0));
+        for (String arg : cmd.subList(1, cmd.size())) {
+            createArg().setValue(arg);
+        }
     }
 
-    public void actionPerformed(ActionEvent e) {
-        NotifyDescriptor nd = new NotifyDescriptor.Message("Not Yet Implemented");
-        DialogDisplayer.getDefault().notify(nd);
+    @Override
+    public void setCommand(Commandline cmdl) {
+        throw new BuildException("Cannot call this");
+    }
+
+    @Override
+    public void setExecutable(String value) {
+        throw new BuildException("Cannot call this");
+    }
+
+    /**
+     * Get a command to run Hg.
+     */
+    public static List<String> hgExecutable() {
+        String path = System.getenv("Path");
+        if (path != null) {
+            for (String component : path.split(File.pathSeparator)) {
+                if (new File(component, "hg").isFile() || new File(component, "hg.exe").isFile()) {
+                    return Collections.singletonList("hg");
+                }
+                if (new File(component, "hg.cmd").isFile() || new File(component, "hg.bat").isFile()) {
+                    return Arrays.asList("cmd", "/c", "hg");
+                }
+            }
+        }
+        return Collections.singletonList("hg");
     }
 
 }

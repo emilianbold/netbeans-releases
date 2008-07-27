@@ -16,7 +16,7 @@ source init.sh
 
 cd $BASE_DIR
 rm -rf dist
-ant hg-clean
+ant clean
 
 ###################################################################
 #
