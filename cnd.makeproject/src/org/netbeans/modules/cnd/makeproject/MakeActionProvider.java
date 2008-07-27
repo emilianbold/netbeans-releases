@@ -939,8 +939,11 @@ public class MakeActionProvider implements ActionProvider {
         
         if (errormsg == null) {
             String tool = conf.getPackagingConfiguration().getToolValue();
-            if (Path.findCommand(tool) == null) {
+            if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
                 errormsg = "Cannot find \'" + tool + "\' in your PATH. This feature may not be available on this platform."; // FIXUP
+            }
+            else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+                errormsg = "Cannot find \'" + tool + "\'. This feature may not be available on this platform."; // FIXUP
             }
         }
         
