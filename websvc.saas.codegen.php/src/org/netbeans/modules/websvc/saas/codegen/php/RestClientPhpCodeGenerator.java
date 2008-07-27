@@ -63,6 +63,7 @@ import org.netbeans.modules.websvc.saas.codegen.model.ParameterInfo.ParamFilter;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean.SessionKeyAuthentication;
 import org.netbeans.modules.websvc.saas.codegen.model.RestClientSaasBean;
 import org.netbeans.modules.websvc.saas.codegen.model.SaasBean;
+import org.netbeans.modules.websvc.saas.codegen.php.util.PhpUtil;
 import org.netbeans.modules.websvc.saas.codegen.util.Util;
 import org.netbeans.modules.websvc.saas.model.SaasMethod;
 import org.openide.filesystems.FileObject;
@@ -272,7 +273,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         }
         for (ParameterInfo param : getBean().getInputParameters()) {
             if (param.isFixed() && !Util.isContains(param, signParams)) {
-                fixedCode += "     $" + getVariableName(param.getName()) + " = \"" + findParamValue(param) + "\";\n";
+                fixedCode += "     $" + getVariableName(param.getName()) + " = \"" + PhpUtil.findParamValue(param) + "\";\n";
             }
         }
 
@@ -293,7 +294,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
                 if (!contentTypeParam.isFixed() && !params.contains(contentTypeParam)) {
                     params.add(contentTypeParam);
                 } else {
-                    String value = findParamValue(contentTypeParam);
+                    String value = PhpUtil.findParamValue(contentTypeParam);
                     if (value.equals("text/plain") || value.equals("application/xml") ||
                             value.equals("text/xml")) {     //NOI18N
 
@@ -335,15 +336,9 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
      */
     protected void insertSaasServiceAccessCode(boolean isInBlock) throws IOException {
         try {
-            String code = "";
-
-            code += "\n<?php\n"; // NOI18n
-            code += "\nrequire_once \"" + getSaasServiceFolder().getName() + "/" + 
+            String inclStr = "\ninclude_once \"" + getSaasServiceFolder().getName() + "/" + 
                     getBean().getSaasServiceName() + ".php\";\n";
-            code += "?>\n";// NOI18n
-            code += getCustomMethodBody() + "\n";
-
-
+            String code = PhpUtil.wrapWithTag(inclStr+getCustomMethodBody(), getTargetDocument(), getStartPosition()) + "\n";
             insert(code, true);
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
@@ -403,7 +398,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
                 bodyText+"\n";
         try {
             Document saasServiceDoc = Util.getDocument(saasServiceFile);
-            int start = findText(saasServiceDoc, "}", false);
+            int start = PhpUtil.findText(saasServiceDoc, "}", false);
             int end = start;
             insert(code, start, end, saasServiceDoc);
         } catch (BadLocationException ex) {
@@ -431,7 +426,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         String paramDecl = "";
         for (ParameterInfo param : params) {
             String name = getVariableName(param.getName());
-            String paramVal = findParamValue(param);
+            String paramVal = PhpUtil.findParamValue(param);
             if (param.getType() != String.class) {
                 paramDecl += indent + "$" + name + " = " + paramVal + ";\n";
             } else {
@@ -472,7 +467,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     private boolean isContainsMethod(FileObject saasServiceFile, 
             String saasServiceMethodName, String[] parameters, Object[] paramTypes) throws IOException {
         try {
-            return findText(Util.getDocument(saasServiceFile), 
+            return PhpUtil.findText(Util.getDocument(saasServiceFile), 
                     "public static function "+saasServiceMethodName, true) != -1;
         } catch (BadLocationException ex) {
             throw new IOException(ex.getMessage());
@@ -482,18 +477,21 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
     protected String getCustomMethodBody() throws IOException {
         String paramUse = "";
         String paramDecl = "";
-        String indent2 = "                 ";
+        String indent2 = "                    ";
         
         //Evaluate parameters (query(not fixed or apikey), header, template,...)
         List<ParameterInfo> filterParams = getServiceMethodParameters();//includes request, response also
         paramUse += getHeaderOrParameterUsage(filterParams);
         paramDecl += getHeaderOrParameterDeclaration(filterParams);
-        String methodBody = "\n<?php\n";
+        String methodBody = "";
+        methodBody += indent2 + "try {\n";
         methodBody += paramDecl + "\n";
         methodBody += indent2 + "$result = " + getBean().getSaasServiceName() +
                 "::" + getBean().getSaasServiceMethodName() + "(" + paramUse + ");\n";
-        methodBody += indent2 + "echo $result->getResponseBody();";
-        methodBody += "\n?>\n";
+        methodBody += indent2 + "echo $result->getResponseBody();\n";
+        methodBody += indent2 + "} catch(Exception $e) {\n";
+        methodBody += indent2 + "    echo \"Exception occured: \".$e;\n";
+        methodBody += indent2 + "}\n";
         return methodBody;
     }
 
@@ -523,7 +521,7 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         String paramVal = null;
         String indent = "             ";
         if(evaluate) {
-            paramVal = findParamValue(param);
+            paramVal = PhpUtil.findParamValue(param);
             if (param.getType() != String.class) {
                 sb.append(indent+"$"+varName+"[\"" + paramName + "\"] = $" + paramVal + ";\n");
             } else {
@@ -569,24 +567,5 @@ public class RestClientPhpCodeGenerator extends SaasClientCodeGenerator {
         String content = doc.getText(0, len);
         content = content.replace(searchText, replaceText);
         insert(content, 0, len, doc);
-    }
-    
-    private int findText(Document document, String searchText, boolean firstToLast) throws BadLocationException {
-        int len = document.getLength();
-        String content = document.getText(0, len);
-        if(firstToLast)
-            return content.indexOf(searchText);
-        else
-            return content.lastIndexOf(searchText);
-    }
-    
-    private static String findParamValue(ParameterInfo param) {
-        String paramVal = null;
-        if (param.isApiKey()) {
-            paramVal = "apiKey";
-        } else {
-            paramVal = Util.findParamValue(param);
-        }
-        return paramVal;
     }
 }

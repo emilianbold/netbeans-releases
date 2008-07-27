@@ -506,7 +506,9 @@ public final class EarProject implements Project, AntProjectListener, ProjectPro
             // Usage Logging
             String serverName = ""; // NOI18N
             try {
-                serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                if (servInstID != null) {
+                    serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                }
             }
             catch (InstanceRemovedException ier) {
                 // ignore

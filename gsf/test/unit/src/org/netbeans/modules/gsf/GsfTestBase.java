@@ -1833,6 +1833,9 @@ public abstract class GsfTestBase extends NbTestCase {
                 begin++;
             }
         }
+        if (s.length() == 0) {
+            return s;
+        }
         s.charAt(offset);
         int end = s.indexOf('\n', offset);
         if (end == -1) {

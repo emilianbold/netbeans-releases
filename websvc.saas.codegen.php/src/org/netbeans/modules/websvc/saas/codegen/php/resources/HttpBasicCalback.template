@@ -2,7 +2,7 @@
     session_start();
 
     define("ATTR_PREFIX", "__NAME__");
-    require_once str_replace("Callback", "Authenticator", ATTR_PREFIX).".php";
+    include_once str_replace("Callback", "Authenticator", ATTR_PREFIX).".php";
 
     $_SESSION["__GROUP____username"] = $_POST["username"];
     $_SESSION["__GROUP____password"] = $_POST["password"];

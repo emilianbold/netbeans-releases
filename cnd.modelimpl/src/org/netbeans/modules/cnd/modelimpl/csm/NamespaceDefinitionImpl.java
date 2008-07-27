@@ -94,7 +94,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
             
     public Collection<CsmOffsetableDeclaration> getDeclarations() {
         Collection<CsmOffsetableDeclaration> decls;
-        synchronized (declarations) {
+        synchronized (this) {
             decls = UIDCsmConverter.UIDsToDeclarations(declarations);
         }
         return decls;
@@ -102,7 +102,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
 
     public Iterator<CsmOffsetableDeclaration> getDeclarations(CsmFilter filter) {
         Iterator<CsmOffsetableDeclaration> out;
-        synchronized (declarations) {
+        synchronized (this) {
             out = UIDCsmConverter.UIDsToDeclarationsFiltered(declarations, filter);
          }
          return out;
@@ -126,8 +126,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
     public void removeDeclaration(CsmOffsetableDeclaration declaration) {
         CsmUID<CsmOffsetableDeclaration> uid = UIDCsmConverter.declarationToUID(declaration);
         assert uid != null;
-        boolean res = declarations.remove(uid);
-        assert res;
+        declarations.remove(uid);
         RepositoryUtils.remove(uid);
         // update repository
         RepositoryUtils.put(this);
@@ -183,7 +182,7 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         //NB: we're copying declarations, because dispose can invoke this.removeDeclaration
         Collection<CsmOffsetableDeclaration> decls;
         List<CsmUID<CsmOffsetableDeclaration>> uids;
-        synchronized (declarations) {
+        synchronized (this) {
             decls = getDeclarations();
             uids = declarations;
             declarations  = Collections.synchronizedList(new ArrayList<CsmUID<CsmOffsetableDeclaration>>());

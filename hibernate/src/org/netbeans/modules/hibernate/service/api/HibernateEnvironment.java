@@ -64,6 +64,15 @@ public interface HibernateEnvironment extends HibernateFileLocationProvider {
     public Map<FileObject, List<String>> getAllPOJONamesFromConfiguration(FileObject configFileObject);
 
     /**
+     * Returns list of annotated POJO (FQN) classnames (String) found in this 
+     * Hibernate configuration.
+     * 
+     * @param configurationFO hibernate configuration FleObject.
+     * @return List of classnames (FQN) (String) of all annotated POJO classes found in this configuration or an empty list.
+     */
+    public List<String> getAnnotatedPOJOClassNames(FileObject configurationFO);
+    
+    /**
      * Registers Hibernate Library in this project.
      *
      * @return true if the library is registered, false if the library is already registered or
