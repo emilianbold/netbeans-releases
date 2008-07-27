@@ -512,6 +512,10 @@ public class ConfigurationMakefileWriter {
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
         }
         
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() > 0) {
+            bw.write("\t${RM} " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
+        }
+        
         writeSubProjectCleanTargets(conf, bw);
     }
     
@@ -609,6 +613,7 @@ public class ConfigurationMakefileWriter {
         bw.write("\n");
         bw.write("\n");
         bw.write("# Macros\n");
+        bw.write("TOP=" + "`pwd`" + "\n");
         bw.write("TMPDIR=" + tmpdir + "\n");
         bw.write("\n");
         bw.write("# Setup\n");
@@ -645,6 +650,7 @@ public class ConfigurationMakefileWriter {
         }
         bw.write("\n");
         bw.write("# Cleanup\n");
+        bw.write("cd $TOP\n");
         bw.write("rm -rf $TMPDIR\n");
     }
 }

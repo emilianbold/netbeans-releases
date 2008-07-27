@@ -83,7 +83,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
         addButton.setText("Add [Empty]");
         addButton.addActionListener(new AddButtonAction());
-        addFileOrDirectoryButton.setText("Add File or Directory");
+        addFileOrDirectoryButton.setText("Add File");
         addFileOrDirectoryButton.addActionListener(new AddFileOrDirectoryButtonAction());
         addFilesButton.setText("Add Files from Directory");
         addFilesButton.addActionListener(new AddFilesButtonAction());
@@ -107,7 +107,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (seed == null) {
                 seed = baseDir;
             }
-            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.FILES_AND_DIRECTORIES, null, seed, false);
+            FileChooser fileChooser = new FileChooser("File", "Select", FileChooser.FILES_ONLY, null, seed, false);
             PathPanel pathPanel = new PathPanel();
             fileChooser.setAccessory(pathPanel);
             fileChooser.setMultiSelectionEnabled(true);
