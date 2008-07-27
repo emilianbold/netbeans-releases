@@ -171,7 +171,10 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     }
                     path = FilePathAdaptor.mapToRemote(path);
                     path = FilePathAdaptor.normalize(path);
-                    addObjectAction(new FileElement(FileType.FILE, path, IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath()))); // FIXUP: softlink
+                    String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
+                    toFile = FilePathAdaptor.mapToRemote(toFile);
+                    toFile = FilePathAdaptor.normalize(toFile);
+                    addObjectAction(new FileElement(FileType.FILE, path, toFile)); // FIXUP: softlink
                 }
             }
         }

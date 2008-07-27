@@ -59,12 +59,12 @@ public class PackagingConfiguration {
     
     // Types
     private static String[] TYPE_NAMES = {
-        getString("Zip"),
         getString("Tar"),
+        getString("Zip"),
         getString("SCR4Package")
     };
-    public static final int TYPE_ZIP = 0;
-    public static final int TYPE_TAR = 1;
+    public static final int TYPE_TAR = 0;
+    public static final int TYPE_ZIP = 1;
     public static final int TYPE_SVR4_PACKAGE = 2;
     
     private IntConfiguration type;
@@ -77,7 +77,7 @@ public class PackagingConfiguration {
     // Constructors
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
-        type = new IntConfiguration(null, TYPE_ZIP, TYPE_NAMES, null);
+        type = new IntConfiguration(null, TYPE_TAR, TYPE_NAMES, null);
         header = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
 	output = new StringConfiguration(null, ""); // NOI18N

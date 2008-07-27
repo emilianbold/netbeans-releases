@@ -152,7 +152,7 @@ public class MakeActionProvider implements ActionProvider {
         
         commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
-        commands.put(COMMAND_BUILD_PACKAGE, new String[] {"save", "build-package"}); // NOI18N
+        commands.put(COMMAND_BUILD_PACKAGE, new String[] {"save", "build", "build-package"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"save", "build", "run"}); // NOI18N
