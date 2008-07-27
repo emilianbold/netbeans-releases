@@ -45,6 +45,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platforms;
+import org.netbeans.modules.cnd.makeproject.configurations.ui.BooleanNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.IntNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PackagingNodeProp;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.StringNodeProp;
@@ -68,6 +69,7 @@ public class PackagingConfiguration {
     public static final int TYPE_SVR4_PACKAGE = 2;
     
     private IntConfiguration type;
+    private BooleanConfiguration verbose;
     private VectorConfiguration header;
     private VectorConfiguration files;
     private StringConfiguration output;
@@ -78,6 +80,7 @@ public class PackagingConfiguration {
     public PackagingConfiguration(MakeConfiguration makeConfiguration) {
         this.makeConfiguration = makeConfiguration;
         type = new IntConfiguration(null, TYPE_TAR, TYPE_NAMES, null);
+        verbose = new BooleanConfiguration(null, true);
         header = new VectorConfiguration(null); // NOI18N
         files = new VectorConfiguration(null); // NOI18N
 	output = new StringConfiguration(null, ""); // NOI18N
@@ -93,14 +96,21 @@ public class PackagingConfiguration {
     public MakeConfiguration getMakeConfiguration() {
         return makeConfiguration;
     }
-    
-
+   
     public IntConfiguration getType() {
         return type;
     }
 
     public void setType(IntConfiguration type) {
         this.type = type;
+    }
+    
+    public BooleanConfiguration getVerbose() {
+        return verbose;
+    }
+
+    public void setVerbose(BooleanConfiguration verbose) {
+        this.verbose = verbose;
     }
 
     public VectorConfiguration getHeader() {
@@ -144,6 +154,7 @@ public class PackagingConfiguration {
     public void assign(PackagingConfiguration conf) {
         setMakeConfiguration(conf.getMakeConfiguration());
         getType().assign(conf.getType());
+        getVerbose().assign(conf.getVerbose());
         getHeader().assign(conf.getHeader());
         getFiles().assign(conf.getFiles());
 	getOutput().assign(conf.getOutput());
@@ -155,6 +166,7 @@ public class PackagingConfiguration {
     public Object clone() {
         PackagingConfiguration clone = new PackagingConfiguration(getMakeConfiguration());
         clone.setType((IntConfiguration)getType().clone());
+        clone.setVerbose((BooleanConfiguration)getVerbose().clone());
         clone.setHeader((VectorConfiguration)getHeader().clone());
         clone.setFiles((VectorConfiguration)getFiles().clone());
 	clone.setOutput((StringConfiguration)getOutput().clone());
@@ -177,9 +189,10 @@ public class PackagingConfiguration {
         set.setDisplayName(getString("GeneralTxt"));
         set.setShortDescription(getString("GeneralHint"));
         
-        set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "Package Type ...")); // NOI18N
+        set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "The type of this package.")); // NOI18N
 	set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
-        String[] texts = new String[] {"Files", "Files", "Files..."};
+        String[] texts = new String[] {"Files", "Files", "Files and other information in this package."};
+        set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", "Verbose", "Turns verbose build output on and off.")); // NOI18N
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
         set.put(optionsNodeProp = new StringNodeProp(getOptions(), getToolDefault(), "AdditionalOptions", getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"))); // NOI18N

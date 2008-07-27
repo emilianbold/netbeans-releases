@@ -510,10 +510,14 @@ public class MakeActionProvider implements ActionProvider {
                 }
                 validated = true;
             } else if (targetName.equals("build-package")) { // NOI18N
+                if (!validatePackaging(conf)) {
+                    actionEvents.clear();
+                    break;
+                }
                 String buildCommand = "bash"; // NOI18N
                 Boolean verbose = true;
                 String args = "";
-                if (verbose) { // FIXUP
+                if (conf.getPackagingConfiguration().getVerbose().getValue()) {
                     args += "-x "; // NOI18N
                 }
                 args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
@@ -924,6 +928,28 @@ public class MakeActionProvider implements ActionProvider {
             lastValidation = true;
             return true;
         }
+    }
+    
+    private boolean validatePackaging(MakeConfiguration conf) {
+        String errormsg = null;
+        
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+            errormsg = "Package is empty.\nOpen Build|Packaging property in the project's properties and define this package."; // FIXUP
+        }
+        
+        if (errormsg == null) {
+            String tool = conf.getPackagingConfiguration().getToolValue();
+            if (Path.findCommand(tool) == null) {
+                errormsg = "Cannot find \'" + tool + "\' in your PATH. This feature may not be available on this platform."; // FIXUP
+            }
+        }
+        
+        if (errormsg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            return false;
+        }
+        
+        return true;
     }
 
     private static boolean exists(String path, PlatformInfo pi) {

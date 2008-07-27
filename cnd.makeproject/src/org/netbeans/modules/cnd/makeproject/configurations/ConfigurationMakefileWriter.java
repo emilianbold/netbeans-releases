@@ -595,7 +595,6 @@ public class ConfigurationMakefileWriter {
     }
         
     private void writePackageHeader(BufferedWriter bw, MakeConfiguration conf) throws IOException {
-        boolean verbose = true; // FIXUP
         String tmpdir = "nbproject/private/tmp-" + conf.getName();
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
@@ -604,7 +603,7 @@ public class ConfigurationMakefileWriter {
         List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
         
         bw.write("#!/bin/bash");
-        if (verbose) {
+        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
             bw.write(" -x");
         }
         bw.write("\n");
