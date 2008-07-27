@@ -56,7 +56,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import org.hibernate.QueryException;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.hibernate.engine.query.HQLQueryPlan;
 import org.hibernate.hql.QueryTranslator;
 import org.hibernate.hql.ast.QuerySyntaxException;
@@ -164,7 +164,7 @@ public final class HQLEditorTopComponent extends TopComponent {
                                 getClass().getClassLoader());
 
                         Thread.currentThread().setContextClassLoader(ccl);
-                        Configuration hibernateConfiguration =
+                        AnnotationConfiguration hibernateConfiguration =
                                 controller.processAndConstructCustomConfiguration(
                                 hqlEditor.getText(), selectedConfigObject, enclosingProject);
                         if (Thread.interrupted() || isSqlTranslationProcessDone) {

@@ -82,6 +82,8 @@ import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -101,9 +103,14 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private JEditorPane editorPane;
 
     /** Creates new form SQLHistoryDlg2 */
-    public SQLHistoryPanel(JEditorPane editorPane) {
+    public SQLHistoryPanel(final JEditorPane editorPane) {
         this.editorPane = editorPane;
-        this.view = new SQLHistoryView(new SQLHistoryModelImpl());
+        final Task task = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                view = new SQLHistoryView(new SQLHistoryModelImpl());
+            }
+        });
+        task.run();
         initSQLHistoryTableData(view);
         initComponents();
         connectionComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
@@ -119,7 +126,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             sqlLimitTextField.setText(savedLimit);
         } else {
             sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
-        }       
+        }
         // Make sure the save limit is considered
         if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
             savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;

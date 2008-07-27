@@ -938,7 +938,9 @@ public class EjbJarProject implements Project, AntProjectListener, FileChangeLis
 
                 String serverName = "";  // NOI18N
                 try {
-                    serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                    if (servInstID != null) {
+                        serverName = Deployment.getDefault().getServerInstance(servInstID).getServerDisplayName();
+                    }
                 }
                 catch (InstanceRemovedException ier) {
                     // ignore

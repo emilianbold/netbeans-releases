@@ -42,19 +42,19 @@
                                   <Group type="102" alignment="0" attributes="0">
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
-                                              <Component id="cbExtension" pref="212" max="32767" attributes="1"/>
+                                              <Component id="cbExtension" pref="236" max="32767" attributes="1"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="cbType" alignment="0" pref="212" max="32767" attributes="1"/>
+                                          <Component id="cbType" alignment="0" pref="236" max="32767" attributes="1"/>
                                       </Group>
                                       <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
-                                              <Component id="btnNew" min="-2" pref="80" max="-2" attributes="1"/>
+                                              <Component id="btnNew" min="-2" max="-2" attributes="1"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="btnRemove" min="-2" pref="80" max="-2" attributes="0"/>
+                                              <Component id="btnRemove" min="-2" max="-2" attributes="0"/>
                                           </Group>
-                                          <Component id="btnDefault" min="-2" pref="80" max="-2" attributes="1"/>
+                                          <Component id="btnDefault" min="-2" max="-2" attributes="1"/>
                                       </Group>
                                   </Group>
                               </Group>
@@ -68,9 +68,9 @@
                               <EmptySpace min="-2" pref="10" max="-2" attributes="0"/>
                               <Component id="lblPattern" min="-2" max="-2" attributes="0"/>
                               <EmptySpace min="-2" pref="37" max="-2" attributes="0"/>
-                              <Component id="jScrollPane1" pref="301" max="32767" attributes="0"/>
+                              <Component id="jScrollPane1" pref="314" max="32767" attributes="0"/>
                               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
-                              <Component id="btnDefaultIgnored" min="-2" pref="80" max="-2" attributes="1"/>
+                              <Component id="btnDefaultIgnored" min="-2" max="-2" attributes="1"/>
                           </Group>
                       </Group>
                   </Group>

@@ -59,6 +59,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
+import org.openide.util.NbBundle;
 
 
 /**
@@ -131,6 +132,7 @@ public final class AdvancedPanel extends JPanel {
     void init (Lookup masterLookup) {
         // init components
         tabbedPanel = new JTabbedPane();
+        tabbedPanel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AdvancedPanel.class, "AdvancedPanel.tabbedPanel.AD"));
         
         // define layout
         setLayout (new BorderLayout ());
