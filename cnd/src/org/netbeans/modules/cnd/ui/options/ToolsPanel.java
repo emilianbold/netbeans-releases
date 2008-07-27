@@ -120,6 +120,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     private CompilerSetManager csm;
     private CompilerSet currentCompilerSet;
     private ServerList serverList;
+    private ServerRecord serverRecord;
     private ServerUpdateCache serverUpdateCache;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
@@ -135,7 +136,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         instance = this;
         currentCompilerSet = null;
         serverUpdateCache = null;
-        hkey = "";
+        serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (serverList != null) {
+            serverRecord = serverList.getDefaultRecord();
+            hkey = serverRecord.getName();
+            btEditDevHost.setEnabled(true);
+        } else {
+            serverRecord = null;
+            hkey = CompilerSetManager.LOCALHOST;
+        }
         
         errorTextArea.setText("");
         lstDirlist.setCellRenderer(new MyCellRenderer());
@@ -160,13 +169,6 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         if (!model.showRequiredTools()) {
             requiredToolsLabel.setVisible(false); // Required Tools label!
             requiredToolsPanel.setVisible(false); // Required Tools panel!
-        }
-        
-        // initialize remote server components
-        if (serverList == null) {
-            serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
-            btEditDevHost.addActionListener(this);
-            btEditDevHost.setEnabled(true);
         }
         cbDevHost.removeItemListener(this);
         if (serverUpdateCache != null) {
@@ -535,15 +537,17 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     /** Apply changes */
     public void applyChanges() {
         if (changed || isChangedInOtherPanels()) {
-            if (serverUpdateCache != null) {
-                serverList.clear();
-                for (String key : serverUpdateCache.getHostKeyList()) {
-                    serverList.addServer(key);
+            if (serverList != null) {
+                if (serverUpdateCache != null) {
+                    serverList.clear();
+                    for (String key : serverUpdateCache.getHostKeyList()) {
+                        serverList.addServer(key);
+                    }
+                    serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
+                    serverUpdateCache = null;
+                } else {
+                    serverList.setDefaultIndex(cbDevHost.getSelectedIndex());
                 }
-                serverList.setDefaultIndex(serverUpdateCache.getDefaultIndex());
-                serverUpdateCache = null;
-            } else {
-                serverList.setDefaultIndex(cbDevHost.getSelectedIndex());
             }
             
             CompilerSet cs = (CompilerSet)lstDirlist.getSelectedValue();
@@ -620,8 +624,11 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             boolean cppValid = cbCppRequired.isSelected() ? isPathFieldValid(tfCppPath) : true;
             boolean fortranValid = cbFortranRequired.isSelected() ? isPathFieldValid(tfFortranPath) : true;
             
-            ServerRecord record = serverList.get(hkey);
-            boolean devhostValid = record != null & record.isOnline();
+            ServerRecord record = null;
+            if (serverList != null) {
+                record = serverList.get(hkey);
+            }
+            boolean devhostValid = serverList == null || (record != null & record.isOnline());
             
             if (!initialized) {
                 valid = !(csmValid && makeValid && gdbValid && cValid && cppValid && fortranValid && devhostValid);
@@ -845,9 +852,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             if (o == cbDevHost && ev.getStateChange() == ItemEvent.SELECTED && !hkey.equals((String) cbDevHost.getSelectedItem())) {
                 log.fine("TP.itemStateChanged: About to update");
                 changed = true;
-                if (serverUpdateCache != null) {
-                    serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
+                if (serverUpdateCache == null) {
+                    serverUpdateCache = new ServerUpdateCache();
+                    String[] nulist = new String[cbDevHost.getItemCount()];
+                    for (int i = 0; i < nulist.length; i++) {
+                        nulist[i] = (String) cbDevHost.getItemAt(i);
+                    }
+                    serverUpdateCache.setHostKeyList(nulist);
                 }
+                serverUpdateCache.setDefaultIndex(cbDevHost.getSelectedIndex());
                 hkey = (String) cbDevHost.getSelectedItem();
                 update(true);
             } else if (o instanceof JCheckBox && !changingCompilerSet) {
@@ -901,6 +914,10 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         }
     }
     
+    /**
+     * Show the Development Host Manager. Note that we assume serverList is non-null as the Edit
+     * button should <b>never</b> be enabled if its null.
+     */
     private void editDevHosts() {
         // Show the Dev Host Manager dialog
         serverUpdateCache = serverList.show(serverUpdateCache);
@@ -1006,6 +1023,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         cbDevHost = new javax.swing.JComboBox();
         cbDevHost.addItemListener(this);
         btEditDevHost = new javax.swing.JButton();
+        btEditDevHost.addActionListener(this);
 
         setMinimumSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
