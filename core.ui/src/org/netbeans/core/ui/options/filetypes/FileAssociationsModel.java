@@ -159,16 +159,18 @@ final class FileAssociationsModel {
         FileObject[] children = defaultFS.findResource("Loaders").getChildren();  //NOI18N
         for (int i = 0; i < children.length; i++) {
             FileObject child = children[i];
-            String mime1 = child.getName();
+            String mime1 = child.getNameExt();
             FileObject[] subchildren = child.getChildren();
             for (int j = 0; j < subchildren.length; j++) {
                 FileObject subchild = subchildren[j];
-                mimeTypes.add(mime1 + "/" + subchild.getName()); //NOI18N
+                FileObject factoriesFO = subchild.getFileObject("Factories");  //NOI18N
+                if(factoriesFO != null && factoriesFO.getChildren().length > 0) {
+                    // add only MIME types where some loader exists
+                    mimeTypes.add(mime1 + "/" + subchild.getNameExt()); //NOI18N
+                }
             }
         }
         mimeTypes.remove("content/unknown"); //NOI18N
-        mimeTypes.remove("folder/any"); //NOI18N
-        mimeTypes.remove("Languages/Actions"); //NOI18N
     }
 
     /** Returns MIME type corresponding to given extension. Cannot return null. */
