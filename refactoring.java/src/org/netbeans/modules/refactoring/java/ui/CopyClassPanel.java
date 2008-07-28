@@ -44,6 +44,7 @@ package org.netbeans.modules.refactoring.java.ui;
 import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -140,7 +141,8 @@ public class CopyClassPanel extends JPanel implements ActionListener, DocumentLi
     }
     
     public FileObject getRootFolder() {
-        return ((SourceGroup) rootComboBox.getSelectedItem()).getRootFolder();
+        SourceGroup sg = (SourceGroup) rootComboBox.getSelectedItem();
+        return sg != null ? sg.getRootFolder() : null;
     }
     
     public String getPackageName() {
@@ -330,7 +332,10 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
         
     private void updatePackages() {
         SourceGroup g = (SourceGroup) rootComboBox.getSelectedItem();
-        packageComboBox.setModel(PackageView.createListView(g));
+        ComboBoxModel model = g != null
+                ? PackageView.createListView(g)
+                : new DefaultComboBoxModel();
+        packageComboBox.setModel(model);
     }
     
     void setCombosEnabled(boolean enabled) {
@@ -359,11 +364,6 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
     private void updateRoots() {
         Sources sources = ProjectUtils.getSources(project);
         groups = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
-        if (groups.length == 0) {
-            // XXX why?? This is probably wrong. If the project has no Java groups,
-            // you cannot move anything into it.
-            groups = sources.getSourceGroups( Sources.TYPE_GENERIC ); 
-        }
 
         int preselectedItem = 0;
         for( int i = 0; i < groups.length; i++ ) {
@@ -380,7 +380,9 @@ private void isUpdateReferencesActionPerformed(java.awt.event.ActionEvent evt) {
                 
         // Setup comboboxes 
         rootComboBox.setModel(new DefaultComboBoxModel(groups));
-        rootComboBox.setSelectedIndex(preselectedItem);
+        if (groups.length > 0) {
+            rootComboBox.setSelectedIndex(preselectedItem);
+        }
     }
     
     public Component getComponent() {

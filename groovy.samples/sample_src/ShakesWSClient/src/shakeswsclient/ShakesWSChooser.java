@@ -39,7 +39,7 @@ public class ShakesWSChooser extends javax.swing.JFrame {
         searchField = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Shapespeare Searcher");
+        setTitle("Shakespeare Searcher");
 
         resultArea.setBackground(javax.swing.UIManager.getDefaults().getColor("InternalFrame.borderColor"));
         resultArea.setColumns(20);
@@ -94,7 +94,9 @@ public class ShakesWSChooser extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-ShakesWSClient client = new ShakesWSClient();
+   
+    ShakesWSClient client = new ShakesWSClient();
+    
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         String searchString = client.setSearchString(searchField.getText());
         resultArea.setText(searchString);

@@ -418,62 +418,7 @@ public class WebServiceListModel {
         return initialized;
     }
 
-    public WebServiceData addWebService(final String wsdl, final String packageName, final String groupId) {
-        final WebServiceData wsData = new WebServiceData(wsdl, groupId);
-        wsData.setPackageName(packageName);
-        wsData.setResolved(false);
-
-        // Run the add W/S asynchronously
-        Runnable addWsRunnable = new Runnable() {
-
-            public void run() {
-                try {
-                    WebServiceManager.getInstance().addWebService(wsData, true);
-                } catch (IOException ex) {
-                    handleException(ex);
-                }
-            }
-        };
-        RequestProcessor.getDefault().post(addWsRunnable);
-        return wsData;
-    }
-
-    public void refreshWebService(final WebServiceData wsData) {
-        // Run the add W/S asynchronously
-        Runnable addWsRunnable = new Runnable() {
-
-            public void run() {
-                boolean addError = false;
-                Exception exc = null;
-                try {
-                    WebServiceManager.getInstance().refreshWebService(wsData);
-                } catch (IOException ex) {
-                    handleException(ex);
-                }
-            }
-        };
-        RequestProcessor.getDefault().post(addWsRunnable);
-    }
-
-    private void handleException(final Exception exception) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                if (exception instanceof FileNotFoundException) {
-                    String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "INVALID_URL");
-                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                    DialogDisplayer.getDefault().notify(d);
-                } else {
-                    String cause = (exception != null) ? exception.getLocalizedMessage() : null;
-                    String excString = (exception != null) ? exception.getClass().getName() + " - " + cause : null;
-
-                    String errorMessage = NbBundle.getMessage(WebServiceListModel.class, "WS_ADD_ERROR") + "\n\n" + excString; // NOI18N
-
-                    NotifyDescriptor d = new NotifyDescriptor.Message(errorMessage);
-                    DialogDisplayer.getDefault().notify(d);
-                }
-            }
-        });
-    }
+    
 
     private static final class RestFolderListener implements FileChangeListener {
 

@@ -17,7 +17,7 @@ Missing position for node SCRIPT[0:0]:SWITCH[20:0]:DEFAULT[24:4]:BLOCK[0:0]
           <EXPR_RESULT><SETNAME><BINDNAME>depth</BINDNAME> = <NUMBER>4</NUMBER></SETNAME></EXPR_RESULT></BLOCK></CASE>;
         <DEFAULT>default:
           <BLOCK><EXPR_RESULT><CALL><NAME>defaulthere</NAME>()</CALL></EXPR_RESULT></BLOCK></DEFAULT>;
-      }<TARGET></TARGET></SWITCH>
+      }</SWITCH><TARGET/>
 
 
 // Empty default
@@ -29,5 +29,5 @@ Missing position for node SCRIPT[0:0]:SWITCH[20:0]:DEFAULT[24:4]:BLOCK[0:0]
     <CASE>case <STRING>'whatever'</STRING>: <BLOCK><BLOCK>{
         <BREAK>break</BREAK>;
     }</BLOCK></BLOCK></CASE>
-}<TARGET></TARGET></SWITCH></SCRIPT>
+}</SWITCH></SCRIPT><TARGET/>
 

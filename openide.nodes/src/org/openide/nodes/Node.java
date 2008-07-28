@@ -1050,7 +1050,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
      *
      * @param indices removed indicies, 
      */
-    final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry, List<Node> previous) {
+    final void fireSubNodesChangeIdx(boolean added, int[] idxs, Children.Entry sourceEntry, List<Node> current, List<Node> previous) {
         NodeMemberEvent ev = null;
 
         Object[] tmpListeners = this.listeners.getListenerList();
@@ -1060,7 +1060,7 @@ public abstract class Node extends FeatureDescriptor implements Lookup.Provider,
             if (tmpListeners[i] == NodeListener.class) {
                 // Lazily create the event:
                 if (ev == null) {
-                    ev = new NodeMemberEvent(this, added, idxs, previous);
+                    ev = new NodeMemberEvent(this, added, idxs, current, previous);
                     ev.sourceEntry = sourceEntry;
                 }
                 if (added) {

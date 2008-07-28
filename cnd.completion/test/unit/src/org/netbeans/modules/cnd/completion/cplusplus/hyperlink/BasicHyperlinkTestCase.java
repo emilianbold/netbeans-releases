@@ -341,7 +341,18 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("labels.cc", 31, 12, "labels.cc", 33, 9);
         performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
         performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
-    }    
+    }
+
+    public void testStaticConstInNamespace() throws Exception {
+        // IZ141765 static const in namespace definition is unresolved
+        performTest("IZ141765_static_const_in_nsp.cc", 7, 48, "IZ141765_static_const_in_nsp.h", 3, 17);
+        performTest("IZ141765_static_const_in_nsp.cc", 9, 48, "IZ141765_static_const_in_nsp.h", 4, 17);
+    }
+
+    public void testStaticFunctionInHeader() throws Exception {
+        // IZ141601 A static function defined in a header and used in a source file is unresolved
+        performTest("IZ141601_static_fun_in_hdr.c", 4, 8, "IZ141601_static_fun_in_hdr.h", 2, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

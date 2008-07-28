@@ -54,6 +54,7 @@ final class NewExtensionPanel extends javax.swing.JPanel {
     public NewExtensionPanel() {
         super();
         initComponents();
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NewExtensionPanel.class, "NewExtensionPanel.AD"));
     }
 
     void setModel(FileAssociationsModel model) {

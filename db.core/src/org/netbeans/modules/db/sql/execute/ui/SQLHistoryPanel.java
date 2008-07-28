@@ -56,8 +56,11 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.ComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -82,6 +85,8 @@ import org.openide.filesystems.Repository;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
  *
@@ -101,9 +106,14 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
     private JEditorPane editorPane;
 
     /** Creates new form SQLHistoryDlg2 */
-    public SQLHistoryPanel(JEditorPane editorPane) {
+    public SQLHistoryPanel(final JEditorPane editorPane) {
         this.editorPane = editorPane;
-        this.view = new SQLHistoryView(new SQLHistoryModelImpl());
+        final Task task = RequestProcessor.getDefault().create(new Runnable() {
+            public void run() {
+                view = new SQLHistoryView(new SQLHistoryModelImpl());
+            }
+        });
+        task.run();
         initSQLHistoryTableData(view);
         initComponents();
         connectionComboBox.addActionListener((HistoryTableModel) sqlHistoryTable.getModel());
@@ -119,8 +129,11 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
             sqlLimitTextField.setText(savedLimit);
         } else {
             sqlLimitTextField.setText(SAVE_STATEMENTS_MAX_LIMIT_ENTERED); // NOI18N
-        }       
+        }
         // Make sure the save limit is considered
+        if (savedLimit.equals(SAVE_STATEMENTS_CLEARED)) {
+            savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
+        }
         SQLHistoryPersistenceManager.getInstance().updateSQLSaved(Integer.parseInt(savedLimit), Repository.getDefault().getDefaultFileSystem().getRoot().getFileObject(SQL_HISTORY_FOLDER));
         // Check SQL statements limit
         verifySQLLimit();
@@ -189,6 +202,7 @@ public class SQLHistoryPanel extends javax.swing.JPanel {
         jLabel1.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Connection")); // NOI18N
 
         connectionComboBox.setActionCommand(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "SQLHistoryPanel.connectionComboBox.actionCommand")); // NOI18N
+        connectionComboBox.setRenderer(new ConnectionRenderer());
 
         jLabel2.setText(org.openide.util.NbBundle.getMessage(SQLHistoryPanel.class, "LBL_Match")); // NOI18N
 
@@ -825,4 +839,14 @@ private void verifySQLLimit() {
             column.setPreferredWidth(maxwidth);
         }
     }
+
+    private static final class ConnectionRenderer extends DefaultListCellRenderer {
+
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            JLabel component = (JLabel) super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            component.setToolTipText((String) value);
+            return component;
+        }
+    }
+
 }

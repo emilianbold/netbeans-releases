@@ -501,6 +501,14 @@
     <mapID target="org.netbeans.modules.junit.wizards.StepProblemMessage" url="junit/junit_creatingtests.html" /> 
     <!-- Choose JUnit version dialog box -->
     <mapID target="org.netbeans.modules.junit.select_junit_version" url="junit/junit_csh_chooseversion.html" /> 
+    <!-- New JUnit Test - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.EmptyTest" url="junit/junit_csh_emptytest.html" />
+    <!-- New JUnit Test for Existing Class - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.SimpleTest" url="junit/junit_csh_simpletest.html" />  
+    <!-- New JUnit Test Suite - New File wizard -->
+    <mapID target="org.netbeans.modules.junit.wizards.TestSuite" url="junit/junit_csh_testsuite.html" />  
+
+
 
 
 
@@ -558,8 +566,6 @@ right now the IDs don't seem towork:-->
 <!--ID for CSH in Options | Basic Options - Advanced-Ant Category: --> 
     <mapID target="netbeans.optionsDialog.advanced.ant" url="configure/options_ant.html" />
   
-<!--Tools | Options | Testing | JUnit Module Settings; both node and propsheet-->
-    <mapID target="org.netbeans.modules.junit.JUnitSettings" url="configure/options_junit_settings.html" />
 
 
     <!-- End of "CSH" section -->

@@ -48,12 +48,14 @@ import java.beans.PropertyVetoException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
+import java.util.logging.Level;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JFrame;
 import javax.swing.JScrollBar;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
+import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
@@ -76,10 +78,23 @@ public final class TreeViewTest extends NbTestCase {
     private ExplorerWindow testWindow;
     private volatile boolean isScrolledDown;
     private final Object semaphore = new Object();
+    private CharSequence log;
     
     public TreeViewTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void runTest() throws Throwable {
+        VisualizerNode.LOG.setLevel(Level.FINE);
+        log = Log.enable(VisualizerNode.LOG.getName(), Level.FINE);
+        super.runTest();
+        if (log.length() > 0 && log.toString().indexOf("Children.MUTEX") >= 0) {
+            fail("something has been logged:\n" + log);
+        }
+    }
+
+
 
 //    public static TreeViewTest suite() {
 //        return new TreeViewTest("testPreventGCOfVisibleNodesLazy");

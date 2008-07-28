@@ -1,14 +1,13 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
@@ -21,14 +20,14 @@ import javax.servlet.http.HttpSession;
 
 /**
  *
- * @author __NAME__
+ * @author ${name}
  */
-public class __NAME__ extends Authenticator {
+public class ${name} extends Authenticator {
 
     private static String appUsername;
     private static String appPassword;
     private static boolean useAppUsernamePassword;
-    private static String CLASS_NAME = __NAME__.class.getSimpleName();
+    private static String CLASS_NAME = ${name}.class.getSimpleName();
     private static String ATTR_PREFIX = CLASS_NAME.toLowerCase();
     private static String USERNAME_ATTR = ATTR_PREFIX + "_username";
     private static String PASSWORD_ATTR = ATTR_PREFIX + "_password";
@@ -43,7 +42,7 @@ public class __NAME__ extends Authenticator {
     static {
         try {
             Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(PROP_FILE));
+            props.load(${name}.class.getResourceAsStream(PROP_FILE));
             appUsername = props.getProperty("username");
             appPassword = props.getProperty("password");
 
@@ -56,7 +55,7 @@ public class __NAME__ extends Authenticator {
             
             System.out.println("useAppUsernamePassword = " + useAppUsernamePassword);
         } catch (IOException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -65,7 +64,7 @@ public class __NAME__ extends Authenticator {
         assert response != null;
 
         if (useAppUsernamePassword) {
-            Authenticator.setDefault(new __NAME__(appUsername, appPassword));
+            Authenticator.setDefault(new ${name}(appUsername, appPassword));
         } else {
             HttpSession session = request.getSession(true);
             String sessionUsername = (String) session.getAttribute(USERNAME_ATTR);
@@ -83,12 +82,12 @@ public class __NAME__ extends Authenticator {
                     response.sendRedirect(returnUrl);
                 }
             }
-            Authenticator.setDefault(new __NAME__(sessionUsername, sessionPassword));
+            Authenticator.setDefault(new ${name}(sessionUsername, sessionPassword));
         }
 
     }
 
-    private __NAME__(String username, String password) {
+    private ${name}(String username, String password) {
         this.username = username;
         this.password = password;
     }

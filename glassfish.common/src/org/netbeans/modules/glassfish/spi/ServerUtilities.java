@@ -67,6 +67,7 @@ public final class ServerUtilities {
     public static final TimeUnit ACTION_TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
     public static final String GFV3_MODULES_DIR_NAME = "modules"; // NOI18N
     public static final String GFV3_PREFIX_JAR_NAME = "glassfish-10.0"; // NOI18N"
+    static public final String PROP_FIRST_RUN = "first_run";
     
     
     private ServerUtilities() {
@@ -222,12 +223,23 @@ public final class ServerUtilities {
      * quotes.
      *
      * !PW FIXME handles only spaces right now.  Should handle all whitespace.
-     *
+     * !PW FIMME 4NT completion on Windows quotes paths if a folder has a comma
+     *   in the name.  Might need that too, though I haven't proved it yet.      *
      * @param path
      * @return
      */
     public static final String quote(String path) {
         return path.indexOf(' ') == -1 ? path : "\"" + path + "\"";
     }
-    
+
+
+    /**
+     *  Determine if the named directory is a TP2 install.
+     * 
+     * @param gfRoot the name of the directory to check against.
+     * @return true if the directory appears to be the root of a TP2 installation.
+     */    
+    static public boolean isTP2(String gfRoot) {
+        return ServerUtilities.getJarName(gfRoot, ServerUtilities.GFV3_PREFIX_JAR_NAME).getName().indexOf("-tp-2-") > -1; // NOI18N
+    }
 }

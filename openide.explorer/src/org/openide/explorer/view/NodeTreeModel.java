@@ -161,7 +161,7 @@ public class NodeTreeModel extends DefaultTreeModel {
         aNode.setUserObject(newValue);
         nodeChanged(aNode);
     }
-    
+
     void nodesWereInsertedInternal(final VisualizerEvent ev) {
         if (listenerList == null) {
             return;

@@ -36,14 +36,15 @@
  * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.websvc.saas.ui.nodes;
 
 import java.awt.Image;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Action;
 import org.netbeans.modules.websvc.saas.model.Saas;
+import org.netbeans.modules.websvc.saas.model.SaasServicesModel;
 import org.netbeans.modules.websvc.saas.spi.SaasNodeActionsProvider;
 import org.netbeans.modules.websvc.saas.ui.actions.DeleteServiceAction;
 import org.netbeans.modules.websvc.saas.ui.actions.RefreshServiceAction;
@@ -59,8 +60,9 @@ import org.openide.util.lookup.AbstractLookup;
  * @author nam
  */
 public abstract class SaasNode extends AbstractNode {
+
     protected Saas saas;
-    
+
     public SaasNode(SaasNodeChildren nodeChildren, AbstractLookup lookup, Saas saas) {
         super(nodeChildren, lookup);
         this.saas = saas;
@@ -69,12 +71,12 @@ public abstract class SaasNode extends AbstractNode {
     public Saas getSaas() {
         return saas;
     }
-    
+
     @Override
     public String getDisplayName() {
         return saas.getDisplayName();
     }
-    
+
     @Override
     public String getShortDescription() {
         return saas.getDescription();
@@ -84,7 +86,7 @@ public abstract class SaasNode extends AbstractNode {
     public Image getIcon(int type) {
         return getGenericIcon(type);
     }
-    
+
     protected abstract Image getGenericIcon(int type);
 
     public static List<Action> getActions(Lookup lookup) {
@@ -96,7 +98,7 @@ public abstract class SaasNode extends AbstractNode {
         }
         return actions;
     }
-    
+
     @Override
     public Action[] getActions(boolean context) {
         List<Action> actions = getActions(getLookup());
@@ -105,5 +107,16 @@ public abstract class SaasNode extends AbstractNode {
         actions.add(SystemAction.get(RefreshServiceAction.class));
 
         return actions.toArray(new Action[actions.size()]);
+    }
+
+    @Override
+    public void destroy() throws IOException {
+        SaasServicesModel.getInstance().removeService(getSaas());
+        super.destroy();
+    }
+
+    @Override
+    public boolean canDestroy() {
+        return getSaas().isUserDefined();
     }
 }

@@ -232,7 +232,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lWebBrowser)
                         .add(18, 18, 18)
-                        .add(cbWebBrowser, 0, 983, Short.MAX_VALUE)
+                        .add(cbWebBrowser, 0, 986, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editBrowserButton))
                     .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
@@ -250,7 +250,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                     .add(layout.createSequentialGroup()
                                         .add(lProxyHost)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
+                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
                                         .add(12, 12, 12)
                                         .add(lProxyPort)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -260,10 +260,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                         .add(lUsage)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1021, Short.MAX_VALUE)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1057, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jUsageCheck)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 540, Short.MAX_VALUE)))))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -303,6 +303,11 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(24, Short.MAX_VALUE))
         );
+
+        bMoreProxy.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AN")); // NOI18N
+        bMoreProxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AD")); // NOI18N
+        editBrowserButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.editBrowserButton.AN")); // NOI18N
+        editBrowserButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.editBrowserButton.AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBrowserButtonActionPerformed

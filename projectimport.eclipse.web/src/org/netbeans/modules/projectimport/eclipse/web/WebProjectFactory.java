@@ -51,6 +51,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.projectimport.eclipse.core.spi.Facets.Facet;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectFactorySupport;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectImportModel;
 import org.netbeans.modules.projectimport.eclipse.core.spi.ProjectTypeFactory;
@@ -87,7 +88,6 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     private static final String WEB_NATURE = "org.eclipse.wst.common.modulecore.ModuleCoreNature"; // NOI18N
     private static final Icon WEB_PROJECT_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/web/project/ui/resources/webProjectIcon.gif")); //NOI18N
     
-    // TODO: check this one as well
     private static final String MYECLIPSE_WEB_NATURE = "com.genuitec.eclipse.j2eedt.core.webnature"; // NOI18N
     
     public WebProjectFactory() {
@@ -119,9 +119,13 @@ public class WebProjectFactory implements ProjectTypeUpdater {
     
     public Project createProject(final ProjectImportModel model, final List<String> importProblems) throws IOException {
         // create nb project location
-        File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
+        File nbProjectDir = model.getNetBeansProjectLocation();
         
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
+        if (webData == null) {
+            importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingExtraWebFiles")); //NOI18N
+            return null;
+        }
 
         String serverID;
         if (model.getExtraWizardPanels() != null && findWizardPanel(model) != null) {
@@ -130,7 +134,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
             serverID = wizard.getServerID();
         } else {
             if (Deployment.getDefault().getServerInstanceIDs().length == 0) {
-                importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_NoJ2EEServer"));
+                importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_NoJ2EEServer")); //NOI18N
                 return null;
             } else {
                 serverID = Deployment.getDefault().getServerInstanceIDs()[0];
@@ -141,7 +145,27 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setProjectDir(nbProjectDir);
         createData.setName(model.getProjectName());
         createData.setServerInstanceID(serverID);
-        createData.setJavaEEVersion("1.5"); //NOI18N
+        String  j2eeSpecVersion = null;
+        if (model.getFacets() != null) {
+            Facet f = model.getFacets().getFacet("jst.web"); //NOI18N
+            if (f != null) {
+                String servletAPIVersion = f.getVersion();
+                if ("2.5".equals(servletAPIVersion)) {
+                    j2eeSpecVersion = "1.5"; // NOI18N
+                } else if ("2.4".equals(servletAPIVersion)) {
+                    j2eeSpecVersion = "1.4"; // NOI18N
+                } else if ("2.3".equals(servletAPIVersion)) {
+                    j2eeSpecVersion = "1.3"; // NOI18N
+                }
+            }
+        }
+        if (j2eeSpecVersion == null && webData.j2eeSpecVersion != null) {
+            j2eeSpecVersion = webData.j2eeSpecVersion;
+        }
+        if (j2eeSpecVersion == null) {
+            j2eeSpecVersion = "1.5"; //NOI18N
+        }
+        createData.setJavaEEVersion(j2eeSpecVersion);
         createData.setSourceLevel(model.getSourceLevel());
         if (model.getJavaPlatform() != null) {
             createData.setJavaPlatformName(model.getJavaPlatform().getDisplayName());
@@ -151,6 +175,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         FileObject root = FileUtil.toFileObject(model.getEclipseProjectFolder());
         if (root.getFileObject(webData.webRoot) == null) {
             importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingDocRoot", webData.webRoot));
+            return null;
         }
         createData.setWebModuleFO(root);
         createData.setSourceFolders(model.getEclipseSourceRootsAsFileArray());
@@ -160,7 +185,11 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         createData.setLibFolder(root.getFileObject(webData.webRoot+"/WEB-INF/lib")); //NOI18N
         createData.setWebInfFolder(root.getFileObject(webData.webRoot+"/WEB-INF")); //NOI18N
         createData.setLibrariesDefinition(null);
-        createData.setBuildfile("build.xml"); //NOI18N
+        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+            createData.setBuildfile("nb-build.xml"); //NOI18N
+        } else {
+            createData.setBuildfile("build.xml"); //NOI18N
+        }
         
         AntProjectHelper helper = WebProjectUtilities.importProject(createData);
         WebProject nbProject = (WebProject)ProjectManager.getDefault().findProject(helper.getProjectDirectory());
@@ -235,6 +264,10 @@ public class WebProjectFactory implements ProjectTypeUpdater {
             }
             WebContentData data = new WebContentData();
             data.contextRoot = modulesEl.getAttribute("context-root"); //NOI18N
+            String specVer = modulesEl.getAttribute("j2ee-spec"); //NOI18N
+            if ("5.0".equals(specVer)) {
+                specVer = "1.5"; // NOI18N
+            }
             Element attrsEl = Util.findElement(modulesEl, "attributes", null); //NOI18N
             if (attrsEl != null) {
                 for (Element el : Util.findSubElements(attrsEl)) {
@@ -248,12 +281,13 @@ public class WebProjectFactory implements ProjectTypeUpdater {
             }
             return data;
         }
-        throw new IOException("cannot find web project specific config files"); //NOI18N
+        return null;
     }
     
     private static class WebContentData {
         private String contextRoot;
         private String webRoot;
+        private String j2eeSpecVersion; // only initialized in case od MyEclipse
 
         @Override
         public String toString() {
