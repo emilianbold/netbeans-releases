@@ -1643,8 +1643,8 @@ public abstract class TreeView extends JScrollPane {
         //
         @Override
         public void paint(final Graphics g) {
-            new GuardedActions(0, g);
-        }
+                new GuardedActions(0, g);
+            }
 
         @Override
         protected void validateTree() {
