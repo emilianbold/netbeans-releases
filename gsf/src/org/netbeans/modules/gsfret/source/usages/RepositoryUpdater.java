@@ -71,8 +71,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.apache.lucene.document.DateTools;
 import org.netbeans.modules.gsf.api.Error;
 import org.netbeans.modules.gsf.api.Severity;
@@ -185,14 +183,16 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private Work currentWork;
     private boolean dirty;
     private int noSubmited;
+    private final AtomicBoolean closed;
     
     //Preprocessor support
     //private final Map<URL, JavaFileFilterImplementation> filters = Collections.synchronizedMap(new HashMap<URL, JavaFileFilterImplementation>());
-    private final FilterListener filterListener = new FilterListener ();    
+    //private final FilterListener filterListener = new FilterListener ();
     
     /** Creates a new instance of RepositoryUpdater */
     private RepositoryUpdater() {
         try {
+            this.closed = new AtomicBoolean (false);
             this.scannedRoots = Collections.synchronizedSet(new HashSet<URL>());
             this.scannedBinaries = Collections.synchronizedSet(new HashSet<URL>());            
             this.deps = Collections.synchronizedMap(new HashMap<URL,List<URL>>());
@@ -223,6 +223,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     }
     
     public void close () {                
+        this.closed.set(true);
         this.cp.removePropertyChangeListener(this);
         this.unregisterFileSystemListener();
         this.delay.cancel();
@@ -695,6 +696,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                 }
                                 state = Utilities.topologicalSort(roots, depGraph);                                                                             
                                 for (java.util.ListIterator<URL> it = state.listIterator(state.size()); it.hasPrevious(); ) {                
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     final URL rootURL = it.previous();
                                     it.remove();
                                     updateFolder (rootURL,rootURL, true, handle);
@@ -733,6 +737,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 
                                 final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                 for (ClassPath.Entry entry : entries) {
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     final URL rootURL = entry.getURL();
                                     findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                 }                                
@@ -790,6 +797,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     return null;
                                 }
                                 while (isDirty()) {
+                                    if (closed.get()) {
+                                        return null;
+                                    }
                                     assert CompileWorker.this.state.isEmpty();                                    
                                     final List<ClassPath.Entry> entries = new LinkedList<ClassPath.Entry>();
                                     entries.addAll (cp.entries());
@@ -807,6 +817,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                                     }
                                     final Map<URL,List<URL>> depGraph = new HashMap<URL,List<URL>> ();
                                     for (ClassPath.Entry entry : entries) {
+                                        if (closed.get()) {
+                                            return null;
+                                        }
                                         final URL rootURL = entry.getURL();
                                         findDependencies (rootURL, new Stack<URL>(), depGraph, newBinaries, true);
                                     }
@@ -1063,6 +1076,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
                 }
+                if (closed.get()) {
+                    return true;
+                }
                 final URL rootURL = it.next();
                 try {
                     it.remove();
@@ -1102,6 +1118,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
             for (java.util.ListIterator<URL> it = this.state.listIterator(this.state.size()); it.hasPrevious(); ) {
                 if (this.canceled.getAndSet(false)) {                    
                     return false;
+                }
+                if (closed.get()) {
+                    return true;
                 }
                 try {
                     final URL rootURL = it.previous();
@@ -2124,9 +2143,9 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
     }
     
     
-    private class FilterListener implements ChangeListener {
-            
-        public void stateChanged(ChangeEvent event) {
+//    private class FilterListener implements ChangeListener {
+//
+//        public void stateChanged(ChangeEvent event) {
 //            Object source = event.getSource();
 //            if (source instanceof JavaFileFilterImplementation) {
 //                List<URL> dirtyRoots = new LinkedList<URL> ();
@@ -2139,8 +2158,8 @@ if (BUG_LOGGER.isLoggable(Level.FINE)) {
 //                }
 //                submit(Work.filterChange(dirtyRoots));
 //            }
-        }
-    }
+//        }
+//    }
     
     public static synchronized RepositoryUpdater getDefault () {
         if (instance == null) {

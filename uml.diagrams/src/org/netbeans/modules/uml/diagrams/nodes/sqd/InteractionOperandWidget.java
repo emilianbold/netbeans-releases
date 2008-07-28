@@ -315,7 +315,11 @@ public class InteractionOperandWidget extends Widget implements DiagramNodeWrite
                 if (nodeLabel.getPosition() != null)
                 {
                     ((UMLLabelWidget)label).addPersistenceProperty(UMLNodeWidget.LOCATION, nodeLabel.getPosition());
-                    label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, PersistenceUtil.getParentUMLNodeWidget(this).getPreferredLocation());
+                    UMLNodeWidget cf = PersistenceUtil.getParentUMLNodeWidget(this);
+                    if (cf != null)
+                    {
+                        label.addPersistenceProperty(UMLNodeWidget.GRANDPARENTLOCATION, cf.getPreferredLocation());
+                    }
                     label.setPreferredLocation(nodeLabel.getPosition());
                 }
                 label.refresh(false);

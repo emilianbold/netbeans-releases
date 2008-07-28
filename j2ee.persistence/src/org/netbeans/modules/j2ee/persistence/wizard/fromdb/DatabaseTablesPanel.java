@@ -126,7 +126,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
 
         if (enabled) {
-            boolean withDatasources = Util.isSupportedJavaEEVersion(project) || Util.isEjb21Module(project);
+            boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
             if (withDatasources) {
                 initializeWithDatasources();
             } else {

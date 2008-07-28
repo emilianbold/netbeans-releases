@@ -1563,7 +1563,15 @@ public class HgCommand {
             command.add(HG_FLAG_REV_CMD);
             command.add(revision);
         }
-        command.add(file.getAbsolutePath());
+        try {
+            // cmd returns error if there are simlinks in absolute path and file is deleted
+            // abort: /path/file not under root
+            command.add(file.getCanonicalPath());
+        } catch (IOException e) {
+            Mercurial.LOG.log(Level.WARNING, "command: " + HgUtils.replaceHttpPassword(command)); // NOI18N
+            Mercurial.LOG.log(Level.WARNING, null, e); // NOI18N
+            throw new HgException(e.getMessage());
+        }
         List<String> list = exec(command);
 
         if (!list.isEmpty()) {

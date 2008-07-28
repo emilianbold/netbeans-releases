@@ -59,7 +59,7 @@ public class XMLGeneration extends GeneralXMLTest {
 
     void CheckInternal( )
     {
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Check XML");
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Check XML");
 
       Sleep( 10000 );
       // TODO : remove sleep, insert wait for text

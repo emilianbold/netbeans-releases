@@ -136,12 +136,25 @@ public class DebuggingActionsProviderFilter implements NodeActionsProviderFilter
     
     public Action[] getActions(NodeActionsProvider original, Object node) throws UnknownTypeException {
         if (node == TreeModel.ROOT) {
-            return new Action [] {
+            Action[] actions = new Action [] {
                 RESUME_ALL_ACTION,
                 SUSPEND_ALL_ACTION,
                 null,
                 DEADLOCK_DETECT_ACTION
             };
+            Action[] origActions = original.getActions(node);
+            if (origActions == null || origActions.length == 0) {
+                return actions;
+            }
+            Action[] result = new Action[actions.length + 1 + origActions.length];
+            for (int x = 0; x < actions.length; x++) {
+                result[x] = actions[x];
+            }
+            result[actions.length] = null; // separator
+            for (int x = 0; x < origActions.length; x++) {
+                result[actions.length + 1 + x] = origActions[x];
+            }
+            return result;
         } else {
             return original.getActions(node);
         }

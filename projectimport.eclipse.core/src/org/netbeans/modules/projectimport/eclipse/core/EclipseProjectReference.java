@@ -165,7 +165,9 @@ public class EclipseProjectReference {
      *  project classpath is compared
      */
     public boolean isUpToDate(boolean deepTest) {
-        if (getCurrentTimestamp() <= timestamp && !deepTest) {
+        if (getCurrentTimestamp() > timestamp) {
+            return false;
+        } else if (!deepTest) {
             return true;
         }
         EclipseProject ep = getEclipseProject(true);
@@ -182,7 +184,7 @@ public class EclipseProjectReference {
     }
 
     void update(List<String> importProblems) throws IOException {
-        EclipseProject ep = getEclipseProject(false);
+        EclipseProject ep = getEclipseProject(true);
         if (ep == null) {
             // an exception was thrown; pretend proj is uptodate
             return;
@@ -230,13 +232,15 @@ public class EclipseProjectReference {
     public EclipseProject getEclipseProject(boolean forceReload) {
         if (forceReload || !initialized) {
             try {
+                EclipseProject ep = null;
                 if (getFallbackWorkspaceProjectLocation() != null) {
                     Workspace w = WorkspaceFactory.getInstance().load(getFallbackWorkspaceProjectLocation());
-                    eclipseProject = w.getProjectByProjectDir(getFallbackEclipseProjectLocation());
+                    ep = w.getProjectByProjectDir(getFallbackEclipseProjectLocation());
                 }
-                if (eclipseProject == null) {
-                    eclipseProject = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
+                if (ep == null) {
+                    ep = ProjectFactory.getInstance().load(getFallbackEclipseProjectLocation(), getFallbackWorkspaceProjectLocation());
                 }
+                eclipseProject = ep;
             } catch (ProjectImporterException ex) {
                 Exceptions.printStackTrace(ex);
                 eclipseProject = null;

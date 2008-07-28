@@ -51,10 +51,11 @@ import org.netbeans.modules.uml.drawingarea.view.ResourceType;
  */
 public class InitialNodeWidget extends ControlNodeWidget
 {
-
-    public InitialNodeWidget(Scene scene)
+    public static final int RADIUS = 8;
+    
+    public InitialNodeWidget(Scene scene, String path)
     {
-        super(scene, true);   // context palette is on
+        super(scene, path);   // context palette is on
         setResizable(false);
     }
 
@@ -63,11 +64,9 @@ public class InitialNodeWidget extends ControlNodeWidget
     {
         if (presentation != null)
         {
-
-            //IInitialNode element = (IInitialNode) presentation.getFirstSubject();
             // create a circle node
             OvalWidget circleWidget = new OvalWidget(getScene(),
-                                                     DEFAULT_INNER_RADIUS,
+                                                     getRadius(),
                                                      getWidgetID(),
                                                      bundle.getString("LBL_body"));
 
@@ -89,33 +88,9 @@ public class InitialNodeWidget extends ControlNodeWidget
     {
         return UMLWidgetIDString.INITIALNODEWIDGET.toString();
     }
-
     
-//    private class CircleWidget extends OvalWidget
-//    {   
-//        public CircleWidget(Scene scene, int r, String propID, String propDisplayName)
-//        {
-//            super(scene, r, propID, propDisplayName);
-//        }
-
-//         @Override
-//        protected Rectangle calculateClientArea()
-//        {
-                //make sure the circle always has a fixed bounds
-//            Rectangle  bounds = getBounds();
-//            if (bounds == null) 
-//            {
-//                int width = getWidth();
-//                int height = getHeight();
-//                return new Rectangle( -width/2, -height/2, width, height);
-//            }
-//            if (bounds.width != bounds.height)
-//            {
-//                int cx = GeomUtil.centerX(bounds);
-//                int adjustedLen = Math.min(bounds.width, bounds.height);
-//               return  new Rectangle( cx-(adjustedLen/2), bounds.y, adjustedLen, adjustedLen);
-//            }
-//            return bounds;
-//        }
-//    }   
+    protected int getRadius()
+    {
+        return RADIUS;
+    }
 }

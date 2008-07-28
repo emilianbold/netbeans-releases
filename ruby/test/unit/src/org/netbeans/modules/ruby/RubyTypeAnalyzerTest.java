@@ -152,4 +152,10 @@ public class RubyTypeAnalyzerTest extends RubyTestBase {
     
     // TODO: Make sure I can handle compound expressions like this one:
     //  Product.find(params[:id]).destroy
+
+    public void testMigrationType() throws Exception {
+        RubyTypeAnalyzer instance = getAnalyzer("testfiles/migrate/20080726182725_create_posts.rb", " t.^time", true);
+
+        assertEquals("ActiveRecord::ConnectionAdapters::TableDefinition", instance.getType("t"));
+    }
 }

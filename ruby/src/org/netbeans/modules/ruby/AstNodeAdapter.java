@@ -165,9 +165,13 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
         sb.append(node.toString());
         sb.append("<i>");
         sb.append(" (");
-        sb.append(getStartOffset());
-        sb.append("-");
-        sb.append(getEndOffset());
+        if (node.isInvisible()) {
+            sb.append("INVISIBLE");
+        } else {
+            sb.append(getStartOffset());
+            sb.append("-");
+            sb.append(getEndOffset());
+        }
         sb.append(") ");
         sb.append("</i>");
 
@@ -217,6 +221,9 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getStartOffset() {
+        if (node.isInvisible()) {
+            return -1;
+        }
         if (node == Node.INVALID_POSITION) {
             return -1;
         } else if (node.getPosition() != null) {
@@ -227,6 +234,9 @@ class AstNodeAdapter implements ParserResult.AstTreeNode {
     }
 
     public int getEndOffset() {
+        if (node.isInvisible()) {
+            return -1;
+        }
         if (node == Node.INVALID_POSITION) {
             return -1;
         } else if (node.getPosition() != null) {

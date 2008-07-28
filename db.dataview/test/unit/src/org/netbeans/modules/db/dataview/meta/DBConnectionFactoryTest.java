@@ -40,23 +40,16 @@
 package org.netbeans.modules.db.dataview.meta;
 
 import java.sql.Connection;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.db.dataview.util.DbUtil;
-import org.netbeans.modules.db.dataview.util.TestCaseContext;
 import org.openide.util.Exceptions;
 
 /**
  *
- * @author navaneeth
+ * @author jawed
  */
 public class DBConnectionFactoryTest extends NbTestCase {
     
-    Connection conn;
-    DatabaseConnection dbconn;
-    TestCaseContext context;
     public DBConnectionFactoryTest(String testName) {
         super(testName);
     }

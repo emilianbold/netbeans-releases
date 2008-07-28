@@ -96,7 +96,6 @@ NAMESPACE rng (rng)
     NAMESPACE DEFINITIONS for C (rng::C) 
         resolver_ns_general.cc  [7:5/76-20:6/344]
     NAMESPACE C (rng::C) 
-        VARIABLE c [8:9/98-8:32/121]  TYPE: const int TEXT=const int  [8:9/98-8:25/114]  INIT: text='5'  SCOPE: C 
         STRUCT CC (rng::C::CC ) [9:9/130-18:11/337] lcurly=140 SCOPE: C 
             BASE CLASSES:
             MEMBERS:

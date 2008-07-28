@@ -42,6 +42,7 @@ package org.netbeans.modules.php.project.ui.wizards;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import java.nio.charset.Charset;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -53,6 +54,7 @@ import javax.swing.MutableComboBoxModel;
 import javax.swing.SwingConstants;
 import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.netbeans.modules.php.project.ui.LocalServer;
 import org.netbeans.modules.php.project.ui.Utils;
 import org.netbeans.modules.php.project.ui.Utils.EncodingModel;
@@ -181,9 +183,10 @@ class ConfigureExistingProjectPanelVisual extends ConfigurableProjectPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void sourcesBrowseButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_sourcesBrowseButtonActionPerformed
-        String newLocation = Utils.browseLocationAction(this, sourcesTextField.getText(), NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
+        File newLocation = Utils.browseLocationAction(this, LastUsedFolders.getSources(), NbBundle.getMessage(ProjectFolder.class, "LBL_SelectProjectFolder"));
         if (newLocation != null) {
-            sourcesTextField.setText(newLocation);
+            sourcesTextField.setText(newLocation.getAbsolutePath());
+            LastUsedFolders.setSources(newLocation);
         }
     }//GEN-LAST:event_sourcesBrowseButtonActionPerformed
 

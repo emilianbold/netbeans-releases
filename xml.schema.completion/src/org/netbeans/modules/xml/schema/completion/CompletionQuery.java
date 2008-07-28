@@ -77,10 +77,12 @@ public class CompletionQuery extends AsyncCompletionQuery {
      */
     protected void query(CompletionResultSet resultSet,
             Document doc, int caretOffset) {
-//        if(!CompletionUtil.canProvideCompletion((BaseDocument)doc)) {
-//            resultSet.finish();
-//            return;
-//        }
+        
+        XMLSyntaxSupport support = ((XMLSyntaxSupport)((BaseDocument)doc).getSyntaxSupport());
+        if(support.noCompletion(component) || !CompletionUtil.canProvideCompletion((BaseDocument)doc)) {
+            resultSet.finish();
+            return;
+        }
         
         List<CompletionResultItem> items = getCompletionItems(doc, caretOffset);
         if(items != null) resultSet.addAllItems(items);

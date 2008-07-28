@@ -76,6 +76,10 @@ public abstract class AstElement extends RubyElement {
         this.node = node;
     }
 
+    public String getFqn() {
+        return name;
+    }
+
     public Node getNode() {
         return node;
     }

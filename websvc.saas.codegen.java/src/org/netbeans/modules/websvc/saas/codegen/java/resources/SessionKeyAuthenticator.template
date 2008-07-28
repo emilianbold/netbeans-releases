@@ -1,14 +1,13 @@
-/*
- * RefConverter.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLEncoder;
@@ -23,9 +22,9 @@ import org.netbeans.saas.RestConnection;
 
 /**
  *
- * @author __USER__
+ * @author ${user}
  */
-public class __NAME__ {
+public class ${name} {
 
     private static String apiKey;
     private static String secret;
@@ -33,12 +32,12 @@ public class __NAME__ {
     static {
         try {
             Properties props = new Properties();
-            props.load(__NAME__.class.getResourceAsStream(
+            props.load(${name}.class.getResourceAsStream(
                     "profile.properties"));
             apiKey = props.getProperty("api_key");
             secret = props.getProperty("secret");
         } catch (IOException ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
@@ -78,7 +77,7 @@ public class __NAME__ {
 
             return bigInt.toString(16);
         } catch (Exception ex) {
-            Logger.getLogger(__NAME__.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(${name}.class.getName()).log(Level.SEVERE, null, ex);
         }
 
         return null;

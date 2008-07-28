@@ -47,6 +47,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.JPanel;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
@@ -56,6 +57,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.makeproject.NativeProjectProvider;
 import org.netbeans.modules.cnd.ui.options.IsChangedListener;
 import org.netbeans.modules.cnd.ui.options.ToolsPanel;
@@ -89,8 +91,18 @@ public class ParserSettingsPanel extends JPanel implements ChangeListener, Actio
         if (tp != null) {
             // This gets called from commitValidation and tp is null - its not a run-time problem
             // because the "real" way we create this a ToolsPanel exists. But not the commitValidation way!
-            tp.addCompilerSetChangeListener(this);
-            tp.addIsChangedListener(this);
+            ToolsPanel.addCompilerSetChangeListener(this);
+            ToolsPanel.addIsChangedListener(this);
+        }
+        
+        ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+        if (registry != null) {
+            ServerRecord record = registry.getDefaultRecord();
+            if (record != null) {
+                Logger rdlog = Logger.getLogger("cnd.remote.logger"); // NOI18N
+                rdlog.fine("ParserSettingsPanel<Init>: Validating " + record.getName());
+                record.validate(); // ensure the development host is initialized
+            }
         }
     }
 

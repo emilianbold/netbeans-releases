@@ -180,7 +180,7 @@ public class XMLCodeCompletion extends JellyTestCase {
         opNewProjectWizard.next( );
 
         NewProjectNameLocationStepOperator opNewProjectNameLocationStep = new NewProjectNameLocationStepOperator( );
-        opNewProjectNameLocationStep.txtProjectLocation( ).setText( System.getProperty( "xtest.workdir" ) );
+        opNewProjectNameLocationStep.txtProjectLocation( ).setText( getDataDir( ).getPath( ) );
         opNewProjectNameLocationStep.txtProjectName( ).setText( sName );
         opNewProjectWizard.finish( );
 
