@@ -165,7 +165,7 @@ public final class SQLExecuteHelper {
         return Collections.unmodifiableList(statements);
     }
         
-    static List<StatementInfo> split(String script) {
+    public static List<StatementInfo> split(String script) {
         return new SQLSplitter(script).getStatements();
     }
     

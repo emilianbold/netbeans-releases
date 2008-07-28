@@ -60,13 +60,18 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
 
     private final List<SQLCompletionItem> items = new ArrayList<SQLCompletionItem>();
+    private final int itemOffset;
+
+    public SQLCompletionItems(int itemOffset) {
+        this.itemOffset = itemOffset;
+    }
 
     public Set<String> addSchemas(Catalog catalog, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         Set<String> result = new TreeSet<String>();
         filterMetadata(catalog.getSchemas(), restrict, prefix, new Handler<Schema>() {
             public void handle(Schema schema) {
                 if (!schema.isSynthetic()) {
-                    items.add(SQLCompletionItem.schema(schema.getName(), quoteString, substitutionOffset));
+                    items.add(SQLCompletionItem.schema(schema.getName(), quoteString, itemOffset + substitutionOffset));
                 }
             }
         });
@@ -76,7 +81,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public void addTables(Schema schema, Set<String> restrict, String prefix, final String quoteString, final int substitutionOffset) {
         filterMetadata(schema.getTables(), restrict, prefix, new Handler<Table>() {
             public void handle(Table table) {
-                items.add(SQLCompletionItem.table(table.getName(), quoteString, substitutionOffset));
+                items.add(SQLCompletionItem.table(table.getName(), quoteString, itemOffset + substitutionOffset));
             }
         });
     }
@@ -84,7 +89,7 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
     public void addAliases(List<String> aliases, String prefix, final String quoteString, final int substitutionOffset) {
         filterStrings(aliases, null, prefix, new Handler<String>() {
             public void handle(String alias) {
-                items.add(SQLCompletionItem.alias(alias, quoteString, substitutionOffset));
+                items.add(SQLCompletionItem.alias(alias, quoteString, itemOffset + substitutionOffset));
             }
         });
     }
@@ -94,9 +99,9 @@ public class SQLCompletionItems implements Iterable<SQLCompletionItem> {
         filterMetadata(table.getColumns(), null, prefix, new Handler<Column>() {
             public void handle(Column column) {
                 if (qualTableName != null) {
-                    items.add(SQLCompletionItem.column(qualTableName, column.getName(), quoteString, substitutionOffset));
+                    items.add(SQLCompletionItem.column(qualTableName, column.getName(), quoteString, itemOffset + substitutionOffset));
                 } else {
-                    items.add(SQLCompletionItem.column(table.getName(), column.getName(), quoteString, substitutionOffset));
+                    items.add(SQLCompletionItem.column(table.getName(), column.getName(), quoteString, itemOffset + substitutionOffset));
                 }
             }
         });

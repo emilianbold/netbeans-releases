@@ -178,14 +178,6 @@ public class SQLExecutionLoggerImpl implements SQLExecutionLogger {
         return fmt.format(ms / 1000.0);
     }
 
-    public void logResultSetException(Exception e) {
-        inputOutput.select();
-        OutputWriter writer = inputOutput.getErr();
-
-        writer.println(NbBundle.getMessage(SQLEditorSupport.class, "LBL_ResultSetErrorDetailed",
-                e.getMessage()));
-    }
-
     /**
      * Represents a hyperlinked line in an InputOutput.
      */
