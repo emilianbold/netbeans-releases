@@ -883,7 +883,7 @@ abstract class EntrySupport {
                         mustNotifySetEnties = false;
                         array = EMPTY;
                         children.callRemoveNotify();
-                        assert array.get() == null;
+                        assert array == EMPTY;
                     }
                 }
             } finally {
