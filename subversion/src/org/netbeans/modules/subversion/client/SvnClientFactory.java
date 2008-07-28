@@ -138,6 +138,12 @@ public class SvnClientFactory {
         return factory.connectionType() == ConnectionType.javahl;
     }
 
+    public static boolean isSvnKit() {
+        init();
+        assert factory != null;
+        return factory.connectionType() == ConnectionType.svnkit;
+    }
+
     /**
      * Returns a SvnClient, which isn't configured in any way.
      * Knows no username, password, has no SvnProgressSupport<br/>
