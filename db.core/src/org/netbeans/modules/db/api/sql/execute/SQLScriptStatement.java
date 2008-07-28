@@ -37,26 +37,35 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.properties.search;
+package org.netbeans.modules.db.api.sql.execute;
 
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import org.netbeans.modules.properties.PropertiesEncoding;
-import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
-import org.netbeans.modules.search.FileObjectDecoderProvider;
-import org.openide.filesystems.FileObject;
+/**
+ * Describes a statement in an SQL script.
+ *
+ * @author Andrei Badea
+ */
+public final class SQLScriptStatement {
 
-public final class PropertiesDecoderProvider implements FileObjectDecoderProvider {
+    private String text;
+    private int startOffset;
+    private int endOffset;
 
-    public CharsetDecoder getDecoderFor(Charset charset, FileObject fileObj) {
-        if ("text/x-properties".equals(fileObj.getMIMEType())) {        //NOI18N
-            if (!PropCharset.NAME.equals(charset.name())) {
-                return null;
-            }
-            return PropertiesEncoding.createDecoder(charset, fileObj.getSize());
-        } else {
-            return null;
-        }
+    SQLScriptStatement(String text, int startOffset, int endOffset) {
+        super();
+        this.text = text;
+        this.startOffset = startOffset;
+        this.endOffset = endOffset;
     }
 
+    public String getText() {
+        return text;
+    }
+
+    public int getStartOffset() {
+        return startOffset;
+    }
+
+    public int getEndOffset() {
+        return endOffset;
+    }
 }
