@@ -167,6 +167,8 @@ public class EntityClassesPanel extends javax.swing.JPanel {
             classNamesLabel.setVisible(false);
             classNamesScrollPane.setVisible(false);
             spacerPanel.setVisible(false);
+            
+            setName(org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_EntityBeansLocation"));
 
             Mnemonics.setLocalizedText(specifyNamesLabel, org.openide.util.NbBundle.getMessage(EntityClassesPanel.class, "LBL_SpecifyBeansLocation"));
         }
@@ -457,7 +459,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
         private boolean cmp;
 
         private List<Provider> providers;
-
+        
         public EntityClassesPanel getComponent() {
             if (component == null) {
                 component = new EntityClassesPanel();
@@ -484,6 +486,7 @@ public class EntityClassesPanel extends javax.swing.JPanel {
 
         public void readSettings(Object settings) {
             wizardDescriptor = (WizardDescriptor)settings;
+            
             RelatedCMPHelper helper = RelatedCMPWizard.getHelper(wizardDescriptor);
 
             if (!componentInitialized) {

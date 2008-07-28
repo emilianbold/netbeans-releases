@@ -36,8 +36,9 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.xml.text.indent;
+package org.netbeans.modules.xml.text;
 
+import org.netbeans.modules.xml.text.indent.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,7 +85,7 @@ public class AbstractTestCase extends TestCase {
     }
                  
     protected static BaseDocument getResourceAsDocument(String path) throws Exception {
-        InputStream in = XMLLexerFormatterTest.class.getResourceAsStream(path);
+        InputStream in = AbstractTestCase.class.getResourceAsStream(path);
         BaseDocument sd = new BaseDocument(BaseKit.class, false);
         BufferedReader br = new BufferedReader(new InputStreamReader(in,"UTF-8"));
         StringBuffer sbuf = new StringBuffer();
