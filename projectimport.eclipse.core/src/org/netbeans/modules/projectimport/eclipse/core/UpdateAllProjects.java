@@ -122,12 +122,14 @@ public class UpdateAllProjects {
         Map<File, ProjectsAndDestination> workspaceProjectsMap = new HashMap<File, ProjectsAndDestination>();
         Set<File> workspaces = new HashSet<File>();
         for (UpgradableProject up : ups) {
-            workspaces.add(up.getWorkspace().getDirectory());
+            if (up.getWorkspace() != null) {
+                workspaces.add(up.getWorkspace().getDirectory());
+            }
         }
         for (File workspace : workspaces) {
             ProjectsAndDestination projAndDest = new ProjectsAndDestination();
             for (UpgradableProject up : ups) {
-                if (!up.getWorkspace().getDirectory().equals(workspace)) {
+                if (up.getWorkspace() == null || !up.getWorkspace().getDirectory().equals(workspace)) {
                     continue;
                 }
                 EclipseProject ep = up.getEclipseProject();

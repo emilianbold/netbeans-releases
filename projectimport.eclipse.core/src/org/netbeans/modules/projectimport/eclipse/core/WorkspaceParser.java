@@ -47,6 +47,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -104,6 +105,10 @@ final class WorkspaceParser {
     }
 
     private void parseLaunchingPreferences() throws IOException, ProjectImporterException {
+        if (!workspace.getLaunchingPrefsFile().exists()) {
+            workspace.setJREContainers(new HashMap<String, String>());
+            return;
+        }
         for (Map.Entry<String,String> entry : EclipseUtils.loadProperties(workspace.getLaunchingPrefsFile()).entrySet()) {
             if (entry.getKey().equals(VM_XML)) {
                 Map<String,String> vmMap = PreferredVMParser.parse(entry.getValue());

@@ -99,6 +99,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -312,9 +313,7 @@ public final class RailsServerManager {
                 String displayName = NbBundle.getMessage(RailsServerManager.class,
                         "LBL_ServerTab" , instance.getDisplayName(), projectName, Integer.toString(port)); // NOI18N
                 ExecutionDescriptor desc = new ExecutionDescriptor(platform, displayName, dir, "unknown"); // NOI18N
-                String javaCmd = System.getProperty("java.home") +  // NOI18N
-                        File.separatorChar + "bin" + File.separatorChar + "java"; // NOI18N
-                desc.cmd(new File(javaCmd));
+                desc.cmd(getJavaExecutable());
                 desc.useInterpreter(false);
                 desc.initialArgs(instance.getServerCommand(platform, classPath, dir, port, debug));
                 desc.postBuild(finishedAction);
@@ -386,6 +385,16 @@ public final class RailsServerManager {
             result.add(Integer.toString(port));
         }
         return result.toArray(new String[result.size()]);
+    }
+
+    private File getJavaExecutable() {
+        String javaPath = System.getProperty("java.home") + File.separatorChar +
+                "bin" + File.separatorChar + (Utilities.isWindows() ? "java.exe" : "java");
+        File javaExe = new File(javaPath);
+        if(!javaExe.exists()) {
+            LOGGER.log(Level.SEVERE, "Unable to locate java executable: " + javaPath);
+        }
+        return javaExe;
     }
     
     private static String getServerTabName(RubyServer server, String projectName, int port) {
