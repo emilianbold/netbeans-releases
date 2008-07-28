@@ -51,7 +51,6 @@ import java.awt.Rectangle;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -849,26 +848,10 @@ public abstract class UMLNodeWidget extends Widget
     public void remove()
     {
         // remove all node object that are associated with child widget 
-        for (Object o : getAllChildren(new ArrayList<Object>(), this))
+        for (Object o : Util.getAllNodeChildren(this))
         {
-            if (scene.isNode(o))
-                scene.removeNodeWithEdges(o);
+            scene.removeNodeWithEdges(o);
         }
-            
-    }
-    
-    private List<Object> getAllChildren(List<Object> list, Widget widget)         
-    {
-        for (Widget child : widget.getChildren())
-        {
-          Object pe = scene.findObject(widget);
-          if (scene.isNode(pe))
-          {
-              list.add(pe);
-          }
-          list = getAllChildren(list, child);
-        }
-        return list;
     }
     
    
