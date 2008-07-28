@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -809,7 +809,7 @@ public class IDEValidation extends JellyTestCase {
         // "Tools"
         String toolsItem = Bundle.getStringTrimmed("org.netbeans.core.ui.resources.Bundle", "Menu/Tools"); // NOI18N
         // "Create JUnit Tests"
-        String createTestsItem = Bundle.getString("org.netbeans.modules.junit.Bundle", "LBL_Action_CreateTest"); // NOI18N
+        String createTestsItem = Bundle.getStringTrimmed("org.netbeans.modules.junit.Bundle", "LBL_Action_CreateTest"); // NOI18N
         ActionNoBlock createTestsAction = new ActionNoBlock(null, toolsItem+"|"+createTestsItem);
         createTestsAction.perform(sampleClass2Node);
         // "Select JUnit Version"
