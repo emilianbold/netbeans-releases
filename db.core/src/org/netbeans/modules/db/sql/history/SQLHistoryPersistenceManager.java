@@ -61,7 +61,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.Exceptions;
@@ -131,21 +130,20 @@ public class SQLHistoryPersistenceManager {
     public void updateSQLSaved(int limit, FileObject root) {
         try {
             String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            numElemsToRemove = SQLHistoryManager.getInstance().updateList(limit, historyFilePath, root);
-
-            boolean containsElems = true;
-            try {
-                containsElems = !SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root).isEmpty();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+            List<SQLHistory> updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);  
+            // Remove elements from list based on the number of statements to save that is set in the SQL History dialog
+            if (limit < updatedSQLHistoryList.size()) {
+                numElemsToRemove = updatedSQLHistoryList.size() - limit;
+                boolean containsElems = true;
+                containsElems = !updatedSQLHistoryList.isEmpty();
+                if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
+                    DataFolder df = DataFolder.findFolder(root);
+                    AtomicModifier modifier = new AtomicModifier(updatedSQLHistoryList, df, SQL_HISTORY_FILE_NAME);
+                    df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
+                }
             }
-            if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
-                DataFolder df = DataFolder.findFolder(root);
-                AtomicModifier modifier = new AtomicModifier(sqlHistoryList, df, SQL_HISTORY_FILE_NAME);
-                df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
-            }
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -521,17 +519,25 @@ public class SQLHistoryPersistenceManager {
         }
         
         private void addHistory(String url, String sql, Date date) {
-            String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
-            if (!sqlSetting.equals("")) { // NOI18N
-                limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
-            }   
-            if (xmlSqlHistoryList.size() <= limit) {
-                xmlSqlHistoryList.add(new SQLHistory(url, sql, date));
-                setXmlSqlHistoryList(xmlSqlHistoryList);
-            } else {
-                // remove a statement from the beginning of the list
-                xmlSqlHistoryList.remove(xmlSqlHistoryList.size()-1);
-            }
+//            boolean canAdd = true;
+//            for (SQLHistory sqlHistory : xmlSqlHistoryList) {
+//                if ((sqlHistory.getUrl().equals(url) && sqlHistory.getSql().trim().equals(sql.trim()))) {
+//                    canAdd = false;
+//                }
+//            }
+//            if (canAdd) {
+                String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
+                if (!sqlSetting.equals("")) { // NOI18N
+                    limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
+                }
+                if (xmlSqlHistoryList.size() <= limit) {
+                    xmlSqlHistoryList.add(new SQLHistory(url, sql, date));
+                    setXmlSqlHistoryList(xmlSqlHistoryList);
+                } else {
+                    // remove a statement from the end of the list
+                    xmlSqlHistoryList.remove(xmlSqlHistoryList.size()-1);
+                }
+//            }
         }
  
         public void characters(char buf[], int offset, int length) {

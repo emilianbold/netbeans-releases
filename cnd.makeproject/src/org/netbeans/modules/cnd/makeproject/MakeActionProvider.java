@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
@@ -113,7 +114,7 @@ public class MakeActionProvider implements ActionProvider {
     
     // Commands available from Make project
     public static final String COMMAND_BATCH_BUILD = "batch_build"; // NOI18N
-    public static final String COMMAND_BUILD_PACKAGES = "build_packages"; // NOI18N
+    public static final String COMMAND_BUILD_PACKAGE = "build_packages"; // NOI18N
     public static final String COMMAND_DEBUG_LOAD_ONLY = "debug.load.only"; // NOI18N
     public static final String COMMAND_CUSTOM_ACTION = "custom.action"; // NOI18N
     private static final String[] supportedActions = {
@@ -128,6 +129,7 @@ public class MakeActionProvider implements ActionProvider {
         COMMAND_DEBUG_LOAD_ONLY,
         COMMAND_DEBUG_SINGLE,
         COMMAND_BATCH_BUILD,
+        COMMAND_BUILD_PACKAGE,
         COMMAND_DELETE,
         COMMAND_COPY,
         COMMAND_MOVE,
@@ -151,6 +153,7 @@ public class MakeActionProvider implements ActionProvider {
         
         commands = new HashMap<String,String[]>();
         commands.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
+        commands.put(COMMAND_BUILD_PACKAGE, new String[] {"save", "build", "build-package"}); // NOI18N
         commands.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
         commands.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
         commands.put(COMMAND_RUN, new String[] {"save", "build", "run"}); // NOI18N
@@ -162,7 +165,8 @@ public class MakeActionProvider implements ActionProvider {
         commands.put(COMMAND_COMPILE_SINGLE, new String[] {"save", "compile-single"}); // NOI18N
         commands.put(COMMAND_CUSTOM_ACTION, new String[] {"save", "build", "custom-action"}); // NOI18N
         commandsNoBuild = new HashMap<String,String[]>();
-        commandsNoBuild.put(COMMAND_BUILD, new String[] {"save", "build"}); // NOI18N
+        commandsNoBuild.put(COMMAND_BUILD, new String[] {"save", "build-package"}); // NOI18N
+        commandsNoBuild.put(COMMAND_BUILD_PACKAGE, new String[] {"save", "build"}); // NOI18N
         commandsNoBuild.put(COMMAND_CLEAN, new String[] {"save", "clean"}); // NOI18N
         commandsNoBuild.put(COMMAND_REBUILD, new String[] {"save", "clean", "build"}); // NOI18N
         commandsNoBuild.put(COMMAND_RUN, new String[] {"run"}); // NOI18N
@@ -196,6 +200,15 @@ public class MakeActionProvider implements ActionProvider {
         String projectName = info.getDisplayName();
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
+        String hkey = conf.getDevelopmentHost().getName();
+        
+        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            assert registry != null;
+            ServerRecord record = registry.get(hkey);
+            assert record != null;
+            record.validate();
+        }
         
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -310,6 +323,8 @@ public class MakeActionProvider implements ActionProvider {
             String targetName = targetNames[i];
             int actionEvent;
             if (targetName.equals("build")) // NOI18N
+                actionEvent = ProjectActionEvent.BUILD;
+            else if (targetName.equals("build-package")) // NOI18N
                 actionEvent = ProjectActionEvent.BUILD;
             else if (targetName.equals("clean")) // NOI18N
                 actionEvent = ProjectActionEvent.CLEAN;
@@ -504,6 +519,29 @@ public class MakeActionProvider implements ActionProvider {
                     return; // Stop here
                 }
                 validated = true;
+            } else if (targetName.equals("build-package")) { // NOI18N
+                if (!validatePackaging(conf)) {
+                    actionEvents.clear();
+                    break;
+                }
+                String buildCommand = "bash"; // NOI18N
+                Boolean verbose = true;
+                String args = "";
+                if (conf.getPackagingConfiguration().getVerbose().getValue()) {
+                    args += "-x "; // NOI18N
+                }
+                args += "nbproject/Package-" + conf.getName() + ".bash"; // NOI18N
+                RunProfile profile = new RunProfile(conf.getBaseDir(), conf.getPlatform().getValue());
+                profile.setArgs(args);
+                ProjectActionEvent projectActionEvent = new ProjectActionEvent(
+                        project,
+                        actionEvent,
+                        projectName + " (" + targetName + ")", // NOI18N
+                        buildCommand,
+                        conf,
+                        profile,
+                        true);
+                actionEvents.add(projectActionEvent);
             } else if (targetName.equals("clean")) { // NOI18N
 //                if (conf.isCompileConfiguration() && !validateProject(conf)) {
 //                    break;
@@ -703,6 +741,8 @@ public class MakeActionProvider implements ActionProvider {
             return true;
         } else if (command.equals(COMMAND_BUILD)) {
             return true;
+        } else if (command.equals(COMMAND_BUILD_PACKAGE)) {
+            return true;
         } else if (command.equals(COMMAND_BATCH_BUILD)) {
             return true;
         } else if (command.equals(COMMAND_REBUILD)) {
@@ -793,11 +833,19 @@ public class MakeActionProvider implements ActionProvider {
             return lastValidation;
         }
 
-        // TODO: there is no reason to perform remote validation (quite slow)
-        // until it would be possible to edit remote tools from Tools Panel
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            lastValidation = true;
-            return true;
+            assert serverList != null;
+            ServerRecord record = serverList.get(hkey);
+            assert record != null;
+            record.validate();
+            if (!record.isOnline()) {
+                lastValidation = false;
+                return false;
+            } else {
+                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
+                lastValidation = true;
+                return true;
+            }
         }
 
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
@@ -898,6 +946,31 @@ public class MakeActionProvider implements ActionProvider {
             lastValidation = true;
             return true;
         }
+    }
+    
+    private boolean validatePackaging(MakeConfiguration conf) {
+        String errormsg = null;
+        
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+            errormsg = "Package is empty.\nOpen Build|Packaging property in the project's properties and define this package."; // FIXUP
+        }
+        
+        if (errormsg == null) {
+            String tool = conf.getPackagingConfiguration().getToolValue();
+            if (!IpeUtils.isPathAbsolute(tool) && Path.findCommand(tool) == null) {
+                errormsg = "Cannot find \'" + tool + "\' in your PATH. This feature may not be available on this platform."; // FIXUP
+            }
+            else if (IpeUtils.isPathAbsolute(tool) && !(new File(tool).exists())) {
+                errormsg = "Cannot find \'" + tool + "\'. This feature may not be available on this platform."; // FIXUP
+            }
+        }
+        
+        if (errormsg != null) {
+            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(errormsg, NotifyDescriptor.ERROR_MESSAGE));
+            return false;
+        }
+        
+        return true;
     }
 
     private static boolean exists(String path, PlatformInfo pi) {

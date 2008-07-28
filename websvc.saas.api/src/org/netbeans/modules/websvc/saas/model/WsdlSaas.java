@@ -53,6 +53,7 @@ import org.netbeans.modules.websvc.saas.util.WsdlUtil;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.NbBundle;
 import org.openide.util.WeakListeners;
 
 /**
@@ -92,11 +93,29 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
 
     @Override
     protected void refresh() {
-        if (wsData == null || getState() == State.INITIALIZING) {
-            throw new IllegalStateException("Could not refresh null WSDL data or while it is initializing");
+        if (getState() == State.INITIALIZING) {
+            throw new IllegalStateException(NbBundle.getMessage(WsdlSaas.class, "MSG_CantRefreshWhileInitializing"));
         }
         super.refresh();
         ports = null;
+        
+        if (wsData == null) {
+            wsData = WsdlUtil.findWsdlData(this.getUrl(), null);
+            
+            if (wsData == null) {
+                // If the wsData has never been retrieved and compiled, we simply call
+                // toStateReady and return.
+                toStateReady(false);
+                return;
+            } else {
+                // If the wsData has been retrieved and compiled but has not
+                // yet been initialized, we initialize it now (which is quick)
+                // and then refresh it.
+                wsData = null;
+                toStateReady(true);
+            }
+        }
+        
         WsdlUtil.refreshWsdlData(wsData);
     }
 
@@ -118,8 +137,9 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
 
     @Override
     public void toStateReady(boolean synchronous) {
-        if (getState() == State.REMOVED) return;
-        
+        if (getState() == State.REMOVED) {
+            return;
+        }
         if (wsData == null) {
             String serviceName = getDefaultServiceName();
             wsData = WsdlUtil.getWsdlData(getUrl(), serviceName, synchronous); //NOI18N
@@ -166,20 +186,21 @@ public class WsdlSaas extends Saas implements PropertyChangeListener {
     public void propertyChange(PropertyChangeEvent evt) {
         String property = evt.getPropertyName();
         Object newValue = evt.getNewValue();
-      
+
         // these are transitions out of the temporary state INITIALIZING
         // we are only interested in transition to ready and retrieved states.
         // when compile fail we fallback to retrieved to allow user examine the wsdl
 
         if (property.equals("resolved") && getState() == State.INITIALIZING) { //NOI18N
+
             if (Boolean.FALSE.equals(newValue)) {
                 setState(State.RETRIEVED);
             } else if (wsData.isReady()) {
                 setState(State.READY); // compiled in previous IDE run
+
             }
         } else if (WsdlData.Status.WSDL_SERVICE_COMPILED.equals(newValue)) {
             setState(State.READY);
-            WsdlUtil.saveWsdlData(getWsdlData());
         } else if (WsdlData.Status.WSDL_SERVICE_COMPILE_FAILED.equals(newValue)) {
             setState(State.RETRIEVED);
         } else if (WsdlData.Status.WSDL_UNRETRIEVED.equals(newValue)) {

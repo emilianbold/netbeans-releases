@@ -52,7 +52,7 @@ import javax.swing.JComponent;
 
 import org.netbeans.spi.print.PrintPage;
 import org.netbeans.modules.print.util.Macro;
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
@@ -66,15 +66,15 @@ final class Paper extends JComponent {
     myName = name;
     myLastModified = lastModified;
 
-    myPaperWidth = Option.getDefault().getPaperWidth();
-    myPaperHeight = Option.getDefault().getPaperHeight();
-    myPageX = Option.getDefault().getPageX();
-    myPageY = Option.getDefault().getPageY();
-    myPageWidth = Option.getDefault().getPageWidth();
-    myPageHeight = Option.getDefault().getPageHeight();
+    myPaperWidth = Config.getDefault().getPaperWidth();
+    myPaperHeight = Config.getDefault().getPaperHeight();
+    myPageX = Config.getDefault().getPageX();
+    myPageY = Config.getDefault().getPageY();
+    myPageWidth = Config.getDefault().getPageWidth();
+    myPageHeight = Config.getDefault().getPageHeight();
 
-    myHasBorder = Option.getDefault().hasBorder();
-    myBorderColor = Option.getDefault().getBorderColor();
+    myHasBorder = Config.getDefault().hasBorder();
+    myBorderColor = Config.getDefault().getBorderColor();
 
     myIsPainting = true;
   }
@@ -91,21 +91,21 @@ final class Paper extends JComponent {
   void setCount(int count) {
     myCount = String.valueOf(count);
 
-    myHeaderY = Option.getDefault().getHeaderY();
-    myHasHeader = Option.getDefault().hasHeader();
-    myHeaderLeft = expandTitle(Option.getDefault().getHeaderLeft());
-    myHeaderCenter = expandTitle(Option.getDefault().getHeaderCenter());
-    myHeaderRight = expandTitle(Option.getDefault().getHeaderRight());
-    myHeaderColor = Option.getDefault().getHeaderColor();
-    myHeaderFont = Option.getDefault().getHeaderFont();
+    myHeaderY = Config.getDefault().getHeaderY();
+    myHasHeader = Config.getDefault().hasHeader();
+    myHeaderLeft = expandTitle(Config.getDefault().getHeaderLeft());
+    myHeaderCenter = expandTitle(Config.getDefault().getHeaderCenter());
+    myHeaderRight = expandTitle(Config.getDefault().getHeaderRight());
+    myHeaderColor = Config.getDefault().getHeaderColor();
+    myHeaderFont = Config.getDefault().getHeaderFont();
 
-    myFooterY = Option.getDefault().getFooterY();
-    myHasFooter = Option.getDefault().hasFooter();
-    myFooterLeft = expandTitle(Option.getDefault().getFooterLeft());
-    myFooterCenter = expandTitle(Option.getDefault().getFooterCenter());
-    myFooterRight = expandTitle(Option.getDefault().getFooterRight());
-    myFooterColor = Option.getDefault().getFooterColor();
-    myFooterFont = Option.getDefault().getFooterFont();
+    myFooterY = Config.getDefault().getFooterY();
+    myHasFooter = Config.getDefault().hasFooter();
+    myFooterLeft = expandTitle(Config.getDefault().getFooterLeft());
+    myFooterCenter = expandTitle(Config.getDefault().getFooterCenter());
+    myFooterRight = expandTitle(Config.getDefault().getFooterRight());
+    myFooterColor = Config.getDefault().getFooterColor();
+    myFooterFont = Config.getDefault().getFooterFont();
   }
 
   int getRow() {
@@ -148,7 +148,7 @@ final class Paper extends JComponent {
 
   @Override
   public void paint(Graphics graphics) {
-    Graphics2D g = Option.getDefault().getGraphics(graphics);
+    Graphics2D g = Config.getDefault().getGraphics(graphics);
 
     // scaling
     if (myIsPainting) {
@@ -283,8 +283,7 @@ final class Paper extends JComponent {
   }
 
   private int getWidth(String text, Font font) {
-    return (int) Math.ceil(font.getStringBounds(
-      text, Option.FONT_RENDER_CONTEXT).getWidth());
+    return (int) Math.ceil(font.getStringBounds(text, Config.FONT_RENDER_CONTEXT).getWidth());
   }
 
   private String getDate(Date timestamp) {
@@ -344,6 +343,5 @@ final class Paper extends JComponent {
   private static final int NUMBER_Y = (int) Math.round(NUMBER_FONT_SIZE * 1.5);
   private static final Color NUMBER_FONT_COLOR = new Color(125, 125, 255);
   private static final String USER_NAME = System.getProperty("user.name"); // NOI18N
-  private static final Font NUMBER_FONT_NAME =
-    new Font("Serif", Font.BOLD, NUMBER_FONT_SIZE); // NOI18N
+  private static final Font NUMBER_FONT_NAME = new Font("Serif", Font.BOLD, NUMBER_FONT_SIZE); // NOI18N
 }

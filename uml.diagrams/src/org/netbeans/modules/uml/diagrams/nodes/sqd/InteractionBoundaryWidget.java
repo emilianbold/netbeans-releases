@@ -51,6 +51,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IInteractionOperand;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
+import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 
     //
@@ -174,6 +175,12 @@ public class InteractionBoundaryWidget extends CombinedFragmentWidget {
     public boolean isCopyCutDeletable() {
         return !isBoundary;
     }
+
+    @Override
+    public void load(NodeInfo nodeReader) {
+        super.load(nodeReader);
+    }
+    
     
     
 }

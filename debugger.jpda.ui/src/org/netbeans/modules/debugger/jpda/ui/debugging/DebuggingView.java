@@ -62,6 +62,7 @@ import java.util.Set;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.Action;
 import javax.swing.ComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -179,7 +180,9 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         treeView.setRootVisible(false);
         treeView.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
         treeView.setVerticalScrollBarPolicy(javax.swing.ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-
+        treeView.getAccessibleContext().setAccessibleName(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleName")); // NOI18N
+        treeView.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(DebuggingView.class, "DebuggingView.treeView.AccessibleContext.accessibleDescription")); // NOI18N
+        
         mainPanel.add(treeView, BorderLayout.CENTER);
         
         leftPanel = new JPanel();
@@ -221,7 +224,7 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
 
         setSuspendTableVisible(preferences.getBoolean(FiltersDescriptor.SHOW_SUSPEND_TABLE, true));
     }
- 
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -249,6 +252,8 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         add(sessionComboBox, gridBagConstraints);
+        sessionComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(DebuggingView.class, "DebuggingView.sessionComboBox.AccessibleContext.accessibleName")); // NOI18N
+        sessionComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(DebuggingView.class, "DebuggingView.sessionComboBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         mainScrollPane.setBorder(null);
         mainScrollPane.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -364,6 +369,10 @@ public class DebuggingView extends TopComponent implements org.openide.util.Help
         return view;
     }
 
+    public Action[] getFilterActions() {
+        return FiltersDescriptor.getInstance().getFilterActions();
+    }
+    
     public void setSuspendTableVisible(boolean visible) {
         rightPanel.setVisible(visible);
     }

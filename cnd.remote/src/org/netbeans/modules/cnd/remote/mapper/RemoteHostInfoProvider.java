@@ -56,20 +56,28 @@ public class RemoteHostInfoProvider extends HostInfoProvider {
         return RemotePathMap.getMapper(key);
     }
 
+    // TODO: can be wrong in imaginary situations user has some tool in PATH he forgot to add and want's
+    // to fix this on the fly. He must rerun IDE in this case. And we save 5-10 ssh calls at each routine.
+    private final Map<String, Map<String, String>> envCache = new HashMap<String, Map<String, String>>();
+
     @Override
-    public Map<String, String> getEnv(String key) {
-        Map<String, String> map = new HashMap<String, String>();
-        RemoteCommandSupport support = new RemoteCommandSupport(key, "set"); // NOI18N
-        if (support.getExitStatus() == 0) {
-            String val = support.toString();
-            String[] lines = val.split("\n"); // NOI18N
-            for (int i = 0; i < lines.length; i++) {
-                int pos = lines[i].indexOf('=');
-                if (pos > 0) {
-                    map.put(lines[i].substring(0, pos), lines[i].substring(pos+1));
+    public synchronized Map<String, String> getEnv(String key) {
+        Map<String, String> map = envCache.get(key);
+        if (map == null) {
+            map = new HashMap<String, String>();
+            RemoteCommandSupport support = new RemoteCommandSupport(key, "PATH=/bin:/usr/bin; env"); // NOI18N
+            if (support.getExitStatus() == 0) {
+                String val = support.toString();
+                String[] lines = val.split("\n"); // NOI18N
+                for (int i = 0; i < lines.length; i++) {
+                    int pos = lines[i].indexOf('=');
+                    if (pos > 0) {
+                        map.put(lines[i].substring(0, pos), lines[i].substring(pos+1));
+                    }
                 }
             }
-        } 
+            envCache.put(key, map);
+        }
         
         return map;
     }

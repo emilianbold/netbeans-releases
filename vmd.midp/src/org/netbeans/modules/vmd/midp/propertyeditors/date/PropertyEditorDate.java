@@ -46,6 +46,7 @@ import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.text.DateFormat;
 import java.text.ParseException;
+import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -195,17 +196,17 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
 
     @Override
     public void customEditorOKButtonPressed() {
-        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
-        
         final DesignComponent _component = component.get();
         if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).saveToModel(_component);
+            return;
         } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
+        super.customEditorOKButtonPressed();
     }
 
     private String getValueAsText(PropertyValue value) {
@@ -278,11 +279,25 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         public void checkDateStatus() {
             int inputMode = getInputMode();
             try {
-                getFormatter(inputMode).parse(textField.getText());
+                parseDate(inputMode, textField.getText());
                 clearErrorStatus();
             } catch (ParseException e) {
                 displayWarning(getMessage(inputMode));
             }
+        }
+        
+        private Date parseDate(int inputMode, String dateAsString) throws ParseException{
+            Date result = null;
+            DateFormat format = getFormatter(inputMode);
+            format.setLenient(false);
+            // do parsing
+            ParsePosition pp = new ParsePosition(0);
+            result = format.parse(dateAsString, pp);
+
+            if (result == null || pp.getIndex() != dateAsString.length()) {
+                throw new ParseException(null, pp.getIndex()); // NOI10N
+            }
+            return result;
         }
 
         private String getMessage(int inputMode) {
@@ -312,7 +327,11 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
         }
 
         public void focusGained(FocusEvent e) {
-            if (e.getSource() == radioButton || e.getSource() == textField) {
+            if (e.getSource() == radioButton) {
+                checkDateStatus();
+            }
+            if (e.getSource() == textField) {
+                radioButton.setSelected(true);
                 checkDateStatus();
             }
         }

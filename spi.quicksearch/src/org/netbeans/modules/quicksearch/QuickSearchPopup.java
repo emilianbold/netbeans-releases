@@ -57,12 +57,16 @@ import javax.swing.event.ListDataListener;
 import org.netbeans.modules.quicksearch.recent.RecentSearches;
 import org.netbeans.modules.quicksearch.ResultsModel.ItemResult;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.Task;
+import org.openide.util.TaskListener;
 
 /**
  * Component representing drop down for quick search
  * @author  Jan Becicka
  */
-public class QuickSearchPopup extends javax.swing.JPanel implements ListDataListener, ActionListener {
+public class QuickSearchPopup extends javax.swing.JPanel 
+        implements ListDataListener, ActionListener, TaskListener, Runnable {
 
     private QuickSearchComboBar comboBar;
 
@@ -86,6 +90,7 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
 
     private int catWidth;
     private int resultWidth;
+    private Task evalTask;
 
     /** Creates new form SilverPopup */
     public QuickSearchPopup (QuickSearchComboBar comboBar) {
@@ -153,7 +158,13 @@ public class QuickSearchPopup extends javax.swing.JPanel implements ListDataList
         updateTimer.stop();
         // search only if we are not cancelled already
         if (comboBar.getCommand().isFocusOwner()) {
-            CommandEvaluator.evaluate(searchedText, rModel);
+            if (evalTask != null) {
+                evalTask.removeTaskListener(this);
+            }
+            evalTask = CommandEvaluator.evaluate(searchedText, rModel);
+            evalTask.addTaskListener(this);
+            // start waiting on all providers execution
+            RequestProcessor.getDefault().post(evalTask);
         }
     }
 
@@ -341,6 +352,24 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
         return resultWidth;
     }
 
+    /** Implementation of TaskListener, listen to when providers are finished
+     * with their searching work
+     */
+    public void taskFinished(Task task) {
+        evalTask = null;
+        // update UI in ED thread
+        if (SwingUtilities.isEventDispatchThread()) {
+            run();
+        } else {
+            SwingUtilities.invokeLater(this);
+        }
+    }
+
+    /** Runnable implementation, updates popup */
+    public void run() {
+        updatePopup();
+    }
+
     private void computePopupBounds (Rectangle result, JLayeredPane lPane, int modelSize) {
         Dimension cSize = comboBar.getSize();
         int width = getCategoryWidth() + getResultWidth() + 3;
@@ -385,12 +414,14 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
      */
     private boolean updateStatusPanel () {
         boolean shouldBeVisible = false;
-        // TBD - searching in progress logic
-        searchingSep.setVisible(false);
-        searchingLabel.setVisible(false);
+
+        boolean isInProgress = evalTask != null;
+        searchingSep.setVisible(isInProgress);
+        searchingLabel.setVisible(isInProgress);
+        shouldBeVisible = shouldBeVisible || isInProgress;
 
         boolean searchedNotEmpty = searchedText != null && searchedText.trim().length() > 0;
-        boolean areNoResults = rModel.getSize() <= 0 && searchedNotEmpty;
+        boolean areNoResults = rModel.getSize() <= 0 && searchedNotEmpty && !isInProgress;
         noResultsLabel.setVisible(areNoResults);
         comboBar.setNoResults(areNoResults);
         shouldBeVisible = shouldBeVisible || areNoResults;
@@ -410,7 +441,8 @@ private void jList1MouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:even
             return null;
         }
         return NbBundle.getMessage(QuickSearchPopup.class, "QuickSearchPopup.hintLabel.text",
-                evalCat.getDisplayName(), comboBar.getShortcutText());
+                evalCat.getDisplayName(), SearchResultRender.getKeyStrokeAsText(
+                comboBar.getKeyStroke()));
     }
 
 }

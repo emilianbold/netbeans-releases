@@ -94,9 +94,9 @@ public class CallImpl implements Call {
     @Override
     public String toString() {
         if (nameOrder) {
-            return getCallee().getName()+"<-"+getCaller().getName();
+            return getCallee().getName()+"<-"+getCaller().getName(); // NOI18N
         } else {
-            return getCaller().getName()+"->"+getCallee().getName();
+            return getCaller().getName()+"->"+getCallee().getName(); // NOI18N
         }
     }
 

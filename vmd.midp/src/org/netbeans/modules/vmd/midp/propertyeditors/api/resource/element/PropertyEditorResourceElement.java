@@ -83,6 +83,10 @@ public abstract class PropertyEditorResourceElement extends JPanel {
     public void setPropertyEditorMessageAwareness(PropertyEditorMessageAwareness messageAwareness) {
     }
     
+    //executed in the write transaction on the end of the saving of changes
+    public void postSaveValue(DesignComponent parentComponent) {
+    }
+    
     // icon path
     public String getIconPath() {
         return ResourceCD.ICON_PATH;
@@ -105,10 +109,14 @@ public abstract class PropertyEditorResourceElement extends JPanel {
             listener.elementChanged(new PropertyEditorResourceElementEvent(componentID, propertyName, propertyValue));
         }
     }
+    
+    public void nullValueSet(DesignComponent component) {
+    }
 
     public static boolean isPropertyValueAUserCodeType(PropertyValue propertyValue) {
         return propertyValue != null && propertyValue.getKind() == PropertyValue.Kind.USERCODE;
     }
+    
 
     public static class DesignComponentWrapper {
 

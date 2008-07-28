@@ -146,7 +146,7 @@ import org.netbeans.modules.cnd.repository.support.SelfPersistent;
         CsmUID<CsmFile> fileUID = f.fileNew;
         FileImpl impl = (FileImpl) UIDCsmConverter.UIDtoFile(f.fileNew);
         if( impl == null ) {
-            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID));
+            DiagnosticExceptoins.register(new IllegalStateException("no file for UID " + fileUID)); // NOI18N
         }
         return impl;
     }

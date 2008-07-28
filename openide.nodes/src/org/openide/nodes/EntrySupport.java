@@ -110,7 +110,7 @@ abstract class EntrySupport {
     /** Abililty to create a snaphshot
      * @return immutable and unmodifiable list of Nodes that represent the children at current moment
      */
-    abstract List<Node> createSnapshot();
+    abstract List<Node> createSnapshot(boolean delayed);
 
     /** Refreshes content of one entry. Updates the state of children appropriately. */
     abstract void refreshEntry(Entry entry);
@@ -137,7 +137,7 @@ abstract class EntrySupport {
             return (arr != null) && arr.isInitialized();
         }
 
-        public List<Node> createSnapshot() {
+        public List<Node> createSnapshot(boolean delayed) {
             return new DefaultSnapshot(getNodes());
         }
         public final Node[] getNodes() {
@@ -858,10 +858,11 @@ abstract class EntrySupport {
                 LOG_GET_ARRAY.fine("registerChildrenArray: " + chArr + " weak: " + weak); // NOI18N
 
             }
-            this.array = new ChArrRef(chArr, weak);
+            synchronized (LOCK) {
+                this.array = new ChArrRef(chArr, weak);
+            }
             if (IS_LOG_GET_ARRAY) {
                 LOG_GET_ARRAY.fine("pointed by: " + chArr + " to: " + this.array); // NOI18N
-
             }
         }
 
@@ -881,6 +882,8 @@ abstract class EntrySupport {
                         // really finalized and not reconstructed
                         mustNotifySetEnties = false;
                         children.callRemoveNotify();
+                        assert array.get() == null;
+                        array = EMPTY;
                     }
                 }
             } finally {
@@ -1019,13 +1022,13 @@ abstract class EntrySupport {
                     class Notify implements Runnable {
                         public void run() {
                             synchronized (LOCK) {
-                                inited = true;
                                 initThread = null;
                                 LOCK.notifyAll();
                             }
                         }
                     }
                     Notify notify = new Notify();
+                    inited = true;
                     if (Children.MUTEX.isReadAccess()) {
                         Children.MUTEX.postWriteRequest(notify);
                     } else {
@@ -1100,7 +1103,7 @@ abstract class EntrySupport {
                     Entry entry = visibleEntries.get(index);
                     EntryInfo info = entryToInfo.get(entry);
                     node = info.getNode();
-                    if (node != NONEXISTING_NODE) {
+                    if (!isDummyNode(node)) {
                         return node;
                     }
                     removeEmptyEntry(entry, null);
@@ -1136,7 +1139,7 @@ abstract class EntrySupport {
                             continue;
                         }
                         Node node = info.getNode();
-                        if (node == NONEXISTING_NODE) {
+                        if (isDummyNode(node)) {
                             if (invalidEntries == null) {
                                 invalidEntries = new HashSet<Entry>();
                             }
@@ -1190,6 +1193,10 @@ abstract class EntrySupport {
             }
             return null;
         }
+        
+        final boolean isDummyNode(Node node) {
+            return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
+        }
 
         @Override
         void refreshEntry(Entry entry) {
@@ -1207,7 +1214,7 @@ abstract class EntrySupport {
             Node newNode = info.refreshNode();
 
             boolean notifiedAlready = false;
-            if (newNode == NONEXISTING_NODE) {
+            if (isDummyNode(newNode)) {
                 removeEmptyEntry(entry, oldNode);
                 notifiedAlready = true;
             }
@@ -1217,21 +1224,21 @@ abstract class EntrySupport {
                 return;
             }
 
-            if (oldNode != null && oldNode != NONEXISTING_NODE) {
+            if (oldNode != null && !isDummyNode(oldNode)) {
                 oldNode.deassignFrom(children);
                 if (children.parent != null) {
                     oldNode.fireParentNodeChange(children.parent, null);
                 }                
                 if (!notifiedAlready) {
                     info.useNode(oldNode);
-                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null, null);
+                    fireSubNodesChangeIdx(false, new int[]{info.getIndex()}, null, null, null);
                 }
                 children.destroyNodes(new Node[]{oldNode});
             }
 
             info.useNode(newNode);
             if (!notifiedAlready) {
-                if (oldNode == NONEXISTING_NODE) {
+                if (isDummyNode(oldNode)) {
                     // recompute indexes
                     int index = 0;
                     List<Entry> arr = new ArrayList<Entry>();
@@ -1245,7 +1252,7 @@ abstract class EntrySupport {
                     }
                     visibleEntries = arr;
                 }
-                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, null, null);
+                fireSubNodesChangeIdx(true, new int[]{info.getIndex()}, null, null, null);
             }
         }
 
@@ -1300,7 +1307,7 @@ abstract class EntrySupport {
                     // unassign from parent
                     Node node = info.currentNode();
                     if (node != null) {
-                        if (node != NONEXISTING_NODE) {
+                        if (!isDummyNode(node)) {
                             node.deassignFrom(children);
                             if (children.parent != null) {
                                 node.fireParentNodeChange(children.parent, null);
@@ -1324,7 +1331,7 @@ abstract class EntrySupport {
                 for (int i = 0; i < idxs.length; i++) {
                     idxs[i] = idxsIt.next();
                 }
-                fireSubNodesChangeIdx(false, idxs, null, new LazySnapshot(previousEntries, previousEntryToInfo));
+                fireSubNodesChangeIdx(false, idxs, null, null, new LazySnapshot(previousEntries, previousEntryToInfo));
                 children.destroyNodes(removedNodes.toArray(new Node[removedNodes.size()]));
             }
 
@@ -1351,7 +1358,7 @@ abstract class EntrySupport {
                     info.setIndex(inx++);
                     visibleEntries.add(entry);
                 }
-                fireSubNodesChangeIdx(true, idxs, null, null);
+                fireSubNodesChangeIdx(true, idxs, null, null, null);
             }
         }
 
@@ -1429,7 +1436,7 @@ abstract class EntrySupport {
                     return null;
                 }
                 Node node = info.getNode();
-                return node == NONEXISTING_NODE ? null : node;
+                return isDummyNode(node) ? null : node;
             } finally {
                 Children.PR.exitReadAccess();
             }
@@ -1438,9 +1445,9 @@ abstract class EntrySupport {
         /** @param added added or removed
          *  @param indices list of integers with indexes that changed
          */
-        protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> previous) {
+        protected void fireSubNodesChangeIdx(boolean added, int[] idxs, Entry sourceEntry, List<Node> current, List<Node> previous) {
             if (children.parent != null) {
-                children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, previous);
+                children.parent.fireSubNodesChangeIdx(added, idxs, sourceEntry, current, previous);
             }
         }
         
@@ -1492,13 +1499,17 @@ abstract class EntrySupport {
                     return refNode == null ? null : refNode.get();
                 }
             }
+            
+
 
             Node refreshNode() {
                 Collection<Node> nodes = entry.nodes();
                 if (nodes.size() != 1) {
                     LAZY_LOG.fine("Number of nodes for Entry: " + entry + " is " + nodes.size() + " instead of 1");
                     if (nodes.size() == 0) {
-                        return useNode(NONEXISTING_NODE);
+                        Node dummyNode = new DummyNode();
+                        return useNode(dummyNode);
+                        //return useNode(NONEXISTING_NODE);
                     }
                 }
                 return useNode(nodes.iterator().next());
@@ -1560,6 +1571,13 @@ abstract class EntrySupport {
                 setName("Nonexisting node"); // NOI18N
             }
         }
+        
+        private static class DummyNode extends AbstractNode {
+
+            public DummyNode() {
+                super(Children.LEAF);
+            }
+        }     
 
         private void removeEmptyEntry(Entry entry, Node oldNode) {
             Children.MUTEX.postWriteRequest(new RemoveEmptyEntries(entry, oldNode));
@@ -1570,8 +1588,8 @@ abstract class EntrySupport {
         }
 
         @Override
-        List<Node> createSnapshot() {
-            return new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
+        List<Node> createSnapshot(boolean delayed) {
+            return delayed ? new DelayedLazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo)) : new LazySnapshot(visibleEntries, new HashMap<Entry, EntryInfo>(entryToInfo));
         }
 
         private final class RemoveEmptyEntries implements Runnable {
@@ -1634,11 +1652,11 @@ abstract class EntrySupport {
                     }
                     idxs = newIdxs;
                 }
-                fireSubNodesChangeIdx(false, idxs, removeEntry, new LazySnapshot(previousEntries, previousInfos));
+                fireSubNodesChangeIdx(false, idxs, removeEntry, createSnapshot(true), new LazySnapshot(previousEntries, previousInfos));
             }
         }
 
-        final class LazySnapshot extends AbstractList<Node> {
+        class LazySnapshot extends AbstractList<Node> {
             private final List<Entry> entries;
             private final Map<Entry, EntryInfo> entryToInfo;
 
@@ -1657,15 +1675,26 @@ abstract class EntrySupport {
                     return NONEXISTING_NODE;
                 }
                 Node node = info.getNode();
-                if (node == NONEXISTING_NODE) {
+                if (isDummyNode(node)) {
                     // force new snapshot
                     removeEmptyEntry(entry, null);
                 }
                 return node;
             }
 
+            @Override
+            public String toString() {
+                return entries.toString();
+            }
+
             public int size() {
                 return entries.size();
+            }
+        }
+        final class DelayedLazySnapshot extends LazySnapshot {
+
+            public DelayedLazySnapshot(List<Entry> entries, Map<Entry, EntryInfo> e2i) {
+                super(entries, e2i);
             }
         }
     }

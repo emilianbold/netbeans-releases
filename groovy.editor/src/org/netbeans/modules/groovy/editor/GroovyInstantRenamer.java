@@ -69,14 +69,18 @@ public class GroovyInstantRenamer implements InstantRenamer {
 
         AstPath path = getPathUnderCaret(info, caretOffset);
 
-        final ASTNode closest = path.leaf();
+        if (path != null) {
+            final ASTNode closest = path.leaf();
 
-        if(closest instanceof Variable){
-            return true;
-        } else {
-            explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "OnlyRenameLocalVars");
-            return false;
+            if (closest instanceof Variable) {
+                return true;
+            } else {
+                explanationRetValue[0] = NbBundle.getMessage(GroovyInstantRenamer.class, "OnlyRenameLocalVars");
+                return false;
+            }
         }
+
+        return false;
     }
 
     public Set<OffsetRange> getRenameRegions(CompilationInfo info, int caretOffset) {

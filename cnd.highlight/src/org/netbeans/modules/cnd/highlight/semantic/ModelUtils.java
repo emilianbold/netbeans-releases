@@ -130,6 +130,7 @@ public class ModelUtils {
     }
 
     // null==lists[idxToCheck] means we already used this storage, so we recreate it
+    @SuppressWarnings("unchecked")
     public static List<CsmReference>[] getStorage(CsmFile csmFile, int idxToCheck) {
         List<CsmReference>[] lists = Instantiator.map.get(csmFile);
         synchronized(Instantiator.map) {

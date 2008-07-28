@@ -107,7 +107,7 @@ made subject to such option by the copyright holder.
 
                 <folder name="BracesMatchers">
                     <file name="org-netbeans-modules-xml-text-bracematch-XMLBraceMatcherFactory.instance">
-                        <attr name="position" intvalue="300"/>
+                        <attr name="position" intvalue="30000"/>
                     </file>
                 </folder>
 

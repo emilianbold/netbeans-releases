@@ -2067,7 +2067,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                     case LOCAL_VARIABLE:
                     case PARAMETER:
-                        if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
+                        if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         TypeElement te = getTypeElement(env, e.getSimpleName().toString());
@@ -2125,17 +2125,17 @@ public class JavaCompletionProvider implements CompletionProvider {
                             if (ve != null) {
                                 addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                             }
-                            if (ve == null || tm.getKind() != TypeKind.ERROR) {
+                            if (ve == null || tm == null || tm.getKind() != TypeKind.ERROR) {
                                 localResult(env);
                                 addValueKeywords(env);
                             }
                         } else if (exp.getKind() == Tree.Kind.MEMBER_SELECT) {
-                            if (tm.getKind() == TypeKind.ERROR || tm.getKind() == TypeKind.PACKAGE) {
+                            if (tm != null && (tm.getKind() == TypeKind.ERROR || tm.getKind() == TypeKind.PACKAGE)) {
                                 addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                             }
                             localResult(env);
                             addValueKeywords(env);
-                        } else if (exp.getKind() == Tree.Kind.PARENTHESIZED && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY)) {
+                        } else if (exp.getKind() == Tree.Kind.PARENTHESIZED && tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         break;
@@ -2144,7 +2144,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     case FIELD:
                     case LOCAL_VARIABLE:
                     case PARAMETER:
-                        if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
+                        if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                         TypeElement te = getTypeElement(env, e.getSimpleName().toString());
@@ -2155,7 +2155,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                         break;
                     case CONSTRUCTOR:
                     case METHOD:
-                        if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
+                        if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                             addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                         }
                 }
@@ -2164,7 +2164,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Element e = controller.getTrees().getElement(exPath);
             TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
             if (e == null) {
-                if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
+                if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                     addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                 }
                 return;
@@ -2186,7 +2186,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     };
                     for (String name : Utilities.varNamesSuggestions(tm, prefix, controller.getTypes(), controller.getElements(), controller.getElementUtilities().getLocalVars(scope, acceptor), isConst))
                         results.add(JavaCompletionItem.createVariableItem(name, anchorOffset, false));
-                    if (et.getKind() == Tree.Kind.MEMBER_SELECT && tm.getKind() == TypeKind.ERROR) {
+                    if (et.getKind() == Tree.Kind.MEMBER_SELECT && tm != null && tm.getKind() == TypeKind.ERROR) {
                         addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                     }
                     break;
@@ -2197,7 +2197,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                 case PARAMETER:
                 case CONSTRUCTOR:
                 case METHOD:
-                    if (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR) {
+                    if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
                         addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                     }
             }
@@ -2499,6 +2499,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             final CompilationController controller = env.getController();
             final Trees trees = controller.getTrees();
             final Elements elements = controller.getElements();
+            final ElementUtilities eu = controller.getElementUtilities();
             final Types types = controller.getTypes();
             final TreeUtilities tu = controller.getTreeUtilities();
             TypeElement typeElem = type.getKind() == TypeKind.DECLARED ? (TypeElement)((DeclaredType)type).asElement() : null;
@@ -2520,8 +2521,8 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 while(cls != null) {
                                     if (cls == elem)
                                         return isOfKindAndType(asMemberOf(e, t, types), e, kinds, baseType, scope, trees, types);
-                                    Element outer = cls.getEnclosingElement();
-                                    cls = !cls.getModifiers().contains(STATIC) && outer.getKind().isClass() ? (TypeElement)outer : null;
+                                    TypeElement outer = eu.enclosingTypeElement(cls);
+                                    cls = !cls.getModifiers().contains(STATIC) ? outer : null;
                                 }
                                 return false;
                             }

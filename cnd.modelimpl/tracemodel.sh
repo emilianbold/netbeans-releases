@@ -60,8 +60,12 @@ function classpath() {
 	    if [ -d "${nbdist}/ide9" ]; then
 		ide="${nbdist}/ide9"
 	    else 
-		echo "Can not find ide subdirectory in Netbeans"
-		return
+	    	if [ -d "${nbdist}/ide10" ]; then
+		    ide="${nbdist}/ide10"
+		else 
+		    echo "Can not find ide subdirectory in Netbeans"
+		    return
+		fi
 	    fi
 	fi
     fi
@@ -72,9 +76,13 @@ function classpath() {
     else 
 	if [ -d "${nbdist}/platform8" ]; then
 	    platform="${nbdist}/platform8"
-	else
-	    echo "Can not find platform subdirectory in Netbeans"
-	    return
+	else 
+	    if [ -d "${nbdist}/platform9" ]; then
+		platform="${nbdist}/platform9"
+	    else
+		echo "Can not find platform subdirectory in Netbeans"
+		return
+	    fi
 	fi
     fi
     
@@ -168,7 +176,7 @@ function classpath() {
 function trace_classpath() {
     local paths=$@
     local ERROR=""
-    for F in `echo ${paths} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+    for F in `echo ${paths} | nawk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	if [ ! -r ${F} ]; then
 	    echo "File ${F} doesn't exist"
 	    ERROR="y"
@@ -180,7 +188,7 @@ function trace_classpath() {
     else
 	#print classpath
 	echo "Using classpath:"
-	for F in `echo ${paths} | awk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
+	for F in `echo ${paths} | nawk -F${path_sep} '{ for( i=1; i<=NF; i++ ) print $i }'`; do
 	    echo $F
 	done
     fi
@@ -266,7 +274,7 @@ function main() {
     DBGPORT=${DBGPORT-5858}
 
     DEFS="${DEFS} -Dnetbeans.dirs=${nbdist}:${cnddist}"
-    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform8"
+    DEFS="${DEFS} -Dnetbeans.home=${nbdist}/platform9"
     DEFS="${DEFS} -Dnetbeans.user=/tmp/${USER}/cnd-userdir"
     #DEFS="${DEFS} -Dcnd.modelimpl.trace=true"
     #DEFS="${DEFS} -Dparser.cache=true"

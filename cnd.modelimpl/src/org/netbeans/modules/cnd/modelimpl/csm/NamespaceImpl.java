@@ -88,7 +88,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     
     private TreeMap<CharSequence,CsmUID<CsmOffsetableDeclaration>> declarations = new TreeMap<CharSequence,CsmUID<CsmOffsetableDeclaration>>();
     private ReadWriteLock declarationsLock = new ReentrantReadWriteLock();
-    private Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
+    private final Set<CsmUID<CsmOffsetableDeclaration>> unnamedDeclarations = Collections.synchronizedSet(new HashSet<CsmUID<CsmOffsetableDeclaration>>());
     
 //    private Collection/*<CsmNamespaceDefinition>*/ definitions = new ArrayList/*<CsmNamespaceDefinition>*/();
     private Map<CharSequence,CsmUID<CsmNamespaceDefinition>> nsDefinitions = new TreeMap<CharSequence,CsmUID<CsmNamespaceDefinition>>(CharSequenceKey.Comparator);
@@ -324,7 +324,51 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
             }
         }
     }
-    
+
+    /**
+     * Determines whether a variable has namespace or global scope
+     *
+     * @param v variable to check.
+     * NB: should be file- or namespace- level,
+     * don't pass a field, a parameter or a local var!
+     *
+     * @param isFileLevel true if it's defined on file level,
+     * otherwise (if it's defined in namespace definition) false
+     *
+     * @return true if the variable has namesapce scope or global scope,
+     * or false if it is file-local scope (i.e. no external linkage)
+     */
+    public static boolean isNamespaceScope(VariableImpl var, boolean isFileLevel) {
+        if( ((FileImpl) var.getContainingFile()).isHeaderFile() && ! CsmKindUtilities.isVariableDefinition(var)) {
+            return true;
+        } else if( var.isStatic() ) {
+	    return false;
+	}
+	else if( var.isConst() && isFileLevel ) {
+	    if( ! var.isExtern() ) {
+		return false;
+	    }
+	}
+	return true;
+    }
+
+    /**
+     * Determines whether a function has namesace scope
+     *
+     * @param func function to check.
+     *
+     * @return true if the function has namesapce scope or global scope,
+     * or false if it is file-local scope (i.e. no external linkage)
+     */
+    public static boolean isNamespaceScope(FunctionImpl func) {
+        if( ((FileImpl) func.getContainingFile()).isHeaderFile() && ! func.isPureDefinition() ) {
+            return true;
+        } else if (func.isStatic()) {
+            return false;
+        }
+        return true;
+    }
+
     public void addDeclaration(CsmOffsetableDeclaration declaration) {
         boolean unnamed = !ProjectBase.canRegisterDeclaration(declaration);
         // allow to register any enum
@@ -335,7 +379,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         // TODO: remove this dirty hack!
         if( (declaration instanceof VariableImpl) ) {
             VariableImpl v = (VariableImpl) declaration;
-            if( isMine(v) ) {
+            if( isNamespaceScope(v, isGlobal()) ) {
                 v.setScope(this);
             } else {
                 return;
@@ -401,15 +445,6 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
         } else {
             Notificator.instance().registerNewDeclaration(declaration);
         }
-    }
-    
-    private boolean isMine(VariableImpl v) {
-        if (isGlobal()) {
-            if( FileImpl.isOfFileScope(v) ) {
-                return false;
-            }
-        }
-        return true;
     }
     
     @SuppressWarnings("unchecked")

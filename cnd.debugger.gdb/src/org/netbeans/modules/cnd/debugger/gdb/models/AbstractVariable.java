@@ -56,6 +56,7 @@ import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.cnd.debugger.gdb.InvalidExpressionException;
 import org.netbeans.modules.cnd.debugger.gdb.Field;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
+import org.netbeans.modules.cnd.debugger.gdb.GdbErrorException;
 import org.netbeans.modules.cnd.debugger.gdb.GdbVariable;
 import org.netbeans.modules.cnd.debugger.gdb.LocalVariable;
 import org.netbeans.modules.cnd.debugger.gdb.TypeInfo;
@@ -574,9 +575,8 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
     
     private void createChildren() {
         String resolvedType = getTypeInfo().getResolvedType(this);
-        Map<String, Object> map;
-        String t;
-        String v;
+        String t = null;
+        String v = null;
         
         if (GdbUtils.isPointer(resolvedType) && !isCharString(resolvedType) && !GdbUtils.isMultiPointer(resolvedType)) {
             if (value.endsWith(" 0") || value.endsWith(" 0x0")) { // NOI18N
@@ -584,7 +584,12 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 v = null;
             } else {
                 t = GdbUtils.getBaseType(resolvedType);
-                v = getDebugger().requestValue('*' + getFullName(false));
+                try {
+                    v = getDebugger().requestValueEx('*' + getFullName(false));
+                } catch (GdbErrorException e) {
+                    addField(new ErrorField(e.getMessage()));
+                    return;
+                }
             }
         } else {
             t = resolvedType;
@@ -596,7 +601,7 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
             } else if (GdbUtils.isMultiPointer(t)) {
                 createChildrenForMultiPointer(t);
             } else {
-                map = getTypeInfo().getMap();
+                Map<String, Object> map = getTypeInfo().getMap();
                 if (map != null) { // a null map means we never got type information
                     if (map.isEmpty() && v.charAt(0) != '{') {
                         // an empty map means its a pointer to a non-struct/class/union
@@ -1103,6 +1108,39 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
                 fullname = pname;
             }
             return fullname;
+        }
+    }
+
+    private boolean isError(String msg) {
+        return msg.startsWith(">") && msg.endsWith("<"); // NOI18N
+    }
+
+    public static class ErrorField implements Field {
+        private final String msg;
+
+        public ErrorField(String msg) {
+            // Cut error signs > and <
+            this.msg = msg.substring(1, msg.length()-1);
+        }
+
+        public String getName() {
+            return NbBundle.getMessage(AbstractVariable.class, "LBL_Error"); // NOI18N
+        }
+
+        public boolean isStatic() {
+            return false;
+        }
+
+        public void setValue(String value) throws InvalidExpressionException {
+            throw new UnsupportedOperationException("Not supported"); // NOI18N
+        }
+
+        public String getType() {
+            return "";
+        }
+
+        public String getValue() {
+            return msg;
         }
     }
 }

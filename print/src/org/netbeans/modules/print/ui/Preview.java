@@ -77,7 +77,7 @@ import javax.swing.SwingUtilities;
 import org.openide.DialogDescriptor;
 import org.netbeans.spi.print.PrintPage;
 import org.netbeans.spi.print.PrintProvider;
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import org.netbeans.modules.print.util.Percent;
 import static org.netbeans.modules.print.ui.UI.*;
 
@@ -121,7 +121,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     myPrintProviders = providers;
 
     if (withPreview) {
-      show();
+      show(false);
     }
     else {
       print(true);
@@ -136,7 +136,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // navigate
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(0, 0, 0, TINY_INSET);
+    c.insets = new Insets(0, 0, 0, TINY_SIZE);
     p.add(createNavigatePanel(), c);
 
     // scale
@@ -147,22 +147,23 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // toggle
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, HUGE_SIZE, TINY_SIZE, 0);
     myToggle = createToggleButton(
-      new ButtonAction(icon(Option.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
+      new ButtonAction(icon(Config.class, "toggle"), i18n("TLT_Toggle")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           toggle();
         }
       }
     );
     myToggle.addKeyListener(myKeyListener);
+    myToggle.setSelected(true);
     p.add(myToggle, c);
 
     c.gridx = 0;
     c.gridy = 0;
     c.fill = GridBagConstraints.HORIZONTAL;
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(MEDIUM_INSET, 0, MEDIUM_INSET, 0);
+    c.insets = new Insets(HUGE_SIZE, 0, HUGE_SIZE, 0);
     panel.add(p, c);
 
     // scroll
@@ -197,9 +198,9 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // first
     panel = new JPanel(new GridBagLayout());
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, TINY_SIZE, TINY_SIZE, TINY_SIZE);
     myFirst = createButton(
-      new ButtonAction(icon(Option.class, "first"), i18n("TLT_First")) { // NOI18N
+      new ButtonAction(icon(Config.class, "first"), i18n("TLT_First")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           first();
         }
@@ -211,7 +212,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     // previous
     myPrevious = createButton(
       new ButtonAction(
-        icon(Option.class, "previous"), // NOI18N
+        icon(Config.class, "previous"), // NOI18N
         i18n("TLT_Previous")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           previous();
@@ -223,7 +224,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // text field
     myGoto = new JTextField();
-    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_FACTOR);
+    int width = (int) Math.round(myPrevious.getPreferredSize().width * GOTO_RATIO);
     int height = myPrevious.getPreferredSize().height;
     myGoto.setPreferredSize(new Dimension(width, height));
     myGoto.setMinimumSize(new Dimension(width, height));
@@ -245,7 +246,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     
     // next
     myNext = createButton(
-      new ButtonAction(icon(Option.class, "next"), i18n("TLT_Next")) { // NOI18N
+      new ButtonAction(icon(Config.class, "next"), i18n("TLT_Next")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           next();
         }
@@ -256,7 +257,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // last
     myLast = createButton(
-      new ButtonAction(icon(Option.class, "last"), i18n("TLT_Last")) { // NOI18N
+      new ButtonAction(icon(Config.class, "last"), i18n("TLT_Last")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           last();
         }
@@ -314,9 +315,9 @@ public final class Preview extends Dialog implements Percent.Listener {
     GridBagConstraints c = new GridBagConstraints();
 
     // fit to window
-    c.insets = new Insets(TINY_INSET, MEDIUM_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, HUGE_SIZE, TINY_SIZE, TINY_SIZE);
     myFit = createButton(
-      new ButtonAction(icon(Option.class, "fit"), i18n("TLT_Fit")) { // NOI18N
+      new ButtonAction(icon(Config.class, "fit"), i18n("TLT_Fit")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           showCustom(true);
         }
@@ -326,16 +327,26 @@ public final class Preview extends Dialog implements Percent.Listener {
     panel.add(myFit, c);
 
     // scale
-    c.insets = new Insets(TINY_INSET, TINY_INSET, TINY_INSET, TINY_INSET);
+    c.insets = new Insets(TINY_SIZE, TINY_SIZE, TINY_SIZE, TINY_SIZE);
     myScale = new Percent(
       this,
-      Option.getDefault().getScale(),
+      1.0,
       PERCENTS,
       CUSTOMS.length - 1,
       CUSTOMS,
       i18n("TLT_Preview_Scale") // NOI18N
     );
-    int width = myScale.getPreferredSize().width;
+//out();
+//out("init scale");
+//out();
+    SwingUtilities.invokeLater(new Runnable() { public void run() {
+//out();
+//out("ALL WIDTH: " + getAllWidthScale());
+//out();
+      myScale.setValue(getAllWidthScale());
+    }});
+
+    int width = (int) Math.round(myScale.getPreferredSize().width * SCALE_RATIO);
     int height = myPrevious.getPreferredSize().height;
     myScale.setPreferredSize(new Dimension(width, height));
     myScale.setMinimumSize(new Dimension(width, height));
@@ -343,7 +354,7 @@ public final class Preview extends Dialog implements Percent.Listener {
     
     // decrease
     myDecrease = createButton(
-      new ButtonAction(icon(Option.class, "minus"), i18n("TLT_Zoom_Out")) { // NOI18N
+      new ButtonAction(icon(Config.class, "minus"), i18n("TLT_Zoom_Out")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myScale.decreaseValue();
         }
@@ -354,7 +365,7 @@ public final class Preview extends Dialog implements Percent.Listener {
 
     // increase
     myIncrease = createButton(
-      new ButtonAction(icon(Option.class, "plus"), i18n("TLT_Zoom_In")) { // NOI18N
+      new ButtonAction(icon(Config.class, "plus"), i18n("TLT_Zoom_In")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
           myScale.increaseValue();
         }
@@ -519,6 +530,20 @@ public final class Preview extends Dialog implements Percent.Listener {
     return Math.min(getWidthScale(w), getHeightScale(h));
   }
 
+  private double getAllWidthScale() {
+    int w = myPapers.get(0).getPaperWidth() + GAP_SIZE;
+
+    if ( !isSingleMode()) {
+      int maxColumn = 0;
+
+      for (Paper paper : myPapers) {
+        maxColumn = Math.max(maxColumn, paper.getColumn());
+      }
+      w *= maxColumn + 1;
+    }
+    return getWidthScale(w);
+  }
+
   public void valueChanged(double value, int index) {
 //out();
 //out("Set scale: " + value + " " + index);
@@ -567,10 +592,10 @@ public final class Preview extends Dialog implements Percent.Listener {
   private void createPapers() {
     myPapers = new LinkedList<Paper>();
 
-    int width = Option.getDefault().getPageWidth();
-    int height = Option.getDefault().getPageHeight();
+    int width = Config.getDefault().getPageWidth();
+    int height = Config.getDefault().getPageHeight();
 
-    double zoom = Option.getDefault().getZoom();
+    double zoom = Config.getDefault().getZoom();
     double scale = 1.0;
 
     if (myScale != null) {
@@ -684,7 +709,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private String getPaper(int value) {
-    return Option.getPageOfCount(String.valueOf(value), String.valueOf(getPaperCount()));
+    return Config.getPageOfCount(String.valueOf(value), String.valueOf(getPaperCount()));
   }
       
   @Override
@@ -727,7 +752,7 @@ public final class Preview extends Dialog implements Percent.Listener {
         i18n("LBL_Page_Setup_Button"), // NOI18N
         i18n("TLT_Page_Setup_Button")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
-          if (Option.getDefault().showPageSetup()) {
+          if (Config.getDefault().showPageSetup()) {
             updated();
           }
         }
@@ -766,9 +791,7 @@ public final class Preview extends Dialog implements Percent.Listener {
       new ButtonAction(
         i18n("LBL_Close_Button"), // NOI18N
         i18n("TLT_Close_Button")) { // NOI18N
-        public void actionPerformed(ActionEvent event) {
-          close();
-        }
+        public void actionPerformed(ActionEvent event) {}
       }
     );
     myCloseButton.addKeyListener(myKeyListener);
@@ -779,15 +802,15 @@ public final class Preview extends Dialog implements Percent.Listener {
     };
   }
 
-  private void close() {
-//out("Closed");
+  @Override
+  protected void closed() {
+//out("closed");
     myPapers = null;
     myPrintProviders = null;
-    Option.getDefault().setScale(myScale.getValue());
   }
 
   private boolean isSingleMode() {
-    return myToggle.isSelected();
+    return !myToggle.isSelected();
   }
 
   private void print(boolean doUpdate) {
@@ -798,7 +821,7 @@ public final class Preview extends Dialog implements Percent.Listener {
   }
 
   private void option() {
-    new Attribute(this).show();
+    new Option(this).show();
   }
 
   private int getPaperNumber(String text) {
@@ -831,8 +854,8 @@ public final class Preview extends Dialog implements Percent.Listener {
       getVerticalScrollBar().setUnitIncrement(SCROLL_INCREMENT);
 
       int screenHeight = Toolkit.getDefaultToolkit().getScreenSize().height;
-      int height = (int) Math.round(screenHeight * PREVIEW_HEIGHT_FACTOR);
-      int width = (int) Math.round(height * PREVIEW_WIDTH_FACTOR);
+      int height = (int) Math.round(screenHeight * PREVIEW_HEIGHT_RATIO);
+      int width = (int) Math.round(height * PREVIEW_WIDTH_RATIO);
 
       Dimension dimension = new Dimension(width, height);
       setMinimumSize(dimension);
@@ -886,10 +909,11 @@ public final class Preview extends Dialog implements Percent.Listener {
 
   private static final int GAP_SIZE = 20;
   private static final int SCROLL_INCREMENT = 40;
-  private static final double GOTO_FACTOR = 1.20;
+  private static final double GOTO_RATIO = 1.20;
+  private static final double SCALE_RATIO = 1.05;
   
-  private static final double PREVIEW_HEIGHT_FACTOR = 0.78;
-  private static final double PREVIEW_WIDTH_FACTOR = 0.55;
+  private static final double PREVIEW_HEIGHT_RATIO = 0.77;
+  private static final double PREVIEW_WIDTH_RATIO = 0.44;
 
   private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 200, 400 };
 

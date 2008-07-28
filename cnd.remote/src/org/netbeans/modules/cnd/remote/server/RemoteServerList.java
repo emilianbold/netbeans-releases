@@ -64,9 +64,6 @@ import org.openide.util.NbPreferences;
  */
 public class RemoteServerList extends ArrayList<RemoteServerRecord> implements ServerList {
     
-    public static final String PROP_SET_AS_ACTIVE = "setAsActive"; // NOI18N
-    public static final String PROP_DELETE_SERVER = "deleteServer"; // NOI18N
-    
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
     private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
@@ -93,10 +90,10 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         unlisted = new ArrayList<RemoteServerRecord>();
         
         // Creates the "localhost" record and any remote records cached in remote.preferences
-        add(CompilerSetManager.LOCALHOST); 
+        addServer(CompilerSetManager.LOCALHOST); 
         if (slist != null) {
             for (String hkey : slist.split(",")) { // NOI18N
-                add(hkey);
+                addServer(hkey);
             }
         }
         refresh();
@@ -161,7 +158,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return sa;
     }
     
-    public void add(final String name) {
+    public void addServer(final String name) {
         RemoteServerRecord record = null;
         
         // First off, check if we already have this record
@@ -191,31 +188,55 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         // SystemIncludesUtils.load(record);
         
         // Register the new server
-        if (!name.equals(CompilerSetManager.LOCALHOST)) {
-            String slist = getPreferences().get(REMOTE_SERVERS, null);
-            if (slist == null) {
-                getPreferences().put(REMOTE_SERVERS, name);
-            } else {
-                boolean do_add = true;
-                for (String server : slist.split(",")) { // NOI18N
-                    if (server.equals(name)) {
-                        do_add = false;
-                        break;
-                    }
+        // TODO: Save the state as well as name. On restart, only try connecting to
+        // ONLINE hosts.
+        String slist = getPreferences().get(REMOTE_SERVERS, null);
+        if (slist == null) {
+            getPreferences().put(REMOTE_SERVERS, name);
+        } else {
+            boolean do_add = true;
+            for (String server : slist.split(",")) { // NOI18N
+                if (server.equals(name)) {
+                    do_add = false;
+                    break;
                 }
-                if (do_add) {
-                    getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
-                }
+            }
+            if (do_add) {
+                getPreferences().put(REMOTE_SERVERS, slist + ',' + name);
             }
         }
         getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
     }
 
-    public void deleteServer(RemoteServerRecord record) {
-        if (remove(record)) {
-            pcs.firePropertyChange(PROP_DELETE_SERVER, null, record);
+    public void removeServer(int idx) {
+        if (idx >= 0 && idx < size()) {
+            RemoteServerRecord record = remove(idx);
+            removeFromPreferences(record.getName());
             refresh();
         }
+    }
+
+    public void removeServer(RemoteServerRecord record) {
+        if (super.remove(record)) {
+            removeFromPreferences(record.getName());
+            refresh();
+        }
+    }
+    
+    @Override
+    public void clear() {
+        getPreferences().remove(REMOTE_SERVERS);
+        super.clear();
+    }
+    
+    private void removeFromPreferences(String hkey) {
+        StringBuilder sb = new StringBuilder();
+        
+        for (RemoteServerRecord record : this) {
+            sb.append(record.getName());
+            sb.append(',');
+        }
+        getPreferences().put(REMOTE_SERVERS, sb.substring(0, sb.length() - 1));
     }
     
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache) {
@@ -262,6 +283,7 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
         return exit_status == 0;
     }
     
+    // TODO: Are these still needed?
     public void addChangeListener(ChangeListener listener) {
         cs.addChangeListener(listener);
     }

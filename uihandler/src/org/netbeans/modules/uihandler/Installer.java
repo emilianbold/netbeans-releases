@@ -212,6 +212,21 @@ public class Installer extends ModuleInstall implements Runnable {
             log.setUseParentHandlers(true);
             log.setLevel(Level.FINEST);
             log.addHandler(metrics);
+            try {
+                LogRecord userData = getUserData(log);
+                LogRecords.write(logStreamMetrics(), userData);
+                List<LogRecord> enabledRec = new ArrayList<LogRecord>();
+                List<LogRecord> disabledRec = new ArrayList<LogRecord>();
+                getModuleList(log, enabledRec, disabledRec);
+                for (LogRecord rec : enabledRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
+                for (LogRecord rec : disabledRec) {
+                    LogRecords.write(logStreamMetrics(), rec);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+            }
         }
 
         EarlyHandler.disable();
@@ -295,6 +310,10 @@ public class Installer extends ModuleInstall implements Runnable {
         params.add(Submit.getOS());
         params.add(Submit.getVM());
         params.add(Submit.getVersion());
+        List<String> buildInfo = BuildInfo.logBuildInfo();
+        if (buildInfo != null) {
+            params.addAll(buildInfo);
+        }
         userData = new LogRecord(Level.INFO, "USG_SYSTEM_CONFIG");
         userData.setParameters(params.toArray());
         userData.setLoggerName(logger.getName());
@@ -303,21 +322,6 @@ public class Installer extends ModuleInstall implements Runnable {
 
     static void writeOutMetrics (LogRecord r) {
         try {
-            //Add system info
-            if (logsSizeMetrics == 0) {
-                Logger logger = Logger.getLogger(METRICS_LOGGER_NAME);
-                LogRecord userData = Installer.getUserData(logger);
-                LogRecords.write(logStreamMetrics(), userData);
-                List<LogRecord> enabledRec = new ArrayList<LogRecord>();
-                List<LogRecord> disabledRec = new ArrayList<LogRecord>();
-                getModuleList(logger, enabledRec, disabledRec);
-                for (LogRecord rec : enabledRec) {
-                    LogRecords.write(logStreamMetrics(), rec);
-                }
-                for (LogRecord rec : disabledRec) {
-                    LogRecords.write(logStreamMetrics(), rec);
-                }
-            }
             LogRecords.write(logStreamMetrics(), r);
             logsSizeMetrics++;
             if (preferencesWritable) {
@@ -334,11 +338,11 @@ public class Installer extends ModuleInstall implements Runnable {
                 //Task to upload metrics data
                 class Auto implements Runnable {
                     public void run() {
-                        displaySummary("WELCOME_URL", true, true, true, DataType.DATA_METRICS);
+                        displaySummary("METRICS_URL", true, true, true, DataType.DATA_METRICS);
                     }
                 }
                 //Will be enabled as soon as server side will be adjusted to handle metrics data
-                //RP.post(new Auto()).waitFinished();
+                RP.post(new Auto()).waitFinished();
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -868,13 +872,22 @@ public class Installer extends ModuleInstall implements Runnable {
             }
         }
     }
-
+    
     static String decodeButtons(Object res, URL[] url) {
+        return decodeButtons(res, url, DataType.DATA_UIGESTURE);
+    }
+
+    static String decodeButtons(Object res, URL[] url, DataType dataType) {
         if (res instanceof JButton) {
             JButton b = (JButton)res;
             Object post = b.getClientProperty("url"); // NOI18N
             if (post instanceof String) {
-                String replace = System.getProperty("org.netbeans.modules.uihandler.Submit"); // NOI18N
+                String replace = null;
+                if (dataType == DataType.DATA_UIGESTURE) {
+                    replace = System.getProperty("org.netbeans.modules.uihandler.Submit"); // NOI18N
+                } else if (dataType == DataType.DATA_METRICS) {
+                    replace = System.getProperty("org.netbeans.modules.uihandler.Metrics"); // NOI18N
+                }
                 if (replace != null) {
                     post = replace;
                 }
@@ -1254,7 +1267,7 @@ public class Installer extends ModuleInstall implements Runnable {
 
         public void actionPerformed(ActionEvent e) {
             final URL[] universalResourceLocator = new URL[1];
-            String actionURL = decodeButtons(e.getSource(), universalResourceLocator);
+            String actionURL = decodeButtons(e.getSource(), universalResourceLocator, dataType);
 
             LOG.log(Level.FINE, "actionPerformed: command = {0}", e.getActionCommand()); // NOI18N
 
@@ -1482,8 +1495,10 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         int indexClassName = message.indexOf(':');
         if (indexClassName == -1){ // there is no message after className
-            StackTraceElement elem = thr.getStackTrace()[0];
-            return message + " at " + elem.getClassName()+"."+elem.getMethodName();
+            if (thr.getStackTrace().length != 0){
+                StackTraceElement elem = thr.getStackTrace()[0];
+                return message + " at " + elem.getClassName()+"."+elem.getMethodName();
+            }
         }
         return message;
     }

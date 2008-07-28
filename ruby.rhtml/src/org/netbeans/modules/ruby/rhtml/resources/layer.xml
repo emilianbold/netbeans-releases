@@ -72,6 +72,7 @@
                 <attr name="position" intvalue="100"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/templatedesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
             <file name="_view.erb" url="RhtmlTemplate.rhtml">
@@ -79,6 +80,7 @@
                 <attr name="position" intvalue="102"/>
                 <attr name="templateCategory" stringvalue="ruby"/>
                 <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
+                <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/ruby/rhtml/resources/templatedesc.html"/>
                 <attr name="template" boolvalue="true"/>
             </file>
         </folder>

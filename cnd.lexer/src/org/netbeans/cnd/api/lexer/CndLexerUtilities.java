@@ -158,8 +158,8 @@ public final class CndLexerUtilities {
     public static boolean isType(String str) {
         try {
             // replace all spaces
-            if (str.contains(" ")) {
-                String[] parts = str.split(" ");
+            if (str.contains(" ")) { // NOI18N
+                String[] parts = str.split(" "); // NOI18N
                 for (String part : parts) {
                     if (isType(part)) {
                         return true;

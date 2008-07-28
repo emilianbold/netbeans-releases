@@ -584,7 +584,12 @@ public class CallStackFrameImpl implements CallStackFrame {
             // We're invalid! Try to retrieve the new stack frame.
             // We could be invalidated due to http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=6700889
             try {
-                sf = thread.getThreadReference().frame(depth);
+                ThreadReference ref = thread.getThreadReference();
+                if (depth >= ref.frameCount()) {
+                    // The execution has moved elsewhere.
+                    throw isfex;
+                }
+                sf = ref.frame(depth);
             } catch (IncompatibleThreadStateException ex) {
                 // This was not successful. Throw the original exception.
                 throw isfex;

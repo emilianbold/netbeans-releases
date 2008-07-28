@@ -278,8 +278,11 @@ public class SwingPaletteManager implements ContextPaletteManager
             Point location = widget.getPreferredLocation();
             if(location != null)
             {
-                location = widget.getParentWidget().convertLocalToScene(location);
-
+                Widget parentWidget = widget.getParentWidget();
+                if (parentWidget != null)
+                {
+                    location = parentWidget.convertLocalToScene(location);
+                }
                 Rectangle actual = widget.getClientArea();
 
                 Point viewLocation = scene.convertSceneToView(location);

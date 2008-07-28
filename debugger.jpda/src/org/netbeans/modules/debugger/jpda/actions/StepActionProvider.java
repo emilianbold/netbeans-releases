@@ -300,7 +300,7 @@ implements Executor {
                     return true;
                 }
             } catch (IncompatibleThreadStateException e) {
-                ErrorManager.getDefault().notify(e);
+                logger.fine("Incompatible Thread State: " + e.getLocalizedMessage());
             }
             
             // Stop execution here?

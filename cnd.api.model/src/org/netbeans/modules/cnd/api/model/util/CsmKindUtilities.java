@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFriendClass;
 import org.netbeans.modules.cnd.api.model.CsmFriendFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmIdentifiable;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmInheritance;
@@ -155,7 +156,11 @@ public class CsmKindUtilities {
     public static boolean isTemplateParameter(CsmObject obj) {
         return (obj instanceof CsmTemplateParameter);
     }
-    
+
+    public static boolean isFunctionPointerType(CsmObject obj) {
+        return (obj instanceof CsmFunctionPointerType);
+    }
+
     public static boolean isType(CsmObject obj) {
         if (obj instanceof CsmType) {
             return true;
@@ -320,6 +325,10 @@ public class CsmKindUtilities {
             return false;
         }
     }   
+
+    public static boolean isParameter(CsmObject obj) {
+        return (obj instanceof CsmParameter);
+    }
 
     /*
      * checks if object is function operator

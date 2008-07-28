@@ -181,14 +181,20 @@ public class PropertyModel {
 //
 //
 //    }
-    GroupElement parse(String expression) {
-        GroupElement root = new GroupElement(null, group_index);
+    
+    GroupElement parse(String expresssion) {
+        return parse(expresssion, null);
+    }
+    
+    GroupElement parse(String expression, String propertyName) {
+        group_index = 0;
+        GroupElement root = new GroupElement(null, group_index, propertyName);
         ParserInput input = new ParserInput(expression);
         group_index = 0; //reset
         parseElements(input, root, false);
         return root;
     }
-    private int group_index = 0;
+    private int group_index;
 
     private void parseElements(ParserInput input, GroupElement parent, boolean ignoreInherits) {
         Element last = null;
@@ -404,7 +410,7 @@ public class PropertyModel {
             return minimum_occurances;
         }
 
-        protected GroupElement parent() {
+        public GroupElement parent() {
             return parent;
         }
 
