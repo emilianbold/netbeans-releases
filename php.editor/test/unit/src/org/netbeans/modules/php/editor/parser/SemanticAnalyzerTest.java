@@ -81,6 +81,10 @@ public class SemanticAnalyzerTest extends PHPTestBase {
     public void testAnalysisAll() throws Exception {
         checkSemantic("testfiles/class005.php");
     }
+    
+    public void testAnalysisDeclarationAfterUsage() throws Exception {
+        checkSemantic("testfiles/class006.php");
+    }
 
     // issue #139813
     public void testAbstract() throws Exception {
