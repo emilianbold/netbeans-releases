@@ -48,6 +48,7 @@ import javax.swing.AbstractButton;
 import javax.swing.ButtonGroup;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.event.HyperlinkEvent;
 import org.netbeans.beaninfo.editors.HtmlBrowser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -214,6 +215,11 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
         jUsageInfo.setEditable(false);
         jUsageInfo.setText("<html>\n<head>\n</head>\n<body>\n<p style=\"margin-top: 0\"> The usage statistics help us better understand user \nrequirements and prioritize improvements in future releases. We will never\nreverse-engineer the collected data to find specific details about your projects. \n<a href=\"http://www.netbeans.org/about/usage-tracking.html\">Learn more</a>.\n</p>\n</body>\n</html>"); // NOI18N
         jUsageInfo.setFocusable(false);
+        jUsageInfo.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
+            public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
+                hyperlinkHandler(evt);
+            }
+        });
         jScrollPane1.setViewportView(jUsageInfo);
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
@@ -226,7 +232,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                     .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
                         .add(lWebBrowser)
                         .add(18, 18, 18)
-                        .add(cbWebBrowser, 0, 981, Short.MAX_VALUE)
+                        .add(cbWebBrowser, 0, 986, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(editBrowserButton))
                     .add(jSeparator2, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1141, Short.MAX_VALUE)
@@ -244,7 +250,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                                     .add(layout.createSequentialGroup()
                                         .add(lProxyHost)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 807, Short.MAX_VALUE)
+                                        .add(tfProxyHost, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 873, Short.MAX_VALUE)
                                         .add(12, 12, 12)
                                         .add(lProxyPort)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
@@ -254,10 +260,10 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                         .add(lUsage)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1021, Short.MAX_VALUE)
+                            .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 1057, Short.MAX_VALUE)
                             .add(layout.createSequentialGroup()
                                 .add(jUsageCheck)
-                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 540, Short.MAX_VALUE)))))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED, 690, Short.MAX_VALUE)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -297,6 +303,11 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
                 .add(jScrollPane1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 63, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(24, Short.MAX_VALUE))
         );
+
+        bMoreProxy.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AN")); // NOI18N
+        bMoreProxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "LBL_GeneralOptionsPanel_bMoreProxy.AD")); // NOI18N
+        editBrowserButton.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.editBrowserButton.AN")); // NOI18N
+        editBrowserButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "GeneralOptionsPanel.editBrowserButton.AD")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void editBrowserButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editBrowserButtonActionPerformed
@@ -357,6 +368,14 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         tfProxyHost.setCaretPosition (0);
         tfProxyHost.selectAll ();
     }//GEN-LAST:event_tfProxyHostFocusGained
+
+    private void hyperlinkHandler(javax.swing.event.HyperlinkEvent evt) {//GEN-FIRST:event_hyperlinkHandler
+        if (jUsageInfo.equals(evt.getSource())) {
+            if (evt.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
+                org.openide.awt.HtmlBrowser.URLDisplayer.getDefault().showURL(evt.getURL());
+            }
+        }
+}//GEN-LAST:event_hyperlinkHandler
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

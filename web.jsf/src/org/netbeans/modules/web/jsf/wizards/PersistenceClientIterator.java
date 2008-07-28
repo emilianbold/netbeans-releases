@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -81,6 +82,7 @@ import org.openide.util.NbBundle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.ProgressPanel;
 import org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerIterator;
+import org.netbeans.spi.queries.FileEncodingQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.RequestProcessor;
@@ -94,7 +96,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     private int index;
     private transient WizardDescriptor.Panel[] panels;
 
-    private static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
+    static final String[] UTIL_CLASS_NAMES = {"JsfCrudELResolver", "JsfUtil", "PagingInfo"};
     static final String UTIL_FOLDER_NAME = "util"; //NOI18N
     
     public Set instantiate(TemplateWizard wizard) throws IOException
@@ -123,7 +125,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         
         final JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
         
-        final String title = "Generating JSF Pages and Classes";
+        final String title = NbBundle.getMessage(PersistenceClientIterator.class, "TITLE_Progress_Jsf_Pages"); //NOI18N
         final ProgressContributor progressContributor = AggregateProgressFactory.createProgressContributor(title);
         final AggregateProgressHandle handle = 
                 AggregateProgressFactory.createHandle(title, new ProgressContributor[]{progressContributor}, null, null);
@@ -143,7 +145,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
                     generateJsfControllers(progressContributor, progressPanel, targetFolder, controllerPkg, jpaControllerPkg, entities, ajaxify, project, jsfFolder, jpaControllerPackageFileObject, embeddedPkSupport, jpaProgressStepCount);
                     progressContributor.progress(progressStepCount);
                 } catch (IOException ioe) {
-                    Logger.getLogger("global").log(Level.INFO, null, ioe);
+                    Logger.getLogger(PersistenceClientIterator.class.getName()).log(Level.INFO, null, ioe);
                     NotifyDescriptor nd = new NotifyDescriptor.Message(ioe.getLocalizedMessage(), NotifyDescriptor.ERROR_MESSAGE);
                     DialogDisplayer.getDefault().notify(nd);
                 } finally {
@@ -196,7 +198,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
     }
     
     private static void generateJsfControllers(ProgressContributor progressContributor, final ProgressPanel progressPanel, FileObject targetFolder, String controllerPkg, String jpaControllerPkg, List<String> entities, boolean ajaxify, Project project, String jsfFolder, FileObject jpaControllerPackageFileObject, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, int progressIndex) throws IOException {
-        String progressMsg = "Preparing to generate JSF utility classes";
+        String progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Util_Pre"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);     
         
@@ -208,23 +210,21 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         String utilPackage = controllerPkg == null || controllerPkg.length() == 0 ? UTIL_FOLDER_NAME : controllerPkg + "." + UTIL_FOLDER_NAME;
         for (int i = 0; i < UTIL_CLASS_NAMES.length; i++){
             if (utilFolder.getFileObject(UTIL_CLASS_NAMES[i], "java") == null) {
-                progressMsg = "Generating " + UTIL_CLASS_NAMES[i];
+                progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Now_Generating", UTIL_CLASS_NAMES[i] + ".java"); //NOI18N
                 progressContributor.progress(progressMsg, progressIndex++);
                 progressPanel.setText(progressMsg);
                 String content = JpaControllerUtil.readResource(PersistenceClientIterator.class.getClassLoader().getResourceAsStream(JSFClientGenerator.RESOURCE_FOLDER + UTIL_CLASS_NAMES[i] + ".java.txt"), "UTF-8"); //NOI18N
                 content = content.replaceAll("__PACKAGE__", utilPackage);
                 FileObject target = FileUtil.createData(utilFolder, UTIL_CLASS_NAMES[i] + ".java");//NOI18N
-                //Charset encoding = project.getLookup().lookup(FileEncodingQueryImplementation.class).getEncoding(target);
-                //fixme(mbohm): use project encoding instead of UTF-8
-                //...probably delegate that to JpaControllerUtil because needed in both PersistenceClientIterator and JpaControllerIterator
-                JpaControllerUtil.createFile(target, content, "UTF-8");  //NOI18N
+                String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, target);
+                JpaControllerUtil.createFile(target, content, projectEncoding);  //NOI18N
             }
             else {
                 progressContributor.progress(progressIndex++);
             }
         }
         
-        progressMsg = "Preparing to generate JSF controllers and converters";
+        progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Jsf_Controller_Converter_Pre"); //NOI18N"Preparing to generate JSF controllers and converters";
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);  
         
@@ -249,7 +249,7 @@ public class PersistenceClientIterator implements TemplateWizard.Iterator {
         }
         
         if (ajaxify) {
-            progressMsg = "Adding Ajax library";
+            progressMsg = NbBundle.getMessage(PersistenceClientIterator.class, "MSG_Progress_Add_Ajax_Lib"); //NOI18N
             progressContributor.progress(progressMsg, progressIndex++);
             progressPanel.setText(progressMsg); 
             Library[] libraries = { LibraryManager.getDefault().getLibrary("jsf-extensions") };

@@ -360,12 +360,19 @@
 	        <set property="sjsas.build.number" value="20080515"/>
 	</if>
 
+        <get
+            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/express/m1-latest/bundles/"
+            dest="${temp.file}"/>
+        <glassfish-buildnumber 
+            file="${temp.file}" 
+            prefix="glassfish-mod"/>
 
-	<set property="glassfish-mod.milestone.number"      value="10"/>
-	<set property="glassfish-mod.milestone.number.real" value="10d"/>
-	<set property="glassfish-mod.build.type"            value="preview"/>
-	<set property="glassfish-mod.build.number"          value="20080610"/>
-
+	<!--
+	<set property="glassfish-mod.milestone.number"      value="15"/>
+	<set property="glassfish-mod.milestone.number.real" value="15a"/>
+	<set property="glassfish-mod.build.type"            value="express"/>
+	<set property="glassfish-mod.build.number"          value="20080722"/>
+	-->
 
         <!--
         -->

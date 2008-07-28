@@ -55,11 +55,13 @@ import java.lang.ref.WeakReference;
 
 import java.util.*;
 
+import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import javax.swing.tree.TreeNode;
 import org.openide.util.ImageUtilities;
+import org.openide.util.NbBundle;
 
 
 /** Visual representation of one node. Holds necessary information about nodes
@@ -129,7 +131,6 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
 
     /** cached short description */
     private String shortDescription;
-    private transient boolean inRead;
     private String htmlDisplayName = null;
     private int cachedIconType = -1;
 
@@ -285,21 +286,40 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         return !isLeaf();
     }
 
+    private LogRecord assertAccess(int index) {
+        if (Children.MUTEX.isReadAccess()) {
+            return null;
+        }
+        if (Children.MUTEX.isWriteAccess()) {
+            return null;
+        }
+        if (!LOG.isLoggable(Level.FINE)) {
+            return null;
+        }
+        Level level = LOG.isLoggable(Level.FINEST) ? Level.FINEST : Level.FINE;
+        LogRecord rec = new LogRecord(level, "LOG_NO_READ_ACCESS"); // NOI18N
+        rec.setResourceBundle(NbBundle.getBundle(VisualizerNode.class));
+        rec.setParameters(new Object[] { this, index });
+        rec.setLoggerName(LOG.getName());
+        if (level == Level.FINEST) {
+            rec.setThrown(new AssertionError(rec.getMessage()));
+        }
+        return rec;
+    }
+
     public javax.swing.tree.TreeNode getChildAt(int p1) {
-        // useful debugging assert - it is generally dangerous to call into the visualizer
-        // and expect some consistency, however sometimes people do call this
-        // method without any need for being consistent, as such, we cannot
-        // leave the assert on
-        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+//        LogRecord rec = assertAccess(p1);
+//        if (rec != null) {
+//            LOG.log(rec);
+//        }
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
-        // useful debugging assert - it is generally dangerous to call into the visualizer
-        // and expect some consistency, however sometimes people do call this
-        // method without any need for being consistent, as such, we cannot
-        // leave the assert on
-        // assert Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess();
+//        LogRecord rec = assertAccess(-1);
+//        if (rec != null) {
+//            LOG.log(rec);
+//        }
         return getChildren().getChildCount();
     }
 
@@ -446,18 +466,8 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * And fire change to all listeners. Only by AWT-Event-Queue
     */
     public void run() {
-        if (!inRead) {
-            try {
-                // call the foreign code under the read lock
-                // so all potential structure modifications
-                // are queued until after we finish.
-                // see issue #48993
-                inRead = true;
-                Children.MUTEX.readAccess(this);
-            } finally {
-                inRead = false;
-            }
-
+        if (!Children.MUTEX.isReadAccess()) {
+            Children.MUTEX.readAccess(this);
             return;
         }
 
@@ -611,7 +621,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     static void runQueue() {
-        QUEUE.run();
+        //QUEUE.run();
     }
 
     /** Strong reference.
@@ -634,62 +644,108 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * the order of processed objects will be exactly the same as they
     * arrived.
     */
-    private static final class QP extends Object implements Runnable {
+    private static final class QP extends Object {
         /** queue of all requests (Runnable) that should be processed
          * AWT-Event queue.
          */
-        private LinkedList<Runnable> queue = null;
+        EventQueue queue;
+        int delayedCount = 0;
+
+        class EventQueue implements Runnable {
+
+            private LinkedList<Runnable> runList = new LinkedList<Runnable>();
+
+            public EventQueue() {
+            }
+
+            /** Processes the queue. */
+            public void run() {
+
+                synchronized (QP.this) {
+                    // access to queue variable is synchronized
+                    if (queue == this) {
+                        queue = null;
+                    }
+                }
+                Enumeration<Runnable> en = Collections.enumeration(runList);
+                while (en.hasMoreElements()) {
+                    Runnable r = en.nextElement();
+                    LOG.log(Level.FINER, "Running from queue {0}", r); // NOI18N
+                    Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
+                    LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
+                }
+                LOG.log(Level.FINER, "Queue processing over"); // NOI18N
+            }
+        }
+
+        private class DelayedEvent implements Runnable {
+
+            private Runnable run;
+
+            public DelayedEvent(Runnable run) {
+                delayedCount++;
+                this.run = run;
+            }
+
+            public void run() {
+                LOG.log(Level.FINER, "Running delayed event {0}", run); // NOI18N
+                Children.MUTEX.readAccess(run);
+                LOG.log(Level.FINER, "Finished {0}", run); // NOI18N
+                synchronized (QP.this) {
+                    delayedCount--;
+                }
+            }
+        }
 
         QP() {
         }
-
+        
+        boolean shouldBeInvokedLater(Runnable run) {
+            return run instanceof VisualizerEvent.Removed && 
+                    ((VisualizerEvent) run).originalEvent.getSnapshot().getClass().getName().contains("DelayedLazySnapshot");
+        }
+        
         /** Runs the runnable in event thread.
          * @param run what should run
          */
-        public void runSafe(Runnable run) {
+        public void runSafe(final Runnable run) {
             boolean isNew = false;
+            EventQueue holdQueue;
 
             synchronized (this) {
-                // access to queue variable is synchronized
+                if (SwingUtilities.isEventDispatchThread() && shouldBeInvokedLater(run)) {
+                    SwingUtilities.invokeLater(new DelayedEvent(run));
+                    queue = null;
+                    return;
+                }
+                
+                if (delayedCount > 0) {
+                    // still some delayed events unprocessed => invokeLater
+                    assert queue == null;
+                    SwingUtilities.invokeLater(new DelayedEvent(run));
+                    return;
+                }
+                
                 if (queue == null) {
-                    queue = new LinkedList<Runnable>();
+                    queue = new EventQueue();
                     isNew = true;
                 }
+                queue.runList.add(run);
 
-                queue.add(run);
+                // if not in AWT thread invoke later while holding lock
+                if (isNew && !SwingUtilities.isEventDispatchThread()) {
+                    SwingUtilities.invokeLater(queue);
+                    return;
+                }
+                holdQueue = queue;
             }
 
             if (isNew) {
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                Mutex.EVENT.writeAccess(this);
+                Mutex.EVENT.writeAccess(holdQueue);
             }
-        }
-
-        /** Processes the queue.
-         */
-        public void run() {
-            Enumeration<Runnable> en;
-
-            synchronized (this) {
-                // access to queue variable is synchronized
-                if (queue == null) {
-                    LOG.log(Level.FINER, "Queue empty"); // NOI18N
-                    return;
-                }
-
-                en = Collections.enumeration(queue);
-                queue = null;
-                LOG.log(Level.FINER, "Queue emptied"); // NOI18N
-            }
-            while (en.hasMoreElements()) {
-                Runnable r = en.nextElement();
-                LOG.log(Level.FINER, "Running {0}", r); // NOI18N
-                Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
-                LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
-            }
-            LOG.log(Level.FINER, "Queue processing over"); // NOI18N
         }
     }
 
@@ -699,6 +755,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
         }
 
         public void run() {
+            if (!Children.MUTEX.isReadAccess()) {
+                Children.MUTEX.readAccess(this);
+                return;
+            }
+
             children = NO_REF;
 
             // notify models
@@ -725,7 +786,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     VisualizerNode[] getPathToRoot(int depth) {
-        depth++;
+       depth++;
         VisualizerNode[] retNodes;
         if (parent == null || parent.parent == null) {
             retNodes = new VisualizerNode[depth];

@@ -41,7 +41,9 @@
 
 package org.netbeans.modules.xml.schema.actions;
 
+import java.awt.Cursor;
 import java.io.IOException;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.xml.schema.SchemaDataObject;
 import org.netbeans.modules.xml.schema.SchemaEditorSupport;
 import org.netbeans.modules.xml.xam.ui.cookies.ViewComponentCookie;
@@ -50,6 +52,7 @@ import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.actions.NodeAction;
+import org.openide.windows.TopComponent;
 
 /**
  * An action on the SchemaDataObject node (SchemaNode)
@@ -64,36 +67,44 @@ public class SchemaViewOpenAction extends NodeAction{
     public SchemaViewOpenAction() {
     }
     
-    protected void performAction(Node[] node) {
+    protected void performAction(final Node[] node) {
 	if (node == null || node[0] == null){
 	    return;
 	}
-	SchemaDataObject sdo = node[0].getLookup().lookup(SchemaDataObject.class);
-	if (sdo != null){
-	    SchemaEditorSupport ses = sdo.getSchemaEditorSupport();
-	    ViewComponentCookie svc = sdo.getCookie(
-		ViewComponentCookie.class);
-	    if(svc!=null) {
-		try {
-		    if ( ses.getOpenedPanes()==null ||
-			 ses.getOpenedPanes().length==0 ) {
-			
-			svc.view(ViewComponentCookie.View.STRUCTURE,
-			    sdo.getSchemaEditorSupport().getModel().getSchema());
-		    } else {
-			ses.open();
-		    }
-		    return;
-		} catch (IOException ex) {
-		    //ErrorManager.getDefault().notify(ex);
-		}
-	    }
-	}
-	// default to open cookie
-	OpenCookie oc = node[0].getCookie(OpenCookie.class);
-	if (oc != null){
-	    oc.open();
-	}
+        final TopComponent activatedTC = TopComponent .getRegistry().getActivated();
+        if(activatedTC == null)
+            return;
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    activatedTC.setCursor(new Cursor(Cursor.WAIT_CURSOR));
+                    SchemaDataObject sdo = node[0].getLookup().lookup(SchemaDataObject.class);
+                    if(sdo == null)
+                        return;
+                    SchemaEditorSupport ses = sdo.getSchemaEditorSupport();
+                    ViewComponentCookie svc = sdo.getCookie(ViewComponentCookie.class);
+                    if(svc == null)
+                        return;
+                    if ( ses.getOpenedPanes()==null ||
+                         ses.getOpenedPanes().length==0 ) {
+                        svc.view(ViewComponentCookie.View.STRUCTURE,
+                            sdo.getSchemaEditorSupport().getModel().getSchema());
+                    } else {
+                        ses.open();
+                    }
+                    return;
+                } catch (IOException ex) {
+                    //ErrorManager.getDefault().notify(ex);
+                } finally {
+                    activatedTC.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+                }
+                //worst case: default to open cookie
+                OpenCookie oc = node[0].getCookie(OpenCookie.class);
+                if (oc != null) {
+                    oc.open();
+                }
+            }
+        });
     }
     
     protected boolean enable(Node[] node) {

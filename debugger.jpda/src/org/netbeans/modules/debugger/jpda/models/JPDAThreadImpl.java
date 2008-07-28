@@ -81,8 +81,6 @@ import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.api.debugger.jpda.MonitorInfo;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.Java6Methods;
 import org.netbeans.modules.debugger.jpda.SingleThreadWatcher;
@@ -93,7 +91,6 @@ import org.openide.ErrorManager;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
-import org.openide.util.WeakListeners;
 
 /**
  * The implementation of JPDAThread.
@@ -128,23 +125,21 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     ) {
         this.threadReference = threadReference;
         this.debugger = debugger;
+        boolean initFailed = false;
         try {
+            threadName = threadReference.name();
             suspended = threadReference.isSuspended();
             suspendCount = threadReference.suspendCount();
         } catch (IllegalThreadStateException itsex) {
-            suspended = false;
-            suspendCount = 0;
+            initFailed = true;
         } catch (ObjectCollectedException ex) {
-            suspended = false;
-            suspendCount = 0;
-        }
-        try {
-            threadName = threadReference.name ();
-        } catch (IllegalThreadStateException ex) {
-            threadName = ""; // Thrown when thread has exited
-        } catch (ObjectCollectedException ex) {
-            threadName = "";
+            initFailed = true;
         } catch (VMDisconnectedException ex) {
+            initFailed = true;
+        }
+        if (initFailed) {
+            suspended = false;
+            suspendCount = 0;
             threadName = "";
         }
     }
@@ -506,6 +501,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             // Thrown when thread has exited
         } catch (ObjectCollectedException ex) {
         } catch (IncompatibleThreadStateException e) {
+        } catch (VMDisconnectedException e) {
         }
         return 0;
     }
@@ -685,13 +681,16 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
         PropertyChangeEvent evt;
         synchronized (this) {
             if (methodInvokingDisabledUntilResumed) {
-                throw new PropertyVetoException("disabled until resumed", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_DisabledUntilResumed"), null);
             }
             if (methodInvoking) {
-                throw new PropertyVetoException("Already invoking!", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_AlreadyInvoking"), null);
             }
             if (!isSuspended()) {
-                throw new PropertyVetoException("No current context", null);
+                throw new PropertyVetoException(
+                        NbBundle.getMessage(JPDAThreadImpl.class, "MSG_NoCurrentContext"), null);
             }
             methodInvoking = true;
             evt = notifyToBeRunning(false, false);
@@ -998,6 +997,8 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
                 Logger.getLogger(JPDAThreadImpl.class.getName()).log(Level.INFO, msg, ex);
             } catch (java.lang.NoSuchMethodException ex) {
                 org.openide.ErrorManager.getDefault().notify(ex);
+            } catch (IllegalThreadStateException ex) {
+                // Thrown when thread has exited
             }
         }
         return Collections.emptyList();
@@ -1043,54 +1044,58 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     }
 
     public boolean checkForBlockingThreads() {
-        //System.err.println("\""+getName()+"\".checkForBlockingThreads()");
-        VirtualMachine vm = threadReference.virtualMachine();
-        Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors = null;
-        //synchronized (t.getDebugger().LOCK) { - can not synchronize on that - method invocation uses this lock.
-        // TODO: Need to be freed up and method invocation flag needs to be used instead.
-            List<JPDAThread> oldLockerThreadsList;
-            List<JPDAThread> newLockerThreadsList;
-            vm.suspend();
-            try {
-                ObjectReference waitingMonitor = threadReference.currentContendedMonitor();
-                if (waitingMonitor != null) {
+        try {
+            //System.err.println("\""+getName()+"\".checkForBlockingThreads()");
+            VirtualMachine vm = threadReference.virtualMachine();
+            Map<ThreadReference, ObjectReference> lockedThreadsWithMonitors = null;
+            //synchronized (t.getDebugger().LOCK) { - can not synchronize on that - method invocation uses this lock.
+            // TODO: Need to be freed up and method invocation flag needs to be used instead.
+                List<JPDAThread> oldLockerThreadsList;
+                List<JPDAThread> newLockerThreadsList;
+                vm.suspend();
+                try {
+                    ObjectReference waitingMonitor = threadReference.currentContendedMonitor();
+                    if (waitingMonitor != null) {
+                        synchronized (lockerThreadsLock) {
+                            if (waitingMonitor.equals(lockerThreadsMonitor)) {
+                                // We're still blocked at the monitor
+                                return true;
+                            }
+                        }
+                        lockedThreadsWithMonitors = findLockPath(threadReference, waitingMonitor);
+                    }
                     synchronized (lockerThreadsLock) {
-                        if (waitingMonitor.equals(lockerThreadsMonitor)) {
-                            // We're still blocked at the monitor
-                            return true;
+                        oldLockerThreadsList = lockerThreadsList;
+                        if (lockedThreadsWithMonitors != null) {
+                            //lockerThreads2 = lockedThreadsWithMonitors;
+                            lockerThreadsMonitor = waitingMonitor;
+                            if (!submitMonitorEnteredFor(waitingMonitor)) {
+                                submitCheckForMonitorEntered(waitingMonitor);
+                            }
+                            lockerThreadsList = new ThreadListDelegate(debugger, new ArrayList(lockedThreadsWithMonitors.keySet()));
+                        } else {
+                            //lockerThreads2 = null;
+                            lockerThreadsMonitor = null;
+                            lockerThreadsList = null;
                         }
+                        newLockerThreadsList = lockerThreadsList;
                     }
-                    lockedThreadsWithMonitors = findLockPath(threadReference, waitingMonitor);
+                    //System.err.println("Locker threads list = "+newLockerThreadsList);
+                } catch (IncompatibleThreadStateException ex) {
+                    return false;
+                } finally {
+                    vm.resume();
                 }
-                synchronized (lockerThreadsLock) {
-                    oldLockerThreadsList = lockerThreadsList;
-                    if (lockedThreadsWithMonitors != null) {
-                        //lockerThreads2 = lockedThreadsWithMonitors;
-                        lockerThreadsMonitor = waitingMonitor;
-                        if (!submitMonitorEnteredFor(waitingMonitor)) {
-                            submitCheckForMonitorEntered(waitingMonitor);
-                        }
-                        lockerThreadsList = new ThreadListDelegate(debugger, new ArrayList(lockedThreadsWithMonitors.keySet()));
-                    } else {
-                        //lockerThreads2 = null;
-                        lockerThreadsMonitor = null;
-                        lockerThreadsList = null;
-                    }
-                    newLockerThreadsList = lockerThreadsList;
+                if (oldLockerThreadsList != newLockerThreadsList) { // Not fire when both null
+                    //System.err.println("Fire lockerThreads: "+(oldLockerThreadsList == null || !oldLockerThreadsList.equals(newLockerThreadsList)));
+                    pch.firePropertyChange("lockerThreads", oldLockerThreadsList, newLockerThreadsList); // NOI18N
                 }
-                //System.err.println("Locker threads list = "+newLockerThreadsList);
-            } catch (IncompatibleThreadStateException ex) {
-                return false;
-            } finally {
-                vm.resume();
-            }
-            if (oldLockerThreadsList != newLockerThreadsList) { // Not fire when both null
-                //System.err.println("Fire lockerThreads: "+(oldLockerThreadsList == null || !oldLockerThreadsList.equals(newLockerThreadsList)));
-                pch.firePropertyChange("lockerThreads", oldLockerThreadsList, newLockerThreadsList); // NOI18N
-            }
-        //}
-        //setLockerThreads(lockedThreadsWithMonitors);
-        return lockedThreadsWithMonitors != null;
+            //}
+            //setLockerThreads(lockedThreadsWithMonitors);
+            return lockedThreadsWithMonitors != null;
+        } catch (VMDisconnectedException e) {
+            return false;
+        }
     }
 
     private static Map<ThreadReference, ObjectReference> findLockPath(ThreadReference tr, ObjectReference waitingMonitor) throws IncompatibleThreadStateException {
@@ -1226,9 +1231,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             threadReference.suspend();
             ObjectReference monitor = threadReference.currentContendedMonitor();
             if (monitor == null) return ;
-            Location l = threadReference.frame(0).location();
-            l = l.method().locationOfCodeIndex(l.codeIndex() + 1);
-            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(l);
+            Location loc = threadReference.frame(0).location();
+            loc = loc.method().locationOfCodeIndex(loc.codeIndex() + 1);
+            if (loc == null) return;
+            BreakpointRequest br = threadReference.virtualMachine().eventRequestManager().createBreakpointRequest(loc);
             br.addThreadFilter(threadReference);
             submitMonitorEnteredRequest(br);
         } catch (IncompatibleThreadStateException itex) {
@@ -1237,6 +1243,13 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
             threadReference.resume();
         }
     }
+
+    @Override
+    public String toString() {
+        return "'"+getName()+"' ("+Integer.toHexString(System.identityHashCode(this))+") from DBG("+Integer.toHexString(debugger.hashCode())+")";
+    }
+
+
 
     private static class ThreadListDelegate extends AbstractList<JPDAThread> {
 

@@ -73,6 +73,7 @@ class OpenedEditors implements PropertyChangeListener {
     private static OpenedEditors DEFAULT;
 
     static final boolean SHOW_TIME = Boolean.getBoolean("cnd.model.tasks.time");
+    private static final boolean TRACE_FILES = Boolean.getBoolean("cnd.model.tasks.files");
 
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
@@ -123,7 +124,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized void stateChanged() {
-        if (SHOW_TIME) System.err.println("OpenedEditors.stateChanged()");
+        if (SHOW_TIME || TRACE_FILES) System.err.println("OpenedEditors.stateChanged()");
 
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
@@ -135,8 +136,11 @@ class OpenedEditors implements PropertyChangeListener {
         for(JTextComponent editor : EditorRegistry.componentList()) {
             FileObject fo = editor != null ? getFileObject(editor) : null;
 
+            if (TRACE_FILES) System.err.printf("\tfile: %s\n", fo == null ? "null" : fo.toString());
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
-                visibleEditors.add(editor);
+                if (editor.isValid()) { // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                    visibleEditors.add(editor);
+                }
             }
         }
 

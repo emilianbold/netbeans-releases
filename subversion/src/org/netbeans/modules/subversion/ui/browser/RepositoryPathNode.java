@@ -247,10 +247,7 @@ public class RepositoryPathNode extends AbstractNode {
     
     private static class RepositoryPathChildren extends Children.Keys {
 
-        private RequestProcessor.Task task;
-
         private final BrowserClient client;
-
         private Node[] previousNodes = null;
         
         public RepositoryPathChildren(BrowserClient client) {
@@ -264,7 +261,6 @@ public class RepositoryPathNode extends AbstractNode {
         
         @Override
         protected void removeNotify() {
-            task.cancel();
             setKeys(Collections.EMPTY_LIST);
             super.removeNotify();
         }

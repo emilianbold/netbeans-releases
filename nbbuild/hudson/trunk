@@ -43,16 +43,15 @@ mkdir -p $DIST/zip/moduleclusters
 
 find netbeans | egrep -v "netbeans/(extra|testtools)" | zip -q $DIST/zip/$BASENAME.zip -@ || exit
 
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|xml|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | egrep -v "(org-netbeans-modules-mobility-end2end|org-netbeans-modules-mobility-jsr172)" | zip -q $DIST/zip/$BASENAME-mobility.zip -@ || exit
-find netbeans | egrep -v "netbeans/(extra|testtools|mobility|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-javaee.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|xml|mobility|enterprise|visualweb|uml|ruby|soa|cnd|identity|php|groovy|webcommon)" | zip -q $DIST/zip/$BASENAME-javase.zip -@ || exit
+find netbeans | egrep -v "netbeans/(extra|testtools|uml|ruby|soa|cnd|identity|php)" | zip -q $DIST/zip/$BASENAME-java.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|php|groovy)" | zip -q $DIST/zip/$BASENAME-ruby.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|soa|identity|cnd|ruby|groovy)" | zip -q $DIST/zip/$BASENAME-php.zip -@ || exit
 find netbeans | egrep -v "netbeans/(extra|testtools|xml|java|apisupport|harness|profiler|mobility|enterprise|visualweb|uml|ruby|soa|identity|php|groovy|webcommon)" | zip -q $DIST/zip/$BASENAME-cnd.zip -@ || exit
 
 cd netbeans
 expat='extra|testtools'
-for c in platform ide java apisupport harness enterprise profiler uml visualweb ruby mobility soa xml cnd identity gsf php groovy; do
+for c in platform ide java apisupport harness enterprise profiler visualweb ruby mobility soa xml cnd identity gsf php groovy; do
     find * | egrep "^$c[0-9]*/" | zip -q $DIST/zip/moduleclusters/$BASENAME-$c.zip -@ || exit
     expat="$expat|$c[0-9]*"
 done

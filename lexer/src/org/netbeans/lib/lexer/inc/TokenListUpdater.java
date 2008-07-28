@@ -51,6 +51,7 @@ import org.netbeans.lib.lexer.JoinLexerInputOperation;
 import org.netbeans.lib.lexer.JoinTokenList;
 import org.netbeans.lib.lexer.LexerInputOperation;
 import org.netbeans.lib.lexer.LexerUtilsConstants;
+import org.netbeans.lib.lexer.TokenHierarchyOperation;
 import org.netbeans.lib.lexer.token.AbstractToken;
 import org.netbeans.lib.lexer.token.JoinToken;
 import org.netbeans.lib.lexer.token.PartToken;
@@ -394,7 +395,8 @@ public final class TokenListUpdater {
                 matchIndex++;
                 matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
                 int removedEndOffset = eventInfo.modOffset() + eventInfo.removedLength();
-                while (matchOffset < removedEndOffset) {
+                // XXX review '&& (matchLocalIndex < modEtl.tokenCount())'
+                while (matchOffset < removedEndOffset && (matchLocalIndex < modEtl.tokenCount())) {
                     matchIndex++;
                     matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
                 }

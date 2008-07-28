@@ -115,7 +115,7 @@ public class AddServerLocationVisualPanel extends javax.swing.JPanel implements 
                  return installDir;
             } else {
                 return System.getProperty("user.home") + File.separatorChar + 
-                        "GlassFish_V3_TP2";
+                        "GlassFish_V3_Prelude";
             }
         } else {
             return prevValue;            

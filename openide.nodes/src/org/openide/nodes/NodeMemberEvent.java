@@ -69,7 +69,7 @@ public class NodeMemberEvent extends NodeEvent {
 
     /** previous snapshot or null */
     private final List<Node> previous;
-    
+ 
     org.openide.nodes.Children.Entry sourceEntry;
 
     /** Package private constructor to allow construction only
@@ -99,14 +99,14 @@ public class NodeMemberEvent extends NodeEvent {
      * @param indices the indicies that changed
      * @param previous snaphost of the state before this event happened or null
      */
-    NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> previous) {
-        super(n);
+    NodeMemberEvent(Node n, boolean add, int[] indices, List<Node> current, List<Node> previous) {
+        super(n, current);
         this.add = add;
         this.indices = indices;
         Arrays.sort(this.indices);
         this.previous = previous;
     }    
-
+    
     /** Get a list of children that changed.
     * @return array of nodes that changed
     */
@@ -181,16 +181,18 @@ public class NodeMemberEvent extends NodeEvent {
         sb.append(", add="); // NOI18N
         sb.append(isAddEvent());
 
-        Node[] deltaNodes = getDelta();
+        Node[] deltaNodes = delta;
         int[] deltaIndices = getDeltaIndices();
 
-        for (int i = 0; i < deltaNodes.length; i++) {
+        for (int i = 0; i < deltaIndices.length; i++) {
             sb.append("\n  "); // NOI18N
             sb.append(i);
             sb.append(" at "); // NOI18N
             sb.append(deltaIndices[i]);
-            sb.append(" = "); // NOI18N
-            sb.append(deltaNodes[i]);
+            if (deltaNodes != null) {
+                sb.append(" = "); // NOI18N
+                sb.append(deltaNodes[i]);
+            }
         }
 
         sb.append("\n]"); // NOI18N

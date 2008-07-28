@@ -52,7 +52,7 @@ package org.openide.filesystems;
  * <p>
  * MIME resolvers can also be registered in the <code>Services/MIMEResolver</code>
  * folder as <code>*.xml</code> files obeying a <a href="doc-files/HOWTO-MIME.html">certain format</a>.
- * These will be interpreted after resolvers in lookup (in the order specified in that folder).
+ * These will be interpreted before resolvers in lookup (in the order specified in that folder).
  *
  * @author  rmatous
  */

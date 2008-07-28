@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import javax.swing.ButtonModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
 import javax.swing.text.Document;
@@ -213,9 +212,10 @@ public class RailsProjectProperties extends SharedRubyProjectProperties {
     }
     
     // From ClassPathUiSupport:
-    @SuppressWarnings("unchecked")
-    public static List<Item> getList( DefaultListModel model ) {
-        return (List<Item>) Collections.list( model.elements() );
+    public static List<Item> getList(DefaultListModel model) {
+        @SuppressWarnings("unchecked")
+        List<Item> items = (List<Item>) Collections.list(model.elements());
+        return items;
     }
     
     public void save() {

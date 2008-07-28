@@ -203,7 +203,7 @@ public class HibernateUtil {
         }
         return mappingFiles;
     }
-
+    
     private static FileObject createBuildFolder(File buildFile) {
         FileObject buildFO = null;
         logger.info("Build folder does not exist. Creating it.");

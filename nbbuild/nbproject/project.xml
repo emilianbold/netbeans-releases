@@ -167,7 +167,7 @@ made subject to such option by the copyright holder.
                     </action>
                     <action>
                         <label>Clean Everything</label>
-                        <target>hg-clean</target>
+                        <target>clean</target>
                     </action>
                     <separator/>
                     <ide-action name="run"/>

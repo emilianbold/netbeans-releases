@@ -106,11 +106,11 @@ public class SystemMacroImpl implements CsmMacro {
     }
 
     public Position getStartPosition() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public Position getEndPosition() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        throw new UnsupportedOperationException("Not supported yet."); // NOI18N
     }
 
     public CharSequence getText() {

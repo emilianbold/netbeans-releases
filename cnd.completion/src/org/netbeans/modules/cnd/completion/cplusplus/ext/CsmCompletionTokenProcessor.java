@@ -1916,7 +1916,7 @@ final class CsmCompletionTokenProcessor implements CppTokenProcessor/*implements
             {
                 // TODO: we know, this is method declaration/definition
                 CsmCompletionExpression kwdExp = createTokenExp(
-                        "const".equals(kwdType)? TYPE_PREFIX : TYPE);
+                        "const".equals(kwdType)? TYPE_PREFIX : TYPE); // NOI18N
                 //addTokenTo(kwdExp);
                 kwdExp.setType(kwdType);
                 pushExp(kwdExp);

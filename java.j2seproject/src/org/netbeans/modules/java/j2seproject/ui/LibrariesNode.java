@@ -649,8 +649,13 @@ final class LibrariesNode extends AbstractNode {
             final J2SEProjectClassPathModifier cpMod = project.getProjectClassPathModifier();
             assert cpMod != null;
             Set<Library> added = LibraryChooser.showDialog(
-                    project.getReferenceHelper().getProjectLibraryManager(), null, 
-                    project.getReferenceHelper().getLibraryChooserImportHandler()); // XXX restrict to j2se libs only?
+                    project.getReferenceHelper().getProjectLibraryManager(),
+                    new LibraryChooser.Filter() {
+                        public boolean accept(Library library) {
+                            return "j2se".equals(library.getType());    //NOI18N
+                        }
+                    }, 
+                    project.getReferenceHelper().getLibraryChooserImportHandler());
             if (added != null) {
                 final String propName = cpProvider.getPropertyName(projectSourcesArtifact, ClassPath.COMPILE);
                 addLibraries(added.toArray(new Library[added.size()]),cpMod,propName);

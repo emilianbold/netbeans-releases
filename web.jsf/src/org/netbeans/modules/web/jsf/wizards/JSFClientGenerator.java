@@ -82,7 +82,6 @@ import org.netbeans.api.progress.aggregate.ProgressContributor;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Formatter;
 import org.netbeans.modules.j2ee.common.method.MethodModel;
@@ -143,13 +142,13 @@ public class JSFClientGenerator {
     static final String RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/resources/"; //NOI18N
     static final int PROGRESS_STEP_COUNT = 8;
     
-    public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, int progressIndex) throws IOException {
+    public static void generateJSFPages(ProgressContributor progressContributor, ProgressPanel progressPanel, final Project project, final String entityClass, String jsfFolderBase, String jsfFolderName, final String controllerPackage, final String controllerClass, FileObject pkg, FileObject controllerFileObject, final EmbeddedPkSupport embeddedPkSupport, final List<String> entities, final boolean ajaxify, String jpaControllerPackage, FileObject jpaControllerFileObject, FileObject converterFileObject, int progressIndex) throws IOException {
         final boolean isInjection = true;//Util.isSupportedJavaEEVersion(project);
         
 //        String simpleControllerName = JpaControllerUtil.simpleClassName(controllerClass);
         String simpleControllerName = controllerFileObject.getName();
         
-        String progressMsg = "Preparing to generate " + simpleControllerName;
+        String progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Controller_Pre", simpleControllerName + ".java");//NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg); 
         
@@ -288,7 +287,7 @@ public class JSFClientGenerator {
                 try {
                     contextParam = (InitParam)servlet.createBean("InitParam"); // NOI18N
                 } catch (ClassNotFoundException cnfe) {
-                    Logger.getLogger("global").log(Level.WARNING, "CNFE attempting to create javax.faces.LIFECYCLE_ID init parameter in web.xml", cnfe);
+                    Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.WARNING, "CNFE attempting to create javax.faces.LIFECYCLE_ID init parameter in web.xml", cnfe);
                 }
                 contextParam.setParamName("javax.faces.LIFECYCLE_ID"); // NOI18N
                 contextParam.setParamValue("com.sun.faces.lifecycle.PARTIAL"); // NOI18N
@@ -297,20 +296,22 @@ public class JSFClientGenerator {
             ddRoot.write(dd);
         }
         
+        String projectEncoding = JpaControllerUtil.getProjectEncodingAsString(project, controllerFileObject);
+        
         if (wm.getDocumentBase().getFileObject(WELCOME_JSF_PAGE) == null) {
 //            String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + WELCOME_JSF_PAGE), "UTF-8"); //NOI18N
-            Charset encoding = FileEncodingQuery.getDefaultEncoding();
-            content = content.replaceAll("__ENCODING__", encoding.name());
+//            Charset encoding = FileEncodingQuery.getDefaultEncoding();
+            content = content.replaceAll("__ENCODING__", projectEncoding);
             FileObject target = FileUtil.createData(wm.getDocumentBase(), WELCOME_JSF_PAGE);//NOI18N
-            JSFFrameworkProvider.createFile(target, content, encoding.name());  //NOI18N
+            JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
         
         //FileObject jsfFolderBaseFileObject = jsfFolderBase.length() > 0 ? pagesRootFolder.getFileObject(jsfFolderBase) : pagesRootFolder;
         if (pagesRootFolder.getFileObject(JSFCRUD_STYLESHEET) == null) {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_STYLESHEET), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_STYLESHEET);//NOI18N
-            JSFFrameworkProvider.createFile(target, content, "UTF-8");  //NOI18N
+            JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
         
         //final String styleHrefPrefix = wm.getContextPath() + "/faces/" + (jsfFolderBase.length() > 0 ? jsfFolderBase + "/" : "");
@@ -320,7 +321,7 @@ public class JSFClientGenerator {
             String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_JAVASCRIPT), "UTF-8"); //NOI18N
             FileObject target = FileUtil.createData(pagesRootFolder, JSFCRUD_JAVASCRIPT);//NOI18N
             content = content.replaceAll("__WEB_FOLDER_PATH__", rootRelativePathToWebFolder);
-            JSFFrameworkProvider.createFile(target, content, "UTF-8");  //NOI18N
+            JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
         }
 
         if (ajaxify) {
@@ -328,7 +329,7 @@ public class JSFClientGenerator {
             if (pagesRootFolder.getFileObject(ajaxJspfPath) == null) {
                 String content = JSFFrameworkProvider.readResource(JSFClientGenerator.class.getClassLoader().getResourceAsStream(RESOURCE_FOLDER + JSFCRUD_AJAX_JSPF), "UTF-8"); //NOI18N
                 FileObject target = FileUtil.createData(pagesRootFolder, ajaxJspfPath);//NOI18N
-                JSFFrameworkProvider.createFile(target, content, "UTF-8");  //NOI18N
+                JSFFrameworkProvider.createFile(target, content, projectEncoding);  //NOI18N
             }
             
             if (pagesRootFolder.getFileObject(JSFCRUD_AJAX_BUSY_IMAGE) == null) {
@@ -351,14 +352,14 @@ public class JSFClientGenerator {
             }
         }
         
-        progressMsg = "Generating " + simpleControllerName;
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", simpleControllerName + ".java"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
         
         controllerFileObject = generateControllerClass(fieldName, pkg, idGetter.get(0), persistenceUnit, controllerPackage, controllerClass, simpleConverterName, 
                 entityClass, simpleEntityName, toOneRelMethods, toManyRelMethods, isInjection, fieldAccess[0], controllerFileObject, embeddedPkSupport, jpaControllerPackage, jpaControllerClass, utilPackage);
         
-        progressMsg = "Generating " + simpleConverterName;
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", simpleConverterName + ".java"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
         
@@ -369,45 +370,45 @@ public class JSFClientGenerator {
         final String styleAndScriptTags = "<link rel=\"stylesheet\" type=\"text/css\" href=\"" + rootRelativePathToWebFolder + JSFCRUD_STYLESHEET + "\" />" +
             (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
             
-        boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags);
+        boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding);
         final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" />\n" : "";  //NOI18N
 
-        progressMsg = "Generating " + jsfFolder + "/List.jsp";
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/List.jsp"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
-        generateListJsp(jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleAndScriptTags, entities);
+        generateListJsp(project, jsfRoot, classpathInfo, entityClass, simpleEntityName, managedBean, linkToIndex, fieldName, idProperty[0], doc, embeddedPkSupport, styleAndScriptTags, entities, controllerPackage);
         
-        progressMsg = "Generating " + jsfFolder + "/New.jsp";
-        progressContributor.progress(progressMsg, progressIndex++);
-        progressPanel.setText(progressMsg);
-        javaSource.runUserActionTask(new Task<CompilationController>() {
-            public void run(CompilationController controller) throws IOException {
-                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateNewJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags);
-            }
-        }, true);
-        
-        progressMsg = "Generating " + jsfFolder + "/Edit.jsp";
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/New.jsp"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateEditJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags);
+                generateNewJsp(project, controller, entityClass, simpleEntityName, managedBean, fieldName, toOneRelMethods, fieldAccess[0], linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags, controllerPackage);
             }
         }, true);
         
-        progressMsg = "Generating " + jsfFolder + "/Detail.jsp";
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/Edit.jsp"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
         javaSource.runUserActionTask(new Task<CompilationController>() {
             public void run(CompilationController controller) throws IOException {
                 controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                generateDetailJsp(controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags, entities);
+                generateEditJsp(project, controller, entityClass, simpleEntityName, managedBean, fieldName, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags, controllerPackage);
             }
         }, true);
         
-        progressMsg = "Updating " + simpleEntityName + " in faces-config.xml";
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/Detail.jsp"); //NOI18N
+        progressContributor.progress(progressMsg, progressIndex++);
+        progressPanel.setText(progressMsg);
+        javaSource.runUserActionTask(new Task<CompilationController>() {
+            public void run(CompilationController controller) throws IOException {
+                controller.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                generateDetailJsp(project, controller, entityClass, simpleEntityName, managedBean, fieldName, idProperty[0], isInjection, linkToIndex, doc, jsfRoot, embeddedPkSupport, controllerClass, styleAndScriptTags, entities, controllerPackage);
+            }
+        }, true);
+        
+        progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Updating_Faces_Config", simpleEntityName); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);
         progressPanel.setText(progressMsg);
         String facesConfigSimpleControllerName = simpleEntityName + "Controller";
@@ -417,20 +418,20 @@ public class JSFClientGenerator {
         addStuffToFacesConfigXml(classpathInfo, wm, managedBean, facesConfigControllerClass, jpaControllerClass, entityClass, converterName, fieldName, facesConfigJsfFolder, idGetter.get(0), pkgName, utilPackage);
     }
 
-    private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags) throws FileNotFoundException, IOException {
+    private static boolean addLinkToListJspIntoIndexJsp(WebModule wm, String simpleEntityName, String styleAndScriptTags, String projectEncoding) throws FileNotFoundException, IOException {
         FileObject documentBase = wm.getDocumentBase();
         FileObject indexjsp = documentBase.getFileObject(WELCOME_JSF_PAGE); //NOI18N
         //String indexjspString = "faces/" + WELCOME_JSF_PAGE;
         
         if (indexjsp != null) {
-            String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), "UTF-8"); //NO18N
+            String content = JSFFrameworkProvider.readResource(indexjsp.getInputStream(), projectEncoding); //NO18N
             String endLine = System.getProperty("line.separator"); //NOI18N
             
             //insert style and script tags if not already present
             if (content.indexOf(styleAndScriptTags) == -1) {
                 String justTitleEnd = "</title>"; //NOI18N
                 String replaceHeadWith = justTitleEnd + endLine + styleAndScriptTags;    //NOI18N
-                content = content.replace(justTitleEnd, new String (replaceHeadWith.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
+                content = content.replace(justTitleEnd, replaceHeadWith); //NOI18N
             }
             
             //make sure <f:view> is outside of <html>
@@ -447,8 +448,8 @@ public class JSFClientGenerator {
                     content = content.replace(fviewEnd, ""); //NOI18N
                     String fviewPlusHtml = fview + endLine + html;
                     String htmlEndPlusFviewEnd = htmlEnd + endLine + fviewEnd;
-                    content = content.replace(html, new String (fviewPlusHtml.getBytes("UTF8"), "UTF-8")); //NOI18N
-                    content = content.replace(htmlEnd, new String (htmlEndPlusFviewEnd.getBytes("UTF8"), "UTF-8")); //NOI18N
+                    content = content.replace(html, fviewPlusHtml); //NOI18N
+                    content = content.replace(htmlEnd, htmlEndPlusFviewEnd); //NOI18N
                 }
             }
             
@@ -480,8 +481,8 @@ public class JSFClientGenerator {
                     replace.append("</h:form>");
                     replace.append(endLine);
                 }
-                content = content.replace(find, new String (replace.toString().getBytes("UTF8"), "UTF-8")); //NOI18N
-                JSFFrameworkProvider.createFile(indexjsp, content, "UTF-8"); //NOI18N
+                content = content.replace(find, replace.toString()); //NOI18N
+                JSFFrameworkProvider.createFile(indexjsp, content, projectEncoding); //NOI18N
                 //return, indicating welcomeJsp exists
                 return true;
             }
@@ -489,12 +490,12 @@ public class JSFClientGenerator {
         return false;
     }
 
-    private static void generateListJsp(final FileObject jsfRoot, ClasspathInfo classpathInfo, final String entityClass, String simpleEntityName, 
-            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport, String styleAndScriptTags, List<String> entities) throws FileStateInvalidException, IOException {
+    private static void generateListJsp(Project project, final FileObject jsfRoot, ClasspathInfo classpathInfo, final String entityClass, String simpleEntityName, 
+            final String managedBean, String linkToIndex, final String fieldName, String idProperty, BaseDocument doc, final EmbeddedPkSupport embeddedPkSupport, String styleAndScriptTags, List<String> entities, String controllerPackage) throws FileStateInvalidException, IOException {
         final String tableVarName = JsfForm.getFreeTableVarName("item", entities); //NOI18N
         FileSystem fs = jsfRoot.getFileSystem();
         final StringBuffer listSb = new StringBuffer();
-        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = JpaControllerUtil.getProjectEncoding(project, jsfRoot);
         listSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -515,15 +516,19 @@ public class JSFClientGenerator {
                 + "<h:commandLink action=\"#'{'{0}.next'}'\" value=\"Remaining #'{'{0}.pagingInfo.itemCount - {0}.pagingInfo.lastItem'}'\"\n"
                 + "rendered=\"#'{'{0}.pagingInfo.lastItem < {0}.pagingInfo.itemCount && {0}.pagingInfo.lastItem + {0}.pagingInfo.batchSize > {0}.pagingInfo.itemCount'}'\"/>\n", managedBean));
         listSb.append("<h:dataTable value=\"#{" + managedBean + "." + fieldName + "Items}\" var=\"" + tableVarName + "\" border=\"0\" cellpadding=\"2\" cellspacing=\"0\" rowClasses=\"jsfcrud_odd_row,jsfcrud_even_row\" rules=\"all\" style=\"border:solid 1px\">\n");
+        
+        String utilPackage = controllerPackage == null || controllerPackage.length() == 0 ? PersistenceClientIterator.UTIL_FOLDER_NAME : controllerPackage + "." + PersistenceClientIterator.UTIL_FOLDER_NAME;
+        String jsfUtilClass = utilPackage + "." + PersistenceClientIterator.UTIL_CLASS_NAMES[1];
+        
         final  String commands = "<h:column>\n <f:facet name=\"header\">\n <h:outputText escape=\"false\" value=\"&nbsp;\"/>\n </f:facet>\n"
                 + "<h:commandLink value=\"Show\" action=\"#'{'" + managedBean + ".detailSetup'}'\">\n" 
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"               
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"               
                 + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
                 + "<h:commandLink value=\"Edit\" action=\"#'{'" + managedBean + ".editSetup'}'\">\n"
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                 + "</h:commandLink>\n  <h:outputText value=\" \"/>\n"
                 + "<h:commandLink value=\"Destroy\" action=\"#'{'" + managedBean + ".destroy'}'\">\n" 
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName +"\" value=\"#'{'jsfcrud_class[''" + jsfUtilClass + "''].jsfcrud_method[''getAsConvertedString''][{0}][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
                 + "</h:commandLink>\n </h:column>\n";
         JavaSource javaSource = JavaSource.create(classpathInfo);
         javaSource.runUserActionTask(new Task<CompilationController>() {
@@ -547,7 +552,7 @@ public class JSFClientGenerator {
             formatter.reformatUnlock();
             listSb.replace(0, listSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
         }
         
         final String listText = listSb.toString();
@@ -568,10 +573,10 @@ public class JSFClientGenerator {
         });
     }
     
-    private static void generateNewJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
-            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags) throws FileStateInvalidException, IOException {
+    private static void generateNewJsp(Project project, CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
+            List<ElementHandle<ExecutableElement>> toOneRelMethods, boolean fieldAccess, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags, String controllerPackage) throws FileStateInvalidException, IOException {
         StringBuffer newSb = new StringBuffer();
-        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = JpaControllerUtil.getProjectEncoding(project, jsfRoot);
         newSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -582,8 +587,11 @@ public class JSFClientGenerator {
         newSb.append("<h1>New " + simpleEntityName + "</h1>\n");
         newSb.append("<h:form>\n  <h:inputHidden id=\"validateCreateField\" validator=\"#{" + managedBean + ".validateCreate}\" value=\"value\"/>\n <h:panelGrid columns=\"2\">\n");
         
+        String utilPackage = controllerPackage == null || controllerPackage.length() == 0 ? PersistenceClientIterator.UTIL_FOLDER_NAME : controllerPackage + "." + PersistenceClientIterator.UTIL_FOLDER_NAME;
+        String jsfUtilClass = utilPackage + "." + PersistenceClientIterator.UTIL_CLASS_NAMES[1];
+        
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, entityClass, embeddedPkSupport, controllerClass);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_NEW, managedBean + "." + fieldName, newSb, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
         newSb.append("</h:panelGrid>\n<br />\n");
         
         newSb.append("<h:commandLink action=\"#{" + managedBean + ".create}\" value=\"Create\"/>\n<br />\n");
@@ -600,7 +608,7 @@ public class JSFClientGenerator {
             formatter.reformatUnlock();
             newSb.replace(0, newSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
         }
         final String newText = newSb.toString();
 
@@ -621,10 +629,10 @@ public class JSFClientGenerator {
         });
     }
     
-    private static void generateEditJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
-            String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags) throws FileStateInvalidException, IOException {
+    private static void generateEditJsp(Project project, CompilationController controller, String entityClass, String simpleEntityName, String managedBean, String fieldName, 
+            String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags, String controllerPackage) throws FileStateInvalidException, IOException {
         StringBuffer editSb = new StringBuffer();
-        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = JpaControllerUtil.getProjectEncoding(project, jsfRoot);
         editSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -636,14 +644,17 @@ public class JSFClientGenerator {
         editSb.append("<h:form>\n"
                 + "<h:panelGrid columns=\"2\">\n");
         
-        TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, entityClass, embeddedPkSupport, controllerClass);
+        String utilPackage = controllerPackage == null || controllerPackage.length() == 0 ? PersistenceClientIterator.UTIL_FOLDER_NAME : controllerPackage + "." + PersistenceClientIterator.UTIL_FOLDER_NAME;
+        String jsfUtilClass = utilPackage + "." + PersistenceClientIterator.UTIL_CLASS_NAMES[1];
+        
+        TypeElement typeElement = controller.getElements().getTypeElement(entityClass);        
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_EDIT, managedBean + "." + fieldName, editSb, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
         editSb.append("</h:panelGrid>\n<br />\n<h:commandLink action=\"#{" + managedBean + ".edit}\" value=\"Save\">\n"
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke}\"/>\n"
                 + "</h:commandLink>\n"
                 + "<br />\n<br />\n"
                 + "<h:commandLink action=\"#{" + managedBean + ".detailSetup}\" value=\"Show\" immediate=\"true\">\n"
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke'}'\"/>\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke}\"/>\n"
                 + "</h:commandLink>\n"
                 + "<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".listSetup}\" value=\"Show All " + simpleEntityName + " Items\" immediate=\"true\"/>\n" + linkToIndex
@@ -658,7 +669,7 @@ public class JSFClientGenerator {
             formatter.reformatUnlock();
             editSb.replace(0, editSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
         }
 
         final String editText = editSb.toString();
@@ -680,10 +691,10 @@ public class JSFClientGenerator {
         });
     }
 
-    private static void generateDetailJsp(CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
-            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags, List<String> entities) throws FileStateInvalidException, IOException {
+    private static void generateDetailJsp(Project project, CompilationController controller, String entityClass, String simpleEntityName, String managedBean, 
+            String fieldName, String idProperty, boolean isInjection, String linkToIndex, BaseDocument doc, final FileObject jsfRoot, EmbeddedPkSupport embeddedPkSupport, String controllerClass, String styleAndScriptTags, List<String> entities, String controllerPackage) throws FileStateInvalidException, IOException {
         StringBuffer detailSb = new StringBuffer();
-        final Charset encoding = FileEncodingQuery.getDefaultEncoding();
+        final Charset encoding = JpaControllerUtil.getProjectEncoding(project, jsfRoot);
         detailSb.append("<%@page contentType=\"text/html\"%>\n<%@page pageEncoding=\"" + encoding.name() + "\"%>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/core\" prefix=\"f\" %>\n"
                 + "<%@taglib uri=\"http://java.sun.com/jsf/html\" prefix=\"h\" %>\n"
@@ -694,18 +705,21 @@ public class JSFClientGenerator {
         detailSb.append("<h1>" + simpleEntityName + " Detail</h1>\n");
         detailSb.append("<h:form>\n  <h:panelGrid columns=\"2\">\n");
         
+        String utilPackage = controllerPackage == null || controllerPackage.length() == 0 ? PersistenceClientIterator.UTIL_FOLDER_NAME : controllerPackage + "." + PersistenceClientIterator.UTIL_FOLDER_NAME;
+        String jsfUtilClass = utilPackage + "." + PersistenceClientIterator.UTIL_CLASS_NAMES[1];
+        
         TypeElement typeElement = controller.getElements().getTypeElement(entityClass);
-        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass, embeddedPkSupport, controllerClass);
-        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport, controllerClass, entities);
+        JsfForm.createForm(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, detailSb, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
+        JsfForm.createTablesForRelated(controller, typeElement, JsfForm.FORM_TYPE_DETAIL, managedBean + "." + fieldName, idProperty, isInjection, detailSb, embeddedPkSupport, controllerClass, entities, jsfUtilClass);
         detailSb.append("</h:panelGrid>\n");
         detailSb.append("<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".destroy}\" value=\"Destroy\">\n"
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke'}'\" />\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke}\" />\n"
                 + "</h:commandLink>\n"
                 + "<br />\n"
                 + "<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".editSetup}\" value=\"Edit\">\n"
-                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#'{'jsfcrud_class['jsf.util.JsfUtil'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke'}'\" />\n"
+                + "<f:param name=\"jsfcrud.current" + simpleEntityName + "\" value=\"#{jsfcrud_class['" + jsfUtilClass + "'].jsfcrud_method['getAsConvertedString'][" + managedBean + "." + fieldName + "][" + managedBean + ".converter].jsfcrud_invoke}\" />\n"
                 + "</h:commandLink>\n"
                 + "<br />\n"
                 + "<h:commandLink action=\"#{" + fieldName + ".createSetup}\" value=\"New " + simpleEntityName + "\" />\n<br />\n"
@@ -721,7 +735,7 @@ public class JSFClientGenerator {
             formatter.reformatUnlock();
             detailSb.replace(0, detailSb.length(), doc.getText(0, doc.getLength()));
         } catch (BadLocationException e) {
-            Logger.getLogger("global").log(Level.INFO, null, e);
+            Logger.getLogger(JSFClientGenerator.class.getName()).log(Level.INFO, null, e);
         }
 
         final String detailText = detailSb.toString();
@@ -1215,16 +1229,19 @@ public class JSFClientGenerator {
                     
                     String jpaExceptionsPackage = jpaControllerPackage == null || jpaControllerPackage.length() == 0 ? JpaControllerIterator.EXCEPTION_FOLDER_NAME : jpaControllerPackage + "." + JpaControllerIterator.EXCEPTION_FOLDER_NAME;
                     
-                    //fixme(mbohm): examine jpa controller create method to determine if it throws IllegalOrphanException
-                    boolean methodThrowsIllegalOrphanException = true;
+                    String illegalOrphanExceptionClass = jpaExceptionsPackage + ".IllegalOrphanException";
                     
-                    String[] importFqs = methodThrowsIllegalOrphanException ? new String[]{
+                    boolean methodThrowsIllegalOrphanExceptionInCreate = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "create", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                    boolean methodThrowsIllegalOrphanExceptionInEdit = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "edit", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                    boolean methodThrowsIllegalOrphanExceptionInDestroy = JpaControllerUtil.exceptionsThrownIncludes(workingCopy, jpaControllerClass, "destroy", Collections.<String>singletonList("java.lang.Object"), illegalOrphanExceptionClass);
+                    
+                    String[] importFqs = (methodThrowsIllegalOrphanExceptionInCreate || methodThrowsIllegalOrphanExceptionInEdit || methodThrowsIllegalOrphanExceptionInDestroy) ? new String[]{
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
                                 "javax.faces.FacesException",
                                 utilPackage + ".JsfUtil",
                                 jpaExceptionsPackage + ".NonexistentEntityException",
-                                jpaExceptionsPackage + ".IllegalOrphanException"
+                                illegalOrphanExceptionClass
                     } : new String[]{
                                 "java.lang.reflect.InvocationTargetException",
                                 "java.lang.reflect.Method",
@@ -1567,7 +1584,7 @@ public class JSFClientGenerator {
                     bodyText = "try {\n" +
                             "jpaController.create(" + fieldName + ");\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully created.\");\n"  + //NOI18N
-                            (methodThrowsIllegalOrphanException ? "} catch (IllegalOrphanException oe) {\n" + 
+                            (methodThrowsIllegalOrphanExceptionInCreate ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (Exception e) {\n" +
@@ -1645,7 +1662,7 @@ public class JSFClientGenerator {
                     bodyText += "try {\n" +
                             "jpaController.edit(" + fieldName + ");\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully updated.\");\n"  + //NOI18N
-                            (methodThrowsIllegalOrphanException ? "} catch (IllegalOrphanException oe) {\n" + 
+                            (methodThrowsIllegalOrphanExceptionInEdit ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (NonexistentEntityException ne) {\n" +
@@ -1709,7 +1726,7 @@ public class JSFClientGenerator {
                     bodyText += "try {\n" +
                             "jpaController.destroy(id);\n" +
                             "JsfUtil.addSuccessMessage(\"" + simpleEntityName + " was successfully deleted.\");\n"  + //NOI18N
-                            (methodThrowsIllegalOrphanException ? "} catch (IllegalOrphanException oe) {\n" + 
+                            (methodThrowsIllegalOrphanExceptionInDestroy ? "} catch (IllegalOrphanException oe) {\n" + 
                             "JsfUtil.addErrorMessages(oe.getMessages());\n" +
                             "return null;\n" : "") +
                             "} catch (NonexistentEntityException ne) {\n" +
@@ -1742,13 +1759,13 @@ public class JSFClientGenerator {
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo); 
 
                     bodyText = "reset(false);\n" +
-                            "pagingInfo.nextPage();\n "+
+                            "getPagingInfo().nextPage();\n "+
                             "return \"" + fieldName + "_list\"";
                     methodInfo = new MethodInfo("next", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  
 
                     bodyText = "reset(false);\n" +
-                        "pagingInfo.previousPage();\n" +
+                        "getPagingInfo().previousPage();\n" +
                         "return \"" + fieldName + "_list\";\n";
                     methodInfo = new MethodInfo("prev", publicModifier, "java.lang.String", null, null, null, bodyText, null, null);
                     modifiedClassTree = JpaControllerUtil.TreeMakerUtils.addMethod(modifiedClassTree, workingCopy, methodInfo);  

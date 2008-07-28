@@ -56,14 +56,14 @@ public class MeasureJ2SEMenusTest {
 
         s.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(MainMenu.class)
         //.addTest(MainSubMenus.class)
-        .addTest(EditorDownButtonPopupMenu.class)
-        .addTest(FilesViewPopupMenu.class)
-        .addTest(FormInspectorNodePopupMenu.class)
-        .addTest(ProjectsViewPopupMenu.class)
+        //.addTest(EditorDownButtonPopupMenu.class)
+        //.addTest(FilesViewPopupMenu.class)
+        //.addTest(FormInspectorNodePopupMenu.class)
+        //.addTest(ProjectsViewPopupMenu.class)
         .addTest(ProjectsViewSubMenus.class)
-        .addTest(RuntimeViewPopupMenu.class)
-        .addTest(SourceEditorPopupMenu.class)
-        .addTest(ToolsMenu.class)
+        //.addTest(RuntimeViewPopupMenu.class)
+        //.addTest(SourceEditorPopupMenu.class)
+        //.addTest(ToolsMenu.class)
         .enableModules(".*").clusters(".*").reuseUserDir(true)));
 
         return s;

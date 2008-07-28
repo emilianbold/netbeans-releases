@@ -588,7 +588,7 @@ public class CompletionResolverImpl implements CompletionResolver {
             analyzeTemplates.add((CsmTemplate)fun);
         }
         CsmClass clazz = fun == null ? null : CsmBaseUtilities.getFunctionClass(fun);
-        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);        
+        clazz = clazz != null ? clazz : CsmContextUtilities.getClass(context, false);
         if (CsmKindUtilities.isTemplate(clazz)) {
             // We add template parameters to function parameters on function init,
             // so we dont need to add them to completion list again.
@@ -1357,6 +1357,15 @@ public class CompletionResolverImpl implements CompletionResolver {
             resolveTypes |= RESOLVE_LIB_NAMESPACES;
             resolveTypes |= RESOLVE_CLASS_NESTED_CLASSIFIERS;
             resolveTypes |= RESOLVE_FILE_LOCAL_VARIABLES;
+
+            // FIXUP: after we made static consts in headers belong to namespace,
+            // in constuct below usage of globalVarUsedInArrayIndex became unresolved
+            // const int globalVarUsedInArrayIndex;
+            // struct UsingGlobalVarInArrayIndex {
+            //     int data[globalVarUsedInArrayIndex];
+            // };
+            // TODO: solve this issue in a more elegant way
+            resolveTypes |= RESOLVE_GLOB_VARIABLES;
 
             assert (context != null);
             if (CsmContextUtilities.isInFunction(context, offset)) {

@@ -116,7 +116,8 @@ public class PackagingNodeProp extends PropertySupport {
         
         @Override
         public String getAsText() {
-            return packagingConfiguration.getDisplayName();
+            return "Files...";
+            //return packagingConfiguration.getDisplayName();
 //	    boolean addSep = false;
 //	    StringBuilder ret = new StringBuilder();
 //	    for (int i = 0; i < value.size(); i++) {

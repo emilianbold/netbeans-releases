@@ -484,7 +484,7 @@ public abstract class Children extends Object {
     public final List<Node> snapshot() {
         try {
             PR.enterReadAccess();
-            return entrySupport().createSnapshot();
+            return entrySupport().createSnapshot(false);
         } finally {
             PR.exitReadAccess();
         }
@@ -620,6 +620,11 @@ public abstract class Children extends Object {
             super(lazy);
             if (!lazy) {
                 nodesEntry = createNodesEntry();
+            }
+        }
+        @Override
+        void postInitializeEntrySupport() {
+            if (!lazySupport) {
                 entrySupport().setEntries(Collections.singleton(getNodesEntry()));
             }
         }

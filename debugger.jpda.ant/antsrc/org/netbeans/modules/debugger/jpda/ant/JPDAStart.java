@@ -93,7 +93,13 @@ import org.netbeans.api.debugger.DebuggerManagerAdapter;
 import org.netbeans.api.debugger.DebuggerManagerListener;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.ExceptionBreakpoint;
+import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.MethodBreakpoint;
+import org.netbeans.api.debugger.jpda.ObjectVariable;
+import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
+import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.source.BuildArtifactMapper;
 import org.netbeans.api.java.source.BuildArtifactMapper.ArtifactsUpdated;
@@ -383,8 +389,7 @@ public class JPDAStart extends Task implements Runnable {
                         }
                     }
 
-                    ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_CATCHED_UNCATCHED);
-                    b.setHidden (true);
+                    ExceptionBreakpoint b = createCompilationErrorBreakpoint();
                     DebuggerManager.getDebuggerManager ().addBreakpoint (b);
                     artificialBreakpoints.add(b);
                 }
@@ -463,6 +468,46 @@ public class JPDAStart extends Task implements Runnable {
         breakpoint.setHidden (true);
         DebuggerManager.getDebuggerManager ().addBreakpoint (breakpoint);
         return breakpoint;
+    }
+
+    private ExceptionBreakpoint createCompilationErrorBreakpoint() {
+        ExceptionBreakpoint b = ExceptionBreakpoint.create("java.lang.RuntimeException", ExceptionBreakpoint.TYPE_EXCEPTION_UNCATCHED);
+        b.setHidden (true);
+        b.addJPDABreakpointListener(new JPDABreakpointListener() {
+            public void breakpointReached(JPDABreakpointEvent event) {
+                boolean suspend = false;
+                try {
+                    if (event.getVariable() instanceof ObjectVariable) {
+                        ObjectVariable ov = (ObjectVariable) event.getVariable();
+
+                        suspend = "java.lang.RuntimeException".equals(ov.getClassType().getName());
+                        if (suspend) {
+                            java.lang.reflect.Method invokeMethodMethod = ov.getClass().getMethod("invokeMethod", JPDAThread.class, String.class, String.class, Variable[].class);
+                            invokeMethodMethod.setAccessible(true);
+                            Variable message = (Variable) invokeMethodMethod.invoke(ov, event.getThread(), "getMessage", "()Ljava/lang/String;", new Variable[0]);
+                            if (message != null) {
+                                suspend = message.getValue().startsWith("\"Uncompilable source code");
+                            }
+                            //suspend = suspend && ov.invokeMethod("getMessage", "()Ljava/lang/String;", new Variable[0]).getValue().startsWith("\"Uncompilable source code");
+                        }
+                    }
+                } catch (IllegalAccessException iaex) {
+                    logger.log(Level.FINE, null, iaex);
+                } catch (java.lang.reflect.InvocationTargetException itex) {
+                    logger.log(Level.FINE, null, itex);
+                } catch (NoSuchMethodException ex) {
+                    logger.log(Level.FINE, null, ex);
+                //} catch (InvalidExpressionException ex) {
+                //    logger.log(Level.FINE, null, ex);
+                }
+
+                if (!suspend) {
+                    event.resume();
+                }
+            }
+        });
+        b.setPrintText(NbBundle.getBundle("org/netbeans/modules/debugger/jpda/ant/Bundle").getString("MSG_StoppedOnCompileError"));
+        return b;
     }
 
     private final static void debug (String msg) {

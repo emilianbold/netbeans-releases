@@ -1,14 +1,13 @@
-/*
- * UriResolver.java
- *
- * Created on __DATE__, __TIME__
- *
- * To change this template, choose Tools | Template Manager
- * and open the template in the editor.
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
-package Templates.Classes;
+<#if package?? && package != "">
+package ${package};
 
+</#if>
 import javax.ws.rs.WebApplicationException;
 import java.net.HttpURLConnection;
 import java.net.URI;
@@ -18,7 +17,7 @@ import javax.xml.bind.JAXBContext;
 /**
  * Utility class for resolving an uri into an entity.
  *
- * @author __USER__
+ * @author ${user}
  */
 public class UriResolver {
     

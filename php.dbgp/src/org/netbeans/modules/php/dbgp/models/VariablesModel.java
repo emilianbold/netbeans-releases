@@ -137,8 +137,10 @@ public class VariablesModel extends ViewModelSupport
         else if (node instanceof ModelNode) {
             ModelNode modelNode = (ModelNode)node;
             DebugSession session = getSession();
-            childrenRequest(modelNode, session);
-            fillChildrenList( modelNode , session);
+            if (session != null) {
+                childrenRequest(modelNode, session);
+                fillChildrenList( modelNode , session);
+            }
             return modelNode.isLeaf();
         }
 
@@ -458,7 +460,7 @@ public class VariablesModel extends ViewModelSupport
             return;
         }
         AbstractVariableNode var = (AbstractVariableNode) modelNode;
-        if ( !var.isChildrenFilled()) {
+        if (session != null && !var.isChildrenFilled()) {
             PropertyGetCommand command = 
                 new PropertyGetCommand( session.getTransactionId());
             var.setupFillChildrenCommand( command );

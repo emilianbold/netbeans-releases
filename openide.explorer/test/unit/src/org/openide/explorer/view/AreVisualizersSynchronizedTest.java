@@ -39,6 +39,7 @@
 
 package org.openide.explorer.view;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -159,5 +160,81 @@ public class AreVisualizersSynchronizedTest extends NbTestCase {
         assertEquals("3", b2.getChildren().get(0).toString());
         assertEquals("2", b2.getChildren().get(1).toString());
         assertEquals("1", b2.getChildren().get(2).toString());
+    }
+
+    /** simulates removal of form file (one visible and one hidden entry) */
+    public void testRemoveReallyWorks() throws InterruptedException, InvocationTargetException {
+        StrKeys children = new StrKeys(true);
+        final Node root = new AbstractNode(children);
+
+        class VisualInAwt implements Runnable {
+            TreeNode tree;
+            List<TreeNode> children;
+
+            public void run() {
+//                if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+//                    Children.MUTEX.readAccess(this);
+//                    return;
+//                }
+
+                tree = Visualizer.findVisualizer(root);
+                ArrayList<TreeNode> ch = new ArrayList<TreeNode>();
+                TreeNode n;
+                for (int i = 0; i < tree.getChildCount(); i++) {
+                    n = tree.getChildAt(i);
+                    ch.add(n);
+                }
+                children = ch;
+            }
+        }
+
+        VisualInAwt visInAwt = new VisualInAwt();
+
+        children.doSetKeys(new String[] {"0", "Empty1", "1", "Empty2", "2", "Empty3", "3"});
+        SwingUtilities.invokeAndWait(visInAwt);
+        /*class Block implements
+                Runnable {
+
+            public synchronized void run() {
+                notify();
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        Block b = new Block();
+        synchronized (b) {
+            SwingUtilities.invokeLater(b);
+            b.wait();
+        }*/
+        
+        // here we get some empty nodes, removal should be scheduled
+        assertEquals("0", visInAwt.children.get(0).toString());
+        assertEquals("", visInAwt.children.get(1).toString());
+        assertEquals("1", visInAwt.children.get(2).toString());
+        assertEquals("", visInAwt.children.get(3).toString());
+        assertEquals("2", visInAwt.children.get(4).toString());
+        assertEquals("", visInAwt.children.get(5).toString());
+        assertEquals("3", visInAwt.children.get(6).toString());
+
+       /* synchronized(b) {
+            b.notifyAll();
+        }*/
+        
+        SwingUtilities.invokeAndWait(visInAwt);
+        // here hidden nodes should be already removed
+        assertEquals("0", visInAwt.children.get(0).toString());
+        assertEquals("1", visInAwt.children.get(1).toString());
+        assertEquals("2", visInAwt.children.get(2).toString());
+        assertEquals("3", visInAwt.children.get(3).toString());
+
+        children.doSetKeys(new String[] {"0", "Empty1", "1", "Empty3", "3"});
+        SwingUtilities.invokeAndWait(visInAwt);
+        // check removal of "form" was done correctly
+        assertEquals("0", visInAwt.children.get(0).toString());
+        assertEquals("1", visInAwt.children.get(1).toString());
+        assertEquals("3", visInAwt.children.get(2).toString());
     }
 }
