@@ -331,7 +331,7 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ#138683 : function typedef are not recognized
         performTest("IZ138683.cc", 4, 24, "IZ138683.cc", 2, 1);
     }
-    
+
     public void testLabels() throws Exception {
         // IZ#141135 : Labels within code bocks are unresolved
         performTest("labels.cc", 3, 12, "labels.cc", 4, 5);
@@ -353,7 +353,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ141601 A static function defined in a header and used in a source file is unresolved
         performTest("IZ141601_static_fun_in_hdr.c", 4, 8, "IZ141601_static_fun_in_hdr.h", 2, 1);
     }
-    
+
+    public void testIZ137897() throws Exception {
+        // IZ#137897 : parameters of function pointer are not resolved
+        performTest("IZ137897.cc", 1, 24, "IZ137897.cc", 1, 15);
+        performTest("IZ137897.cc", 1, 43, "IZ137897.cc", 1, 31);
+        performTest("IZ137897.cc", 2, 26, "IZ137897.cc", 2, 16);
+        performTest("IZ137897.cc", 2, 43, "IZ137897.cc", 2, 34);
+        performTest("IZ137897.cc", 3, 30, "IZ137897.cc", 3, 24);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
