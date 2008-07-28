@@ -80,10 +80,10 @@ public class ChildrenKeysTest extends NbTestCase {
         return false;
     }
     
-//    public static Test suite() {
-//        return new ChildrenKeysTest("testGCKeys");
-//    }
-//
+    public static Test suite() {
+        return new ChildrenKeysTest("testRemoveNotify");
+    }
+
     @Override
     protected Level logLevel() {
         return Level.WARNING;
@@ -405,6 +405,107 @@ public class ChildrenKeysTest extends NbTestCase {
         l.assertNoEvents("No next events");
     }
 
+    public void testRemoveNotify () throws Throwable {
+        class K extends Keys {
+            int addNotify;
+            int removeNotify;
+
+            CountDownLatch slowRemoveNotify = new CountDownLatch(1);
+            private Throwable ex;
+
+            public K(boolean lazy) {
+                super(lazy);
+            }
+            public Node[] arr;
+
+            @Override
+            protected void addNotify() {
+                try {
+                    assertFalse("We do not have write access", MUTEX.isWriteAccess());
+                } catch (Throwable catched) {
+                    this.ex = catched;
+                }
+                addNotify++;
+                keys("A");
+            }
+
+            @Override
+            protected void removeNotify() {
+                removeNotify++;
+                keys();
+            }
+        }
+        
+        K k = new K(lazy());
+        Node root = createNode(k);
+        Listener l = new Listener();
+        root.addNodeListener(l);
+        
+        Node[] n = root.getChildren().getNodes ();
+        
+        n = k.getNodes ();
+        assertEquals ("1 left", 1, n.length);
+        //assertEquals("Once add notify", 1, k.addNotify);
+
+        //gc();
+        //gc();
+        //gc();
+
+        WeakReference ref = new WeakReference (n[0]);
+        n = null;
+        assertGC ("Node can be gced", ref);
+
+        for (int i = 0; i < 5; i++) {
+            if (k.removeNotify == 1) {
+                break;
+            }
+            Thread.sleep(100);
+        }
+        
+       
+
+        assertEquals("Remove notify is being called", 1, k.removeNotify);
+        assertEquals("Only 1 addNotify should be called so far", 1, k.addNotify);
+
+        n = root.getChildren().getNodes();
+        assertEquals("Still remains one", 1, n.length);
+        assertEquals("Name A", "A", n[0].getName());
+
+        k.slowRemoveNotify.countDown();
+        waitActiveReferenceQueue();
+
+        for (int i = 0; i < 5; i++) {
+            n = root.getChildren().getNodes();
+            assertEquals("Still one node", 1, n.length);
+            assertEquals("Still named right", "A", n[0].getName());
+            Thread.sleep(100);
+        }
+
+        assertEquals("At the end there needs to be more addNotify than removeNotify", 2, k.addNotify);
+        
+        if (k.ex != null) {
+            throw  k.ex;
+        }
+    }
+    
+    static void gc() throws InterruptedException {
+        List<byte[]> alloc = new ArrayList<byte[]>();
+        int size = 100000;
+        for (int i = 0; i < 50; i++) {
+            System.gc();
+            System.runFinalization();
+            try {
+                alloc.add(new byte[size]);
+                size = (int) (((double) size) * 1.3);
+            } catch (OutOfMemoryError error) {
+                size = size / 2;
+            }
+            if (i % 3 == 0) {
+                Thread.sleep(100);
+            }
+        }
+    }
+    
     public void testSlowRemoveNotify () throws Throwable {
         class K extends Keys {
             int addNotify;
