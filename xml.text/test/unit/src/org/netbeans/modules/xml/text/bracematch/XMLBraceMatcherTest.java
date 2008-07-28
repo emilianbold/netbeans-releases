@@ -61,13 +61,11 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         suite.addTest(new XMLBraceMatcherTest("testPI"));
         suite.addTest(new XMLBraceMatcherTest("testDeclaration"));
         suite.addTest(new XMLBraceMatcherTest("testComment"));
+        suite.addTest(new XMLBraceMatcherTest("testTag1"));
+        suite.addTest(new XMLBraceMatcherTest("testTag2"));
         return suite;
     }
     
-    /**
-     * Open test.xml in editor and use column numbers to calculate the
-     * expected results.
-     */
     public void testPI() throws Exception {
         BaseDocument doc = getDocument("bracematch/test.xml");
         //inside PI_START
@@ -114,10 +112,6 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         assert(match[0] == 39 && match[1] == 48);
     }
     
-    /**
-     * Open test.xml in editor and use column numbers to calculate the
-     * expected results.
-     */
     public void testComment() throws Exception {
         BaseDocument doc = getDocument("bracematch/test.xml");
         //inside start of comment i.e "<!--"
@@ -139,5 +133,45 @@ public class XMLBraceMatcherTest extends AbstractTestCase {
         assert(origin[0] == 103 && origin[1] == 106);
         match = instance.doFindMatches();
         assert(match[0] == 80 && match[1] == 84);
+    }
+    
+    public void testTag1() throws Exception {
+        BaseDocument doc = getDocument("bracematch/test.xml");
+        //inside start of root tag  "<root"
+        XMLBraceMatcher instance = new XMLBraceMatcher(doc, 110);
+        int[] origin = instance.doFindOrigin();
+        assert(origin[0] == 107 && origin[1] == 126);
+        int[] match = instance.doFindMatches();
+        assert(match[0] == 204 && match[1] == 211);
+        
+        //somewhere between "<root" and ">"
+        instance = new XMLBraceMatcher(doc, 120);
+        origin = instance.doFindOrigin();
+        assert(origin == null);
+        match = instance.doFindMatches();
+        
+        //inside "</root>"
+        instance = new XMLBraceMatcher(doc, 207);
+        origin = instance.doFindOrigin();
+        assert(origin[0] == 204 && origin[1] == 211);
+        match = instance.doFindMatches();
+        assert(match[0] == 107 && match[1] == 126);
+    }
+    
+    public void testTag2() throws Exception {
+        BaseDocument doc = getDocument("bracematch/test.xml");
+        //just before > in "<root...>"
+        XMLBraceMatcher instance = new XMLBraceMatcher(doc, 125);
+        int[] origin = instance.doFindOrigin();
+        assert(origin[0] == 107 && origin[1] == 126);
+        int[] match = instance.doFindMatches();
+        assert(match[0] == 204 && match[1] == 211);
+        
+        //just before > in "</root...>"
+        instance = new XMLBraceMatcher(doc, 210);
+        origin = instance.doFindOrigin();
+        assert(origin[0] == 204 && origin[1] == 211);
+        match = instance.doFindMatches();
+        assert(match[0] == 107 && match[1] == 126);
     }
 }
