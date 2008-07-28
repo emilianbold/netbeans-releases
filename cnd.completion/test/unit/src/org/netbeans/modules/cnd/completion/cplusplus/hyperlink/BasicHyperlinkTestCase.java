@@ -342,6 +342,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("labels.cc", 38, 12, "labels.cc", 40, 9);
         performTest("labels.cc", 45, 12, "labels.cc", 47, 9);
     }    
+
+    public void testIZ141842() throws Exception {
+        // IZ#141842 : If template parameter declared as a template class, its usage is unresolved
+        performTest("IZ141842.cc", 9, 13, "IZ141842.cc", 5, 5);
+        performTest("IZ141842.cc", 13, 5, "IZ141842.cc", 5, 5);
+        performTest("IZ141842.cc", 14, 5, "IZ141842.cc", 5, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
