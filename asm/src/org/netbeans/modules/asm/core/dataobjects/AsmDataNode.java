@@ -48,11 +48,8 @@ import org.openide.nodes.Children;
 
 public class AsmDataNode extends DataNode {
 
-    private static final String IMAGE_ICON_BASE = 
-                "org/netbeans/modules/asm/core/resources/file_asm_16.png"; // NOI18N
-
     public AsmDataNode(AsmDataObject obj) {
         super(obj, Children.LEAF);
-        setIconBaseWithExtension(IMAGE_ICON_BASE);
+        setIconBaseWithExtension(AsmDataLoaderBeanInfo.IMAGE_ICON_BASE);
     }
 }
