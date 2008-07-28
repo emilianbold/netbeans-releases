@@ -222,7 +222,8 @@ public final class ServerUtilities {
      * quotes.
      *
      * !PW FIXME handles only spaces right now.  Should handle all whitespace.
-     *
+     * !PW FIMME 4NT completion on Windows quotes paths if a folder has a comma
+     *   in the name.  Might need that too, though I haven't proved it yet.      *
      * @param path
      * @return
      */
