@@ -69,7 +69,6 @@ public final class TransferFile {
     private final boolean file;
 
     private TransferFile(String name, String relativePath, String parentRelativePath, long size, boolean directory, boolean file) {
-        assert (directory && !file) || (!directory && file) : "File has to be exactly directory or file";
         assert size >= 0L : "Size cannot be smaller than 0";
         if (directory && size != 0L) {
             throw new IllegalArgumentException("Size of a directory has to be 0 bytes");
