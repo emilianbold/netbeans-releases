@@ -224,11 +224,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="NBProfiler">
                 <folder name="Categories">
-                    <folder name="Persistence">
-                        <attr name="link" stringvalue="NBProfiler/Categories/Persistence"/>
+                    <folder name="Persistence.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/Persistence"/>
                     </folder>
-                    <folder name="EJBContainer">
-                        <attr name="link" stringvalue="NBProfiler/Categories/EJBContainer"/>
+                    <folder name="EJBContainer.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/EJBContainer"/>
                     </folder>
                 </folder>
             </folder>
@@ -244,11 +244,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="NBProfiler">
                 <folder name="Categories">
-                    <folder name="Persistence">
-                        <attr name="link" stringvalue="NBProfiler/Categories/Persistence"/>
+                    <folder name="Persistence.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/Persistence"/>
                     </folder>
-                    <folder name="WebContainer">
-                        <attr name="link" stringvalue="NBProfiler/Categories/WebContainer"/>
+                    <folder name="WebContainer.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/WebContainer"/>
                     </folder>
                 </folder>
             </folder>

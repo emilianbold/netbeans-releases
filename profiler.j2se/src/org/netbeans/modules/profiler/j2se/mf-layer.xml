@@ -161,11 +161,11 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="NBProfiler">
                 <folder name="Categories">
-                    <folder name="J2SE_IO">
-                        <attr name="link" stringvalue="NBProfiler/Categories/IO"/>
+                    <folder name="IO.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/IO"/>
                     </folder>
-                    <folder name="J2SE_UI">
-                        <attr name="link" stringvalue="NBProfiler/Categories/UI"/>
+                    <folder name="UI.shadow">
+                        <attr name="originalFile" stringvalue="NBProfiler/Categories/UI"/>
                     </folder>
                 </folder>
             </folder>
