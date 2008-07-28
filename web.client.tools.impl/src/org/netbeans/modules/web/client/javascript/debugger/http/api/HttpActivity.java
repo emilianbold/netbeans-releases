@@ -130,7 +130,7 @@ public class HttpActivity {
     }
 
     public Map<String, String> getResponseHeader() {
-        Map<String, String> map = Collections.EMPTY_MAP;
+        Map<String, String> map = Collections.emptyMap();
         if (response != null) {
             map = response.getHeader();
         } else if (lastProgress != null) {
