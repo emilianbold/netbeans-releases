@@ -69,6 +69,7 @@ public class DiffAction extends AbstractAction {
     }
 
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         diff(context, Setup.DIFFTYPE_LOCAL, Utils.getContextDisplayName(context));        
     }
 

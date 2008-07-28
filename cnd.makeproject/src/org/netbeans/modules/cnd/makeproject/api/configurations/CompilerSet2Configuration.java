@@ -113,7 +113,6 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     public void setValue(String name) {
         if (!getOption().equals(name)) {
             setValue(name, null);
-            getCompilerSetManager().setCurrentCompilerSet(name);
         }
     }
 
