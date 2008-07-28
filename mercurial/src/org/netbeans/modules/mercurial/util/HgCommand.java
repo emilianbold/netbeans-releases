@@ -294,8 +294,6 @@ public class HgCommand {
 
     private static final String HG_EPOCH_PLUS_ONE_YEAR = "1971-01-01"; // NOI18N
 
-    private static  boolean metricsAlreadyLogged = false;
-
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -2815,9 +2813,8 @@ public class HgCommand {
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
         }        
         assert ( command != null && command.size() > 0);
-        if(logUsage && !metricsAlreadyLogged) {
+        if(logUsage) {
             Utils.logVCSClientEvent("HG", "CLI");
-            metricsAlreadyLogged = true;
         }
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
