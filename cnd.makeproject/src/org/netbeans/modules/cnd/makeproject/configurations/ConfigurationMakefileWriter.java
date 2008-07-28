@@ -599,6 +599,9 @@ public class ConfigurationMakefileWriter {
     }
         
     private void writePackageHeader(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        if (conf.getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            return; // FIXUP
+        }
         String tmpdir = "nbproject/private/tmp-" + conf.getName();
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();

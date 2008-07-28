@@ -253,7 +253,7 @@ public class PackagingConfiguration {
 	String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/"; // NOI18N 
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += "<TBD>"; // NOI18N // FIXUP 
+            outputPath += outputName + ".pkg"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             outputPath += outputName + ".tar"; // NOI18N
@@ -278,7 +278,7 @@ public class PackagingConfiguration {
     private String getToolDefault() {
         String tool = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            tool = "<TBD>"; // NOI18N // FIXUP 
+            tool = "pkgmk"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             tool = "tar"; // NOI18N
@@ -302,7 +302,7 @@ public class PackagingConfiguration {
     private String getOptionsDefault() {
         String option = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            option = "<TBD>"; // NOI18N // FIXUP 
+            option = ""; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             option = "-v"; // NOI18N
