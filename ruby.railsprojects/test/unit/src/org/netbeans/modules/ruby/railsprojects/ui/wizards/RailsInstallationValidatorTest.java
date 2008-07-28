@@ -45,7 +45,6 @@ import org.netbeans.modules.ruby.railsprojects.ui.wizards.RailsInstallationValid
 import org.openide.util.NbBundle;
 
 /**
- *
  * @author Erno Mononen
  */
 public class RailsInstallationValidatorTest extends RubyTestBase {
@@ -58,14 +57,14 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
         RubyPlatform rubyWithGems = RubyPlatformManager.addPlatform(setUpRuby(true, ""));
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(rubyWithGems);
         
-        assertFalse(railsInfo.isValid());
+        assertFalse("RailsInstallationInfo '" + railsInfo.getMessage() + "' is invalid", railsInfo.isValid());
         assertNull(railsInfo.getVersion());
         assertEquals(NbBundle.getMessage(RailsInstallationValidator.class, "NoRails"), railsInfo.getMessage());
         
         installFakeGem("rails", "1.2.6", rubyWithGems);
         
         railsInfo = RailsInstallationValidator.getRailsInstallation(rubyWithGems);
-        assertTrue(railsInfo.isValid());
+        assertTrue("RailsInstallationInfo '" + railsInfo.getMessage() + "' is valid", railsInfo.isValid());
         assertEquals("1.2.6", railsInfo.getVersion());
         assertEquals(NbBundle.getMessage(RailsInstallationValidator.class, "RailsOk"), railsInfo.getMessage());
     }
@@ -74,7 +73,7 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
         RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
 
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(jruby);
-        assertTrue(railsInfo.isValid());
+        assertTrue("RailsInstallationInfo '" + railsInfo.getMessage() + "' is valid", railsInfo.isValid());
         assertEquals("2.1.0", railsInfo.getVersion());
         assertEquals(NbBundle.getMessage(RailsInstallationValidator.class, "RailsOk"), railsInfo.getMessage());
     }
@@ -83,7 +82,7 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
         RubyPlatform rubyNoGems = RubyPlatformManager.addPlatform(setUpRuby(false, ""));
         RailsInstallationInfo railsInfo = RailsInstallationValidator.getRailsInstallation(rubyNoGems);
         
-        assertFalse(railsInfo.isValid());
+        assertFalse("RailsInstallationInfo '" + railsInfo.getMessage() + "' is invalid", railsInfo.isValid());
         assertNull(railsInfo.getVersion());
         assertEquals(NbBundle.getMessage(RailsInstallationValidator.class, "GemProblem"), railsInfo.getMessage());
     }
