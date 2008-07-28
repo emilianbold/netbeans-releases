@@ -1205,7 +1205,7 @@ public final class GemManager {
 
     @Override
     public String toString() {
-        return "RubyPlatform[platform:" + platform + "]"; // NOI18N
+        return "GemManager[platform:" + platform + "]"; // NOI18N
     }
 
 }
