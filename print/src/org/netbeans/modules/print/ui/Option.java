@@ -193,11 +193,11 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
   }
 
   private boolean checkValue(int zoomWidth, int zoomHeight) {
-    if (myHeaderFontValue.getSize() > MAX_HEADER_SIZE) {
+    if (myHeaderFontValue.getSize() > MAX_HEADER_LENGTH) {
       printError(i18n("ERR_Header_Size_Is_Too_Big")); // NOI18N
       return false;
     }
-    if (myFooterFontValue.getSize() > MAX_FOOTER_SIZE) {
+    if (myFooterFontValue.getSize() > MAX_FOOTER_LENGTH) {
       printError(i18n("ERR_Footer_Size_Is_Too_Big")); // NOI18N
       return false;
     }
@@ -258,7 +258,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
 
     // border.color
     c.weightx = 1.0;
-    c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     myBorderColor = createButton(
       new ButtonAction(
         icon(Config.class, "color"), // NOI18N
@@ -290,7 +290,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     // []
     c.gridy++;
     c.anchor = GridBagConstraints.CENTER;
-    c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     panel.add(new JLabel(), c);
 
     // left
@@ -325,7 +325,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     // header left
     c.weightx = 1.0;
     c.fill = GridBagConstraints.HORIZONTAL;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myHeaderLeft = new JTextField();
     setWidthFocused(myHeaderLeft, FIELD_WIDTH);
     panel.add(myHeaderLeft, c);
@@ -385,7 +385,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     panel.add(myFooter, c);
 
     c.weightx = 1.0;
-    c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     myFooterLeft = new JTextField();
     setWidthFocused(myFooterLeft, FIELD_WIDTH);
@@ -444,7 +444,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
 
     // macros
     c.weightx = 1.0;
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.gridwidth = 1 + 1 + 1;
     panel.add(p, c);
   }
@@ -520,7 +520,7 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     panel.add(myTextFontColorLabel, c);
 
     // text color
-    c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     myTextColor = createButton(
       new ButtonAction(icon(Config.class, "color"), i18n("TLT_Text_Color")) { // NOI18N
         public void actionPerformed(ActionEvent event) {
@@ -562,13 +562,13 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
 
     // background label
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myBackgroundColorLabel = createLabel(i18n("LBL_Background_Color")); // NOI18N
     panel.add(myBackgroundColorLabel, c);
 
     // background color
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     myBackgroundColor = createButton(
       new ButtonAction(
         icon(Config.class, "color"), // NOI18N
@@ -602,13 +602,13 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     // label
     c.weightx = 0.0;
     c.anchor = GridBagConstraints.EAST;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myLineSpacingLabel = createLabel(i18n("LBL_Line_Spacing")); // NOI18N
     panel.add(myLineSpacingLabel, c);
 
     // line spacing
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(0, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(0, LARGE_SIZE, TINY_SIZE, 0);
     double value = Config.getDefault().getLineSpacing();
 
     if (value < 0) {
@@ -635,15 +635,14 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
 
     // (o) Fit width to
     c.gridy++;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonWidth = createRadioButton(
-      i18n("LBL_Fit_Width_to"), i18n("TLT_Fit_Width_to")); // NOI18N
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
+    JRadioButton buttonWidth = createRadioButton(i18n("LBL_Fit_Width_to"), i18n("TLT_Fit_Width_to")); // NOI18N
     buttonWidth.addItemListener(createItemListener(true, false, false));
     panel.add(buttonWidth, c);
     group.add(buttonWidth);
 
     // [width]
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myZoomWidth = new JTextField(getString(Percent.getZoomWidth(zoom, 1)));
     setWidth(myZoomWidth, TEXT_WIDTH);
     panel.add(myZoomWidth, c);
@@ -654,15 +653,14 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
 
     // (o) Zoom to
     c.weightx = 0.0;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonFactor = createRadioButton(
-      i18n("LBL_Zoom_to"), i18n("TLT_Zoom_to")); // NOI18N
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
+    JRadioButton buttonFactor = createRadioButton(i18n("LBL_Zoom_to"), i18n("TLT_Zoom_to")); // NOI18N
     buttonFactor.addItemListener(createItemListener(false, false, true));
     panel.add(buttonFactor, c);
     group.add(buttonFactor);
 
     // [zoom]
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
 //out("ZOOM:"  + Percent.getZoomFactor(zoom, 1.0));
     myZoomFactor = new Percent(
       this,
@@ -677,15 +675,14 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
     // (o) Fit height to
     c.gridy++;
     c.weightx = 0.0;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    JRadioButton buttonHeight = createRadioButton(
-      i18n("LBL_Fit_Height_to"), i18n("TLT_Fit_Height_to")); // NOI18N
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
+    JRadioButton buttonHeight = createRadioButton(i18n("LBL_Fit_Height_to"), i18n("TLT_Fit_Height_to")); // NOI18N
     buttonHeight.addItemListener(createItemListener(false, true, false));
     panel.add(buttonHeight, c);
     group.add(buttonHeight);
 
     // [height]
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     myZoomHeight = new JTextField(getString(Percent.getZoomHeight(zoom, 1)));
     setWidth(myZoomHeight, TEXT_WIDTH);
     panel.add(myZoomHeight, c);
@@ -695,9 +692,8 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
 
     // (o) Fit to page
     c.weightx = 0.0;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
-    myFitToPage = createRadioButton(
-      i18n("LBL_Fit_to_Page"), i18n("TLT_Fit_to_Page")); // NOI18N
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
+    myFitToPage = createRadioButton(i18n("LBL_Fit_to_Page"), i18n("TLT_Fit_to_Page")); // NOI18N
     myFitToPage.addItemListener(createItemListener(false, false, false));
     panel.add(myFitToPage, c);
     group.add(myFitToPage);
@@ -951,8 +947,8 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
   private static final int TEXT_WIDTH = 30;
   private static final int FIELD_WIDTH = 90;
   private static final int MAX_PAGE_NUBER = 32;
-  private static final int MAX_HEADER_SIZE = 100;
-  private static final int MAX_FOOTER_SIZE = 100;
+  private static final int MAX_HEADER_LENGTH = 100;
+  private static final int MAX_FOOTER_LENGTH = 100;
   private static final double SPACING_MIN =  0.1;
   private static final double SPACING_MAX = 10.0;
   private static final double SPACING_STEP =  0.1;
