@@ -59,7 +59,11 @@ public interface ServerList {
     
     public ServerRecord getDefaultRecord();
     
-    public void add(String key);
+    public void clear();
+    
+    public void addServer(String key);
+    
+    public void removeServer(int idx);
     
     public ServerUpdateCache show(ServerUpdateCache serverUpdateCache);
     

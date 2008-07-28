@@ -81,6 +81,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
 import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.Path;
 import org.netbeans.modules.cnd.api.utils.PlatformInfo;
 import org.netbeans.modules.cnd.makeproject.api.DefaultProjectActionHandler;
@@ -199,6 +200,15 @@ public class MakeActionProvider implements ActionProvider {
         String projectName = info.getDisplayName();
         MakeConfigurationDescriptor pd = getProjectDescriptor();
         MakeConfiguration conf = (MakeConfiguration)pd.getConfs().getActive();
+        String hkey = conf.getDevelopmentHost().getName();
+        
+        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
+            ServerList registry = (ServerList) Lookup.getDefault().lookup(ServerList.class);
+            assert registry != null;
+            ServerRecord record = registry.get(hkey);
+            assert record != null;
+            record.validate();
+        }
         
         if (COMMAND_DELETE.equals(command)) {
             DefaultProjectOperations.performDefaultDeleteOperation(project);
@@ -823,11 +833,19 @@ public class MakeActionProvider implements ActionProvider {
             return lastValidation;
         }
 
-        // TODO: there is no reason to perform remote validation (quite slow)
-        // until it would be possible to edit remote tools from Tools Panel
         if (!conf.getDevelopmentHost().isLocalhost()) {
-            lastValidation = true;
-            return true;
+            assert serverList != null;
+            ServerRecord record = serverList.get(hkey);
+            assert record != null;
+            record.validate();
+            if (!record.isOnline()) {
+                lastValidation = false;
+                return false;
+            } else {
+                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
+                lastValidation = true;
+                return true;
+            }
         }
 
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
