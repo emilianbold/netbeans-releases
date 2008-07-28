@@ -87,6 +87,8 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     private NbJSDebugger debugger;
     private final JSHttpMessageEventListener httpMessageEventListener = new JSHttpMesageEventListenerImpl();
     private final PreferenceChangeListenerImpl preferenceChangeListener = new PreferenceChangeListenerImpl();
+
+    private final static Logger LOG = Logger.getLogger(HttpActivitiesModel.class.getName());
     
     public HttpActivitiesModel(NbJSDebugger debugger) {
         this.listeners = new CopyOnWriteArrayList<ModelListener>();
@@ -118,7 +120,7 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             } else {
                 HttpActivity activity = id2ActivityMap.get(message.getId());
                 if ( activity == null ){
-                        Logger.getLogger(this.getClass().getName()).warning("Activity should not be null for response:" + message);
+                        LOG.warning("Activity should not be null for response:" + message);
                         return;
                 }
                 if (message instanceof JSHttpResponse) {
@@ -151,8 +153,8 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
             filterList = activities;
         } else {
             for( HttpActivity activity : activities ){
-                String contentType = activity.getMimeType();
-                if ( !filterOutContentType(contentType)){
+                String category = activity.getCategory();
+                if ( category != null && !filterOutCategory(category)){
                     filterList.add(activity);
                 }
             }
@@ -232,7 +234,32 @@ public class HttpActivitiesModel implements TreeModel, TableModel, NodeModel, No
     private static final List IMAGES_CONTENT_TYPES = Arrays.asList("image/jpeg", "image/gif", "image/png", "image/bmp");
     private static final List FLASH_CONTENT_TYPES = Arrays.asList("application/x-shockwave-flash");
 
-    private boolean filterOutContentType(String contentType){
+    private static final String HTML_CATEGORY = "html";
+    private static final String JS_CATEGORY = "js";
+    private static final String CSS_CATEGORY = "css";
+    private static final String IMAGE_CATEGORY = "image";
+    private static final String FLASH_CATEGORY ="flash";
+    private static final String XHR_CATEGORY = "xhr";
+    private static final String BIN_CATEGORY = "bin";
+    private static final String TEXT_CATEGORY = "text";
+
+    private boolean filterOutCategory(String category){
+        if ( !httpMonitorPreferences.isShowHTML() && HTML_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowJS() && JS_CATEGORY.equals(category) ){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowCSS() && CSS_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowImages() && IMAGE_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowFlash() && FLASH_CATEGORY.equals(category)){
+                return true;
+        } else if ( !httpMonitorPreferences.isShowXHR() && XHR_CATEGORY.equals(category)){
+                return true;
+        }
+        return false;
+    }
+        private boolean filterOutContentType(String contentType){
         if ( !httpMonitorPreferences.isShowHTML() && HTML_CONTENT_TYPES.contains(contentType) ){
                 return true;
         } else if ( !httpMonitorPreferences.isShowJS() && JS_CONTENT_TYPES.contains(contentType) ){

@@ -46,7 +46,6 @@ import org.openide.windows.WindowManager;
 final class HttpMonitorTopComponent extends TopComponent {
 
     private static HttpMonitorTopComponent instance;
-    
     /** path to the icon used by the component and its open action */
     // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
     static final String ICON_PATH = "org/netbeans/modules/web/client/javascript/debugger/http/ui/resources/HttpMonitor.png";
@@ -57,8 +56,6 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static final Model METHOD_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.METHOD_COLUMN);
     private static final Model SENT_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.SENT_COLUMN);
     private static final Model RESPONSE_COLUMN = HttpActivitiesModel.getColumnModel(HttpActivitiesModel.RESPONSE_COLUMN);
-
-
     private static final String PREFERRED_ID = "HttpMonitorTopComponent";
     private final static HttpMonitorPreferences httpMonitorPreferences = HttpMonitorPreferences.getInstance();
     private final ActivitiesPropertyChange activityPropertyChangeListener = new ActivitiesPropertyChange();
@@ -72,24 +69,23 @@ final class HttpMonitorTopComponent extends TopComponent {
     private JComponent tableView;
 
     private HttpMonitorTopComponent() {
-        if ( HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
-           HttpMonitorUtility.setEnabled(true);
+        if (HttpMonitorUtility.getCurrentHttpMonitorModel() != null) {
+            HttpMonitorUtility.setEnabled(true);
         }
         initComponents();
         setName(NbBundle.getMessage(HttpMonitorTopComponent.class, "CTL_HttpMonitorTopComponent"));
         setToolTipText(NbBundle.getMessage(HttpMonitorTopComponent.class, "HINT_HttpMonitorTopComponent"));
         setIcon(Utilities.loadImage(ICON_PATH, true));
     }
-    
     private Icon StartIcon;
     private Icon StopIcon;
+
     private final Icon getStartStopIcon() {
         if (HttpMonitorUtility.isEnabled()) {
             return (StopIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(STOP_ICON_PATH)));
         }
         return (StartIcon != null ? StopIcon : new javax.swing.ImageIcon(getClass().getResource(START_ICON_PATH)));
     }
-
 
     private JComponent createActivitiesTable() {
         CompoundModel compoundModel = createViewCompoundModel(HttpMonitorUtility.getCurrentHttpMonitorModel());
@@ -113,10 +109,10 @@ final class HttpMonitorTopComponent extends TopComponent {
     private static CompoundModel createViewCompoundModel(HttpActivitiesModel model) {
         List<Model> models = new ArrayList<Model>();
         if (model != null) {
-                models.add(model);
-                models.add(METHOD_COLUMN);
-                models.add(SENT_COLUMN);
-                models.add(RESPONSE_COLUMN);
+            models.add(model);
+            models.add(METHOD_COLUMN);
+            models.add(SENT_COLUMN);
+            models.add(RESPONSE_COLUMN);
         }
         CompoundModel compoundModel = Models.createCompoundModel(models);
         return compoundModel;
@@ -151,7 +147,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                             reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
 
-                        Map<String,String> header = activity.getResponseHeader();
+                        Map<String, String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
                             resBodyTextArea.setText(activity.getResponseText());
@@ -165,7 +161,6 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         }
     }
-    
     private static final String PREF_HttpMonitorSplitPane_DIVIDERLOC = "HttpMonitorSplitPane_DIVIDERLOC";
     private static final String PREF_DetailsSplitPane_DIVIDERLOC = "DetailsSplitPane_DIVIDERLOC";
 
@@ -390,8 +385,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         outerActivitiesPanel.add(activitiesToolbar, java.awt.BorderLayout.NORTH);
         Model model = HttpMonitorUtility.getCurrentHttpMonitorModel();
         start_stopMonitoring.setIcon(getStartStopIcon());
-        start_stopMonitoring.setEnabled(model != null);
-        cleanButton.setEnabled(model != null);
 
         if( httpMonitorPreferences.isShowAll() ) {
             setFilterButtonsAllSelected();
@@ -399,6 +392,7 @@ final class HttpMonitorTopComponent extends TopComponent {
             all_filterButton.setSelected(false);
             resetOtherFilterButtonSelected();
         }
+        setToolbarButtonsEnabled(model != null);
 
         activitiesModelPanel.setLayout(new java.awt.BorderLayout());
         activitiesModelPanel.add(createActivitiesTable(), BorderLayout.CENTER);
@@ -476,7 +470,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     }// </editor-fold>//GEN-END:initComponents
 
     private void cleanButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_cleanButtonMouseClicked
-    HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
+        HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
         if (model != null) {
             model.clearActivities();
         }
@@ -492,24 +486,23 @@ final class HttpMonitorTopComponent extends TopComponent {
         all_filterButton.setSelected(true);
     }//GEN-LAST:event_all_filterMouseClicked
 
-
     private void filterButtonItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_filterButtonItemStateChanged
         Object source = evt.getItem();
         int state = evt.getStateChange();
-        if( source.equals(html_filterButton)){
+        if (source.equals(html_filterButton)) {
             httpMonitorPreferences.setShowHTML(state == ItemEvent.SELECTED);
-        } else if ( source.equals(js_filterButton)) {
+        } else if (source.equals(js_filterButton)) {
             httpMonitorPreferences.setShowJS(state == ItemEvent.SELECTED);
-        }  else if ( source.equals(xhr_filterButton)) {
+        } else if (source.equals(xhr_filterButton)) {
             httpMonitorPreferences.setShowXHR(state == ItemEvent.SELECTED);
-        } else if ( source.equals(css_filterButton)) {
+        } else if (source.equals(css_filterButton)) {
             httpMonitorPreferences.setShowCSS(state == ItemEvent.SELECTED);
-        } else if ( source.equals(images_filterButton)) {
+        } else if (source.equals(images_filterButton)) {
             httpMonitorPreferences.setShowImages(state == ItemEvent.SELECTED);
-        } else if ( source.equals(flash_filterButton)) {
+        } else if (source.equals(flash_filterButton)) {
             httpMonitorPreferences.setShowFlash(state == ItemEvent.SELECTED);
         }
-        if (httpMonitorPreferences.isShowAll() ){
+        if (httpMonitorPreferences.isShowAll()) {
             all_filterButton.setSelected(true);
         } else {
             all_filterButton.setSelected(false);
@@ -604,7 +597,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         private static final long serialVersionUID = 1L;
 
         public Object readResolve() {
-            Object httpMonitor =  HttpMonitorTopComponent.getDefault();
+            Object httpMonitor = HttpMonitorTopComponent.getDefault();
             return httpMonitor;
         }
     }
@@ -618,32 +611,30 @@ final class HttpMonitorTopComponent extends TopComponent {
         public void propertyChange(PropertyChangeEvent evt) {
             assert evt.getPropertyName().equals(DebuggerManager.PROP_CURRENT_SESSION);
             Object obj = evt.getNewValue();
-            if ( obj != null && HttpMonitorUtility.isJSDebuggerSession((Session)obj) ){
+            if (obj != null && HttpMonitorUtility.isJSDebuggerSession((Session) obj)) {
                 HttpActivitiesModel model = HttpMonitorUtility.getCurrentHttpMonitorModel();
                 assert model != null;
-                setToolbarButtons(true);
+                setToolbarButtonsEnabled(true);
                 resetHttpActivitesModel(model);
             } else {
                 // The session was cleared
-                setToolbarButtons(false);
+                setToolbarButtonsEnabled(false);
                 resetHttpActivitesModel(null);
             }
             return;
         }
+    }
 
-        private void setToolbarButtons(boolean b) {
-            cleanButton.setEnabled(b);
-            start_stopMonitoring.setEnabled(b);
-            all_filterButton.setEnabled(b);
-            html_filterButton.setEnabled(b);
-            js_filterButton.setEnabled(b);
-            images_filterButton.setEnabled(b);
-            css_filterButton.setEnabled(b);
-            flash_filterButton.setEnabled(b);
-            xhr_filterButton.setEnabled(b);
-        }
-
-
+    private void setToolbarButtonsEnabled(boolean b) {
+        cleanButton.setEnabled(b);
+        start_stopMonitoring.setEnabled(b);
+        all_filterButton.setEnabled(b);
+        html_filterButton.setEnabled(b);
+        js_filterButton.setEnabled(b);
+        images_filterButton.setEnabled(b);
+        css_filterButton.setEnabled(b);
+        flash_filterButton.setEnabled(b);
+        xhr_filterButton.setEnabled(b);
     }
 
     private void setFilterButtonsAllSelected() {
@@ -651,7 +642,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         setOtherFilterButtonsSelected(true);
     }
 
-    private void setOtherFilterButtonsSelected (boolean b_val) {
+    private void setOtherFilterButtonsSelected(boolean b_val) {
         html_filterButton.setSelected(b_val);
         js_filterButton.setSelected(b_val);
         css_filterButton.setSelected(b_val);

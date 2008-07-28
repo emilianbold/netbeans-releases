@@ -47,7 +47,7 @@
                 <Property name="rollover" type="boolean" value="true"/>
               </Properties>
               <AuxValues>
-                <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Model model = HttpMonitorUtility.getCurrentHttpMonitorModel();&#xa;start_stopMonitoring.setIcon(getStartStopIcon());&#xa;start_stopMonitoring.setEnabled(model != null);&#xa;cleanButton.setEnabled(model != null);&#xa;&#xa;if( httpMonitorPreferences.isShowAll() ) {&#xa;    setFilterButtonsAllSelected();&#xa;} else {&#xa;    all_filterButton.setSelected(false);&#xa;    resetOtherFilterButtonSelected();&#xa;}"/>
+                <AuxValue name="JavaCodeGenerator_allCodePost" type="java.lang.String" value="Model model = HttpMonitorUtility.getCurrentHttpMonitorModel();&#xa;start_stopMonitoring.setIcon(getStartStopIcon());&#xa;&#xa;if( httpMonitorPreferences.isShowAll() ) {&#xa;    setFilterButtonsAllSelected();&#xa;} else {&#xa;    all_filterButton.setSelected(false);&#xa;    resetOtherFilterButtonSelected();&#xa;}&#xa;setToolbarButtonsEnabled(model != null);"/>
               </AuxValues>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">
