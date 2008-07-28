@@ -177,7 +177,7 @@ public class XMLBraceMatcher implements BracesMatcher {
                                 break;
                         }
                     }                    
-                    String tagName = token.text().toString();
+                    String tagName = ts.token().text().toString();
                     if(tagName.startsWith("</")) {
                         return findMatchingTagBackward(ts, tagName.substring(2));
                     }

@@ -3,7 +3,7 @@
 <!--
      Hello World.
 -->
-<root>
+<root name="value">
     <A>
         <B>hello</B>
         <C><![CDATA[hello world]]></C>
