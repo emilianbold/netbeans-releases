@@ -75,6 +75,7 @@ import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.text.CloneableEditor;
+import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -589,7 +590,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                             DialogDescriptor.CLOSED_OPTION
                         };
                         final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
-                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
+                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(SQLCloneableEditor.class), null);
                         dlg = DialogDisplayer.getDefault().createDialog(desc);
                         dlg.getAccessibleContext().setAccessibleDescription(null);
                         panel.setSize(panel.getPreferredSize());
