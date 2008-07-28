@@ -250,32 +250,33 @@ public final class Validator extends BpelValidator {
 
   @Override
   public void visit(Validate validate) {
-      addElementError(validate);
+    addElementError(validate);
   }
   
   @Override
   public void visit(PartnerLink partnerLink) {
-      if (partnerLink.getInitializePartnerRole() != null) {
-          addWarning("FIX_Attribute", partnerLink, PartnerLink.INITIALIZE_PARTNER_ROLE); // NOI18N
-      }
+    if (partnerLink.getInitializePartnerRole() != null) {
+      addWarning("FIX_Attribute", partnerLink, PartnerLink.INITIALIZE_PARTNER_ROLE); // NOI18N
+    }
   }
   
   @Override
   public void visit(Variable variable) {
-      From from = variable.getFrom();
-      if (from != null) {
-          addElementsInParentError(variable, from);
-      }
+    From from = variable.getFrom();
+
+    if (from != null) {
+      addElementsInParentError(variable, from);
+    }
   }
   
   @Override
   public void visit(TargetContainer container) {
-      addElementError(container);
+    addElementError(container);
   }
   
   @Override
   public void visit(SourceContainer container) {
-      addElementError(container);
+    addElementError(container);
   }
   
   @Override
@@ -301,16 +302,16 @@ public final class Validator extends BpelValidator {
   
   @Override
   public void visit(ExtensibleAssign extensibleAssign) {
-      addElementError(extensibleAssign);
+    addElementError(extensibleAssign);
   }
   
   @Override
   public void visit(Assign assign) {
-      super.visit(assign);
+    super.visit(assign);
 
-      if (assign.getValidate() != null) {
-          addWarning("FIX_Attribute", assign, Assign.VALIDATE); // NOI18N
-      }
+    if (assign.getValidate() != null) {
+      addWarning("FIX_Attribute", assign, Assign.VALIDATE); // NOI18N
+    }
   }
   
   @Override

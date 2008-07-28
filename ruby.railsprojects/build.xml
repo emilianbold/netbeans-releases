@@ -6,13 +6,13 @@
     <description>Builds, tests, and runs the project ruby.railsprojects</description>
     <import file="../nbbuild/templates/projectized.xml"/>
 
+<!--
     <target name="release" depends="init">
         <mkdir dir="${cluster}"/>
         <copy todir="${cluster}">
             <fileset dir="external">
-                <include name="goldspike-1.6.zip"/>
             </fileset>
         </copy>
     </target>
-
+-->
 </project>

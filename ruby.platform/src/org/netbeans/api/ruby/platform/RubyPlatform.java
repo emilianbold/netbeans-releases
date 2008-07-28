@@ -951,7 +951,8 @@ public final class RubyPlatform {
         }
 
         public @Override String toString() {
-            return "RubyPlatform$Info[GEM_HOME:" + getGemHome() + ", GEM_PATH: " + getGemPath() + "]"; // NOI18N
+            return "RubyPlatform$Info[GEM_HOME:" + getGemHome() + ", GEM_PATH: " + getGemPath() // NOI18N
+                    + ", gemVersion: " + getGemVersion() + ", lib: " + getLibDir() + "]"; // NOI18N
         }
 
         @Override

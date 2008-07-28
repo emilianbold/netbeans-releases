@@ -196,17 +196,17 @@ public final class PropertyEditorDate extends PropertyEditorUserCode implements 
 
     @Override
     public void customEditorOKButtonPressed() {
-        super.customEditorOKButtonPressed();
         if (radioButton.isSelected()) {
             saveValue(customEditor.getText());
         }
-        
         final DesignComponent _component = component.get();
         if (databindingElement != null && databindingElement.getRadioButton().isSelected()) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).saveToModel(_component);
+            return;
         } else if (databindingElement != null) {
             ((DatabindingElementUI) databindingElement.getCustomEditorComponent()).resetValuesInModel(_component);
         }
+        super.customEditorOKButtonPressed();
     }
 
     private String getValueAsText(PropertyValue value) {

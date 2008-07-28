@@ -131,8 +131,10 @@ public class FunctionImpl<T> extends OffsetableDeclarationBase<T>
         
         // change scope to file for static methods, but only to prevent 
         // registration in global  namespace
-        if( !NamespaceImpl.isNamespaceScope(this) ) {
-                scope = file;
+        if(scope instanceof CsmNamespace) {
+            if( !NamespaceImpl.isNamespaceScope(this) ) {
+                    scope = file;
+            }
         }
 
         _setScope(scope);

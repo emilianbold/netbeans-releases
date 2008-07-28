@@ -163,11 +163,15 @@ public abstract class FtpCommand extends Command {
 
         int maxRelativePath = getRelativePathMaxSize(transferInfo);
         long size = 0;
+        int files = 0;
         if (transferInfo.hasAnyTransfered()) {
             out.println(NbBundle.getMessage(FtpCommand.class, "LBL_FtpSucceeded"));
             for (TransferFile file : transferInfo.getTransfered()) {
                 printSuccess(out, maxRelativePath, file);
-                size += file.getSize();
+                if (file.isFile()) {
+                    size += file.getSize();
+                    files++;
+                }
             }
         }
 
@@ -185,16 +189,16 @@ public abstract class FtpCommand extends Command {
             }
         }
 
-        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", transferInfo.getRuntime(), transferInfo.getTransfered().size(), size / 1024.0));
+        out.println(NbBundle.getMessage(FtpCommand.class, "MSG_FtpRuntimeAndSize", transferInfo.getRuntime(), files, size / 1024.0));
     }
 
     private void printSuccess(OutputWriter writer, int maxRelativePath, TransferFile file) {
-        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getName());
+        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s", getFileTypeLabel(file), file.getRelativePath());
         writer.println(msg);
     }
 
     private void printError(OutputWriter writer, int maxRelativePath, TransferFile file, String reason) {
-        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getName(), reason);
+        String msg = String.format("%-" + MAX_TYPE_SIZE + "s %-" + maxRelativePath + "s   %s", getFileTypeLabel(file), file.getRelativePath(), reason);
         writer.println(msg);
     }
 

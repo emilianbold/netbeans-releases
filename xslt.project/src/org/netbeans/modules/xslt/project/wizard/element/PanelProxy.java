@@ -276,13 +276,13 @@ final class PanelProxy<T> extends Panel<T> {
     // check
     c.gridy++;
     c.gridwidth = 2;
-    c.insets = new Insets(SMALL_INSET, 0, 0, 0);
+    c.insets = new Insets(LARGE_SIZE, 0, 0, 0);
     panel.add(checkBox, c);
 
     // text
     c.gridwidth = GridBagConstraints.REMAINDER;
     c.insets = new Insets(
-      SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+      LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     text.setEnabled(false);
@@ -293,7 +293,7 @@ final class PanelProxy<T> extends Panel<T> {
     c.gridwidth = 2;
     c.anchor = GridBagConstraints.EAST;
     c.insets = new Insets(
-      SMALL_INSET, MEDIUM_INSET + SMALL_INSET + TINY_INSET + TINY_INSET, TINY_INSET, SMALL_INSET);
+      LARGE_SIZE, HUGE_SIZE + LARGE_SIZE + TINY_SIZE + TINY_SIZE, TINY_SIZE, LARGE_SIZE);
     c.fill = GridBagConstraints.NONE;
     c.weightx = 0.0;
     JLabel label = createLabel(i18n(getNextXslFileLabel()));
@@ -306,11 +306,11 @@ final class PanelProxy<T> extends Panel<T> {
     c.fill = GridBagConstraints.HORIZONTAL;
     c.weightx = 1.0;
     c.anchor = GridBagConstraints.WEST;
-    c.insets = new Insets(SMALL_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(LARGE_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     panel.add(file, c);
 
     c.weightx = 0.0;
-    c.insets = new Insets(TINY_INSET, SMALL_INSET, TINY_INSET, 0);
+    c.insets = new Insets(TINY_SIZE, LARGE_SIZE, TINY_SIZE, 0);
     panel.add(browseButton, c);
     
     return panel;

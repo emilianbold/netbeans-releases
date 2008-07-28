@@ -353,6 +353,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         // IZ141601 A static function defined in a header and used in a source file is unresolved
         performTest("IZ141601_static_fun_in_hdr.c", 4, 8, "IZ141601_static_fun_in_hdr.h", 2, 1);
     }
+
+    public void testIZ141842() throws Exception {
+        // IZ#141842 : If template parameter declared as a template class, its usage is unresolved
+        performTest("IZ141842.cc", 9, 13, "IZ141842.cc", 5, 5);
+        performTest("IZ141842.cc", 13, 5, "IZ141842.cc", 5, 5);
+        performTest("IZ141842.cc", 14, 5, "IZ141842.cc", 5, 5);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 
@@ -378,3 +385,4 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         }
     }
 }
+

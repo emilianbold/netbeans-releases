@@ -195,10 +195,12 @@ public class TemplateUtils {
                     break;
                 case CPPTokenTypes.CSM_TEMPLATE_TEMPLATE_PARAMETER:
                     parameterStart = child;
-                     for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
+                    for (AST paramChild = child.getFirstChild(); paramChild != null; paramChild = paramChild.getNextSibling()) {
                         if (paramChild.getType() == CPPTokenTypes.ID) {
-                           res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, scope));
-                           break;
+                            // IZ 141842 : If template parameter declared as a template class, its usage is unresolved
+                            // Now all IDs of template template parameter are added to template parameters of template.
+                            // When CsmClassifierBasedTemplateParameter will be finished, this should be replaced. 
+                            res.add(new TemplateParameterImpl(parameterStart, paramChild.getText(), file, scope));
                         }
                     }
                     break;
