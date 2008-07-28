@@ -47,8 +47,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.mobility.svgcore.util.Util;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.model.Debug;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.DesignDocument;
 import org.netbeans.modules.vmd.api.model.PropertyValue;
@@ -74,6 +77,7 @@ import org.netbeans.modules.vmd.midp.propertyeditors.api.resource.element.Proper
 import org.netbeans.modules.vmd.midp.propertyeditors.api.usercode.PropertyEditorMessageAwareness;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGFormCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComponentCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGComponentImageParser;
 import org.netbeans.modules.vmd.midpnb.components.svg.parsers.SVGFormImageParser;
 import org.netbeans.modules.vmd.midpnb.screen.display.SVGImageComponent;
@@ -194,11 +198,32 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
     }
 
     @Override
-    public void postSetValue(final DesignComponent parentComponent, final DesignComponent childComponent) {
-        final FileObject[] svgImageFileObject = new FileObject[1];
-        childComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+    public void nullValueSet(final DesignComponent component) {
+        component.getDocument().getTransactionManager().writeAccess(new Runnable() {
 
             public void run() {
+                Collection<DesignComponent> components = new HashSet(component.getComponents());
+                DescriptorRegistry registry = component.getDocument().getDescriptorRegistry();
+                for (DesignComponent component : components) {
+                    if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+                        component.getDocument().deleteComponent(component);
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void postSaveValue(final DesignComponent parentComponent) {
+         
+        final FileObject[] svgImageFileObject = new FileObject[1];
+        parentComponent.getDocument().getTransactionManager().readAccess(new Runnable() {
+
+            public void run() {
+                DesignComponent childComponent = parentComponent.readProperty(SVGFormCD.PROP_SVG_IMAGE).getComponent();
+                if (childComponent == null) {
+                    return;
+                }
                 PropertyValue propertyValue = childComponent.readProperty(SVGImageCD.PROP_RESOURCE_PATH);
                 if (propertyValue.getKind() == PropertyValue.Kind.VALUE) {
                     Map<FileObject, FileObject> images = MidpProjectSupport.getFileObjectsForRelativeResourcePath(parentComponent.getDocument(), MidpTypes.getString(propertyValue));
@@ -210,7 +235,9 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
         parseSVGImageItems(svgImageFileObject[0], parentComponent);
     }
 
-    private void parseSVGImageItems(FileObject imageFO,final DesignComponent parentComponent) {
+    
+
+    private void parseSVGImageItems(FileObject imageFO, final DesignComponent parentComponent) {
         if (imageFO == null) {
             return;
         }
@@ -221,7 +248,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 svgComponentImageParser[0] = SVGComponentImageParser.getParserByComponent(parentComponent);
             }
         });
-        
+
         SVGComponentImageParser parser = svgComponentImageParser[0];
         if (parser == null) {
             return;
@@ -357,7 +384,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
             if (fo != null) {
                 is = fo.getInputStream();
                 updateSVGModelTable(is);
-            } 
+            }
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -681,7 +708,7 @@ public class SVGFormEditorElement extends PropertyEditorResourceElement implemen
                 DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
             }
         }
-    }                                             
+    }
 
     private void pathTextComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pathTextComboBoxActionPerformed
         if (!doNotFireEvent) {//GEN-LAST:event_pathTextComboBoxActionPerformed

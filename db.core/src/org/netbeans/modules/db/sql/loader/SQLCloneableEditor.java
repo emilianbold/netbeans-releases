@@ -78,6 +78,7 @@ import org.openide.text.CloneableEditor;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ProxyLookup;
@@ -578,19 +579,19 @@ public class SQLCloneableEditor extends CloneableEditor {
         }
 
         public void showHistory() {
-  
+            getComponent().setCursor(Utilities.createProgressCursor(getComponent()));
             SwingUtilities.invokeLater(new Runnable() {
                 public void run() {
-                    SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
-                    Object[] options = new Object[]{
-                        DialogDescriptor.CLOSED_OPTION
-                    };
-                    final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
-                            DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                     Dialog dlg = null;
                     try {
+                        SQLHistoryPanel panel = new SQLHistoryPanel(getEditorPane());
+                        Object[] options = new Object[]{
+                            DialogDescriptor.CLOSED_OPTION
+                        };
+                        final DialogDescriptor desc = new DialogDescriptor(panel, NbBundle.getMessage(SQLCloneableEditor.class, "LBL_SQL_HISTORY_TITLE"), true, options,
+                                DialogDescriptor.CLOSED_OPTION, DialogDescriptor.DEFAULT_ALIGN, null, null);
                         dlg = DialogDisplayer.getDefault().createDialog(desc);
-                        dlg.getAccessibleContext().setAccessibleDescription("descr");
+                        dlg.getAccessibleContext().setAccessibleDescription(null);
                         panel.setSize(panel.getPreferredSize());
                         dlg.pack();
                         dlg.setVisible(true);
@@ -598,6 +599,7 @@ public class SQLCloneableEditor extends CloneableEditor {
                         if (dlg != null) {
                             dlg.dispose();
                         }
+                        getComponent().setCursor(null);
                     }
                 }
             });

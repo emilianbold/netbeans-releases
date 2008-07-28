@@ -276,7 +276,11 @@ public class RubyTypeAnalyzer {
         case FLOATNODE:
             return "Float"; // NOI18N
         case NILNODE:
-            return "NilClass"; // NOI18N
+            // NilImplicitNode - don't use it, the type is really unknown!
+            if (!child.isInvisible()) {
+                return "NilClass"; // NOI18N
+            }
+            break;
         case TRUENODE:
             return "TrueClass"; // NOI18N
         case FALSENODE:

@@ -956,6 +956,5 @@ final class Option extends Dialog implements FocusListener, Macro.Listener, Perc
   private static final double SPACING_MIN =  0.1;
   private static final double SPACING_MAX = 10.0;
   private static final double SPACING_STEP =  0.1;
-  private static final int [] PERCENTS =
-    new int [] { 25, 50, 75, 100, 125, 150, 200, 300, 500 };
+  private static final int [] PERCENTS = new int [] { 25, 50, 75, 100, 125, 150, 200, 300, 500 };
 }

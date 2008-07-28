@@ -55,7 +55,6 @@ import org.netbeans.modules.vmd.midp.screen.display.property.ResourcePropertyEdi
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGImageCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.SVGPlayerCD;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import javax.microedition.m2g.SVGImage;
 import javax.swing.*;
@@ -77,12 +76,18 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
     private SVGImageComponent imageView = new SVGImageComponent();
     private ScreenFileObjectListener imageFileListener;
     private FileObject svgFileObject;
+    private boolean useFileListener;
 
     public SVGPlayerDisplayPresenter() {
         JPanel contentPanel = getPanel().getContentPanel();
         contentPanel.setLayout(new BorderLayout());
         stringLabel = new JLabel();
         stringLabel.setHorizontalAlignment(JLabel.CENTER);
+    }
+    
+    public SVGPlayerDisplayPresenter(boolean useFilelistener) {
+        this();
+        this.useFileListener = useFilelistener;
     }
 
     @Override
@@ -107,7 +112,7 @@ public class SVGPlayerDisplayPresenter extends DisplayableDisplayPresenter {
                     if (svgFileObject != null) {
                         try {
                             svgImage = Util.createSVGImage(svgFileObject, true);
-                            if (svgFileObject != null) {
+                            if (svgFileObject != null && useFileListener) {
                                 svgFileObject.removeFileChangeListener(imageFileListener);
                                 imageFileListener = new ScreenFileObjectListener(getRelatedComponent(), svgImageComponent, SVGImageCD.PROP_RESOURCE_PATH);
                                 svgFileObject.addFileChangeListener(imageFileListener);

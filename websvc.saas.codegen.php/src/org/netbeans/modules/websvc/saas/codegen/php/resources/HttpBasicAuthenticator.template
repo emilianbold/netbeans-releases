@@ -1,5 +1,5 @@
 <?php
-    require_once "__NAME__Profile.php";
+    include_once "__NAME__Profile.php";
 
     define("_RETURN_URL", "__GROUP___return_url");
     define("_USERNAME", "__GROUP___username");

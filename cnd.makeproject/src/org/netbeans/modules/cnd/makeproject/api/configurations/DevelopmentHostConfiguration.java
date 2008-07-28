@@ -116,7 +116,7 @@ public class DevelopmentHostConfiguration {
     private boolean addDevelopmentHost(String host) {
         ServerList list = (ServerList) Lookup.getDefault().lookup(ServerList.class);
         if (list != null) {
-            list.add(host);
+            list.addServer(host);
         }
         return list != null;
     }

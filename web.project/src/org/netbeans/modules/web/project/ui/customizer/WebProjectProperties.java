@@ -427,20 +427,15 @@ public class WebProjectProperties {
                         }
                         newExtenders.clear();
                         project.resetTemplates();
-                        
-                        // ui logging of the added frameworks
-                        if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
-                            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
-                                    addedFrameworkNames.toArray());
-                        }
                     }
                 });
             }
-
-            // need to do the following on the Event Dispatch Thread to make sure it runs
-            // after the preceding code which also runs in EDT
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
+            
+            // ui logging of the added frameworks
+            if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
+                Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
+                        addedFrameworkNames.toArray());
+                if (usedFrameworkNames != null) {
                     String serverName = ""; // NOI18N
                     try {
                         if (logServInstID != null) {
@@ -465,7 +460,7 @@ public class WebProjectProperties {
                     }
                     Utils.logUsage(WebProjectProperties.class,"USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
                 }
-            });
+            }
             
             //prevent deadlock reported in the issue #54643
             //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code

@@ -40,6 +40,7 @@
 package org.netbeans.modules.cnd.remote.server;
 
 import java.beans.PropertyChangeSupport;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -69,6 +70,8 @@ public class RemoteServerRecord implements ServerRecord {
     private Object state;
     private String reason;
     
+    private static Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
+    
     /**
      * Create a new ServerRecord. This is always called from RemoteServerList.get, but can be
      * in the AWT Event thread if called while adding a node from ToolsPanel, or in a different
@@ -86,15 +89,29 @@ public class RemoteServerRecord implements ServerRecord {
         } else {
             editable = true;
             state = STATE_UNINITIALIZED;
-            
-            if (!SwingUtilities.isEventDispatchThread()) {
-                ProgressHandle phandle = ProgressHandleFactory.createHandle(
-                        NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
-                phandle.start();
-                init();
-                phandle.finish();
+        }
+    }
+    
+    public void validate() {
+        if (!isOnline()) {
+            if (SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        validate2();
+                    }
+                });
+            } else  {
+                validate2();
             }
         }
+    }
+    
+    private void validate2() {
+        log.fine("RSR.validate2: Validating " + name);
+        ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
+        ph.start();
+        init();
+        ph.finish();
     }
     
     /**
@@ -102,7 +119,6 @@ public class RemoteServerRecord implements ServerRecord {
      * thread. Parts of the initialization use this thread and will block.
      */
     public void init(PropertyChangeSupport pcs) {
-        assert !SwingUtilities.isEventDispatchThread() : "Internal Error: Cannot initialize a ServerRecord from the AWT Event Thread";
         Object ostate = state;
         state = STATE_INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(name);
@@ -118,11 +134,8 @@ public class RemoteServerRecord implements ServerRecord {
                 reason = rss.getReason();
             } else {
                 state = STATE_ONLINE;
+                CompilerSetManager.getDefault(name); // Trigger creation of the CSM if it doesn't already exist...
             }
-        }
-        if (state == STATE_ONLINE) {
-            // Trigger creation of the CSM if it doesn't already exist...
-            CompilerSetManager.getDefault(name);
         }
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);

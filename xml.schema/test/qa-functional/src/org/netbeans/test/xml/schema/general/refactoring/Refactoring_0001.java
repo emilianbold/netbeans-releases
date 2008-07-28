@@ -173,6 +173,8 @@ public class Refactoring_0001 extends Refactoring
       {
       }
 
+      Sleep( 2000 );
+
       SelectItemInColumn( xml, 1, ITEM_ORIGINAL_NAME );
 
       endTest( );
@@ -256,7 +258,7 @@ public class Refactoring_0001 extends Refactoring
           xml,
           1,
           "newComplexType",
-          "Refactor|Safe Delete..."
+          "Refactor|Safely Delete..."
         );
 
       // Refactor
@@ -322,7 +324,7 @@ public class Refactoring_0001 extends Refactoring
           xml,
           1,
           "newComplexType1",
-          "Refactor|Safe Delete..."
+          "Refactor|Safely Delete..."
         );
 
       // Refactor
