@@ -87,6 +87,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
         String list = getPreferences(hkey);
         
         if (list == null) {
+            // 1. Developers entry point
             String pmap = System.getProperty("cnd.remote.pmap");
             if (pmap != null) {
                 String line;
@@ -104,8 +105,13 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                     } catch (IOException ioe) {
                     }
                 }
+            } else {
+                // 2. Automated mappings gathering entry point
+                // HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
+                // putAll(ham.getMappings());
             }
         } else {
+            // 3. Deserialization
             String[] paths = list.split(DELIMITER);
             for (int i = 0; i < paths.length; i+=2) {
                 if (i+1 < paths.length) { //TODO: only during development

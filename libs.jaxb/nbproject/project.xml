@@ -83,6 +83,9 @@
                 <package>javax.xml.bind</package>
                 <package>javax.xml.bind.annotation</package>
                 <package>javax.xml.bind.annotation.adapters</package>
+                <package>javax.xml.bind.attachment</package>
+                <package>javax.xml.bind.helpers</package>
+                <package>javax.xml.bind.util</package>
                 <package>javax.xml.stream</package>
                 <package>com.sun.istack</package>
                 <package>com.sun.codemodel</package>
