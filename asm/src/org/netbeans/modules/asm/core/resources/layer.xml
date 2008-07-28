@@ -27,11 +27,8 @@
                 <file name="org-netbeans-modules-asm-core-assistance-CodeHighlightFactory.instance"/> -->
                 <folder name="HyperlinkProviders">
                     <file name="AsmHyperlinkProvider.instance">
-                        <attr name="instanceClass"
-                              stringvalue="org.netbeans.modules.asm.core.hyperlink.AsmHyperlinkProvider"
-                        />
-                        <attr name="instanceOf"
-                              stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
+                        <attr name="instanceClass" stringvalue="org.netbeans.modules.asm.core.hyperlink.AsmHyperlinkProvider"/>
+                        <attr name="instanceOf" stringvalue="org.netbeans.lib.editor.hyperlink.spi.HyperlinkProvider"/>
                     </file>
                 </folder>
                 
@@ -95,7 +92,9 @@
         <folder name="text">
             <folder name="x-asm">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmDataLoader.instance"/>
+                    <file name="org-netbeans-modules-asm-core-dataobjects-AsmDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.asm.core.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">

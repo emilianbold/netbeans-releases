@@ -166,6 +166,7 @@ made subject to such option by the copyright holder.
             <folder name="x-etd">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-project-UMLProjectDataObject$Loader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.project.ui.resources.Bundle"/>
                         <attr name="position" intvalue="98839"/>
                     </file>
                 </folder>
