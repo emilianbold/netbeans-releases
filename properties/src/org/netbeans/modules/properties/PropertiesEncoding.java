@@ -105,7 +105,7 @@ final class PropertiesEncoding extends FileEncodingQueryImplementation {
             updateURL(file);
         }
 
-        private PropCharset() {
+        PropCharset() {
             super("resource_bundle_charset", null);                     //NOI18N
             fileRef = null;
         }
