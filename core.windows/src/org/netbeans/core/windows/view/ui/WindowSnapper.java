@@ -41,11 +41,15 @@
 package org.netbeans.core.windows.view.ui;
 
 import java.awt.AWTException;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsDevice;
 import java.awt.MouseInfo;
 import java.awt.Point;
+import java.awt.PointerInfo;
 import java.awt.Rectangle;
 import java.awt.Robot;
 import org.netbeans.core.windows.options.WinSysPrefs;
+import sun.font.GraphicComponent;
 
 /**
  *
@@ -74,6 +78,8 @@ class WindowSnapper {
         Rectangle bounds = sourceBounds;
         Rectangle screenBounds = getScreenBounds();
         Point cursorLocation = getCurrentCursorLocation();
+        if( null == cursorLocation || null == screenBounds )
+            return false;
         int dx = cursorLocation.x - lastCursorLocation.x;
         int dy = cursorLocation.y - lastCursorLocation.y;
         int cursorOffsetX = cursorLocation.x - bounds.x;
@@ -114,6 +120,8 @@ class WindowSnapper {
         boolean snap = false;
         if( null != lastCursorLocation ) {
             Point cursorLocation = getCurrentCursorLocation();
+            if( null == cursorLocation )
+                return false;
             int dx = cursorLocation.x - lastCursorLocation.x;
             int dy = cursorLocation.y - lastCursorLocation.y;
             int cursorOffsetX = cursorLocation.x - srcBounds.x;
@@ -188,11 +196,27 @@ class WindowSnapper {
     }
     
     private Point getCurrentCursorLocation() {
-        return MouseInfo.getPointerInfo().getLocation();
+        Point res = null;
+        PointerInfo pi = MouseInfo.getPointerInfo();
+        if( null != pi ) {
+            res = pi.getLocation();
+        }
+        return res;
     }
     
     private Rectangle getScreenBounds() {
-        return MouseInfo.getPointerInfo().getDevice().getDefaultConfiguration().getBounds();
+        Rectangle res = null;
+        PointerInfo pi = MouseInfo.getPointerInfo();
+        if( null != pi ) {
+            GraphicsDevice gd = pi.getDevice();
+            if( gd != null ) {
+                GraphicsConfiguration gc = gd.getDefaultConfiguration();
+                if( gc != null ) {
+                    res = gc.getBounds();
+                }
+            }
+        }
+        return res;
     }
     
     private boolean isVerticalProximity( Rectangle r1, Rectangle r2 ) {
