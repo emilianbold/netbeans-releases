@@ -144,31 +144,35 @@ public abstract class CsmResultItem
         return false;
     }
     
-    public boolean substituteText(JTextComponent c, int offset, int len, boolean shift) {
-        BaseDocument doc = (BaseDocument)c.getDocument();
-        String text = getReplaceText();
-        
+    public boolean substituteText(final JTextComponent c, final int offset, final int len, final boolean shift) {
+        final BaseDocument doc = (BaseDocument)c.getDocument();
+        final String text = getReplaceText();
+        final boolean res[] = new boolean[] {true};
         if (text != null) {
             // Update the text
-            doc.atomicLock();
-            try {
-                CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
-                if (CharSequenceUtilities.textEquals(text, textToReplace)) return false;
-                
-                doc.remove(offset, len);
-                doc.insertString(offset, text, null);
-                if (selectionStartOffset >= 0) {
-                    c.select(offset + selectionStartOffset,
-                            offset + selectionEndOffset);
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    try {
+                        CharSequence textToReplace = DocumentUtilities.getText(doc, offset, len);
+                        if (CharSequenceUtilities.textEquals(text, textToReplace)) {
+                            res[0] = false;
+                            return;
+                        }
+
+                        doc.remove(offset, len);
+                        doc.insertString(offset, text, null);
+                        if (selectionStartOffset >= 0) {
+                            c.select(offset + selectionStartOffset,
+                                    offset + selectionEndOffset);
+                        }
+                    } catch (BadLocationException e) {
+                        // Can't update
+                    }
                 }
-            } catch (BadLocationException e) {
-                // Can't update
-            } finally {
-                doc.atomicUnlock();
-            }
+            });
         }
         
-        return true;
+        return res[0];
     }
     
     public java.awt.Component getPaintComponent(javax.swing.JList list, boolean isSelected, boolean cellHasFocus) {

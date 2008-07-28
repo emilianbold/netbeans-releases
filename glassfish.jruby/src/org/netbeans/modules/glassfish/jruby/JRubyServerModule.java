@@ -338,22 +338,27 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         List<String> serverJars = getServerJars();
         for(String jarPath: serverJars) {
             builder.append(jarPath);
-            builder.append(':');
+            builder.append(File.pathSeparatorChar);
         }
 
         String jrubyJar = platform.getHome().getAbsolutePath() +
                 File.separatorChar + "lib" + File.separatorChar + "jruby.jar";
         builder.append(ServerUtilities.quote(jrubyJar));
-        builder.append(':');
-        // !PW FIXME check classpath for quoted jar paths
-        builder.append(classpath);
+
+        if(classpath != null && classpath.length() > 0) {
+            String[] subpaths = classpath.split(File.pathSeparator);
+            for(String subpath: subpaths) {
+                builder.append(File.pathSeparatorChar);
+                builder.append(ServerUtilities.quote(subpath));
+            }
+        }
+
+        // JVM flags
+        builder.append(" -client");
 
         // JVM properties
         builder.append(" -Djruby.home=");
         builder.append(ServerUtilities.quote(platform.getHome().getAbsolutePath()));
-
-        // JVM flags
-        builder.append(" -client");
 
         String grizzlyVMParams = System.getProperty("grizzly.jruby.vm.params");
         if(grizzlyVMParams != null) {
@@ -365,12 +370,13 @@ public class JRubyServerModule implements RubyInstance, CustomizerCookie {
         Integer grizzlyVMDebugPort = Integer.getInteger("grizzly.jruby.vm.debugport");
         if(grizzlyVMDebugPort != null) {
             builder.append(" -Xdebug -Xrunjdwp:transport=dt_socket,address=" +
-                     grizzlyVMDebugPort + ",server=y,suspend=n");
+                     grizzlyVMDebugPort + ",server=y,suspend=y");
         }
 
         // Define properties to enable rdebug inside Grizzly/JRuby adapter if
         // debugging is enabled.
         if(debug) {
+            builder.append(" -Djruby.reflection=true -Djruby.compile.mode=OFF");
             builder.append(
                     " -Dglassfish.rdebug=${rdebug.path}" +
                     " -Dglassfish.rdebug.port=${rdebug.port}" +

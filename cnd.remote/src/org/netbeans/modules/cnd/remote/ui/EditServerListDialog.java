@@ -64,7 +64,7 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
 /**
- * Mange the remove development hosts list.
+ * Mange the removeServer development hosts list.
  * 
  * @author  gordonp
  */
@@ -133,7 +133,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
     }
     
     public int getDefaultIndex() {
-        return lstDevHosts.getSelectedIndex();
+        return defaultIndex;
     }
     
     /**
@@ -210,7 +210,6 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 
                 if (dlg.isDefault()) {
                     defaultIndex = model.getSize() - 1;
-                    lstDevHosts.setSelectedIndex(defaultIndex);
                 }
             }
         }
@@ -300,6 +299,9 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 if (idx > 0) {
                     model.remove(idx);
                     lstDevHosts.setSelectedIndex(model.size() > idx ? idx : idx - 1);
+                    if (defaultIndex >= idx) {
+                        defaultIndex--;
+                    }
                 }
             } else if (b.getActionCommand().equals("SetAsDefault")) { // NOI18N
                 defaultIndex = lstDevHosts.getSelectedIndex();

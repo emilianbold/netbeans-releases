@@ -411,15 +411,6 @@ class TreeTable extends JTable implements Runnable {
     }
 
     @Override
-    protected void processEvent(AWTEvent e) {
-        if (e instanceof KeyEvent) {
-            super.processEvent(e);
-        } else {
-            new GuardedActions(4, e);
-        }
-    }
-
-    @Override
     protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
         return (Boolean) new GuardedActions(10, new Object[]{ks, e, condition, pressed}).ret;
     }

@@ -102,11 +102,6 @@ public class InstallSupportImpl {
     private boolean progressRunning = false;
     private static Logger err = Logger.getLogger (InstallSupportImpl.class.getName ());
     
-    public static final String UPDATE_DIR = "update"; // NOI18N
-    public static final String FILE_SEPARATOR = System.getProperty("file.separator");
-    public static final String DOWNLOAD_DIR = UPDATE_DIR + FILE_SEPARATOR + "download"; // NOI18N
-    public static final String NBM_EXTENTSION = ".nbm";
-    
     private static final String AUTOUPDATE_SERVICES_MODULE = "org.netbeans.modules.autoupdate.services"; // NOI18N
     
     private Map<UpdateElementImpl, File> element2Clusters = null;
@@ -325,7 +320,7 @@ public class InstallSupportImpl {
                     URL source = moduleImpl.getInstallInfo ().getDistribution ();
                     err.log (Level.FINE, "Source URL for " + moduleImpl.getCodeName () + " is " + source);
                     
-                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(NBM_EXTENTSION.toLowerCase(Locale.US));
+                    boolean isNbmFile = source.getFile().toLowerCase(Locale.US).endsWith(Utilities.NBM_EXTENTSION.toLowerCase(Locale.US));
                     
                     File dest = getDestination(targetCluster, moduleImpl.getCodeName(), isNbmFile);
                     assert dest != null : "Destination file exists for " + moduleImpl + " in " + targetCluster;
@@ -655,7 +650,7 @@ public class InstallSupportImpl {
         URL source = toUpdateImpl.getInstallInfo().getDistribution();
         err.log (Level.FINE, "Source URL for " + toUpdateImpl.getCodeName () + " is " + source);
         
-        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (NBM_EXTENTSION.toLowerCase (Locale.US));
+        boolean isNbmFile = source.getFile ().toLowerCase (Locale.US).endsWith (Utilities.NBM_EXTENTSION.toLowerCase (Locale.US));
 
         File dest = getDestination (targetCluster, toUpdateImpl.getCodeName(), isNbmFile);
         
@@ -730,12 +725,12 @@ public class InstallSupportImpl {
     
     static File getDestination (File targetCluster, String codeName, boolean isNbmFile) {
         err.log (Level.FINE, "Target cluster for " + codeName + " is " + targetCluster);
-        File destDir = new File (targetCluster, DOWNLOAD_DIR);
+        File destDir = new File (targetCluster, Utilities.DOWNLOAD_DIR);
         if (! destDir.exists ()) {
             destDir.mkdirs ();
         }
         String fileName = codeName.replace ('.', '-');
-        File destFile = new File (destDir, fileName + (isNbmFile ? NBM_EXTENTSION : ""));
+        File destFile = new File (destDir, fileName + (isNbmFile ? Utilities.NBM_EXTENTSION : ""));
         err.log(Level.FINE, "Destination file for " + codeName + " is " + destFile);
         return destFile;
     }

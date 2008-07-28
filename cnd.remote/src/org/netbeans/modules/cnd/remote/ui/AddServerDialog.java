@@ -204,7 +204,7 @@ public class AddServerDialog extends JPanel implements DocumentListener {
     }// </editor-fold>//GEN-END:initComponents
 
 private void cbxSetAsDefaultActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbxSetAsDefaultActionPerformed
-// TODO add your handling code here:
+// TODO addServer your handling code here:
 }//GEN-LAST:event_cbxSetAsDefaultActionPerformed
 
 private void onLoginFocus(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_onLoginFocus

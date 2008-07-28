@@ -61,15 +61,15 @@ public final class PlatformInfo {
 
     private ArrayList<String> list = new ArrayList<String>();
     private String pathName = null;
-    private final String host;
+    private final String hkey;
     private final int platform;
 
-    private PlatformInfo(String host, int platform) {
-        this.host = host;
+    private PlatformInfo(String hkey, int platform) {
+        this.hkey = hkey;
         this.platform = platform;
 
         //TODO: temp fixup
-        if (CompilerSetManager.LOCALHOST.equals(host) && PlatformTypes.PLATFORM_NONE == platform) {
+        if (CompilerSetManager.LOCALHOST.equals(hkey) && PlatformTypes.PLATFORM_NONE == platform) {
             platform = getDefaultPlatform();
         }
 
@@ -97,9 +97,13 @@ public final class PlatformInfo {
                 list.add("C:/WINDOWS"); // NOI18N
                 list.add("C:/WINDOWS/System32/WBem"); // NOI18N
             } else {
-                System.err.println("PlatformInfo: Path is empty for host " + host);
+                System.err.println("PlatformInfo: Path is empty for host " + hkey);
             }
         }
+    }
+
+    public String getHkey() {
+        return hkey;
     }
 
     /**
@@ -218,20 +222,24 @@ public final class PlatformInfo {
     }
 
     // utility
-    private boolean isWindows() {
+    public boolean isWindows() {
         return platform == PlatformTypes.PLATFORM_WINDOWS;
     }
 
-    private boolean isUnix() {
+    public boolean isUnix() {
         return platform == PlatformTypes.PLATFORM_SOLARIS_INTEL || platform == PlatformTypes.PLATFORM_SOLARIS_SPARC || platform == PlatformTypes.PLATFORM_LINUX || platform == PlatformTypes.PLATFORM_MACOSX;
     }
 
+    public boolean isLocalhost() {
+        return RemoteUtils.isLocalhost(hkey);
+    }
+
     public Map<String, String> getEnv() {
-        return HostInfoProvider.getDefault().getEnv(host);
+        return HostInfoProvider.getDefault().getEnv(hkey);
     }
 
     public boolean fileExists(String path) {
-        return HostInfoProvider.getDefault().fileExists(host, path);
+        return HostInfoProvider.getDefault().fileExists(hkey, path);
     }
 
     //TODO: fixup, platformz

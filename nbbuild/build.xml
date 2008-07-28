@@ -96,9 +96,13 @@ made subject to such option by the copyright holder.
         <classpath>
             <pathelement location="${ant.core.lib}"/>
         </classpath>
+        <include name="org/netbeans/nbbuild/HgExec.java"/>
+        <include name="org/netbeans/nbbuild/ValidateHgConfiguration.java"/>
         <include name="org/netbeans/nbbuild/extlibs/RegisterExternalHook.java"/>
         <compilerarg line="-Xlint -Xlint:-serial"/>
     </javac>
+    <taskdef name="validate-hg-configuration" classname="org.netbeans.nbbuild.ValidateHgConfiguration" classpath="build/antclasses"/>
+    <validate-hg-configuration root=".."/>
     <taskdef name="registerexternalhook" classname="org.netbeans.nbbuild.extlibs.RegisterExternalHook" classpath="build/antclasses"/>
     <registerexternalhook root=".." hook="antsrc/org/netbeans/nbbuild/extlibs/external.py"/>
 
@@ -127,7 +131,7 @@ made subject to such option by the copyright holder.
             </not>
         </condition>
         You have stray *.class files in ${basedir}/antsrc which you must remove.
-        Probably you failed to clean your sources before updating. Try: ant hg-clean
+        Probably you failed to clean your sources before updating. Try: ant clean
     </fail>
     <!-- OK, continue: -->
     <available property="have.javahelp" file="../apisupport.harness/external" type="dir"/>
@@ -606,9 +610,10 @@ Branding:
 Branch:   trunk
 Tag:
 </echo>
-    <exec executable="hg" dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
+    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
+    <hgexec dir=".." outputproperty="hg.id" errorproperty="hg.id.err" failonerror="false" failifexecutionfails="false" resultproperty="hg.id.exit">
       <arg value="id"/>
-    </exec>
+    </hgexec>
     <condition property="hg.id.line" value="Hg ID:    ${hg.id}&#10;">
       <equals arg1="${hg.id.exit}" arg2="0"/>
     </condition>
@@ -1354,7 +1359,10 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
               failonerror="${stop.when.clean.error}" />
   </target>
 
-  <target name="clean" depends="hg-clean"/><!-- deprecated -->
+  <target name="clean" depends="bootstrap" description="Clean everything possible.">
+      <taskdef name="try-else" classname="org.netbeans.nbbuild.TryElse" classpath="nbantext.jar"/>
+      <try-else first="-hg-clean" second="-real-clean"/>
+  </target>
 
   <target name="-clean-external">
     <subant target="clean">
@@ -1365,7 +1373,6 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     </subant>
   </target>
 
-  <!-- Use hg-clean instead, which will call this if not in a Hg repo. -->
   <target name="-real-clean" depends="-cleanall,localclean,-clean-external">
     <echo message="Cleaning old builds..."/>
     <delete>
@@ -1398,14 +1405,15 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
     <delete dir="${netbeans.dest.dir}"/>
   </target>
 
-  <target name="-hg-check-can-clean" unless="no.hg.clean">
-    <available property="can.hg.clean" type="dir" file="../.hg"/>
-  </target>
-  <target name="-hg-clean-alternative" depends="-hg-check-can-clean" unless="can.hg.clean">
-    <antcall target="-real-clean"/>
-  </target>
-  <target name="hg-clean" depends="-hg-clean-alternative" if="can.hg.clean"
-          description="Clean everything possible.">
+  <target name="-hg-clean">
+    <fail message="Not running in a Mercurial checkout.">
+      <condition>
+        <not>
+          <available type="dir" file="../.hg"/>
+        </not>
+      </condition>
+    </fail>
+    <taskdef name="hgexec" classname="org.netbeans.nbbuild.HgExec" classpath="nbantext.jar"/>
     <antcall target="-do-hg-clean">
       <!-- <include name="."/> does not seem to work in a dirset -->
       <param name="basedir" location=".."/>
@@ -1419,7 +1427,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   </target>
   <target name="-do-hg-clean">
     <echo>Cleaning untracked files in ${basedir}...</echo>
-    <exec executable="hg" failonerror="yes" outputproperty="hg.unknown.files">
+    <hgexec failonerror="yes" outputproperty="hg.unknown.files">
       <arg value="--cwd"/>
       <arg file="."/>
       <arg value="--config"/>
@@ -1427,7 +1435,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="status"/>
       <arg value="--unknown"/>
       <arg value="--no-status"/>
-    </exec>
+    </hgexec>
     <fail message="Will not run clean; checkout contains unknown and not ignored files (did you forget to hg add?):&#10;${hg.unknown.files}">
         <condition>
             <not>
@@ -1435,7 +1443,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
             </not>
         </condition>
     </fail>
-    <exec executable="hg" failonerror="yes">
+    <hgexec failonerror="yes">
       <arg value="--cwd"/>
       <arg file="."/>
       <arg value="--config"/>
@@ -1446,7 +1454,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
       <arg value="--exclude"/>
       <!-- Do not use **/nbproject/private/ as this will match some test/{results,work} dirs: -->
       <arg value="glob:{*/nbproject/private/**,*/*/nbproject/private/**,**/user.build.properties,nbbuild/misc/build-site-local.sh}"/>
-    </exec>
+    </hgexec>
   </target>
 
   <target name="rebuild-cluster" depends="init" description="Builds only one cluster with dependencies ; takes e.g. '-Drebuild.cluster.name=nb.cluster.visualweb' as parameter">

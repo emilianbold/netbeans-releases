@@ -544,11 +544,6 @@ public class ListView extends JScrollPane implements Externalizable {
     }
 
     @Override
-    protected void processEvent(AWTEvent e) {
-        new GuardedActions(4, e);
-    }
-
-    @Override
     public Dimension getPreferredSize() {
         return (Dimension) new GuardedActions(5, null).ret;
     }
@@ -911,20 +906,6 @@ public class ListView extends JScrollPane implements Externalizable {
         @Override
         protected void validateTree() {
             new GuardedActions(1, null);
-        }
-
-        @Override
-        protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
-            return (Boolean)new GuardedActions(10, new Object[] { ks, e, condition, pressed }).ret;
-        }
-
-        @Override
-        protected void processEvent(AWTEvent e) {
-            if (e instanceof KeyEvent) {
-                super.processEvent(e);
-            } else {
-                new GuardedActions(4, e);
-            }     
         }
 
         @Override
