@@ -239,6 +239,18 @@ public class GemManagerTest extends RubyTestBase {
         assertNotNull("rake is installed", gemManager.getLatestVersion("rake"));
     }
 
+    public void testInstallLocalWithSpaces() throws IOException {
+        RubyPlatform platform = getSafeJRuby();
+        GemManager gemManager = platform.getGemManager();
+        File rakeGem = getRakeGem();
+        FileObject rakeGemFOorig = FileUtil.toFileObject(rakeGem);
+        FileObject withSpaces = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "with spaces");
+        FileObject rakeGemFO = FileUtil.copyFile(rakeGemFOorig, withSpaces, rakeGemFOorig.getNameExt());
+        assertNull("rake is not installed", gemManager.getLatestVersion("rake"));
+        gemManager.installLocal(FileUtil.toFile(rakeGemFO), null, false, false, false, null);
+        assertNotNull("rake is installed", gemManager.getLatestVersion("rake"));
+    }
+
     public void testGetVersions() throws IOException {
         RubyPlatform platform = getSafeJRuby();
         GemManager gemManager = platform.getGemManager();
@@ -266,7 +278,6 @@ public class GemManagerTest extends RubyTestBase {
         File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);
         assertTrue("rake gem found", rakeGem.isFile());
-
         return rakeGem;
     }
 
