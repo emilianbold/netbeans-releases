@@ -37,37 +37,47 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.remote.mapper;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import java.io.Reader;
+import java.io.StringReader;
+import java.util.Map;
+import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 
 /**
  *
  * @author Sergey Grinev
  */
-public final class RemoteUtils {
+public class MappingsTestCase extends RemoteTestBase {
 
-    public static boolean isLocalhost(String hkey) {
-        return CompilerSetManager.LOCALHOST.equals(hkey);
+//    public void testHMPW() throws Exception {
+//        new HostMappingProviderWindows().findMappings("randomguy@eaglet-sr");
+//    }
+
+    public void testHostMappingProviderWindows() throws Exception {
+        StringBuilder sb = new StringBuilder();
+        sb.append("New connections will not be remembered.\n");
+        sb.append("\n");
+        sb.append("\n");
+        sb.append("Status       Local     Remote                               Network\n");
+        sb.append("\n");
+        sb.append("-------------------------------------------------------------------------------\n");
+        sb.append("OK           P:        \\\\serverOne\\pub                     Microsoft Windows Network\n");
+        sb.append("Disconnected Y:        \\\\sErvEr_22_\\long name              Microsoft Windows Network\n");
+        sb.append("OK           Z:        \\\\name.domen.domen2.zone\\sg155630   Microsoft Windows Network\n");
+        sb.append("The command completed successfully.\n");
+        Map<String, String> map;
+        map = HostMappingProviderWindows.parseNetUseOutput("serverOne", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "p:".equals(map.get("pub"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("sErvEr_22_", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "y:".equals(map.get("long name"));
+
+        map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
+        assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
     }
 
-    public static String getHostName(String hkey) {
-        int index = hkey.indexOf('@');
-        if (index > -1 ) {
-            return hkey.substring(index + 1);
-        } else {
-            assert isLocalhost(hkey);
-            return hkey;
-        }
-    }
-
-    public static String getUserName(String hkey) {
-        int index = hkey.indexOf('@');
-        if (index > -1 ) {
-            return hkey.substring(0, index);
-        } else {
-            assert false;
-            return hkey;
-        }
+    public MappingsTestCase(String testName) {
+        super(testName);
     }
 }
