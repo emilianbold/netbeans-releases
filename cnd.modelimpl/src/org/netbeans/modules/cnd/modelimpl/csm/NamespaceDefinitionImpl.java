@@ -112,11 +112,16 @@ public final class NamespaceDefinitionImpl extends OffsetableDeclarationBase<Csm
         CsmUID<CsmOffsetableDeclaration> uid = RepositoryUtils.put(decl);
         assert uid != null;
         declarations.add(uid);
-        //TODO: add static functions
         if (decl instanceof VariableImpl) {
             VariableImpl v = (VariableImpl) decl;
             if (!NamespaceImpl.isNamespaceScope(v, false)) {
                 v.setScope(this);
+            }
+        }
+        if (decl instanceof FunctionImpl) {
+            FunctionImpl f = (FunctionImpl) decl;
+            if (!NamespaceImpl.isNamespaceScope(f)) {
+                f.setScope(this);
             }
         }
         // update repository
