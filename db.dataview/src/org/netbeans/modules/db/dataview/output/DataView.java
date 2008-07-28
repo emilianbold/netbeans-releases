@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Logger;
 import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBException;
@@ -66,7 +65,6 @@ import org.openide.util.NbBundle;
  */
 public class DataView {
 
-    private static Logger mLogger = Logger.getLogger(DataView.class.getName());
     private DatabaseConnection dbConn;
     private List<Throwable> errMessages = new ArrayList<Throwable>();
     private String sqlString; // Once Set, Data View assumes it will never change
