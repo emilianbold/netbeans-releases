@@ -44,7 +44,7 @@ public class PackagingInfo2Panel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         packagingHeaderOuterPanel = new javax.swing.JPanel();
-        docPane = new javax.swing.JScrollPane();
+        scrollPane = new javax.swing.JScrollPane();
         docTextArea = new javax.swing.JTextArea();
         docTextArea.setBackground(getBackground());
 
@@ -67,7 +67,7 @@ public class PackagingInfo2Panel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(packagingHeaderOuterPanel, gridBagConstraints);
 
-        docPane.setBorder(null);
+        scrollPane.setBorder(null);
 
         docTextArea.setColumns(20);
         docTextArea.setEditable(false);
@@ -75,7 +75,7 @@ public class PackagingInfo2Panel extends javax.swing.JPanel {
         docTextArea.setRows(5);
         docTextArea.setText(org.openide.util.NbBundle.getMessage(PackagingInfo2Panel.class, "PackagingInfo2Panel.docTextArea.text")); // NOI18N
         docTextArea.setWrapStyleWord(true);
-        docPane.setViewportView(docTextArea);
+        scrollPane.setViewportView(docTextArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -83,14 +83,14 @@ public class PackagingInfo2Panel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
-        add(docPane, gridBagConstraints);
+        add(scrollPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JScrollPane docPane;
     private javax.swing.JTextArea docTextArea;
     private javax.swing.JPanel packagingHeaderOuterPanel;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
 }

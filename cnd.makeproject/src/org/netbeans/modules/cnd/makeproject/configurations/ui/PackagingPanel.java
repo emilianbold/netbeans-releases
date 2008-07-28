@@ -30,6 +30,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private MakeConfiguration conf;
     private PackagingInfo2Panel packagingInfoPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
+    private PackagingHeaderPanel packagingHeaderPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -55,7 +56,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         // Add tabs
-        packagingInfoPanel = new PackagingInfo2Panel(new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
+        packagingInfoPanel = new PackagingInfo2Panel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
         packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         
         tabbedPane.addTab("Info", packagingInfoPanel);
@@ -86,9 +87,16 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        Vector v = packagingFilesPanel.getListData();
+        Vector v;
+        
+        v = packagingHeaderPanel.getListData();
+        packagingConfiguration.getHeader().setValue(new ArrayList(v));
+        
+        v = packagingFilesPanel.getListData();
         packagingConfiguration.getFiles().setValue(new ArrayList(v));
+        
 	return packagingConfiguration;
+        
     }
 
     public HelpCtx getHelpCtx() {

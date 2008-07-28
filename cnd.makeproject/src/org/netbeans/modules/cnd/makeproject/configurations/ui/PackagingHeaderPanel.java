@@ -58,6 +58,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.util.NbBundle;
 
 public class PackagingHeaderPanel extends ListEditorPanel {
@@ -66,15 +68,20 @@ public class PackagingHeaderPanel extends ListEditorPanel {
     private JTable targetList;
     private MyTableCellRenderer myTableCellRenderer = new MyTableCellRenderer();
     private JButton addButton;
+    private JButton addEntryButton;
     private JTextArea docArea;
 
     public PackagingHeaderPanel(List<InfoElement> infoList, String baseDir) {
-        super(infoList.toArray(), new JButton[]{new JButton()});
+        super(infoList.toArray(), new JButton[]{new JButton(), new JButton()});
         this.baseDir = baseDir;
+        
         this.addButton = extraButtons[0];
-
         addButton.setText("Add [Empty]");
         addButton.addActionListener(new AddButtonAction());
+        
+        this.addEntryButton = extraButtons[1];
+        addEntryButton.setText("Add Entry");
+        addEntryButton.addActionListener(new AddEntryButtonAction());
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
@@ -89,6 +96,18 @@ public class PackagingHeaderPanel extends ListEditorPanel {
             addObjectAction(new InfoElement("", "")); // FIXUP
         }
     }
+    
+    class AddEntryButtonAction implements java.awt.event.ActionListener {
+        public void actionPerformed(java.awt.event.ActionEvent evt) {
+	    PackagingNewEntryPanel packagingNewEntryPanel = new PackagingNewEntryPanel();
+	    DialogDescriptor dialogDescriptor = new DialogDescriptor(packagingNewEntryPanel, "Add New Entry");
+	    DialogDisplayer.getDefault().notify(dialogDescriptor);
+	    if (dialogDescriptor.getValue() != DialogDescriptor.OK_OPTION)
+		return;
+            addObjectAction(packagingNewEntryPanel.getInfoElement()); // FIXUP
+        }
+    }
+
 
     @Override
     public Object copyAction(Object o) {
@@ -126,8 +145,8 @@ public class PackagingHeaderPanel extends ListEditorPanel {
     protected void setData(Vector data) {
         getTargetList().setModel(new MyTableModel());
         // Set column sizes
-        getTargetList().getColumnModel().getColumn(0).setPreferredWidth(200);
-        getTargetList().getColumnModel().getColumn(0).setMaxWidth(200);
+        getTargetList().getColumnModel().getColumn(0).setPreferredWidth(100);
+        getTargetList().getColumnModel().getColumn(0).setMaxWidth(100);
 //	//getTargetList().getColumnModel().getColumn(1).setResizable(true);
 //	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
 //	getTargetList().getColumnModel().getColumn(2).setMaxWidth(40);
@@ -268,6 +287,30 @@ public class PackagingHeaderPanel extends ListEditorPanel {
         }
         else if (elem.getName().equals("VERSION")) {
             docArea.setText(getString("PACKAGING_VERSION_DOC"));
+        }
+        else if (elem.getName().equals("BASEDIR")) {
+            docArea.setText(getString("PACKAGING_BASEDIR_DOC"));
+        }
+        else if (elem.getName().equals("CLASSES")) {
+            docArea.setText(getString("PACKAGING_CLASSES_DOC"));
+        }
+        else if (elem.getName().equals("DESC")) {
+            docArea.setText(getString("PACKAGING_DESC_DOC"));
+        }
+        else if (elem.getName().equals("EMAIL")) {
+            docArea.setText(getString("PACKAGING_EMAIL_DOC"));
+        }
+        else if (elem.getName().equals("HOTLINE")) {
+            docArea.setText(getString("PACKAGING_HOTLINE_DOC"));
+        }
+        else if (elem.getName().equals("INTONLY")) {
+            docArea.setText(getString("PACKAGING_INTONLY_DOC"));
+        }
+        else if (elem.getName().equals("ISTATES")) {
+            docArea.setText(getString("PACKAGING_ISTATES_DOC"));
+        }
+        else if (elem.getName().equals("MAXINST")) {
+            docArea.setText(getString("PACKAGING_MAXINST_DOC"));
         }
     }
 
