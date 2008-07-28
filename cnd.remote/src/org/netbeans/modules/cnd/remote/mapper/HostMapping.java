@@ -37,37 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.utils;
-
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+package org.netbeans.modules.cnd.remote.mapper;
 
 /**
  *
  * @author Sergey Grinev
  */
-public final class RemoteUtils {
-
-    public static boolean isLocalhost(String hkey) {
-        return CompilerSetManager.LOCALHOST.equals(hkey);
-    }
-
-    public static String getHostName(String hkey) {
-        int index = hkey.indexOf('@');
-        if (index > -1 ) {
-            return hkey.substring(index + 1);
-        } else {
-            assert isLocalhost(hkey);
-            return hkey;
-        }
-    }
-
-    public static String getUserName(String hkey) {
-        int index = hkey.indexOf('@');
-        if (index > -1 ) {
-            return hkey.substring(0, index);
-        } else {
-            assert false;
-            return hkey;
-        }
-    }
+public interface HostMapping {
+    boolean isApplicable(int platform);
+    String getForeignName(int platform);
+    String getInnerName();
 }

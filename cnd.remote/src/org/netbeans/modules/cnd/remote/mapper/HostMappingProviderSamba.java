@@ -37,37 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.api.utils;
+package org.netbeans.modules.cnd.remote.mapper;
 
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 
 /**
  *
  * @author Sergey Grinev
  */
-public final class RemoteUtils {
+public class HostMappingProviderSamba implements HostMappingProvider {
 
-    public static boolean isLocalhost(String hkey) {
-        return CompilerSetManager.LOCALHOST.equals(hkey);
+    // TODO:
+
+    public Map<String, String> findMappings(String hkey) {
+        Map<String, String> mappings = new HashMap<String, String>();
+//        if (RemoteUtils.getHostName(hkey) == "eaglet-sr") {
+//            mappings.put("pub", "/export/pub");
+//        }
+
+//        String output = RunFacade.getInstance(hkey).run("cat /etc/sfw/smb.conf");
+//        mappings.putAll(new SambaConfParser(output).getMappings());
+        return mappings;
     }
 
-    public static String getHostName(String hkey) {
-        int index = hkey.indexOf('@');
-        if (index > -1 ) {
-            return hkey.substring(index + 1);
-        } else {
-            assert isLocalhost(hkey);
-            return hkey;
-        }
+    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
+        return otherPlatform.isWindows() && hostPlatform.isUnix();
     }
 
-    public static String getUserName(String hkey) {
-        int index = hkey.indexOf('@');
-        if (index > -1 ) {
-            return hkey.substring(0, index);
-        } else {
-            assert false;
-            return hkey;
-        }
-    }
 }
