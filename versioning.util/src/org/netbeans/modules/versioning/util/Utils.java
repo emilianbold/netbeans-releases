@@ -866,12 +866,8 @@ public final class Utils {
      * @param client - the particular vcs cient "CLI", "JAVAHL", "JAVALIB"
      */
     public static void logVCSClientEvent(String vcs, String client) {
-        String key = "USG_VCS_CLIENT"  + vcs + client;
-        if(metrics.contains(key)) {
-            return;
-        } else {
-            metrics.add(key);
-        }
+        String key = "USG_VCS_CLIENT"  + vcs;
+        if (checkMetricsKey(key)) return;
         LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_CLIENT");
         rec.setParameters(new Object[] { vcs, client });
         rec.setLoggerName(METRICS_LOG.getName());
@@ -885,15 +881,22 @@ public final class Utils {
      */
     public static void logVCSActionEvent(String vcs) {
         String key = "USG_VCS_ACTION"  + vcs;
-        if(metrics.contains(key)) {
-            return;
-        } else {
-            metrics.add(key);
-        }
+        if (checkMetricsKey(key)) return;
         LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_ACTION");
         rec.setParameters(new Object[] { vcs });
         rec.setLoggerName(METRICS_LOG.getName());
         METRICS_LOG.log(rec);
+    }
+
+    private static boolean checkMetricsKey(String key) {
+        synchronized (metrics) {
+            if (metrics.contains(key)) {
+                return true;
+            } else {
+                metrics.add(key);
+            }
+        }
+        return false;
     }
 
     /**
