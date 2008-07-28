@@ -101,7 +101,15 @@ public final class Utils {
 
     private static /*final*/ File [] unversionedFolders;
 
+    /**
+     * Metrics logger
+     */
     private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
+
+    /**
+     * Keeps track about already logged metrics events
+     */
+    private static Set<String> metrics = new HashSet<String>(3);
 
     static {
         try {
@@ -858,6 +866,12 @@ public final class Utils {
      * @param client - the particular vcs cient "CLI", "JAVAHL", "JAVALIB"
      */
     public static void logVCSClientEvent(String vcs, String client) {
+        String key = "USG_VCS_CLIENT"  + vcs + client;
+        if(metrics.contains(key)) {
+            return;
+        } else {
+            metrics.add(key);
+        }
         LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_CLIENT");
         rec.setParameters(new Object[] { vcs, client });
         rec.setLoggerName(METRICS_LOG.getName());
@@ -870,6 +884,12 @@ public final class Utils {
      * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", ...
      */
     public static void logVCSActionEvent(String vcs) {
+        String key = "USG_VCS_ACTION"  + vcs;
+        if(metrics.contains(key)) {
+            return;
+        } else {
+            metrics.add(key);
+        }
         LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_ACTION");
         rec.setParameters(new Object[] { vcs });
         rec.setLoggerName(METRICS_LOG.getName());
