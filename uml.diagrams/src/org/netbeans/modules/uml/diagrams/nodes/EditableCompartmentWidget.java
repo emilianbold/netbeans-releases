@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.diagrams.nodes;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.util.EnumSet;
+import java.util.Set;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.visual.action.ActionFactory;
@@ -277,12 +278,22 @@ public class EditableCompartmentWidget extends UMLLabelWidget {
             editor.setVisible(false);
             
             Scene scene = widget.getScene();
-            ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
-            
-            if(manager != null)
+            //Fix #138735. Reselect the object when finishing editing to update the property sheet.
+            if ( scene instanceof DesignerScene)
             {
-                manager.selectionChanged(null);
+                DesignerScene dScene = (DesignerScene)scene;
+                Set<Object> selectedObjs = (Set<Object>) dScene.getSelectedObjects();
+                if (selectedObjs != null && selectedObjs.size() == 1)
+                {
+                    dScene.setSelectedObjects(selectedObjs);
+                }
             }
+//            ContextPaletteManager manager = scene.getLookup().lookup(ContextPaletteManager.class);
+//            
+//            if(manager != null)
+//            {
+//                manager.selectionChanged(null);
+//            }
             m_NameCollisionListener.setEnabled(false);
         }
 

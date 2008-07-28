@@ -380,9 +380,14 @@ private void updateReferencesCheckBoxItemStateChanged(java.awt.event.ItemEvent e
             // #89393: GTK needs name to render cell renderer "natively"
             setName("ComboBox.listRenderer"); // NOI18N
             
-            SourceGroup g = (SourceGroup) value;
-            setText(g.getDisplayName());
-            setIcon(g.getIcon(false));
+            if (value instanceof SourceGroup) {
+                SourceGroup g = (SourceGroup) value;
+                setText(g.getDisplayName());
+                setIcon(g.getIcon(false));
+            } else {
+                setText(""); // NOI18N
+                setIcon(null);
+            }
             
             if ( isSelected ) {
                 setBackground(list.getSelectionBackground());

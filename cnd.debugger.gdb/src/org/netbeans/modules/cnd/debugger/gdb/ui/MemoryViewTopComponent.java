@@ -188,7 +188,7 @@ final class MemoryViewTopComponent extends TopComponent {
         }
         gdb.data_read_memory(cb, addr, (len-1)/GdbProxy.MEMORY_READ_WIDTH+1);
         String msg = cb.waitForCompletion();
-        if (cb.getError() != null) {
+        if (cb.getState() == CommandBuffer.STATE_ERROR) {
             taResult.setText(cb.getError());
         } else {
             // parse output

@@ -284,7 +284,7 @@ public class LogReader {
        
        LineInfo li = testCompilerInvocation(line);
        if (li.compilerType != CompilerType.UNKNOWN) {
-           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP);
+           gatherLine(li.compileLine, line.startsWith("+"), li.compilerType == CompilerType.CPP); // NOI18N
            return true;
        }
        return false;

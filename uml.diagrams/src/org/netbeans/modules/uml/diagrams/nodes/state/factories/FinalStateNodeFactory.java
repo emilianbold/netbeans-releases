@@ -52,6 +52,6 @@ public class FinalStateNodeFactory implements NodeWidgetFactory
 
     public Widget createNode(Scene scene)
     {
-        return new FinalStateWidget(scene);
+        return new FinalStateWidget(scene, "UML/context-palette/FinalState");
     }
 }

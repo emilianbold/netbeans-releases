@@ -54,6 +54,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
+import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
@@ -193,7 +194,7 @@ public class CreateDomain extends Thread {
                 // The create was successful... create the instance and register it.
                 GlassfishInstance gi = GlassfishInstance.create(ip);
                 GlassfishInstanceProvider.getDefault().addServerInstance(gi);
-                NbPreferences.forModule(this.getClass()).putBoolean(GlassfishInstanceProvider.PROP_FIRST_RUN, true);
+                NbPreferences.forModule(this.getClass()).putBoolean(ServerUtilities.PROP_FIRST_RUN, true);
             }
         }
     }

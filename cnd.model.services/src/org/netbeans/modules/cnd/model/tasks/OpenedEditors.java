@@ -54,11 +54,15 @@ import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
+import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
+import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
@@ -73,6 +77,7 @@ class OpenedEditors implements PropertyChangeListener {
     private static OpenedEditors DEFAULT;
 
     static final boolean SHOW_TIME = Boolean.getBoolean("cnd.model.tasks.time");
+    private static final boolean TRACE_FILES = Boolean.getBoolean("cnd.model.tasks.files");
 
     private OpenedEditors() {
         EditorRegistry.addPropertyChangeListener(new PropertyChangeListener() {
@@ -101,7 +106,7 @@ class OpenedEditors implements PropertyChangeListener {
 
     private void fireChangeEvent() {
         if (SHOW_TIME) System.err.println("OpenedEditors.fireChangeEvent()");
-        
+
         ChangeEvent e = new ChangeEvent(this);
         List<ChangeListener> listenersCopy = null;
 
@@ -123,7 +128,7 @@ class OpenedEditors implements PropertyChangeListener {
     }
 
     public synchronized void stateChanged() {
-        if (SHOW_TIME) System.err.println("OpenedEditors.stateChanged()");
+        if (SHOW_TIME || TRACE_FILES) System.err.println("OpenedEditors.stateChanged()");
 
         for (JTextComponent c : visibleEditors) {
             c.removePropertyChangeListener(this);
@@ -136,7 +141,10 @@ class OpenedEditors implements PropertyChangeListener {
             FileObject fo = editor != null ? getFileObject(editor) : null;
 
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
-                if (editor.isValid()) { // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                boolean valid = isValid((JEditorPane) editor, fo);
+                if (TRACE_FILES) System.err.printf("\tfile: %s valid: %b\n", fo == null ? "null" : fo.toString(), valid);
+                if (valid) {
                     visibleEditors.add(editor);
                 }
             }
@@ -148,6 +156,22 @@ class OpenedEditors implements PropertyChangeListener {
         }
 
         fireChangeEvent();
+    }
+
+    private boolean isValid(JEditorPane editor, FileObject fo) {
+        try {
+            DataObject dao = DataObject.find(fo);
+            if (dao != null) {
+                EditorCookie editorCookie = dao.getCookie(EditorCookie.class);
+                if (editorCookie != null) {
+                    JEditorPane[] panes = editorCookie.getOpenedPanes();
+                    return panes != null && panes.length > 0;
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
@@ -191,7 +215,7 @@ class OpenedEditors implements PropertyChangeListener {
     private final static List<String> mimeTypesList = Arrays.asList(new String[]{"text/x-c++", "text/x-c"}); //NOI18N
 
     /**
-     * Filter unsupported files from the <code>files</code> parameter. 
+     * Filter unsupported files from the <code>files</code> parameter.
      */
     public static List<FileObject> filterSupportedFiles(Collection<FileObject> files) throws NullPointerException {
         Parameters.notNull("files", files); //NOI18N
@@ -200,7 +224,7 @@ class OpenedEditors implements PropertyChangeListener {
 
         for (FileObject f : files) {
             String fileMimeType = FileUtil.getMIMEType(f);
-            
+
             if (fileMimeType == null) {
                 //unrecognized FileObject
                 continue;

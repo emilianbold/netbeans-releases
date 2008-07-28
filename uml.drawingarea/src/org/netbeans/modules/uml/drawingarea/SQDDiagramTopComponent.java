@@ -155,6 +155,7 @@ public class SQDDiagramTopComponent extends UMLDiagramTopComponent {
                 if(firstMessage.getKind()==BaseElement.MK_SYNCHRONOUS)
                 {
                     //need to find second message
+                    if(interaction!=null)
                     for(IMessage msg:interaction.getMessages())
                     {
                         if(msg.getSendingMessage()==firstMessage)
@@ -162,6 +163,10 @@ public class SQDDiagramTopComponent extends UMLDiagramTopComponent {
                             secondMessage=msg;
                             break;
                         }
+                    }
+                    else
+                    {
+                        //no way to find result message?
                     }
                 }
                 else if(firstMessage.getKind()==BaseElement.MK_RESULT)

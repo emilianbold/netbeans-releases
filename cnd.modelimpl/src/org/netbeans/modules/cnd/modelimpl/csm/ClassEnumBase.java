@@ -94,17 +94,17 @@ public abstract class ClassEnumBase<T> extends OffsetableDeclarationBase<T> impl
     
     protected ClassImpl.ClassMemberForwardDeclaration isClassDefinition(){
         CsmScope scope = getScope();
-        if (name != null && name.toString().indexOf("::") > 0) {
+        if (name != null && name.toString().indexOf("::") > 0) { // NOI18N
             String n = name.toString();
-            String prefix = n.substring(0,n.indexOf("::"));
-            String suffix = n.substring(n.indexOf("::")+2);
+            String prefix = n.substring(0,n.indexOf("::")); // NOI18N
+            String suffix = n.substring(n.indexOf("::")+2); // NOI18N
             if (CsmKindUtilities.isNamespace(scope)) {
                 CsmNamespace ns = (CsmNamespace) scope;
                 String qn;
                 if (ns.isGlobal()) {
                     qn = prefix;
                 } else {
-                    qn = ns.getQualifiedName().toString()+"::"+prefix;
+                    qn = ns.getQualifiedName().toString()+"::"+prefix; // NOI18N
                 }
                 CsmClassifier cls = ns.getProject().findClassifier(qn);
                 if (cls != null) {

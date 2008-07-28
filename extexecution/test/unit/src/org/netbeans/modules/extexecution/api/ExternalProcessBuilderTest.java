@@ -40,6 +40,7 @@
 package org.netbeans.modules.extexecution.api;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,43 +57,53 @@ public class ExternalProcessBuilderTest extends NbTestCase {
     }
 
     public void testEnvironment() {
-        ExternalProcessBuilder builder = new ExternalProcessBuilder("command");
-        builder.addEnvironmentVariable("test1", "value1");
-        builder.addEnvironmentVariable("test2", "value2");
+        ExternalProcessBuilder creator = new ExternalProcessBuilder("command");
+        creator = creator.addEnvironmentVariable("test1", "value1");
+        creator = creator.addEnvironmentVariable("test2", "value2");
 
         Map<String, String> env = new HashMap<String, String>(
-                builder.buildEnvironment(Collections.<String, String>emptyMap()));
+                creator.buildEnvironment(Collections.<String, String>emptyMap()));
         assertEquals("value1", env.remove("test1"));
         assertEquals("value2", env.remove("test2"));
         assertTrue(env.isEmpty());
     }
 
     public void testPath() {
-        ExternalProcessBuilder builder = new ExternalProcessBuilder("command");
+        ExternalProcessBuilder creator = new ExternalProcessBuilder("command");
         Map<String, String> original = new HashMap<String, String>();
         original.put("PATH", "original");
 
         // original path
         Map<String, String> env = new HashMap<String, String>(
-                builder.buildEnvironment(original));
+                creator.buildEnvironment(original));
         assertEquals("original", env.remove("PATH"));
         assertTrue(env.isEmpty());
 
         // some added path
         File addedPath = new File("addedPath");
-        builder.prependPath(addedPath);
-        env = new HashMap<String, String>(builder.buildEnvironment(original));
+        creator = creator.prependPath(addedPath);
+        env = new HashMap<String, String>(creator.buildEnvironment(original));
         assertEquals(addedPath.getAbsolutePath() + File.pathSeparator + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
 
         // yet another path
         File nextPath = new File("nextPath");
-        builder.prependPath(nextPath);
-        env = new HashMap<String, String>(builder.buildEnvironment(original));
+        creator = creator.prependPath(nextPath);
+        env = new HashMap<String, String>(creator.buildEnvironment(original));
         assertEquals(
                 nextPath.getAbsolutePath() + File.pathSeparator
                 + addedPath.getAbsolutePath() + File.pathSeparator
                 + "original", env.remove("PATH"));
         assertTrue(env.isEmpty());
+    }
+
+    public void testImmutability() throws IOException {
+        ExternalProcessBuilder builder = new ExternalProcessBuilder("ls");
+
+        assertNotSame(builder, builder.addArgument("test"));
+        assertNotSame(builder, builder.addEnvironmentVariable("test", "test"));
+        assertNotSame(builder, builder.prependPath(getWorkDir()));
+        assertNotSame(builder, builder.redirectErrorStream(true));
+        assertNotSame(builder, builder.workingDirectory(getWorkDir()));
     }
 }

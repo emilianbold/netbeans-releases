@@ -73,9 +73,18 @@ made subject to such option by the copyright holder.
                 <attr name="instanceOf" stringvalue="org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory"/>
             </file>            
             <folder name="DeploymentFileNames">
-              <folder name="WAR">
-                <file name="META-INF\context.xml"/>
-              </folder>
+                <folder name="WAR">
+                    <file name="WEB-INF\test-web.xml"/>
+                </folder>
+                <folder name="EJB">
+                    <file name="META-INF\test-ejb.xml"/>
+                </folder>
+                <folder name="CAR">
+                    <file name="META-INF\test-client.xml"/>
+                </folder>
+                <folder name="EAR">
+                    <file name="META-INF\test-app.xml"/>
+                </folder>
             </folder>
         </folder>
     </folder>

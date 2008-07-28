@@ -5,6 +5,7 @@
  */
 package org.netbeans.modules.uml.diagrams.options;
 
+import java.lang.reflect.InvocationTargetException;
 import org.netbeans.modules.uml.drawingarea.view.ResourceValue;
 import java.awt.Color;
 import java.awt.Component;
@@ -44,6 +45,7 @@ import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.netbeans.modules.uml.ui.support.commonresources.CommonResourceManager;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -614,17 +616,26 @@ private void restoreBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     {
         public void run()
         {
-            if ((blinkSequence % 2) == 1)
-            {
-                blinkWidget.setBorder(BorderFactory.createLineBorder(2, Color.RED));
-            } else
-            {
-                blinkWidget.setBorder(BorderFactory.createEmptyBorder());
-            }
-            scene.validate();
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {//required to be called in awt thread (at least scene::validate())
 
-            blinkSequence--;
-            task.schedule(250);
+                    public void run() {
+                        if ((blinkSequence % 2) == 1) {
+                            blinkWidget.setBorder(BorderFactory.createLineBorder(2, Color.RED));
+                        } else {
+                            blinkWidget.setBorder(BorderFactory.createEmptyBorder());
+                        }
+                        scene.validate();
+
+                        blinkSequence--;
+                        task.schedule(250);
+                    }
+                });
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (InvocationTargetException ex) {
+                Exceptions.printStackTrace(ex);
+            }
         }
     });
 

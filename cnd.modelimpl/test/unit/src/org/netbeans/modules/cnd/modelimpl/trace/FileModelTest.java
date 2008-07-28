@@ -393,6 +393,10 @@ public class FileModelTest extends TraceModelTestBase {
         // IZ 140704 A constant in namespace is highlighted as an unresolved id
         performTest("resolver_ns_using_declaration.cc"); // NOI18N
     }
+
+    public void testResolverUsingDeclarationInClass() throws Exception {
+        performTest("resolver_using_declaration_in_class.cc"); // NOI18N
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.hibernate.HibernateException;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -355,6 +356,35 @@ public class HibernateEnvironmentImpl implements HibernateEnvironment {
     public Project getProject() {
         return project;
     }
+    
+    /**
+     * Returns list of annotated POJO (FQN) classnames (String) found in this 
+     * Hibernate configuration.
+     * 
+     * @param configurationFO hibernate configuration FileObject.
+     * @return List of classnames (FQN) (String) of all annotated POJO classes found in this configuration or an empty list.
+     */
+    public List<String> getAnnotatedPOJOClassNames(FileObject configurationFO) {
+        List<String> annototedPOJOClassNameList = new ArrayList<String>();
+        
+        try {
+            HibernateCfgDataObject configDO = (HibernateCfgDataObject) DataObject.find(configurationFO);
+            HibernateConfiguration configuration = configDO.getHibernateConfiguration();
+            SessionFactory fact = configuration.getSessionFactory();
+            int count = 0;
+            for (boolean val : fact.getMapping()) {
+                String propName = fact.getAttributeValue(SessionFactory.MAPPING,
+                        count++, "class"); //NOI18N
+                if (propName != null) {
+                    annototedPOJOClassNameList.add(propName);
+                }
+            }
+        } catch (DataObjectNotFoundException dataObjectNotFoundException) {
+            logger.log(Level.INFO, "DataObject not found during Annototated POJO procesing.", dataObjectNotFoundException);
+        }
+        return annototedPOJOClassNameList;
+    }
+
 
     /**
      * Returns a map of mapping file objects and list of names of Java classes (POJOs) that are defined in 

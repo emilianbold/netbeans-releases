@@ -73,7 +73,9 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.visualweb.dataconnectivity</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <package>org.netbeans.modules.db.sql.visualeditor.api</package>
+                <package>org.netbeans.modules.db.sql.visualeditor.querybuilder</package>
             </friend-packages>
         </data>
     </configuration>

@@ -108,7 +108,6 @@ import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.ListeningDICookie;
 
-import org.netbeans.api.debugger.jpda.ThreadsCollector;
 import org.netbeans.modules.debugger.jpda.breakpoints.BreakpointsEngineListener;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.models.LocalsTreeModel;
@@ -126,6 +125,7 @@ import org.netbeans.spi.debugger.DelegatingSessionProvider;
 
 import org.netbeans.spi.viewmodel.TreeModel;
 import org.openide.ErrorManager;
+import org.openide.util.NbBundle;
 
 /**
 * Representation of a debugging session.
@@ -687,7 +687,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 }
             }
             throw new InvalidExpressionException
-                    ("No current context (stack frame)");
+                (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContextStackFrame"));
             
         }
     }
@@ -701,7 +701,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     throws InvalidExpressionException {
         synchronized (LOCK) {
             if (frame == null)
-                throw new InvalidExpressionException ("No current context");
+                throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
 
             // TODO: get imports from the source file
             List<String> imports = new ArrayList<String>();
@@ -847,7 +848,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
     ) throws InvalidExpressionException {
         synchronized (currentThreadAndFrameLock) {
             if (currentThread == null)
-                throw new InvalidExpressionException ("No current context");
+                throw new InvalidExpressionException
+                        (NbBundle.getMessage(JPDADebuggerImpl.class, "MSG_NoCurrentContext"));
         }
         synchronized (LOCK) {
             if (methodCallsUnsupportedExc != null) {

@@ -55,10 +55,10 @@ public class StandAlone {
     }
 
     public static void main(String[] args) {
-        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true");
+        System.setProperty("org.netbeans.modules.cnd.makeproject.api.runprofiles", "true"); // NOI18N
         Logger logger = Logger.getLogger(NbPreferences.class.getName());
         logger.setLevel(Level.SEVERE);
-        logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory");
+        logger = Logger.getLogger("org.netbeans.modules.masterfs.filebasedfs.fileobjects.FileObjectFactory"); // NOI18N
         logger.setLevel(Level.SEVERE);
 
         Map<String,String> res = processArguments(args);

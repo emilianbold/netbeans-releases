@@ -53,6 +53,7 @@ public class OpenAsPanel extends javax.swing.JPanel {
     /** Creates new OpenAsPanel */
     public OpenAsPanel() {
         initComponents();
+        getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.AD")); // NOI18N
     }
 
     void setModel(FileAssociationsModel model) {
@@ -102,7 +103,10 @@ public class OpenAsPanel extends javax.swing.JPanel {
         txtDescription.setText(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.txtDescription.text")); // NOI18N
         txtDescription.setOpaque(false);
         jScrollPane1.setViewportView(txtDescription);
+        txtDescription.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.txtDescription.AN")); // NOI18N
+        txtDescription.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(OpenAsPanel.class, "OpenAsPanel.txtDescription.AD")); // NOI18N
 
+        lblExtension.setLabelFor(lstMimeTypes);
         lblExtension.setText("Treat files as:"); // NOI18N
 
         lstMimeTypes.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);

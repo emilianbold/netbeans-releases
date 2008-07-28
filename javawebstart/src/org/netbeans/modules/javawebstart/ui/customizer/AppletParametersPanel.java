@@ -95,30 +95,35 @@ public class AppletParametersPanel extends javax.swing.JPanel {
 
         appletParamsTable.setModel(tableModel);
         jScrollPane1.setViewportView(appletParamsTable);
+        appletParamsTable.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletParamsTable.AccessibleContext.accessibleName")); // NOI18N
+        appletParamsTable.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletParamsTable.AccessibleContext.accessibleDescription")); // NOI18N
 
-        addButton.setText(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.addButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.addButton.text")); // NOI18N
         addButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        removeButton.setText(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.removeButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.removeButton.text")); // NOI18N
         removeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        appletParamsLabel.setText(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletParamsLabel.text")); // NOI18N
+        appletParamsLabel.setLabelFor(appletParamsTable);
+        org.openide.awt.Mnemonics.setLocalizedText(appletParamsLabel, org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletParamsLabel.text")); // NOI18N
 
         appletDimsLabel.setText(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletDimsLabel.text")); // NOI18N
 
-        widthLabel.setText(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.widthLabel.text")); // NOI18N
+        widthLabel.setLabelFor(widthTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(widthLabel, org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.widthLabel.text")); // NOI18N
 
         widthTextField.setDocument(appletWidthDoc);
 
-        heightLabel.setText(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.heightLabel.text")); // NOI18N
+        heightLabel.setLabelFor(heightTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(heightLabel, org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.heightLabel.text")); // NOI18N
 
         heightTextField.setDocument(appletHeightDoc);
 
@@ -176,6 +181,20 @@ public class AppletParametersPanel extends javax.swing.JPanel {
                     .add(jScrollPane1, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 148, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        addButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.addButton.AccessibleContext.accessibleDescription")); // NOI18N
+        removeButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.removeButton.AccessibleContext.accessibleDescription")); // NOI18N
+        appletParamsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletParamsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        appletDimsLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.appletDimsLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        widthLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.widthLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        widthTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.widthTextField.AccessibleContext.accessibleName")); // NOI18N
+        widthTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.widthTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        heightLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.heightLabel.AccessibleContext.accessibleDescription")); // NOI18N
+        heightTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.heightTextField.AccessibleContext.accessibleName")); // NOI18N
+        heightTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.heightTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(AppletParametersPanel.class, "AppletParametersPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
