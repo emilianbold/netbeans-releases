@@ -173,7 +173,7 @@ public class DebugSession implements Runnable {
                 DebuggerManager.getDebuggerManager().getDebuggerEngines();
         for (DebuggerEngine engine : engines) {
             SessionId id = (SessionId) engine.lookupFirst(null, SessionId.class);
-            if (id.getId().equals(sessionId)) {
+            if (id != null && id.getId().equals(sessionId)) {
                 mySessionId.set(id);
                 id.setFileUri(message.getFileUri());
                 myEngine.set(engine);
@@ -182,7 +182,7 @@ public class DebugSession implements Runnable {
         Session[] sessions = DebuggerManager.getDebuggerManager().getSessions();
         for (Session session : sessions) {
             SessionId id = (SessionId) session.lookupFirst(null, SessionId.class);
-            if (id.getId().equals(sessionId)) {
+            if (id != null && id.getId().equals(sessionId)) {
                 StartActionProviderImpl.getInstance().attachDebugSession(session,
                         this);
             }
