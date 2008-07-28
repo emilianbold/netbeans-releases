@@ -310,7 +310,7 @@ public class DesignContextControllerImpl2
         setContextImpl(false);
     }
 
-    private void setContextImpl(boolean forceReload) {
+    private void setContextImpl(final boolean forceReload) {
         // Copy the context to a new local variable at first.
         if (mNewContext == null && forceReload) {
             reloadMapper(new EventObject(new Object()));
@@ -357,7 +357,7 @@ public class DesignContextControllerImpl2
                 public void run() {
                     GraphExpandProcessor.expandGraph(mMapperTcContext, mContext);
                     
-                    displayInvalidXPathExpressions(mContext, true);
+                    if (forceReload) displayInvalidXPathExpressions(mContext, true);
                 }
             });
 //            mMapperTcContext.showMapperTcGroup(true);
