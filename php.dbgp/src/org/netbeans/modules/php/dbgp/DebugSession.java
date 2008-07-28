@@ -83,11 +83,13 @@ public class DebugSession implements Runnable {
         synchronized (myCommands) {
             moreCommands = myCommands.size() > 0;
         }
-        while (!isStopped.get() || moreCommands) {
+        while (continueDebugging()) {
             try {
                 sendCommands();
-                receiveData();
-                sleepTillNewCommand();
+                if (continueDebugging()) {
+                    receiveData();
+                    sleepTillNewCommand();
+                }
             } catch (IOException e) {
                 log(e);
             }
@@ -98,6 +100,10 @@ public class DebugSession implements Runnable {
         } catch (IOException e) {
             log(e);
         }
+    }
+
+    private boolean continueDebugging() {
+        return !isStopped.get() && mySocket != null && !mySocket.isClosed();
     }
 
     public void sendCommandLater(DbgpCommand command) {
@@ -231,9 +237,11 @@ public class DebugSession implements Runnable {
             myCommands.clear();
         }
         for (DbgpCommand command : list) {
-            command.send(getSocket().getOutputStream());
-            if (command.wantAcknowledgment()) {
-                receiveData(command);
+            if (continueDebugging()) {
+                command.send(getSocket().getOutputStream());
+                if (continueDebugging() && command.wantAcknowledgment()) {
+                    receiveData(command);
+                }
             }
         }
     }
