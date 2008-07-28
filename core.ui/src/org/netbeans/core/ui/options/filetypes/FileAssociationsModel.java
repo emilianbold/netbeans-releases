@@ -59,8 +59,6 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
-import org.openide.loaders.DataLoader;
-import org.openide.util.lookup.Lookups;
 import org.openide.xml.XMLUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -220,18 +218,21 @@ final class FileAssociationsModel {
         return !extensionToMimeSystem.containsKey(extension);
     }
     
-    /** Returns display name of loader for given MIME type or null if not defined. */
+        /** Returns localized display name of loader for given MIME type or null if not defined. */
     private static String getLoaderDisplayName(String mimeType) {
-        String displayName = null;
-        DataLoader loader = Lookups.forPath("Loaders/" + mimeType + "/Factories").lookup(DataLoader.class);  //NOI18N
-        if (loader != null) {
-            try {
-                displayName = loader.getDisplayName();
-            } catch (Exception e) {
-                // ignore possible problems like issue 137723
+        FileSystem root = Repository.getDefault().getDefaultFileSystem();
+        FileObject factoriesFO = root.findResource("Loaders/" + mimeType + "/Factories");  //NOI18N
+        if(factoriesFO != null) {
+            FileObject[] children = factoriesFO.getChildren();
+            for (FileObject child : children) {
+                String childName = child.getNameExt();
+                String displayName = root.getStatus().annotateName(childName, Collections.singleton(child));
+                if(!childName.equals(displayName)) {
+                    return displayName;
+                }
             }
         }
-        return displayName;
+        return null;
     }
 
     /** Returns sorted list of MimeItem objects. */

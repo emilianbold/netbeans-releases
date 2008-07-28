@@ -610,6 +610,7 @@ made subject to such option by the copyright holder.
             <folder name="x-exe">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -617,6 +618,7 @@ made subject to such option by the copyright holder.
             <folder name="x-exec+dll">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -624,6 +626,7 @@ made subject to such option by the copyright holder.
             <folder name="x-core+elf">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -631,6 +634,7 @@ made subject to such option by the copyright holder.
             <folder name="x-shobj+elf">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -638,6 +642,7 @@ made subject to such option by the copyright holder.
             <folder name="x-object+elf">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -645,6 +650,7 @@ made subject to such option by the copyright holder.
             <folder name="x-elf">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -652,6 +658,7 @@ made subject to such option by the copyright holder.
             <folder name="x-executable+elf">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ExeLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>                
@@ -769,6 +776,7 @@ made subject to such option by the copyright holder.
             <folder name="x-make">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-MakefileDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -851,6 +859,7 @@ made subject to such option by the copyright holder.
             <folder name="sh">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-ShellDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -924,6 +933,7 @@ made subject to such option by the copyright holder.
             <folder name="x-fortran">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-FortranDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -931,6 +941,7 @@ made subject to such option by the copyright holder.
             <folder name="x-sparc-asm">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-AsmDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -938,6 +949,7 @@ made subject to such option by the copyright holder.
             <folder name="x-c">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-CDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
@@ -945,9 +957,11 @@ made subject to such option by the copyright holder.
             <folder name="x-c++">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-cnd-loaders-CCDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="90000"/>
                     </file>
                     <file name="org-netbeans-modules-cnd-loaders-HDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>
