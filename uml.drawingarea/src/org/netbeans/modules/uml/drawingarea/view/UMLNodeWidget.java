@@ -850,7 +850,8 @@ public abstract class UMLNodeWidget extends Widget
         // remove all node object that are associated with child widget 
         for (Object o : Util.getAllNodeChildren(this))
         {
-            scene.removeNodeWithEdges(o);
+            if (scene.isNode(o))
+                scene.removeNodeWithEdges(o);
         }
     }
     
