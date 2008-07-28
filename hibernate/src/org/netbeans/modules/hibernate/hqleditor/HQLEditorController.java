@@ -165,7 +165,7 @@ public class HQLEditorController {
                 configProperties.setProperty(name, value);
             }
 
-            configProperties.setProperty("hibernate.mapping.precedence", "class");
+            configProperties.setProperty("hibernate.mapping.precedence", "class, hbm");
             customConfiguration.mergeProperties(configProperties);
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
