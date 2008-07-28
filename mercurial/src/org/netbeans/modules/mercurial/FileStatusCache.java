@@ -49,15 +49,12 @@ import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.mercurial.Mercurial;
-import java.io.File;
 import java.util.*;
-import java.util.logging.Level;
 import java.beans.PropertyChangeSupport;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import java.util.logging.Level;
-import org.netbeans.api.queries.SharabilityQuery;
 
 
 /**
