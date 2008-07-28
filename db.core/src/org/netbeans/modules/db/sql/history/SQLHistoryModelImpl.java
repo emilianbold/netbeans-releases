@@ -44,6 +44,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -83,6 +84,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         List<SQLHistory> retrievedSQL = new ArrayList<SQLHistory>();
         _sqlHistoryList.clear();
         try {
+            boolean isRewriteSQLRequired = false;
             FileObject root = USERDIR.getFileObject(SQL_HISTORY_FOLDER);
             String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N            
             // Read persisted SQL from  file            
@@ -90,6 +92,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
             // Remove duplicates
             if (!isSQLUnique(retrievedSQL)) {
                 retrievedSQL = removeDuplicates(retrievedSQL);
+                isRewriteSQLRequired = true;
             }
             // Get saved limit
             String savedLimit =NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
@@ -97,14 +100,17 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
                 savedLimit = SAVE_STATEMENTS_MAX_LIMIT_ENTERED;
             }
             int limit = Integer.parseInt(savedLimit);
-            // Remove any elements if count is exceeded
+            // Remove any elements if save limit is exceeded
             if (retrievedSQL.size() > limit) {
                 retrievedSQL = removeExtraSQL(retrievedSQL, limit);
+                isRewriteSQLRequired = true;
             }
-            // Remove all elements from sql_history.xml
-            SQLHistoryPersistenceManager.getInstance().updateSQLSaved(SAVE_STATEMENTS_EMPTY, root);
-            // Write new list
-            SQLHistoryPersistenceManager.getInstance().create(root, retrievedSQL);
+            if (isRewriteSQLRequired) {
+                // Remove all elements from sql_history.xml
+                SQLHistoryPersistenceManager.getInstance().updateSQLSaved(SAVE_STATEMENTS_EMPTY, root);
+                // Write new list
+                SQLHistoryPersistenceManager.getInstance().create(root, retrievedSQL);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (ClassNotFoundException ex) {
@@ -125,6 +131,7 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
                     }
                 }
             }
+            revSqLHistoryList.add(sqlHistory);
         }
         return isUnique;
     }
@@ -155,8 +162,8 @@ public class SQLHistoryModelImpl implements SQLHistoryModel {
         List<SQLHistory> revSqLHistoryList = new ArrayList<SQLHistory>();
 
         for (SQLHistory sqlHistory : sqlHistoryList) {
-            if (limit == i) {
-                revSqLHistoryList.add(revSqLHistoryList.size() - 1, sqlHistory);
+            if (i < limit) {
+                revSqLHistoryList.add(sqlHistory);
             }
             i++;
         }    
