@@ -348,6 +348,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ141765_static_const_in_nsp.cc", 7, 48, "IZ141765_static_const_in_nsp.h", 3, 17);
         performTest("IZ141765_static_const_in_nsp.cc", 9, 48, "IZ141765_static_const_in_nsp.h", 4, 17);
     }
+
+    public void testStaticFunctionInHeader() throws Exception {
+        // IZ141601 A static function defined in a header and used in a source file is unresolved
+        performTest("IZ141601_static_fun_in_hdr.c", 4, 8, "IZ141601_static_fun_in_hdr.h", 2, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

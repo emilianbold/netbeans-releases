@@ -361,7 +361,7 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
      * or false if it is file-local scope (i.e. no external linkage)
      */
     public static boolean isNamespaceScope(FunctionImpl func) {
-        if( ((FileImpl) func.getContainingFile()).isHeaderFile() && ! CsmKindUtilities.isFunctionDefinition(func) ) {
+        if( ((FileImpl) func.getContainingFile()).isHeaderFile() && ! func.isPureDefinition() ) {
             return true;
         } else if (func.isStatic()) {
             return false;

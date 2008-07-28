@@ -1066,7 +1066,8 @@ public class FileImpl implements CsmFile, MutableDeclarationsContainer,
 	}
         if( CsmKindUtilities.isFunctionDeclaration(decl) ) {
             FunctionImpl fi = (FunctionImpl) decl;
-            if( fi.isStatic() ) {
+            if( ! NamespaceImpl.isNamespaceScope(fi) ) {
+                fi.setScope(this);
                 addStaticFunctionDeclaration(uidDecl);
             }
         }
