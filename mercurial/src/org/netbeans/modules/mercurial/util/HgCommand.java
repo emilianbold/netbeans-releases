@@ -73,6 +73,7 @@ import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.modules.mercurial.HgModuleConfig;
 import org.netbeans.modules.mercurial.config.HgConfigFiles;
 import org.netbeans.modules.mercurial.ui.log.HgLogMessage;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Utilities;
@@ -292,6 +293,9 @@ public class HgCommand {
     public static final String HG_STR_CONFLICT_EXT = ".conflict~"; // NOI18N
 
     private static final String HG_EPOCH_PLUS_ONE_YEAR = "1971-01-01"; // NOI18N
+
+    private static  boolean metricsAlreadyLogged = false;
+
     /**
      * Merge working directory with the head revision
      * Merge the contents of the current working directory and the
@@ -2795,17 +2799,26 @@ public class HgCommand {
         }
         return list;
     }
+
+    private static List<String> execEnv(List<String> command, List<String> env) throws HgException{
+        return execEnv(command, env, true);
+    }
+
     /**
      * Returns the ouput from the given command
      *
      * @param command to execute
      * @return List of the command's output or an exception if one occured
      */
-
-    private static List<String> execEnv(List<String> command, List<String> env) throws HgException{
+    private static List<String> execEnv(List<String> command, List<String> env, boolean logUsage) throws HgException{
         if( EventQueue.isDispatchThread()){
             Mercurial.LOG.log(Level.FINE, "WARNING execEnv():  calling Hg command in AWT Thread - could stall UI"); // NOI18N
-        }        assert ( command != null && command.size() > 0);
+        }        
+        assert ( command != null && command.size() > 0);
+        if(logUsage && !metricsAlreadyLogged) {
+            Utils.logVCSClientEvent("HG", "CLI");
+            metricsAlreadyLogged = true;
+        }
         List<String> list = new ArrayList<String>();
         BufferedReader input = null;
         Process proc = null;
@@ -2920,7 +2933,7 @@ public class HgCommand {
         command.add(getHgCommand());
         command.add(HG_VERSION_CMD);
 
-        return execEnv(command, null);
+        return execEnv(command, null, false);
     }
 
     private static String getHgCommand() {
