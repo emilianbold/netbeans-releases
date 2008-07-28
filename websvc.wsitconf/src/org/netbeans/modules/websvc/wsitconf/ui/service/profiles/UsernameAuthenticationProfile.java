@@ -61,6 +61,7 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPoli
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHandler;
+import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.ValidatorConfiguration;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
 import org.netbeans.modules.xml.wsdl.model.Binding;
@@ -126,6 +127,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
     }
     
     public boolean isServiceDefaultSetupUsed(WSDLComponent component, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String storeAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
@@ -143,6 +145,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
     }
 
     public void setServiceDefaults(WSDLComponent component, Project p) {
+        ProprietarySecurityPolicyModelHelper.clearValidators(component);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, false, false);
         ProprietarySecurityPolicyModelHelper.setStoreLocation(component, null, true, false);
 //        if (Util.isTomcat(p)) {
@@ -180,6 +183,7 @@ public class UsernameAuthenticationProfile extends ProfileBase
     }
 
     public boolean isClientDefaultSetupUsed(WSDLComponent component, Binding serviceBinding, Project p) {
+        if (ProprietarySecurityPolicyModelHelper.isAnyValidatorSet(component)) return false;
         String trustAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, true);
         String trustPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, true);
         String trustLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, true);
