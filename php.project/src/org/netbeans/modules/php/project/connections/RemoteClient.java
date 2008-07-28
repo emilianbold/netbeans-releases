@@ -202,7 +202,7 @@ public class RemoteClient implements Cancellable {
             try {
                 ftpClient.logout();
             } catch (IOException ex) {
-                LOGGER.log(Level.FINE, "XXX", ex);
+                LOGGER.log(Level.FINE, "Error while disconnecting", ex);
                 throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_FtpCannotLogout", configuration.getHost()), ex, ftpClient.getReplyString());
             } finally {
                 try {

@@ -311,6 +311,9 @@ public final class Validator extends BpelValidator {
           addError("FIX_SA00014_Different", process, named1.getName()); // NOI18N
         }
         else {
+//out();
+//out("1: " + getPresentation(named1));
+//out("2: " + getPresentation(named2));
           addError("FIX_SA00014_Different_File", process, named1.getName(), file1, file2); // NOI18N
         }
       }
@@ -318,9 +321,15 @@ public final class Validator extends BpelValidator {
   }
 
   private String getPresentation(Component component) {
-    StringBuffer buffer = new StringBuffer(getName(component));
+    StringBuffer buffer;
+
+    if (getName(component) == null) {
+      buffer = new StringBuffer();
+    }
+    else {
+      buffer = new StringBuffer(getName(component));
+    }
     buffer.append("("); // NOI18N
-    
     List children = component.getChildren();
 
     for (Object child : children) {
@@ -1734,12 +1743,12 @@ public final class Validator extends BpelValidator {
           Component source = null;
 
           if (isUsed) {
-              source = collection.iterator().next();
+            source = collection.iterator().next();
           }
           collection = targets.get(link);
 
           if ( !isUsed || !checkLink(link, collection, "FIX_SA00066")) { // NOI18N
-              addError("FIX_SA00066", link); // NOI18N
+            addError("FIX_SA00066", link); // NOI18N
           }
           else {
               Component target = collection.iterator().next();
@@ -2158,10 +2167,12 @@ public final class Validator extends BpelValidator {
       }
       Part part = message.getParts().iterator().next();
       NamedComponentReference<GlobalElement> elementRef = part.getElement();
+
       if (elementRef == null) {
           return false;
       }
       GlobalElement element = elementRef.get();
+      
       if (element == null) {
           return false;
       }
@@ -2257,37 +2268,38 @@ public final class Validator extends BpelValidator {
       if (element == null) {
           return false;
       }
-      NamedComponentReference<Message>  messageOperation = getMessageRef(
-              operation);
+      NamedComponentReference<Message>  messageOperation = getMessageRef(operation);
+      
       if (messageOperation == null) {
           return false;
       }
       Message message = messageOperation.get();
+      
       if (message == null) {
           return false;
       }
       Collection<Part> parts = message.getParts();
+      
       if (parts.size() != 1) {
           return false;
       }
       Part part = parts.iterator().next();
-      NamedComponentReference<GlobalElement> elementOperationRef =
-              part.getElement();
+      NamedComponentReference<GlobalElement> elementOperationRef = part.getElement();
+
       if (elementOperationRef == null) {
           return false;
       }
       return elementOperationRef.references(element);
   }
   
-  private boolean checkMessageTypeInOnEvent(WSDLReference<Message> messageRef,
-          Operation operation) {
+  private boolean checkMessageTypeInOnEvent(WSDLReference<Message> messageRef, Operation operation) {
       Message message = messageRef.get();
+
       if (message == null) {
           return false;
       }
-      
-      NamedComponentReference<Message>  messageOperation = getMessageRef(
-              operation);
+      NamedComponentReference<Message>  messageOperation = getMessageRef(operation);
+
       if (messageOperation == null) {
           return false;
       }
@@ -2296,6 +2308,7 @@ public final class Validator extends BpelValidator {
   
   private NamedComponentReference<Message> getMessageRef(Operation operation) {
       Input input = operation.getInput();
+
       if (input == null) {
           return null;
       }
