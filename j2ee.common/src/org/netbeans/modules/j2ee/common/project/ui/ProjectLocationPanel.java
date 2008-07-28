@@ -163,10 +163,10 @@ final class ProjectLocationPanel extends JPanel implements DocumentListener {
             }
         });
 
-        setAsMainCheckBox.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(setAsMainCheckBox, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "LBL_NWP1_SetAsMain_CheckBox")); // NOI18N
         setAsMainCheckBox.setMargin(new java.awt.Insets(2, 0, 2, 2));
 
-        lblHint.setText(org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "HINT_LibrariesFolder")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblHint, org.openide.util.NbBundle.getMessage(ProjectLocationPanel.class, "HINT_LibrariesFolder")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
