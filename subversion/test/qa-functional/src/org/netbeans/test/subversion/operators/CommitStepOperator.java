@@ -56,6 +56,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find null JList in this dialog.
      * @return JListOperator
      */
+    @Override
     public JListOperator lstSteps() {
         if (_lstSteps==null) {
             _lstSteps = new JListOperator(this);
@@ -128,6 +129,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find "< Back" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btBack() {
         if (_btBack==null) {
             _btBack = new JButtonOperator(this, "< Back");
@@ -138,6 +140,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find "Next >" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btNext() {
         if (_btNext==null) {
             _btNext = new JButtonOperator(this, "Next >");
@@ -148,6 +151,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find "Finish" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btFinish() {
         if (_btFinish==null) {
             _btFinish = new JButtonOperator(this, "Finish");
@@ -158,6 +162,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find "Cancel" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btCancel() {
         if (_btCancel==null) {
             _btCancel = new JButtonOperator(this, "Cancel");
@@ -168,6 +173,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /** Tries to find "Help" JButton in this dialog.
      * @return JButtonOperator
      */
+    @Override
     public JButtonOperator btHelp() {
         if (_btHelp==null) {
             _btHelp = new JButtonOperator(this, "Help");
@@ -194,30 +200,35 @@ public class CommitStepOperator extends ImportWizardOperator {
 
     /** clicks on "< Back" JButton
      */
+    @Override
     public void back() {
         btBack().push();
     }
 
     /** clicks on "Next >" JButton
      */
+    @Override
     public void next() {
         btNext().push();
     }
 
     /** clicks on "Finish" JButton
      */
+    @Override
     public void finish() {
         btFinish().push();
     }
 
     /** clicks on "Cancel" JButton
      */
+    @Override
     public void cancel() {
         btCancel().push();
     }
 
     /** clicks on "Help" JButton
      */
+    @Override
     public void help() {
         btHelp().push();
     }
@@ -247,6 +258,7 @@ public class CommitStepOperator extends ImportWizardOperator {
     /**
      * Performs verification of CommitStepOperator by accessing all its components.
      */
+    @Override
     public void verify() {
         lblSteps();
         lstSteps();
@@ -255,7 +267,7 @@ public class CommitStepOperator extends ImportWizardOperator {
         btWindowsScrollBarUI$WindowsArrowButton();
         btWindowsScrollBarUI$WindowsArrowButton2();
 //        lblCommitFiles();
-        lblWizardDescriptor$FixedHeightLabel();
+//        lblWizardDescriptor$FixedHeightLabel();
         btBack();
         btNext();
         btFinish();

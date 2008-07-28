@@ -173,25 +173,25 @@ public class CheckoutUITest extends JellyTestCase{
         RepositoryStepOperator rso = new RepositoryStepOperator();
         //wrong file
         rso.setRepositoryURL("dfile:///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :dfile:///", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: dfile:///", rso.lblWarning().getText());
         //wrong svn
         rso.setRepositoryURL("dsvn://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :dsvn://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: dsvn://", rso.lblWarning().getText());
         //space in file
         rso.setRepositoryURL("file :///");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :file :///", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: file :///", rso.lblWarning().getText());
         //space in svn
         rso.setRepositoryURL("svn ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: svn ://", rso.lblWarning().getText());
         //space in http
         rso.setRepositoryURL("http ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :http ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: http ://", rso.lblWarning().getText());
         //space in https
         rso.setRepositoryURL("https ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :https ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: https ://", rso.lblWarning().getText());
         //space in svn+ssh
         rso.setRepositoryURL("svn+ssh ://");
-        assertEquals("This should be wrong url string!!!", "Invalid svn url :svn+ssh ://", rso.lblWarning().getText());
+        assertEquals("This should be wrong url string!!!", "Invalid svn url: svn+ssh ://", rso.lblWarning().getText());
         
         co.btCancel().pushNoBlock();
     }
