@@ -87,8 +87,11 @@ import org.openide.util.UserQuestionException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.editor.AtomicLockDocument;
+import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
+import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
 import org.netbeans.modules.cnd.api.model.deep.CsmGotoStatement;
-import org.netbeans.modules.cnd.api.model.deep.CsmLabel;
 import org.netbeans.modules.cnd.api.model.xref.CsmLabelResolver;
 
 /**
@@ -214,6 +217,27 @@ public final class ReferencesSupport {
                 // Exit now, don't look for variables, types and etc.
                 return null;
             }
+        } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset)) {
+            CsmType type = CsmKindUtilities.isVariable(objUnderOffset)?
+                    ((CsmVariable)objUnderOffset).getType() :
+                    ((CsmTypedef)objUnderOffset).getType();
+            CsmParameter parameter = null;
+            boolean repeat;
+            do {
+                repeat = false;
+                if (CsmOffsetUtilities.isInObject(type, offset)) {
+                    parameter = null;
+                } else if (CsmKindUtilities.isFunctionPointerType(type)) {
+                    CsmParameter deeperParameter = CsmOffsetUtilities.findObject(
+                            ((CsmFunctionPointerType)type).getParameters(), null, offset);
+                    if (deeperParameter != null) {
+                        parameter = deeperParameter;
+                        type = deeperParameter.getType();
+                        repeat = true;
+                    }
+                }
+            } while (repeat);
+             csmItem = parameter;
         } else if (false && CsmKindUtilities.isVariableDeclaration(objUnderOffset)) {
             // turned off, due to the problems like
             // Cpu MyCpu(type, 0, amount);
