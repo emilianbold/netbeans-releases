@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = true;
+    const DEBUG = false;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -209,7 +209,7 @@
 
 
         onExamineResponse: function( aNsISupport ){
-            var DEBUG_METHOD = (true & DEBUG);
+            var DEBUG_METHOD = (false & DEBUG);
             var request = aNsISupport.QueryInterface(NetBeans.Constants.HttpChannelIF);
             if (DEBUG_METHOD) {
                 NetBeans.Logger.log("<-----  netmonitor.onExamineResponse: " + request.URI.asciiSpec);
@@ -259,7 +259,7 @@
     }
 
     function createResponseActivity (request, id) {
-        var DEBUG_METHOD = (true & DEBUG);
+        var DEBUG_METHOD = (false & DEBUG);
 
         if( !request || !id){
             throw new Error("net.createResponseActivity - Something is null request:" + request + " id:" + id);
@@ -738,7 +738,7 @@
     }
 
     function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
-        var DEBUG_METHOD = true & DEBUG;
+        var DEBUG_METHOD = false & DEBUG;
 
         if ( DEBUG_METHOD ){NetBeans.Logger.log("net.sendProgressUpdate"); }
         var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
