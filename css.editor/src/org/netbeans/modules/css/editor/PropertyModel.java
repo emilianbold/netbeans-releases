@@ -181,9 +181,14 @@ public class PropertyModel {
 //
 //
 //    }
-    GroupElement parse(String expression) {
+    
+    GroupElement parse(String expresssion) {
+        return parse(expresssion, null);
+    }
+    
+    GroupElement parse(String expression, String propertyName) {
         group_index = 0;
-        GroupElement root = new GroupElement(null, group_index);
+        GroupElement root = new GroupElement(null, group_index, propertyName);
         ParserInput input = new ParserInput(expression);
         group_index = 0; //reset
         parseElements(input, root, false);

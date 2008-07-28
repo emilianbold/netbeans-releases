@@ -74,6 +74,7 @@ import java.text.MessageFormat;
 import java.beans.PropertyChangeListener;
 import java.beans.VetoableChangeListener;
 import java.nio.charset.Charset;
+import java.util.logging.LogRecord;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.ErrorManager;
 import org.openide.cookies.EditorCookie;
@@ -99,6 +100,16 @@ public final class Utils {
     private static final RequestProcessor vcsBlockingRequestProcessor = new RequestProcessor("Versioning long tasks", 1);
 
     private static /*final*/ File [] unversionedFolders;
+
+    /**
+     * Metrics logger
+     */
+    private static Logger METRICS_LOG = Logger.getLogger("org.netbeans.ui.metrics.vcs");
+
+    /**
+     * Keeps track about already logged metrics events
+     */
+    private static Set<String> metrics = new HashSet<String>(3);
 
     static {
         try {
@@ -846,6 +857,46 @@ public final class Utils {
      */
     public static void logWarn(Object caller, Throwable e) {
         logWarn(caller.getClass(), e);
+    }
+
+    /**
+     * Logs a vcs client usage.
+     *
+     * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", ...
+     * @param client - the particular vcs cient "CLI", "JAVAHL", "JAVALIB"
+     */
+    public static void logVCSClientEvent(String vcs, String client) {
+        String key = "USG_VCS_CLIENT"  + vcs;
+        if (checkMetricsKey(key)) return;
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_CLIENT");
+        rec.setParameters(new Object[] { vcs, client });
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
+    }
+
+    /**
+     * Logs a vcs client action usage.
+     *
+     * @param vcs - the particular vcs "SVN", "CVS", "CC", "HG", ...
+     */
+    public static void logVCSActionEvent(String vcs) {
+        String key = "USG_VCS_ACTION"  + vcs;
+        if (checkMetricsKey(key)) return;
+        LogRecord rec = new LogRecord(Level.INFO, "USG_VCS_ACTION");
+        rec.setParameters(new Object[] { vcs });
+        rec.setLoggerName(METRICS_LOG.getName());
+        METRICS_LOG.log(rec);
+    }
+
+    private static boolean checkMetricsKey(String key) {
+        synchronized (metrics) {
+            if (metrics.contains(key)) {
+                return true;
+            } else {
+                metrics.add(key);
+            }
+        }
+        return false;
     }
 
     /**

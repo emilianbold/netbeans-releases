@@ -2620,7 +2620,6 @@ public abstract class GsfTestBase extends NbTestCase {
         initializeNodes(info, info.getEmbeddedResult(getPreferredMimeType(), caretOffset),
                 validNodes, positions, invalidNodes);
 
-        BaseDocument doc = (BaseDocument) info.getDocument();
         String annotatedSource = annotateOffsets(validNodes, positions, invalidNodes, info);
         assertDescriptionMatches(relFilePath, annotatedSource, false, ".offsets");
     }
@@ -2702,24 +2701,51 @@ public abstract class GsfTestBase extends NbTestCase {
         sb.append("\n");
         
         for (int i = 0; i < text.length(); i++) {
+            List<Object> deferred = null;
+            if (ends.containsKey(i)) {
+                List<Object> ns = ends.get(i);
+                List<Object> sts = starts.get(i);
+                for (Object n : ns) {
+                    if (sts != null && sts.contains(n)) {
+                        if (deferred == null) {
+                            deferred = new ArrayList<Object>();
+                        }
+                        deferred.add(n);
+                    } else {
+                        sb.append("</");
+                        String desc = describeNode(info, n, false);
+                        assertNotNull(desc);
+                        sb.append(desc);
+                        sb.append(">");
+                    }
+                }
+            }
             if (starts.containsKey(i)) {
                 List<Object> ns = starts.get(i);
+                List<Object> ets = ends.get(i);
                 for (Object n : ns) {
+                    if (ets != null && ets.contains(n)) {
+                        if (deferred == null) {
+                            deferred = new ArrayList<Object>();
+                        } else if (deferred.get(deferred.size()-1) != n) {
+                            deferred.add(n);
+                        }
+                    } else {
+                        sb.append("<");
+                        String desc = describeNode(info, n, false);
+                        assertNotNull(desc);
+                        sb.append(desc);
+                        sb.append(">");
+                    }
+                }
+            }
+            if (deferred != null) {
+                for (Object n : deferred) {
                     sb.append("<");
                     String desc = describeNode(info, n, false);
                     assertNotNull(desc);
                     sb.append(desc);
-                    sb.append(">");
-                }
-            }
-            if (ends.containsKey(i)) {
-                List<Object> ns = ends.get(i);
-                for (Object n : ns) {
-                    sb.append("</");
-                    String desc = describeNode(info, n, false);
-                    assertNotNull(desc);
-                    sb.append(desc);
-                    sb.append(">");
+                    sb.append("/>");
                 }
             }
             char c = text.charAt(i);

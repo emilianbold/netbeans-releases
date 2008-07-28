@@ -155,17 +155,20 @@ public class HQLEditorController {
         try {
             org.dom4j.io.SAXReader saxReader = new org.dom4j.io.SAXReader();
             org.dom4j.Document document = saxReader.read(configFileObject.getInputStream());
-            org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory");
-            Iterator propIterator = sessionFactoryElement.elementIterator("property");
+            org.dom4j.Element sessionFactoryElement = document.getRootElement().element("session-factory");  //NOI18N
+            Iterator propIterator = sessionFactoryElement.elementIterator("property");  //NOI18N
             while (propIterator.hasNext()) {
                 org.dom4j.Element node = (org.dom4j.Element) propIterator.next();
-                String name = node.attributeValue("name");
+                String name = node.attributeValue("name");  //NOI18N
                 String value = node.getTextTrim();
-                logger.info("name = " + name + " value= " + value);
                 configProperties.setProperty(name, value);
-            }
+                if(value != null && value.endsWith("password")) {  //NOI18N
+                    value = "*****";  //NOI18N
+                }
+                logger.info("name = " + name + " value= " + value);
+           }
 
-            configProperties.setProperty("hibernate.mapping.precedence", "class");
+            configProperties.setProperty("hibernate.mapping.precedence", "class, hbm");  //NOI18N
             customConfiguration.mergeProperties(configProperties);
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
@@ -288,8 +291,14 @@ public class HQLEditorController {
                 fileManager.setLocation(StandardLocation.CLASS_PATH, getProjectClasspath(project, sourceFO));
                 List<String> options = new ArrayList<String>();
                 options.add("-target"); //NOI18N
-                options.add("1.5"); //NOI18N
+                String javaVersion = System.getProperty("java.specification.version");  //NOI18N
+                if(javaVersion != null || (!javaVersion.equals(""))) {
+                    options.add(javaVersion);
+                } else {
+                    options.add("1.5"); //NOI18N
+                }
                 
+                // for some reason the following is not working.. Bug in JavaC API?
 //                options.add("-classpath");
 //                options = addClasspath(project, sourceFO, options);
                 //TODO diagnostic listener - plugin log

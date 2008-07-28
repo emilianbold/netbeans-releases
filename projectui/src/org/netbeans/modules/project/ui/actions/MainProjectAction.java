@@ -47,6 +47,7 @@ import java.awt.Toolkit;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import javax.swing.Icon;
 import javax.swing.JButton;
@@ -94,7 +95,11 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         this.performer = performer;
         this.name = name;
 
-        setDisplayName( name );
+        String presenterName = "";
+        if (name != null) {
+            presenterName = MessageFormat.format(name, new Object[] { 0 });
+        }
+        setDisplayName(presenterName);
         if ( icon != null ) {
             setSmallIcon( icon );
         }
@@ -119,7 +124,8 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
         // if no main project than show warning and allow choose a main project
         if (p == null) {
             // show warning, if cancel then return
-            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), name)) {
+            if (showNoMainProjectWarning (OpenProjectList.getDefault().getOpenProjects (), 
+                    getPresenterName(name, OpenProjectList.getDefault().getMainProject(), p))) {
                 return ;
             }
             p = OpenProjectList.getDefault().getMainProject();
@@ -188,19 +194,28 @@ public class MainProjectAction extends LookupSensitiveAction implements Property
 
         Project mainProject = OpenProjectList.getDefault().getMainProject();
 
-        if (mainProject == null) {
-            String menuItemText;
-            if (p != null) {
-                String prjName = ProjectUtils.getInformation(p).getDisplayName();
-                menuItemText = name + " Project " + "(" + prjName + ")";
-            } else {
-                menuItemText = name + " Project";
-            }
-            putValue("menuText", menuItemText);
-        } else {
-            putValue("menuText", name + " Main Project");
-        }
+        String presenterName = getPresenterName(name, mainProject, p);
+        putValue("menuText", presenterName);
+        putValue(SHORT_DESCRIPTION, Actions.cutAmpersand(presenterName));
 
+    }
+
+    private String getPresenterName(String name, Project mPrj, Project cPrj) {
+        String toReturn = "";
+        Object[] formatterArgs;
+        if (mPrj == null) {
+            if (cPrj == null) {
+                formatterArgs = new Object[] { 0 };
+            } else {
+                formatterArgs = new Object[] { 1, ProjectUtils.getInformation(cPrj).getDisplayName() };
+            }
+        } else {
+            formatterArgs = new Object[] { -1 };
+        }
+        if (name != null) {
+            toReturn = MessageFormat.format(name, formatterArgs);
+        }
+        return toReturn;
     }
 
     private void enable(final boolean enable) {

@@ -394,7 +394,34 @@ public class PropertyModelTest extends TestBase {
         String text = "male";
         CssPropertyValue csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
-
+        assertEquals(1, csspv.alternatives().size());
+        assertEquals(",", csspv.alternatives().iterator().next().toString());
+        
+        text = "male, ";
+        csspv = new CssPropertyValue(p, text);
+        
+        dumpResult(csspv);
+        
+        assertTrue(csspv.success());
+        assertEquals(3, csspv.visibleAlternatives().size());
+       
+        Collection<String> altNames = getAlternativesNames(csspv.visibleAlternatives());
+        assertTrue(altNames.contains("male"));
+        assertTrue(altNames.contains("female"));
+        assertTrue(altNames.contains("child"));
+        
+        text = "";
+        csspv = new CssPropertyValue(p, text);
+        
+        assertTrue(csspv.success());
+        assertEquals(4, csspv.visibleAlternatives().size());
+        
+        altNames = getAlternativesNames(csspv.visibleAlternatives());
+        assertTrue(altNames.contains("inherit"));
+        assertTrue(altNames.contains("male"));
+        assertTrue(altNames.contains("female"));
+        assertTrue(altNames.contains("child"));
+        
         text = "\"ovecka\"";
         csspv = new CssPropertyValue(p, text);
         assertTrue(csspv.success());
@@ -472,34 +499,6 @@ public class PropertyModelTest extends TestBase {
 
     }
     
-    /* currently failing - see issue #140309 */
-    public void testVoiceFamilyAlternatives() {
-        Property p = PropertyModel.instance().getProperty("voice-family");
-        String text = "child";
-        CssPropertyValue csspv = new CssPropertyValue(p, text);
-
-//        dumpResult(csspv);
-
-        assertTrue(csspv.success());
-        assertEquals(1, csspv.alternatives().size()); //only comma should be alternative
-
-        text = "child ,";
-        csspv = new CssPropertyValue(p, text);
-
-//        dumpResult(csspv);
-
-        assertTrue(csspv.success());
-        assertEquals(10, csspv.alternatives().size()); //only comma should be alternative
-
-        text = "child , female";
-        csspv = new CssPropertyValue(p, text);
-
-//        dumpResult(csspv);
-
-        assertTrue(csspv.success());
-        assertEquals(1, csspv.alternatives().size()); //only comma should be alternative
-
-    }
 
     //some text acceptors consumed "inherit" as their token
     public void testFontFamily2() {

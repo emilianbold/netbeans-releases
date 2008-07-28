@@ -180,6 +180,19 @@ public class NbJSAdvancedOptionsPanel extends javax.swing.JPanel implements Acti
                 .add(suspendOnDebuggerKeywordCheckBox)
                 .addContainerGap(138, Short.MAX_VALUE))
         );
+
+        showFunctionsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_ShowFunctions")); // NOI18N
+        showFunctionsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_ShowFunctions")); // NOI18N
+        showConstantsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_ShowConstants")); // NOI18N
+        showConstantsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_ShowConstants")); // NOI18N
+        suspendOnFirstLineCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_SuspendOnFirstLine")); // NOI18N
+        suspendOnFirstLineCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_SuspendOnFirstLine")); // NOI18N
+        suspendOnExceptionsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_SuspendOnExceptions")); // NOI18N
+        suspendOnExceptionsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "NbJSAdvancedOptionsPanel.suspendOnExceptionsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        suspendOnErrorsCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_SuspendOnErrors")); // NOI18N
+        suspendOnErrorsCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "NbJSAdvancedOptionsPanel.suspendOnErrorsCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
+        suspendOnDebuggerKeywordCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "A11Y_CKBX_ShowOnDebuggerKeyword")); // NOI18N
+        suspendOnDebuggerKeywordCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSAdvancedOptionsPanel.class, "NbJSAdvancedOptionsPanel.suspendOnDebuggerKeywordCheckBox.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
