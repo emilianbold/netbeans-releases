@@ -43,6 +43,7 @@ package org.netbeans.modules.uml.diagrams.nodes;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.util.EnumSet;
+import java.util.Set;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.InplaceEditorProvider;
 import org.netbeans.api.visual.action.InplaceEditorProvider.EditorController;
@@ -52,6 +53,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLMultilineLabelWidget;
 import org.netbeans.modules.uml.ui.controls.editcontrol.EditControlImpl;
 
@@ -122,7 +124,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
             edcAction = (InplaceEditorProvider.EditorController) action;
         }
 
-        getActions().addAction(action);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction(action);//TBD need to add lock edit support
     }
 
     /**
@@ -139,7 +141,7 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
     {
         super(scene, text, propId, propDisplayName);
         edcAction = (InplaceEditorProvider.EditorController) ActionFactory.createInplaceEditorAction(new EditControlEditorProvider(baseGraphWidget, element));
-        getActions().addAction((WidgetAction) edcAction);//TBD need to add lock edit support
+        createActions(DesignerTools.SELECT).addAction((WidgetAction) edcAction);//TBD need to add lock edit support
     }
 
     public void switchToEditMode()
@@ -202,7 +204,19 @@ public class MultilineEditableCompartmentWidget extends UMLMultilineLabelWidget
 //            revalidate();
              if (widget != null)
             {
-                widget.getScene().validate();
+                Scene scene = widget.getScene();
+                scene.validate();
+            
+                //Fix #138735. Reselect the object when finishing editing to update the property sheet.
+                if ( scene instanceof DesignerScene)
+                {
+                    DesignerScene dScene = (DesignerScene)scene;
+                    Set<Object> selectedObjs = (Set<Object>) dScene.getSelectedObjects();
+                    if (selectedObjs != null && selectedObjs.size() == 1)
+                    {
+                        dScene.setSelectedObjects(selectedObjs);
+                    }
+                }
             }
         }
 

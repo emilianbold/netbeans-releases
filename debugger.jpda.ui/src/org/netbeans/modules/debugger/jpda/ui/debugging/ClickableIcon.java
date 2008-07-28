@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.debugger.jpda.ui.debugging;
 
+import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
@@ -56,6 +58,7 @@ import org.openide.util.RequestProcessor;
 class ClickableIcon extends JLabel implements MouseListener {
 
     public static final int CLICKABLE_ICON_WIDTH = 24;
+    public static final int CLICKABLE_ICON_HEIGHT = 16;
     
     private static final int STATE_NORMAL = 0;
     private static final int STATE_FOCUSED = 1;
@@ -89,10 +92,12 @@ class ClickableIcon extends JLabel implements MouseListener {
         
         setHorizontalAlignment(SwingConstants.CENTER);
         setVerticalAlignment(SwingConstants.CENTER);
+        
+        setPreferredSize(new Dimension(CLICKABLE_ICON_WIDTH, CLICKABLE_ICON_HEIGHT));
     }
 
-    void initializeState(int sx, int sy, int width, int height) {
-        Point point = getParent().getMousePosition(true);
+    void initializeState(Container container, int sx, int sy, int width, int height) {
+        Point point = container.getMousePosition(true);
         state = point != null && sx <= point.x && point.x < sx + width && sy <= point.y && point.y < sy + height
                 ? STATE_FOCUSED : STATE_NORMAL;
         setFocusedThread();

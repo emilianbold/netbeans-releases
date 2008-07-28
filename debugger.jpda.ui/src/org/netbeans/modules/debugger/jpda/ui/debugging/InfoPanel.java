@@ -62,7 +62,6 @@ import javax.swing.JToolBar;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.api.debugger.jpda.JPDAThread;
-import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.modules.debugger.jpda.ui.models.DebuggingNodeModel;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 import org.openide.awt.DropDownButtonFactory;
@@ -348,7 +347,7 @@ public class InfoPanel extends javax.swing.JPanel {
     
     private void initFilterPanel (JPanel filterPanel) {
         filterPanel.setBorder(new EmptyBorder(1, 2, 1, 5));
-        final FiltersDescriptor filtersDesc = FiltersDescriptor.createDebuggingViewFilters();
+        final FiltersDescriptor filtersDesc = FiltersDescriptor.getInstance();
         // configure toolbar
         JToolBar toolbar = new JToolBar(JToolBar.HORIZONTAL);
         toolbar.setFloatable(false);

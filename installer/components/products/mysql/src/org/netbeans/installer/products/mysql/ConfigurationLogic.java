@@ -369,18 +369,18 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File logFile = getLog("config");
 
         LogManager.log("... MySQL configuration log file : " + logFile);
-        String version =
-                getProduct().getVersion().getMajor() + StringUtils.DOT +
-                getProduct().getVersion().getMinor() + StringUtils.DOT +
-                getProduct().getVersion().getMicro();
+        //String version =
+        //        getProduct().getVersion().getMajor() + StringUtils.DOT +
+        //        getProduct().getVersion().getMinor() + StringUtils.DOT +
+        //        getProduct().getVersion().getMicro();
+        String version = MYSQL_INSTANCE_VERSION;
         List<String> commandsList = new ArrayList<String>();
 
         commandsList.add(configInstanceFile.getAbsolutePath());
         commandsList.add("-i");                             // -i  (install instance)        
 
         commandsList.add("-q");                             // -q  (be quiet)
-        //commandsList.add("-n" + PRODUCT_NAME);              // -n<product name>
-
+        
         commandsList.add("-p" + installationLocation);      // -p<path of installation> (no \bin)
 
         commandsList.add("-v" + version);                    // -v<version>
@@ -397,7 +397,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         final File targetConfigFile = new File(installationLocation, TARGET_CONFIGURATION_FILE);
         commandsList.add("-t" + template);
         commandsList.add("-c" + targetConfigFile);
-
+        commandsList.add("-n" + PRODUCT_NAME);              // -n<product name>
         // Use the following option to define the parameters for the config file generation.
         //
         // ServiceName=$
@@ -418,6 +418,7 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
         commandsList.add("ServerType=DEVELOPMENT");
         commandsList.add("DatabaseType=MIXED");
         commandsList.add("ConnectionUsage=DSS");
+        commandsList.add("Charset=utf8");
 
         if (Boolean.parseBoolean(getProperty(MySQLPanel.NETWORK_PROPERTY))) {
             commandsList.add("SkipNetworking=no");
@@ -794,7 +795,10 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
             "org/netbeans/installer/products/mysql/wizard.xml"; // NOI18N
 
     public static final String MYSQL_MSI_FILE_NAME =
-            "mysql-essential-5.0.51a-win32.msi";//NOI18N
+            "{mysql-msi-installer-name}";//NOI18N
+    public static final String MYSQL_INSTANCE_VERSION =
+            "{mysql-instance-version}";//NOI18N
+
     public static final String INSTANCE_CONFIGURATION_FILE =
             "bin/MySQLInstanceConfig.exe";
     public static final String MYSQL_INSTALLED_WINDOWS_PROPERTY =

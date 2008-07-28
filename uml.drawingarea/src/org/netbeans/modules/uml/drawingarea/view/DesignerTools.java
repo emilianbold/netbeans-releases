@@ -53,5 +53,5 @@ public interface DesignerTools
     public static final String MARQUEE_ZOOM = "MARQUEE_ZOOM";
     public static final String INTERACTIVE_ZOOM = "INTERACTIVE_ZOOM";
     public static final String NAVIGATE_LINK = "NAVIGATE_LINK";
-    
+    public static final String READ_ONLY = "READ_ONLY";
 }

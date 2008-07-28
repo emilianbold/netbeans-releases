@@ -1,9 +1,9 @@
 # platform cluster first
-platform8
+platform9
 # application cluster second
-nb6.1
+nb6.5
 # and now the rest
-ide9
+ide10
 java2
 xml2
 apisupport1

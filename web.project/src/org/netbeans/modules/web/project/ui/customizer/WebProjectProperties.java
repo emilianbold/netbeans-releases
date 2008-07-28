@@ -81,6 +81,7 @@ import org.netbeans.modules.j2ee.common.project.ui.ClassPathUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.J2eePlatformUiSupport;
 import org.netbeans.modules.j2ee.common.project.ui.ProjectProperties;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
@@ -255,6 +256,7 @@ public class WebProjectProperties {
     
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
+    private List<String> usedFrameworkNames;
 
     // Private fields ----------------------------------------------------------
     private WebProject project;
@@ -275,6 +277,8 @@ public class WebProjectProperties {
     public static final String JAVA_SOURCE_BASED= "java.source.based";
 
     private String includes, excludes;
+    
+    private static String logServInstID = null;
 
     
     public WebProjectProperties(WebProject project, UpdateHelper updateHelper, PropertyEvaluator evaluator, ReferenceHelper refHelper) {
@@ -381,7 +385,10 @@ public class WebProjectProperties {
         LAUNCH_URL_RELATIVE_MODEL = projectGroup.createStringDocument(evaluator, LAUNCH_URL_RELATIVE);
         DISPLAY_BROWSER_MODEL = projectGroup.createToggleButtonModel(evaluator, DISPLAY_BROWSER);
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
-        J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(privateProperties.getProperty( J2EE_SERVER_INSTANCE ), projectProperties.getProperty(J2EE_PLATFORM));
+        J2EE_SERVER_INSTANCE_MODEL = J2eePlatformUiSupport.createPlatformComboBoxModel(
+                privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
+                projectProperties.getProperty(J2EE_PLATFORM),
+                J2eeModule.WAR);
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
             CONTEXT_PATH_MODEL.remove(0, CONTEXT_PATH_MODEL.getLength());
@@ -420,14 +427,39 @@ public class WebProjectProperties {
                         }
                         newExtenders.clear();
                         project.resetTemplates();
-                        
-                        // ui logging of the added frameworks
-                        if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
-                            Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
-                                    addedFrameworkNames.toArray());
-                        }
                     }
                 });
+            }
+            
+            // ui logging of the added frameworks
+            if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
+                Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
+                        addedFrameworkNames.toArray());
+                if (usedFrameworkNames != null) {
+                    String serverName = ""; // NOI18N
+                    try {
+                        if (logServInstID != null) {
+                            serverName = Deployment.getDefault().getServerInstance(logServInstID).getServerDisplayName();
+                        }
+                    }
+                    catch(InstanceRemovedException ier) {
+                        // ignore
+                    }
+                    StringBuffer sb = new StringBuffer(50);
+                    for (int i = 0; i < usedFrameworkNames.size(); i++) {
+                        if (sb.length() > 0) {
+                            sb.append("|"); // NOI18N
+                        }
+                        sb.append(usedFrameworkNames.get(i));
+                    }
+                    for (int i = 0; i < addedFrameworkNames.size(); i++) {
+                        if (sb.length() > 0) {
+                            sb.append("|"); // NOI18N
+                        }
+                        sb.append(addedFrameworkNames.get(i));
+                    }
+                    Utils.logUsage(WebProjectProperties.class,"USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
+                }
             }
             
             //prevent deadlock reported in the issue #54643
@@ -884,6 +916,15 @@ public class WebProjectProperties {
                         Deployment.getDefault().getServerID(newServInstID),
                         newServInstID });
         }
+        if (newServInstID != null) {
+            logServInstID = newServInstID;
+        }
+        else if (oldServInstID != null) {
+            logServInstID = oldServInstID;
+        }
+        else {
+            logServInstID = null;
+        }
     }
 
     private static void removeServerClasspathProperties(EditableProperties props) {
@@ -956,6 +997,10 @@ public class WebProjectProperties {
     
     public void setNewFrameworksNames(List<String> names) {
         addedFrameworkNames = names;
+    }
+    
+    public void setUsedFrameworkNames(List<String> names) {
+        usedFrameworkNames = names;
     }
     
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {

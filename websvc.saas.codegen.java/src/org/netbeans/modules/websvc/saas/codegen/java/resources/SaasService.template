@@ -1,14 +1,22 @@
-package Templates.Classes;
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt"> 
 
+<#if package?? && package != "">
+package ${package};
+
+</#if>
 /**
- * __NAME__ Service
+ * ${name} Service
  *
- * @author __USER__
+ * @author ${user}
  */
 
-public class __NAME__ {
+public class ${name} {
 
-    /** Creates a new instance of __NAME__ */
-    public __NAME__() {
+    /** Creates a new instance of ${name} */
+    public ${name}() {
     }
 }

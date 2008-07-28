@@ -51,6 +51,8 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.modelimpl.trace.TraceXRef;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.SharedClassObject;
@@ -67,7 +69,7 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     private static boolean running = false;
     private final boolean allReferences;
     private final boolean analyzeStatistics;
-    
+    private Boolean reportUnresolved = Boolean.TRUE;
 
     public static Action getSmartCompletionAnalyzerAction() {
         return SharedClassObject.findObject(SmartCompletionAnalyzerAction.class, true);
@@ -101,31 +103,50 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
     static final class AllUsagesAction extends TestProjectReferencesAction {
 
         AllUsagesAction() {
-            super(true, false);
+            super(true, false, null);
         }
     }
-    
+
     protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics) {
+        this(allReferences, analyzeStatistics, Boolean.TRUE);
+    }
+    
+    protected TestProjectReferencesAction(boolean allReferences, boolean analyzeStatistics, Boolean reportUnresolved) {
         this.allReferences = allReferences;
         this.analyzeStatistics = analyzeStatistics;
+        this.reportUnresolved = reportUnresolved;
     }
 
     public String getName() {
         String nameKey;
         if (analyzeStatistics) {
-            nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction";
+            nameKey = "CTL_TestProjectSmartCCDirectUsageReferencesAction"; // NOI18N
         } else {
-            nameKey = (allReferences ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectDirectUsageReferencesAction");
+            nameKey = (allReferences ? "CTL_TestProjectReferencesAction" : "CTL_TestProjectDirectUsageReferencesAction"); // NOI18N
         }
         return NbBundle.getMessage(getClass(), nameKey); // NOI18N
     }
 
     protected void performAction(Collection<NativeProject> projects) {
+        Boolean oldReportUnresolved = reportUnresolved;
+        if (reportUnresolved == null) {
+            Object option = DialogDisplayer.getDefault().notify(new NotifyDescriptor.Confirmation(
+                    "Report unresolved references?", //NOI18N
+                    "Test References")); //NOI18N
+            if (option == NotifyDescriptor.YES_OPTION) {
+                reportUnresolved = Boolean.TRUE;
+            } else if (option == NotifyDescriptor.NO_OPTION) {
+                reportUnresolved = Boolean.FALSE;
+            } else { // if (option == NotifyDescriptor.CANCEL_OPTION) {
+                return;
+            }
+        }
         if (projects != null) {
             for (NativeProject p : projects) {
                 testProject(p);
             }
         }
+        reportUnresolved = oldReportUnresolved;
     }
 
     
@@ -147,7 +168,8 @@ public class TestProjectReferencesAction extends TestProjectActionBase {
         time[0] = System.currentTimeMillis();
         Set<CsmReferenceKind> interestedElems = this.allReferences ? CsmReferenceKind.ANY_REFERENCE_IN_ACTIVE_CODE : EnumSet.<CsmReferenceKind>of(CsmReferenceKind.DIRECT_USAGE);
             
-        TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics), out, err, new CsmProgressAdapter() {
+        TraceXRef.traceProjectRefsStatistics(p, new TraceXRef.StatisticsParameters(interestedElems, analyzeStatistics,
+                (reportUnresolved == null) ? true : reportUnresolved.booleanValue()), out, err, new CsmProgressAdapter() {
             private int handled = 0;
             @Override
             public void projectFilesCounted(CsmProject project, int filesCount) {

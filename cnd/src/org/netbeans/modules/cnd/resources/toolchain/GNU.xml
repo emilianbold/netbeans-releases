@@ -41,9 +41,9 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 
-<toolchaindefinition>
+<toolchaindefinition xmlns="http://www.netbeans.org/ns/cnd-toolchain-definition/1">
     <toolchain name="GNU" display="GNU Compiler Collection" family="GNU"/>
-    <platforms stringvalue="lunix,unix,none"/>
+    <platforms stringvalue="linux,unix,none"/>
     <drive_letter_prefix stringvalue="/"/>
     <c>
         <compiler name="gcc"/>

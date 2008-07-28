@@ -41,7 +41,12 @@
 package org.netbeans.modules.uml.drawingarea.view;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FontMetrics;
+import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.widgets.MultilineLabelWidget;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
@@ -133,5 +138,108 @@ public class UMLMultilineLabelWidget extends MultilineLabelWidget
     public void setCustomizableResourceTypes(ResourceType[] resTypes)
     {
         customizableResTypes = resTypes;
+    }
+
+    @Override
+    protected Rectangle calculateClientArea()
+    {
+        if (getLabel() == null)
+        {
+            return super.calculateClientArea();
+        }
+
+        Rectangle rectangle;
+//        if (isUseGlyphVector() == true)
+//        {
+//            assureGlyphVector();
+//            rectangle = GeomUtil.roundRectangle(cacheGlyphVector.getVisualBounds());
+//            rectangle.grow(1, 1); // WORKAROUND - even text antialiasing is included into the boundary
+//        }
+//        else
+        {
+            Graphics2D gr = getGraphics();
+            FontMetrics fontMetrics = gr.getFontMetrics(getFont());
+            Dimension parentSize = getParentPrefSize();
+
+            Rectangle2D union = new Rectangle2D.Double();
+            double x = 0;
+            double y = 0;
+            double width = 0;
+            double height = 0;
+
+            String[] lines = getLabel().split("\n");
+            for(int index = 0; index < lines.length; index++)
+            {
+                String line = lines[index];
+                Rectangle2D stringBounds = fontMetrics.getStringBounds(line, gr);
+
+                if(index == 0)
+                {
+                    x = stringBounds.getX();
+                    y = stringBounds.getY();
+                    width = stringBounds.getWidth();
+                    if (parentSize != null && (parentSize.width < width))
+                    {
+                        width = parentSize.width;
+                    }
+                }
+                else
+                {
+                    if(stringBounds.getX() < x)
+                    {
+                        x = stringBounds.getX();
+                    }
+
+                    if(stringBounds.getY() < y)
+                    {
+                        y = stringBounds.getY();
+                    }
+
+                    if(stringBounds.getWidth() > width)
+                    {
+                        width = stringBounds.getWidth();
+                    }
+                    if (parentSize != null && (parentSize.width < width))
+                    {
+                        width = parentSize.width;
+                    }
+                }
+
+                height += stringBounds.getHeight();
+                if (parentSize != null && (parentSize.height < height))
+                {
+                    height = parentSize.height;
+                }
+
+            }
+            rectangle = roundRectangle(new Rectangle2D.Double(x, y, width, height));
+            
+        }
+
+        switch (getOrientation())
+        {
+            case NORMAL:
+                return rectangle;
+            case ROTATE_90:
+                return new Rectangle(rectangle.y, -rectangle.x - rectangle.width, rectangle.height, rectangle.width);
+            default:
+                throw new IllegalStateException();
+        }
+    }
+
+    private Dimension getParentPrefSize()
+    {
+       UMLNodeWidget widget = getParent();
+        if (widget != null && widget.getPreferredSize() != null)
+        {
+            return widget.getPreferredSize();
+        }
+        return null;
+    }
+
+    private UMLNodeWidget getParent()
+    {
+         UMLNodeWidget widget = PersistenceUtil.getParentUMLNodeWidget(this);
+         return widget;
     }
 }

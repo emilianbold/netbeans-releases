@@ -279,9 +279,11 @@ public class OptionsPanel extends JPanel {
             CategoryModel.Category category = CategoryModel.getInstance().getCategory(names[i]);
             CategoryButton button = addButton (category);            
             Dimension d = button.getPreferredSize();
-            maxSize.setSize(Math.max(maxSize.getWidth(), d.getWidth()), 
-                    Math.max(maxSize.getHeight(), d.getHeight()));
-            
+            maxSize.width = Math.max(maxSize.width, d.width);
+            // #141121 - ignore big height which can appear for uknown reason
+            if(d.height < d.width*10) {
+                maxSize.height = Math.max(maxSize.height, d.height);
+            }
         }        
         it = buttons.values().iterator ();
         while (it.hasNext ()) {

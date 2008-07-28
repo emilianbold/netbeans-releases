@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -34,7 +34,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2007 Sun Microsystems, Inc.
+ * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.websvc.core.jaxws.projects;
 
@@ -125,7 +125,7 @@ public class JavaEEWSSupportLookupProvider implements LookupProvider {
         };
 
         ProjectWebServiceNotifier servicesNotifier = new ProjectWebServiceNotifier(prj);
-        return Lookups.fixed(new Object[]{openhook, servicesNotifier, new JaxWsArtifactsClassPathProvider(prj), new JavaEEJAXWSVersionProvider(prj)});
+        return Lookups.fixed(openhook, servicesNotifier, new JaxWsArtifactsClassPathProvider(prj), new JavaEEJAXWSVersionProvider(prj), new JaxWsSourceForBinaryQueryImpl());
     }
 
     private class WebservicesChangeListener implements PropertyChangeListener {

@@ -80,7 +80,7 @@ import org.openide.util.RequestProcessor;
 final public class NativeProjectProvider implements NativeProject, PropertyChangeListener {
     private Project project;
     private ConfigurationDescriptorProvider projectDescriptorProvider;
-    private Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
+    private final Set<NativeProjectItemsListener> listeners = new HashSet<NativeProjectItemsListener>();
     
     
     public NativeProjectProvider(Project project, ConfigurationDescriptorProvider projectDescriptorProvider) {
@@ -347,6 +347,8 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         
         if (!newConf.isDefault())
             return;
+
+        ConfigurationDescriptorProvider.recordMetrics(ConfigurationDescriptorProvider.USG_PROJECT_CONFIG_CND, getMakeConfigurationDescriptor());
         
         if (oldConf == null) {
             // What else can we do?
@@ -575,6 +577,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return vec;
+            }
             BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemIncludeDirectories());
@@ -621,6 +626,9 @@ final public class NativeProjectProvider implements NativeProject, PropertyChang
         MakeConfiguration makeConfiguration = getMakeConfiguration();
         if (makeConfiguration != null) {
             CompilerSet compilerSet = makeConfiguration.getCompilerSet().getCompilerSet();
+            if (compilerSet == null) {
+                return vec;
+            }
             BasicCompiler compiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
             if (compiler != null) {
                 vec.addAll(compiler.getSystemPreprocessorSymbols());

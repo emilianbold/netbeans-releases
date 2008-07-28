@@ -40,7 +40,10 @@
 package org.netbeans.modules.uml.drawingarea.persistence;
 
 import java.awt.Dimension;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.visual.widget.SeparatorWidget;
 import org.netbeans.api.visual.widget.SeparatorWidget.Orientation;
 import org.netbeans.api.visual.widget.Widget;
@@ -51,6 +54,8 @@ import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
+import org.netbeans.modules.uml.drawingarea.widgets.ContainerWithCompartments;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -72,62 +77,88 @@ public class LoadSubPartitionsProvider implements ActionProvider{
     
     public void perfomeAction() {
         ETList<IActivityPartition> subpartitions=ap.getSubPartitions();
-        DesignerScene scene=(DesignerScene) partition.getScene();
-        offsets.add(0, "0");
-        int totalInitialWidth=0;
-        ArrayList<NodeInfo> nis=new ArrayList<NodeInfo>();
-        for(int i=0;i<subpartitions.size();i++)
+        if(subpartitions!=null && subpartitions.size()>1)
         {
-            Widget subW=null;
-            IActivityPartition subEl=subpartitions.get(i);
-            for(IPresentationElement subPE:subEl.getPresentationElements())
+            DesignerScene scene=(DesignerScene) partition.getScene();
+            offsets.add(0, "0");
+            int totalInitialWidth=0;
+            ArrayList<NodeInfo> nis=new ArrayList<NodeInfo>();
+            for(int i=0;i<subpartitions.size();i++)
             {
-                Widget tmp=scene.findWidget(subPE);
-                for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
+                Widget subW=null;
+                IActivityPartition subEl=subpartitions.get(i);
+                for(IPresentationElement subPE:subEl.getPresentationElements())
                 {
-                    if(par==partition)
+                    Widget tmp=scene.findWidget(subPE);
+                    for(Widget par=tmp.getParentWidget();par!=null;par=par.getParentWidget())
                     {
-                        subW=tmp;
-                        break;
+                        if(par==partition)
+                        {
+                            subW=tmp;
+                            break;
+                        }
                     }
+                    if(subW!=null)break;
                 }
-                if(subW!=null)break;
+                if(subW!=null)
+                {
+                    Dimension size=subW.getBounds().getSize();
+                    if(orientation==orientation.HORIZONTAL)
+                    {
+                        totalInitialWidth+=size.height;
+                        int bottom=Integer.parseInt(offsets.get(i));
+                        int up=totalInitialWidth;
+                        if((i+1)<offsets.size())
+                        {
+                            up=Integer.parseInt(offsets.get(i+1));
+                        }
+                        size.height=up-bottom;
+                    }
+                    else///vertical
+                    {
+                        totalInitialWidth+=size.width;
+                        int bottom=Integer.parseInt(offsets.get(i));
+                        int up=totalInitialWidth;
+                        if((i+1)<offsets.size())
+                        {
+                            up=Integer.parseInt(offsets.get(i+1));
+                        }
+                        size.width=up-bottom;
+                    }
+                    NodeInfo ni=new NodeInfo();
+                    ni.setModelElement(subEl);
+                    ni.setSize(size);
+                    nis.add(ni);
+                }
             }
-            if(subW!=null)
+            for(int i=0;i<nis.size();i++)
             {
-                Dimension size=subW.getBounds().getSize();
-                if(orientation==orientation.HORIZONTAL)
-                {
-                    totalInitialWidth+=size.height;
-                    int bottom=Integer.parseInt(offsets.get(i));
-                    int up=totalInitialWidth;
-                    if((i+1)<offsets.size())
-                    {
-                        up=Integer.parseInt(offsets.get(i+1));
-                    }
-                    size.height=up-bottom;
-                }
-                else///vertical
-                {
-                    totalInitialWidth+=size.width;
-                    int bottom=Integer.parseInt(offsets.get(i));
-                    int up=totalInitialWidth;
-                    if((i+1)<offsets.size())
-                    {
-                        up=Integer.parseInt(offsets.get(i+1));
-                    }
-                    size.width=up-bottom;
-                }
-                NodeInfo ni=new NodeInfo();
-                ni.setModelElement(subEl);
-                ni.setSize(size);
-                nis.add(ni);
+                partition.load(nis.get(i));
             }
         }
-        for(int i=0;i<nis.size();i++)
+        new Thread()
         {
-            partition.load(nis.get(i));
-        }
+            @Override
+            public void run()
+            {
+                try {
+                    SwingUtilities.invokeAndWait(new Runnable() {
+
+                        public void run() {
+                            ContainerWithCompartments cont = (ContainerWithCompartments) partition;
+                            cont.addChildrenInBounds();
+                            //
+                            DesignerScene scene=(DesignerScene) partition.getScene();
+                            scene.getDiagram().setDirty(true);
+                         }
+                    });
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InvocationTargetException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }.start();
     }
 
 }

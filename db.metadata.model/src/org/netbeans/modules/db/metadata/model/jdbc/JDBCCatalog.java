@@ -47,6 +47,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.db.metadata.model.MetadataAccessor;
 import org.netbeans.modules.db.metadata.model.MetadataUtilities;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.Schema;
@@ -117,10 +118,10 @@ public class JDBCCatalog implements CatalogImplementation {
             try {
                 while (rs.next()) {
                     String schemaName = rs.getString("TABLE_SCHEM"); // NOI18N
-                    // #140376: Oracle JDBC driver doesn't return a TABLE_CATALOG column
-                    // in DatabaseMetaData.getSchemas().
+                    // Workaround for pre-JDBC 3.0 drivers, where DatabaseMetaData.getSchemas()
+                    // only returns a TABLE_SCHEM column.
                     String catalogName = columnCount > 1 ? rs.getString("TABLE_CATALOG") : name; // NOI18N
-                    LOGGER.log(Level.FINE, "Read schema {0} in catalog {1}", new Object[] { schemaName, catalogName });
+                    LOGGER.log(Level.FINE, "Read schema ''{0}'' in catalog ''{1}''", new Object[] { schemaName, catalogName });
                     if (MetadataUtilities.equals(catalogName, name)) {
                         if (defaultSchemaName != null && MetadataUtilities.equals(schemaName, defaultSchemaName)) {
                             defaultSchema = MetadataFactory.createSchema(createSchema(defaultSchemaName, true, false));
@@ -154,6 +155,12 @@ public class JDBCCatalog implements CatalogImplementation {
         LOGGER.log(Level.FINE, "Initializing schemas in {0}", this);
         createSchemas();
         return schemas;
+    }
+
+    public final void refreshTable(String tableName) {
+        if (defaultSchema != null) {
+            ((JDBCSchema) MetadataAccessor.getDefault().getSchemaImpl(defaultSchema)).refreshTable(tableName);
+        }
     }
 
     public final JDBCMetadata getMetadata() {

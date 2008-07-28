@@ -61,6 +61,7 @@ import org.jdesktop.layout.GroupLayout;
 import org.jdesktop.layout.LayoutStyle;
 import org.netbeans.modules.php.project.classpath.GlobalIncludePathSupport;
 import org.netbeans.modules.php.project.ui.IncludePathUiSupport;
+import org.netbeans.modules.php.project.ui.LastUsedFolders;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -394,8 +395,10 @@ public class PhpOptionsPanel extends JPanel {
         JFileChooser chooser = new JFileChooser();
         chooser.setDialogTitle(NbBundle.getMessage(PhpOptionsPanel.class, "LBL_SelectPhpInterpreter"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setCurrentDirectory(LastUsedFolders.getOptionsInterpreter());
         if (JFileChooser.APPROVE_OPTION == chooser.showOpenDialog(this)) {
             File phpInterpreter = FileUtil.normalizeFile(chooser.getSelectedFile());
+            LastUsedFolders.setOptionsInterpreter(phpInterpreter);
             phpInterpreterTextField.setText(phpInterpreter.getAbsolutePath());
         }
     }//GEN-LAST:event_browseButtonActionPerformed

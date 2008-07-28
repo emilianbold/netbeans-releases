@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.swing.Action;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -55,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmModelAccessor;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
 import org.netbeans.modules.cnd.api.model.CsmProject;
+import org.netbeans.modules.cnd.api.model.CsmUID;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorInfo;
 import org.netbeans.modules.cnd.api.model.syntaxerr.CsmErrorProvider;
 import org.netbeans.modules.cnd.api.project.NativeProject;
@@ -98,7 +100,7 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
     }
 
     private void testProject(NativeProject project) {
-        String taskName = "Testing Error Highlighting - " + project.getProjectDisplayName();
+        String taskName = "Testing Error Highlighting - " + project.getProjectDisplayName(); // NOI18N
         InputOutput io = IOProvider.getDefault().getIO(taskName, false); // NOI18N
         io.select();
         final OutputWriter out = io.getOut();
@@ -118,8 +120,8 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
         CsmProject csmProject = CsmModelAccessor.getModel().getProject(project);
         BaseStatistics statistics[] = new BaseStatistics[] {
-            new FileStatistics(csmProject),
-            new MessageStatistics()
+            new MessageStatistics(),
+            new FileStatistics(csmProject)
         };
 
         if( ! csmProject.isStable(null) ) {
@@ -155,12 +157,18 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
             final OutputWriter out, final OutputWriter err,
             AtomicBoolean cancelled, final BaseStatistics statistics[]) {
 
+        for (int i = 0; i < statistics.length; i++) {
+            statistics[i].startFile(file);
+        }
+
         RequestImpl request = new RequestImpl(file, cancelled);
 
         final LineConverter lineConv = new LineConverter(file);
 
         long time = System.currentTimeMillis();
-        out.printf("\nChecking file %s    %s\n", file.getName(), file.getAbsolutePath());
+        out.printf("\nChecking file %s    %s\n", file.getName(), file.getAbsolutePath()); // NOI18N
+
+        final AtomicInteger cnt = new AtomicInteger(0);
 
         CsmErrorProvider.Response response = new CsmErrorProvider.Response() {
             public void addError(CsmErrorInfo errorInfo) {
@@ -169,54 +177,23 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
                     for (int i = 0; i < statistics.length; i++) {
                         statistics[i].consume(file, errorInfo);
                     }
+                    cnt.incrementAndGet();
                 }
             }
             public void done() {}
         };
 
         CsmErrorProvider.getDefault().getErrors(request, response);
-        out.printf("checking file %s took %d ms\n", file.getName(), System.currentTimeMillis() - time);
+        out.printf("Error count %d for file %s. The check took %d ms\n", cnt.get(), file.getName(), System.currentTimeMillis() - time); // NOI18N
     }
 
     private static OutputListener getOutputListener(final CsmFile file, final CsmErrorInfo errorInfo) {
-
-        // it isn't right thing to hold too many CsmFile instances
-        final CsmProject project = file.getProject();
-        final CharSequence absPath = file.getAbsolutePath();
-
-        final CsmOffsetable dummyCsmObject = new CsmOffsetable() {
-
-            public CsmFile getContainingFile() {
-                return project.findFile(absPath);
-            }
-
-            public int getEndOffset() {
-                return errorInfo.getEndOffset();
-            }
-
-            public Position getEndPosition() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public int getStartOffset() {
-                return errorInfo.getEndOffset();
-            }
-
-            public Position getStartPosition() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-            public CharSequence getText() {
-                throw new UnsupportedOperationException("Not supported yet.");
-            }
-
-        };
-
+        final CsmOffsetable dummyCsmObject = new OffsetableImpl(file, errorInfo);
         return new OutputAdapter() {
-                @Override
-                public void outputLineAction(OutputEvent ev) {
-                    CsmUtilities.openSource(dummyCsmObject);
-                }
+            @Override
+            public void outputLineAction(OutputEvent ev) {
+                CsmUtilities.openSource(dummyCsmObject);
+            }
         };
     }
 
@@ -238,10 +215,59 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
     }
 
+    private static int getLineCount(CsmFile file) {
+        CharSequence text = file.getText();
+        String lfString = System.getProperty("line.separator");
+        char lfChar = lfString.length() > 1 ? lfString.charAt(1) : lfString.charAt(0);
+        int lines = 1;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == lfChar) {
+                lines++;
+            }
+        }
+        return lines;
+    }
+
     private static class OutputAdapter implements OutputListener {
         public void outputLineAction(OutputEvent ev) {}
         public void outputLineCleared(OutputEvent ev) {}
         public void outputLineSelected(OutputEvent ev) {}
+    }
+
+    private static class OffsetableImpl implements CsmOffsetable {
+
+        private CsmUID<CsmFile> fileUID;
+        private CsmErrorInfo errorInfo;
+
+        public OffsetableImpl(CsmFile file, CsmErrorInfo errorInfo) {
+            this.fileUID = file.getUID();
+            this.errorInfo = errorInfo;
+        }
+
+        public CsmFile getContainingFile() {
+            return fileUID.getObject();
+        }
+
+        public int getEndOffset() {
+            return errorInfo.getEndOffset();
+        }
+
+        public Position getEndPosition() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+
+        public int getStartOffset() {
+            return errorInfo.getEndOffset();
+        }
+
+        public Position getStartPosition() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+
+        public CharSequence getText() {
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+
     }
 
     private static class RequestImpl implements CsmErrorProvider.Request {
@@ -304,93 +330,112 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
 
     private static abstract class BaseStatistics {
 
-        private Map<CharSequence, Integer> data = new HashMap<CharSequence, Integer>();
-        private Map<CharSequence, OutputListener> listeners = new HashMap<CharSequence, OutputListener>();
+        protected abstract class Element {
 
-        protected abstract String getTitle();
-        protected abstract OutputListener getOutputListener(CsmFile file, CsmErrorInfo info, CharSequence id);
-        protected abstract CharSequence getId(CsmFile file, CsmErrorInfo info);
+            protected int cnt;
+            private CsmUID<CsmFile> fileUID;
 
-        public void consume(CsmFile file, CsmErrorInfo info) {
-            CharSequence id = getId(file, info);
-            Integer value = data.get(id);
-            if (value == null) {
-                OutputListener listener = getOutputListener(file, info, id);
-                listeners.put(id, listener);
-            }
-            data.put(id, (value == null ? 0 : value.intValue()) + 1);
-        }
-
-        public void print(OutputWriter out) {
-
-            out.printf("\n%s\n", getTitle());
-
-            List<Map.Entry<CharSequence, Integer>> entries = new ArrayList<Map.Entry<CharSequence, Integer>>(data.entrySet());
-
-            Collections.sort(entries, new Comparator<Map.Entry<CharSequence, Integer>>() {
-                public int compare(Map.Entry<CharSequence, Integer> o1, Map.Entry<CharSequence, Integer> o2) {
-                    return o2.getValue().intValue() - o1.getValue().intValue();
-                }
-            });
-
-            int total = 0;
-            for (Map.Entry<CharSequence, Integer> entry : entries) {
-                total += entry.getValue().intValue();
+            protected Element(CsmFile file) {
+                fileUID = file.getUID();
             }
 
-            for (Map.Entry<CharSequence, Integer> entry : entries) {
-                if ( entry.getValue().intValue() <= 0) {
-                    break;
-                }
-                int value = entry.getValue();
-                int percent = entry.getValue() * 100 / total;
-                String text = String.format("%8d  %2d%%  %s", value, percent, entry.getKey());
+            protected abstract OutputListener getOutputListener();
+
+            protected CsmFile getFile() {
+                return fileUID.getObject();
+            }
+
+            public void consume() {
+                cnt++;
+                BaseStatistics.this.total++;
+            }
+
+            public int getCount() {
+                return cnt;
+            }
+
+            public void print(OutputWriter out, int total, CharSequence key) {
                 try {
-                    out.println(text, listeners.get(entry.getKey()));
+                    out.println(formatMessage(key), getOutputListener());
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
+
+            protected String formatMessage(CharSequence key) {
+                int percent = cnt * 100 / total;
+                String text = String.format("%8d  %2d%%  %s", cnt, percent, key); // NOI18N
+                return text;
+            }
+        }
+
+        protected Map<CharSequence, Element> data = new HashMap<CharSequence, Element>();
+        protected int total = 0;
+
+        protected abstract String getTitle();
+        protected abstract CharSequence getId(CsmFile file, CsmErrorInfo info);
+        protected abstract Element createEntry(CsmFile file, CsmErrorInfo info);
+
+        public void startFile(CsmFile file) {
+        }
+
+        public void consume(CsmFile file, CsmErrorInfo info) {
+            getCreateEntry(file, info).consume();
+        }
+
+        protected Element getCreateEntry(CsmFile file, CsmErrorInfo info) {
+            CharSequence id = getId(file, info);
+            Element entry = data.get(id);
+            if (entry == null) {
+                entry = createEntry(file, info);
+                data.put(id, entry);
+            }
+            return entry;
+        }
+
+        public void print(OutputWriter out) {
+
+            out.printf("\n%s\n", getTitle()); // NOI18N
+
+            List<Map.Entry<CharSequence, Element>> entries = new ArrayList<Map.Entry<CharSequence, Element>>(data.entrySet());
+
+            Collections.sort(entries, new Comparator<Map.Entry<CharSequence, Element>>() {
+                public int compare(Map.Entry<CharSequence, Element> o1, Map.Entry<CharSequence, Element> o2) {
+                    return o2.getValue().getCount() - o1.getValue().getCount();
+                }
+            });
+
+            for (Map.Entry<CharSequence, Element> entry : entries) {
+                Element element = entry.getValue();
+                if ( element.getCount() <= 0) {
+                    break;
+                }
+                element.print(out, total, entry.getKey());
+            }
+            printTotal(out);
+        }
+
+        protected void printTotal(OutputWriter out) {
             out.printf("%8d TOTAL\n", total); //NOI18N
         }
     }
 
-    private static class FileStatistics extends BaseStatistics {
-
-        private CsmProject project;
-
-        public FileStatistics(CsmProject project) {
-            this.project = project;
-        }
-
-        @Override
-        protected String getTitle() {
-            return "Statistics by file"; //NOI18N
-        }
-
-        @Override
-        protected CharSequence getId(CsmFile file, CsmErrorInfo info) {
-            return file.getAbsolutePath();
-        }
-
-        @Override
-        protected OutputListener getOutputListener(CsmFile file, CsmErrorInfo info, final CharSequence id) {
-            if (file != null) {
-                return new OutputAdapter() {
-                    @Override
-                    public void outputLineAction(OutputEvent ev) {
-                        CsmFile file = project.findFile(id);
-                        if (file != null) {
-                            CsmUtilities.openSource(file, 0, 0);
-                        }
-                    }
-                };
-            }
-            return null;
-        }
-    }
-
     private static class MessageStatistics extends BaseStatistics {
+
+        private class MessageElement extends Element {
+
+            private CsmErrorInfo info;
+
+            public MessageElement(CsmFile file, CsmErrorInfo info) {
+                super(file);
+                this.info = info;
+            }
+
+            @Override
+            public OutputListener getOutputListener() {
+                return TestErrorHighlightingAction.getOutputListener(getFile(), info);
+            }
+        }
 
         @Override
         protected String getTitle() {
@@ -403,9 +448,80 @@ public class TestErrorHighlightingAction extends TestProjectActionBase {
         }
 
         @Override
-        protected OutputListener getOutputListener(CsmFile file, CsmErrorInfo info, CharSequence id) {
-            return TestErrorHighlightingAction.getOutputListener(file, info);
+        protected Element createEntry(CsmFile file, CsmErrorInfo info) {
+            return new MessageElement(file, info);
         }
+    }
+
+    private static class FileStatistics extends BaseStatistics {
+
+        private class FileElement extends Element {
+
+            private int lineCount;
+
+            public FileElement(CsmFile file) {
+                super(file);
+                lineCount = getLineCount(file);
+                totalLineCount += lineCount;
+            }
+
+            @Override
+            protected OutputListener getOutputListener() {
+                return new OutputAdapter() {
+                    @Override
+                    public void outputLineAction(OutputEvent ev) {
+                        CsmFile file = getFile();
+                        if (file != null) {
+                            CsmUtilities.openSource(file, 0, 0);
+                        }
+                    }
+                };
+            }
+
+            @Override
+            protected String formatMessage(CharSequence key) {
+                int percent = cnt * 100 / total;
+                float ratio = ((float) cnt) * 1000f / (float) lineCount;
+                String text = String.format("%8d  %2d%% %8d %8.2f  %s", cnt, percent, lineCount, ratio, key); // NOI18N
+                return text;
+            }
+        }
+
+        private CsmProject project;
+        private int totalLineCount = 0;
+
+        public FileStatistics(CsmProject project) {
+            this.project = project;
+        }
+
+        @Override
+        protected String getTitle() {
+            return "Statistics by file\n  Errors    %    Lines   Per 1K lines"; //NOI18N
+        }
+
+        @Override
+        protected CharSequence getId(CsmFile file, CsmErrorInfo info) {
+            return file.getAbsolutePath();
+        }
+
+        @Override
+        protected Element createEntry(CsmFile file, CsmErrorInfo info) {
+            return new FileElement(file);
+        }
+
+        @Override
+        public void startFile(CsmFile file) {
+            getCreateEntry(file, null);
+        }
+
+        @Override
+        protected void printTotal(OutputWriter out) {
+            float ratio = ((float) total) * 1000f / (float) totalLineCount;
+            out.printf("%8d      %8d %8.2f \n", total, totalLineCount, ratio); //NOI18N
+            out.printf("TOTAL for %s:\n%d errors    %d lines    %d files    %.2f errors per 1K lines \n\n", //NOI18N
+                    project.getName(), total, totalLineCount, data.size(), ratio); //NOI18N
+        }
+
     }
 
 }

@@ -85,9 +85,9 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
     protected JavaSource getJavaSource(Phase p) {
         return JavaSource.forFileObject(refactoring.getRefactoringSource().lookup(FileObject.class));
     }
-    
+
     @Override
-    public Problem fastCheckParameters(CompilationController info) {
+    public Problem fastCheckParameters() {
         if (!Utilities.isJavaIdentifier(refactoring.getNewName())) {
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidIdentifier")).format(
                 new Object[] {refactoring.getNewName()}
@@ -95,17 +95,19 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
             return createProblem(null, true, msg);
         }
         URL target = refactoring.getTarget().lookup(URL.class);
+        FileObject fo = target != null ? URLMapper.findFileObject(target) : null;
+        if (fo == null) {
+            return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotSet"));
+        }
+        if (!RetoucheUtils.isOnSourceClasspath(fo)) {
+            return createProblem(null, true, NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_TargetFolderNotJavaPackage"));
+        }
         String targetPackageName = RetoucheUtils.getPackageName(target);
         if (!RetoucheUtils.isValidPackageName(targetPackageName)) {
             String msg = new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_InvalidPackage")).format(
                 new Object[] {targetPackageName}
             );
             return createProblem(null, true, msg);
-        }
-        String name = targetPackageName.replace('.','/') + '/' + refactoring.getNewName() + ".java"; // NOI18N
-        FileObject fo = URLMapper.findFileObject(target);
-        if (fo==null) {
-            return null;
         }
         if (fo.getFileObject(refactoring.getNewName(), (refactoring.getRefactoringSource().lookup(FileObject.class)).getExt()) != null)
             return createProblem(null, true, new MessageFormat(NbBundle.getMessage(CopyClassRefactoringPlugin.class, "ERR_ClassToMoveClashes")).format(new Object[]{refactoring.getNewName()}));
@@ -160,13 +162,19 @@ public class CopyClassRefactoringPlugin extends JavaRefactoringPlugin {
                 String oldPackage = RetoucheUtils.getPackageName(source.getParent());
                 
                 FileObject newOne = refactoring.getContext().lookup(FileObject.class);
+                if (newOne == null) {
+                    // no copy exist
+                    return;
+                }
                 final Collection<ModificationResult> results = processFiles(
                         Collections.singleton(newOne),
                         new UpdateReferences(
                         !fo.equals(source.getParent()) && 
                         FileOwnerQuery.getOwner(fo).equals(FileOwnerQuery.getOwner(source))
                         , oldPackage, source.getName()));
-                results.iterator().next().commit();
+                for (ModificationResult result : results) {
+                    result.commit();
+                }
             } catch (Exception ioe) {
                 ErrorManager.getDefault().notify(ioe);
             }

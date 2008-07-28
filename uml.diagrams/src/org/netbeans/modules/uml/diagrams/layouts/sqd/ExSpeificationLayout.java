@@ -47,12 +47,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import org.netbeans.api.visual.layout.Layout;
 import org.netbeans.api.visual.layout.LayoutFactory;
-import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.ExecutionSpecificationThinWidget;
-import org.netbeans.modules.uml.diagrams.nodes.sqd.LifelineLineWidget;
 import org.netbeans.modules.uml.diagrams.nodes.sqd.MessagePinWidget;
-import sun.security.action.GetBooleanAction;
 
 /**
  * the only purpose of this layout is proper horizontal position of children specifications based on links(messages) direction

@@ -202,6 +202,15 @@ made subject to such option by the copyright holder.
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>2</release-version>
+                        <specification-version>1.16</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.xml.validation</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -339,27 +348,27 @@ made subject to such option by the copyright holder.
                     <name>unit</name>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.masterfs</code-name-base>
+                        <recursive/>
                     </test-dependency>
                     <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.text</code-name-base>
+                        <code-name-base>org.netbeans.modules.xml.xam</code-name-base>
                         <recursive/>
-                        <compile-dependency/>
-                        <test/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.xdm</code-name-base>
                         <recursive/>
-                        <compile-dependency/>
-                    </test-dependency>
-                    <test-dependency>
-                        <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
-                        <recursive/>
-                        <compile-dependency/>
                     </test-dependency>
                     <test-dependency>
                         <code-name-base>org.netbeans.modules.xml.retriever</code-name-base>
                         <recursive/>
-                        <compile-dependency/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.xml.schema.model</code-name-base>
+                        <recursive/>
+                    </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.j2seproject</code-name-base>
+                        <recursive/>
                     </test-dependency>
                 </test-type>
                 <test-type>

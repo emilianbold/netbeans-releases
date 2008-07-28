@@ -42,8 +42,7 @@ package org.netbeans.modules.print.action;
 
 import org.openide.util.HelpCtx;
 import org.openide.util.actions.CallableSystemAction;
-
-import org.netbeans.modules.print.util.Option;
+import org.netbeans.modules.print.util.Config;
 import static org.netbeans.modules.print.ui.UI.*;
 
 /**
@@ -54,7 +53,7 @@ public final class PageSetupAction extends CallableSystemAction {
 
   @Override
   public synchronized void performAction() {
-    Option.getDefault().showPageSetup();
+    Config.getDefault().showPageSetup();
   }
 
   @Override

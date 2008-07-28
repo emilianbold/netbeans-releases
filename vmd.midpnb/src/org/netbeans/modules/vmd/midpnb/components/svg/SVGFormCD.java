@@ -76,6 +76,7 @@ import org.netbeans.modules.vmd.midpnb.components.SVGImageAcceptTrensferableKind
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGButtonCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGCheckBoxCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGComboBoxCD;
+import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGFormFileChangePresneter;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGLabelCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGListCD;
 import org.netbeans.modules.vmd.midpnb.components.svg.form.SVGRadioButtonCD;
@@ -104,9 +105,6 @@ public class SVGFormCD extends ComponentDescriptor {
     public static final String PROP_RESET_ANIMATION_WHEN_STOPPED = "resetAnimationWhenStopped"; //NOI18N
 
     public static final String PROP_OLD_START_ANIM_IMMEDIATELY = "startAnimationImmideately"; //NOI18N
-
-
-    
 
     static {
         MidpTypes.registerIconResource(TYPEID, ICON_PATH);
@@ -183,17 +181,17 @@ public class SVGFormCD extends ComponentDescriptor {
                         return CodeReferencePresenter.generateAccessCode(getComponent()) + ".getSvgCanvas ()"; // NOI18N
                     }
                 },
-                MidpCodePresenterSupport.createAddImportPresenter("org.netbeans.microedition.svg.*"), //NOI18N
+                MidpCodePresenterSupport.createAddImportPresenter(),
                 createSetterPresenter(),
                 new SVGFormPresenterCodeClassInitHeaderFooterPresenter(),
                 // delete
                 DeleteDependencyPresenter.createNullableComponentReferencePresenter(PROP_SVG_IMAGE),
                 // screen
-                new SVGPlayerDisplayPresenter (),
+                new SVGPlayerDisplayPresenter (false),
                 //actions
                 ActionsPresenter.create(20, SystemAction.get(EditSVGFileAction.class)),
                 //other
-                new SVGFileListenerPresenter()
+                new SVGFormFileChangePresneter()
                 );
     }
     

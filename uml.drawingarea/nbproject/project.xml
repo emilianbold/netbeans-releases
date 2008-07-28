@@ -272,6 +272,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.uml.designpattern</friend>
                 <friend>org.netbeans.modules.uml.diagrams</friend>
                 <friend>org.netbeans.modules.uml.kit</friend>
+                <friend>org.netbeans.modules.uml.reporting</friend>
                 <package>org.netbeans.modules.uml.drawingarea</package>
                 <package>org.netbeans.modules.uml.drawingarea.actions</package>
                 <package>org.netbeans.modules.uml.drawingarea.border</package>

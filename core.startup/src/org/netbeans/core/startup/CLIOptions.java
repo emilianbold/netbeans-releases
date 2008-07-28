@@ -284,9 +284,9 @@ public class CLIOptions extends CLIHandler {
             // #11735, #21085: avoid relative user dirs, or ../ seqs
             File userDirF = FileUtil.normalizeFile(new File(userDir));
 
-            String homeDir = getHomeDir();
-            if (homeDir != null) {
-                File homeDirF = FileUtil.normalizeFile(new File(homeDir));
+            String _homeDir = getHomeDir();
+            if (_homeDir != null) {
+                File homeDirF = FileUtil.normalizeFile(new File(_homeDir));
                 if ((userDirF.getAbsolutePath() + File.separatorChar).startsWith(homeDirF.getParentFile().getAbsolutePath() + File.separatorChar)) {
                     System.err.println(NbBundle.getMessage(CLIOptions.class, "ERR_user_directory_is_inside_home"));
                     TopLogging.exit(1);
@@ -296,7 +296,7 @@ public class CLIOptions extends CLIHandler {
             userDir = userDirF.getPath();
             System.setProperty("netbeans.user", userDir); // NOI18N
             
-            File systemDirFile = new File(userDirF, NbRepository.SYSTEM_FOLDER);
+            File systemDirFile = new File(userDirF, NbRepository.CONFIG_FOLDER);
             makedir (systemDirFile);
             systemDir = systemDirFile.getAbsolutePath ();
             makedir(new File(userDirF, DIR_MODULES)); // NOI18N

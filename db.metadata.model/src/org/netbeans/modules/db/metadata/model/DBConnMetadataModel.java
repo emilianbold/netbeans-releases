@@ -53,6 +53,7 @@ import org.netbeans.modules.db.metadata.model.api.Metadata;
 import org.netbeans.modules.db.metadata.model.api.MetadataException;
 import org.netbeans.modules.db.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.db.metadata.model.jdbc.JDBCMetadata;
+import org.netbeans.modules.db.metadata.model.jdbc.mssql.MSSQLMetadata;
 import org.netbeans.modules.db.metadata.model.jdbc.oracle.OracleMetadata;
 import org.netbeans.modules.db.metadata.model.spi.MetadataFactory;
 import org.openide.util.Mutex;
@@ -99,6 +100,28 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
         }
     }
 
+    public void refresh() {
+        LOGGER.fine("Refreshing model");
+        lock.lock();
+        try {
+            metadataImpl = null;
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    public void refreshTable(final String tableName) {
+        LOGGER.log(Level.FINE, "Refreshing table ''{0}''", tableName);
+        lock.lock();
+        try {
+            if (metadataImpl != null) {
+                metadataImpl.refreshTable(tableName);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
     private void enterReadAccess(final DatabaseConnection dbconn) throws SQLException {
         Connection conn = dbconn.getJDBCConnection();
         if (conn == null) {
@@ -131,6 +154,12 @@ public class DBConnMetadataModel implements MetadataModelImplementation {
             DatabaseMetaData dmd = conn.getMetaData();
             if ("Oracle".equals(dmd.getDatabaseProductName())) { // NOI18N
                 return new OracleMetadata(conn, defaultSchemaName);
+            }
+            String driverName = dmd.getDriverName();
+            if (driverName != null) {
+                if (driverName.contains("Microsoft SQL Server") || driverName.contains("jTDS")) { // NOI18N
+                    return new MSSQLMetadata(conn, defaultSchemaName);
+                }
             }
         } catch (SQLException e) {
             LOGGER.log(Level.INFO, null, e);

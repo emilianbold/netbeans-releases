@@ -52,4 +52,8 @@ public interface ServerRecord {
     public String getName();
 
     public boolean isRemote();
+    
+    public boolean isOnline();
+    
+    public void validate();
 }

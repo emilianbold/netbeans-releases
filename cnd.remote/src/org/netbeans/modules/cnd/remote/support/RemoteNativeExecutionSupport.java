@@ -60,7 +60,8 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         
     public RemoteNativeExecutionSupport(String key, int port, File dirf, String exe, String args, String[] envp, PrintWriter out) {
         super(key, port);
-                
+        
+        log.fine("RNES<Init>: Running [" + exe + "] on " + key);   
         try {
             setChannelCommand(dirf, exe, args, envp);
             InputStream is = channel.getInputStream();
@@ -91,6 +92,10 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
         } catch (JSchException jse) {
         } catch (IOException ex) {
+        } catch (NullPointerException npe) { // DEBUG
+            // I mistyped password and after failed validation, pressed Run button and
+            // got NPE
+            System.err.println("Got NPE");
         } finally {
             disconnect();
         } 
@@ -126,7 +131,7 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
             //echannel.setEnv(var, val); // not in 0.1.24
             
             //as a workaround
-            cmdline = "export " + var + "=" + val + ";" + cmdline;
+            cmdline = "export " + var + "=" + val + ";" + cmdline; // NOI18N
             //cmdline = "export PATH=/usr/bin:/usr/sfw/bin/;" + cmdline;
         }
         

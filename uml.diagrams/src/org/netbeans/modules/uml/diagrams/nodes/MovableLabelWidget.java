@@ -42,7 +42,9 @@ import java.awt.Color;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.MoveProvider;
@@ -66,6 +68,7 @@ import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -82,6 +85,12 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
     private Integer x0;
     private Integer y0;
     private boolean diagramLoading = false;
+    private int diffX;
+    private int diffY;
+    //we need the following 3 vars for combined fragments
+    private boolean grandParentLocationExists = false;
+    private Point grandParentLoc;
+    private UMLNodeWidget grandParent;
 
     public MovableLabelWidget(Scene scene, Widget nodeWidget, IElement element, String widgetID, String displayName)
     {
@@ -132,6 +141,42 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         //this is called ONLY from diagram loading logic..
         updateLocation = true;
         diagramLoading = true;
+        HashMap map = getPersistenceProperties();
+        if (map != null)
+        {
+            if (map.containsKey(UMLNodeWidget.LOCATION))
+            {
+                Point pt = (Point) map.get(UMLNodeWidget.LOCATION);
+                this.setPreferredLocation(pt);
+            }
+            if (map.containsKey(UMLNodeWidget.GRANDPARENTLOCATION)) //we need this only in case of combined fragments
+            {
+                grandParentLoc = (Point) map.get(UMLNodeWidget.GRANDPARENTLOCATION);
+                if (grandParentLoc != null)
+                {
+                    grandParentLocationExists = true;
+                }                
+            }
+            updateDiff();
+        }          
+    }
+
+    private void updateDiff()
+    {
+        Point nodeLoc = nodeWidget.getPreferredLocation();
+        Point labLoc = this.getPreferredLocation();
+        if (nodeLoc != null && labLoc != null && !grandParentLocationExists)
+        {
+            diffX = nodeLoc.x - labLoc.x;
+            diffY = nodeLoc.y - labLoc.y;
+        }
+        if (nodeLoc != null && labLoc != null && grandParentLocationExists && grandParentLoc != null)
+        {
+            grandParent = PersistenceUtil.getParentUMLNodeWidget(nodeWidget);
+            Point cfLoc = grandParent.getPreferredLocation();
+            diffX = cfLoc.x - labLoc.x;
+            diffY = cfLoc.y - labLoc.y;
+        }
     }
     
     @Override
@@ -178,17 +223,25 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
             }
             else dy=y0;
 
-        }
-        if (getPreferredLocation() != null && diagramLoading)
+        }        
+        double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
+        double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
+        
+        if (getPreferredLocation() != null && diagramLoading && !grandParentLocationExists)
         {
-            point = getPreferredLocation();
+            point = new Point((int) (nodeWidget.getPreferredLocation().x - diffX),
+                    (int) (nodeWidget.getPreferredLocation().y - diffY));
         }
-       else
+        else if (getPreferredLocation() != null && diagramLoading && grandParentLocationExists && grandParent.getPreferredLocation() != null)
         {
-            double nodeCenterX = nodeBnd.x + insets.left + (nodeBnd.width - insets.left - insets.right) / 2;
-
-            double nodeCenterY = nodeBnd.y + insets.bottom + (nodeBnd.height - insets.top - insets.bottom) / 2;
-
+            //for now.. this is only for combinedfragments
+            Point loc = grandParent.getPreferredLocation();
+            int x = loc.x - diffX;
+            int y = loc.y - diffY;
+            point = new Point(x,y);
+        }
+        else
+        {
             point = new Point((int) (nodeCenterX + dx - labelBnd.width / 2),
                     (int) (nodeCenterY + dy - labelBnd.height / 2));
         }
@@ -275,7 +328,7 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         
         nodeWriter = PersistenceUtil.populateNodeWriter(nodeWriter, this);
         nodeWriter.setTypeInfo("MovableLabel");
-        nodeWriter.setHasPositionSize(true);        
+        nodeWriter.setHasPositionSize(true);
         PersistenceUtil.populateProperties(nodeWriter, this);
         nodeWriter.beginGraphNode();
         nodeWriter.endGraphNode();
@@ -307,6 +360,8 @@ public class MovableLabelWidget extends EditableCompartmentWidget implements Wid
         {
             hide();
             updateDistance();
+            updateDiff();
+            ((DesignerScene)nodeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
         }
 
         public Point getOriginalLocation(Widget widget)

@@ -44,11 +44,8 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.List;
-import java.util.ArrayList;
-import javax.swing.JPanel;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.VectorConfiguration;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -93,7 +90,7 @@ public class PackagingNodeProp extends PropertySupport {
 
     @Override
     public PropertyEditor getPropertyEditor() {
-	return new Editor((PackagingConfiguration)packagingConfiguration.clone());
+	return new Editor((PackagingConfiguration)packagingConfiguration);
     }
 
     @Override
@@ -119,7 +116,8 @@ public class PackagingNodeProp extends PropertySupport {
         
         @Override
         public String getAsText() {
-            return packagingConfiguration.getDisplayName();
+            return "Files...";
+            //return packagingConfiguration.getDisplayName();
 //	    boolean addSep = false;
 //	    StringBuilder ret = new StringBuilder();
 //	    for (int i = 0; i < value.size(); i++) {
@@ -133,8 +131,7 @@ public class PackagingNodeProp extends PropertySupport {
         
         @Override
         public java.awt.Component getCustomEditor() {
-            return new PackagingPanel(packagingConfiguration, this, env);
-//            return new LibrariesPanel(project, conf, baseDir, value.toArray(), this, env);
+            return new PackagingPanel(packagingConfiguration, this, env, conf);
         }
         
         @Override

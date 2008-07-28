@@ -39,6 +39,8 @@
 
 package org.netbeans.modules.cnd.api.remote;
 
+import java.util.logging.Logger;
+
 /**
  * Since the ServerList is updated from the Tools->Options panel, changes must be cached
  * until the OK button is pressed (T->O updates aren't immediately applied).
@@ -49,6 +51,7 @@ public class ServerUpdateCache {
 
     private String[] hklist;
     private int defaultIndex;
+    private Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
     
     public ServerUpdateCache() {
         hklist = null;
@@ -68,7 +71,8 @@ public class ServerUpdateCache {
     
     public int getDefaultIndex() {
         if (defaultIndex < 0) {
-            throw new IllegalStateException();
+            log.warning("ServerUpdateCache.getDefaultInded: Forcing negative index to 0");
+            defaultIndex = 0;
         }
         return defaultIndex;
     }

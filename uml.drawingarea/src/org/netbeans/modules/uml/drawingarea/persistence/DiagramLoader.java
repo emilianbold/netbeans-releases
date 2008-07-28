@@ -50,8 +50,6 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
-import javax.swing.BorderFactory;
-import javax.swing.border.BevelBorder;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
@@ -70,7 +68,6 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.support.umlutils.ElementLocator;
 import org.netbeans.modules.uml.core.support.umlutils.IElementLocator;
-import org.netbeans.modules.uml.drawingarea.SQDDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.UIDiagram;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.actions.ActionProvider;
@@ -78,7 +75,6 @@ import org.netbeans.modules.uml.drawingarea.actions.AfterValidationExecutor;
 import org.netbeans.modules.uml.drawingarea.actions.SQDMessageConnectProvider;
 import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
-import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.GraphNodeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.data.ConnectorInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
@@ -86,7 +82,6 @@ import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.persistence.readers.GraphNodeReaderFactory;
 import org.netbeans.modules.uml.drawingarea.support.ProxyPresentationElement;
 import org.netbeans.modules.uml.drawingarea.ui.addins.diagramcreator.SQDDiagramEngineExtension;
-import org.netbeans.modules.uml.drawingarea.ui.trackbar.JTrackBar;
 import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
@@ -382,7 +377,7 @@ class DiagramLoader
                 {
                     if (reader.isEndElement() && reader.getName().getLocalPart().equalsIgnoreCase("DiagramElement.property"))
                     {
-                        System.out.println(" hash table = " + tempProps.toString());
+//                        System.out.println(" hash table = " + tempProps.toString());
                         return tempProps;
                     }
                 }
@@ -500,7 +495,15 @@ class DiagramLoader
 
                 new AfterValidationExecutor(new ActionProvider() {
                     public void perfomeAction() {
-                        createSQDMessages();
+                        PersistenceUtil.setDiagramLoading(true);//main thread already consider loading is done, so reset flag here
+                        try
+                        {
+                            createSQDMessages();
+                        }
+                        finally
+                        {
+                            PersistenceUtil.setDiagramLoading(false);
+                        }
                    }
                 },scene);
                 scene.validate();
@@ -761,7 +764,7 @@ class DiagramLoader
                             NodeInfo.NodeLabel nLabel = new NodeInfo.NodeLabel();
                             nLabel.setLabel(typeInfo);
                             nLabel.setPosition(position);
-                            nLabel.setSize(size);               
+                            nLabel.setSize(size);    
                             nLabel.setPEID(peid);
                             if (parentNodeInfo != null)
                             {                                

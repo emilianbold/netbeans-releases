@@ -680,7 +680,7 @@ public class SchemaView_0001 extends SchemaView {
       new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Window|Editor");
       
       // Validate
-      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Build|Validate XML");
+      new JMenuBarOperator(MainWindowOperator.getDefault()).pushMenu("Run|Validate XML");
 
       // "Output - XML Check"
       OutputOperator out = new OutputOperator( );

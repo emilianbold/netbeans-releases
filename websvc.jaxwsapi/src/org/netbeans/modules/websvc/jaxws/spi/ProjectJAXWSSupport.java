@@ -60,6 +60,8 @@ import org.netbeans.modules.websvc.api.jaxws.project.WSUtils;
 import org.netbeans.modules.websvc.api.jaxws.project.config.JaxWsModel;
 import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.api.jaxws.project.config.ServiceAlreadyExistsExeption;
+import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOption;
+import org.netbeans.modules.websvc.api.jaxws.project.config.WsimportOptions;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperGenerator;
 import org.netbeans.modules.websvc.jaxws.api.WsdlWrapperHandler;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -80,6 +82,9 @@ import org.xml.sax.SAXException;
  * Created on February 7, 2006, 11:09 AM
  */
 public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
+    
+    private static String[] defaultWsimportOptions = {"extension", "verbose"};  //NOI18N
+    
     private Project project;
     private AntProjectHelper antProjectHelper;
     
@@ -250,6 +255,17 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     service.setLocalWsdlFile(localWsdlUrl);
                     FileObject catalog = getCatalogFileObject();
                     if (catalog!=null) service.setCatalogFile(CATALOG_FILE);
+                    
+                    WsimportOptions wsimportOptions = service.getWsImportOptions();
+                    if (wsimportOptions != null) {
+                        for (String option:defaultWsimportOptions) {
+                            WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
+                            wsimportOption.setWsimportOptionName(option);
+                            wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                            wsimportOptions.addWsimportOption(wsimportOption);
+                        }
+                    }
+                    
                     writeJaxWsModel(jaxWsModel);
                     serviceAdded=true;
                 }

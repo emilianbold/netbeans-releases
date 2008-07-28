@@ -40,6 +40,7 @@
  */
 package org.netbeans.modules.uml.drawingarea.persistence;
 
+import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,11 +49,13 @@ import java.util.Set;
 import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.widget.ResourceTable;
+import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.UMLXMLManip;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramNodeWriter;
+import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
 
 /**
  *
@@ -136,12 +139,18 @@ public class PersistenceUtil {
 
 //        nodeWriter.setSize(widget.getBounds().getSize());
         Rectangle bnd = widget.getBounds();//border need correction for selection border sizes
-        bnd.x += widget.getBorder().getInsets().left;//may not be necessary because only size is used
-        bnd.y += widget.getBorder().getInsets().top;
-        bnd.width -= (widget.getBorder()).getInsets().left + (widget.getBorder()).getInsets().right;
-        bnd.height -= (widget.getBorder()).getInsets().top + (widget.getBorder()).getInsets().bottom;
-        nodeWriter.setSize(bnd.getSize());
-
+        if (bnd != null)
+        {
+            bnd.x += widget.getBorder().getInsets().left;//may not be necessary because only size is used
+            bnd.y += widget.getBorder().getInsets().top;
+            bnd.width -= (widget.getBorder()).getInsets().left + (widget.getBorder()).getInsets().right;
+            bnd.height -= (widget.getBorder()).getInsets().top + (widget.getBorder()).getInsets().bottom;
+            nodeWriter.setSize(bnd.getSize());
+        }
+        else
+        {
+            nodeWriter.setSize(new Dimension());
+        }
         nodeWriter.setViewport(null);
         nodeWriter.setPEID(PersistenceUtil.getPEID(widget));
         nodeWriter.setMEID(PersistenceUtil.getMEID(widget));
@@ -223,6 +232,31 @@ public class PersistenceUtil {
     {
         PersistenceUtil.diagramLoading = diagramLoading;
     }
-    
+
+    // get the UMLNodeWidget in the parent hierarchy
+    public static UMLNodeWidget getParentUMLNodeWidget(Widget widget) {
+        Widget parent;
+        Widget child = widget;        
+        if ((child != null) && !(child instanceof Scene))
+        {
+            while (true)
+            {
+                parent = child.getParentWidget();
+                if (parent instanceof Scene)
+                {
+                    return null;
+                }
+                else if (parent instanceof UMLNodeWidget)
+                {
+                    return (UMLNodeWidget)parent;
+                }
+                else
+                {
+                    child = parent;
+                }
+            }
+        }
+        return null;
+    }
     
 }

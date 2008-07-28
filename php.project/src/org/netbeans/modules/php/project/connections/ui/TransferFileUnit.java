@@ -40,7 +40,6 @@
  */
 package org.netbeans.modules.php.project.connections.ui;
 
-import java.util.logging.Logger;
 import org.netbeans.modules.php.project.connections.TransferFile;
 
 /**
@@ -55,10 +54,6 @@ public class TransferFileUnit {
         return o1Path.compareTo(o2Path);
     }
 
-    private boolean isVisible;
-    private String filter;
-    private static Logger log = Logger.getLogger(TransferFileUnit.class.getName());
-    private String displayDate = null;
     private TransferFile transferFile;
     private boolean isMarked;
 

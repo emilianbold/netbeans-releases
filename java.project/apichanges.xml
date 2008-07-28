@@ -107,6 +107,23 @@ is the proper place.
 
     <changes>
         
+        <change id="javadoc-root-and-source-root-detection">
+            <api name="general"/>
+            <summary>Detection of Javadoc root and source root</summary>
+            <version major="1" minor="20"/>
+            <date day="22" month="7" year="2008"/>
+            <author login="dkonecny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Class <code>JavadocAndSourceRootDetection</code> added with couple of
+                    helper methods to detect Javadoc and/or sources root.
+                </p>
+            </description>
+            <class package="org.netbeans.spi.java.project.support" name="JavadocAndSourceRootDetection"/>
+            <issue number="124779"/>
+        </change>
+
         <change id="ProjectRunner">
             <api name="general"/>
             <summary>Added ProjectRunner</summary>

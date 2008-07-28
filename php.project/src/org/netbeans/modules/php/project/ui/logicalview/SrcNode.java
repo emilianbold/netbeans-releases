@@ -43,6 +43,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
+import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ui.actions.DebugSingleCommand;
 import org.netbeans.modules.php.project.ui.actions.DownloadCommand;
 import org.netbeans.modules.php.project.ui.actions.RunSingleCommand;
@@ -53,6 +54,7 @@ import org.openide.actions.FileSystemAction;
 import org.openide.actions.FindAction;
 import org.openide.actions.ToolsAction;
 import org.openide.actions.PasteAction;
+import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataFilter;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
@@ -69,6 +71,8 @@ import org.openide.util.actions.SystemAction;
 public class SrcNode extends FilterNode {
     static final Image PACKAGE_BADGE = ImageUtilities.loadImage(
             "org/netbeans/modules/php/project/ui/resources/packageBadge.gif"); // NOI18N
+    static final Image WEB_ROOT_BADGE = ImageUtilities.loadImage(
+            "org/netbeans/modules/php/project/ui/resources/webRootBadge.png"); // NOI18N
 
     /**
      * creates source root node based on specified DataFolder.
@@ -76,20 +80,20 @@ public class SrcNode extends FilterNode {
      * <br/>
      * TODO : if we support several source roots, remove this constructor
      */
-    SrcNode(DataFolder folder, DataFilter filter) {
-        this(folder, filter, NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_PhpFiles"));
+    SrcNode(PhpProject project, DataFolder folder, DataFilter filter) {
+        this(project, folder, filter, NbBundle.getMessage(PhpLogicalViewProvider.class, "LBL_PhpFiles"));
     }
 
     /**
      * creates source root node based on specified DataFolder.
      * Uses specified name.
      */
-    SrcNode(DataFolder folder, DataFilter filter, String name) {
-        this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(filter)), name);
+    SrcNode(PhpProject project, DataFolder folder, DataFilter filter, String name) {
+        this(project, new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(filter)), name);
     }
 
-    private SrcNode(FilterNode node, String name) {
-        super(node, new FolderChildren(node));
+    private SrcNode(PhpProject project, FilterNode node, String name) {
+        super(node, new FolderChildren(project, node));
         disableDelegation(DELEGATE_GET_DISPLAY_NAME | DELEGATE_SET_DISPLAY_NAME | DELEGATE_GET_SHORT_DESCRIPTION | DELEGATE_GET_ACTIONS);
         setDisplayName(name);
     }
@@ -151,9 +155,17 @@ public class SrcNode extends FilterNode {
      * Children for node that represents folder (SrcNode or PackageNode)
      */
     private static class FolderChildren extends FilterNode.Children {
+        // common actions for both PackageNode and ObjectNode (equals has to be the same)
+        static final Action[] COMMON_ACTIONS = new Action[] {
+            null,
+            ProjectSensitiveActions.projectCommandAction(DownloadCommand.ID, DownloadCommand.DISPLAY_NAME, null),
+            ProjectSensitiveActions.projectCommandAction(UploadCommand.ID, UploadCommand.DISPLAY_NAME, null),
+        };
+        private final PhpProject project;
 
-        FolderChildren(final Node originalNode) {
+        FolderChildren(PhpProject project, final Node originalNode) {
             super(originalNode);
+            this.project = project;
         }
 
         @Override
@@ -165,20 +177,54 @@ public class SrcNode extends FilterNode {
         protected Node copyNode(final Node originalNode) {
             DataObject dobj = originalNode.getLookup().lookup(DataObject.class);
             return (dobj instanceof DataFolder)
-                    ? new PackageNode(originalNode)
+                    ? new PackageNode(project, originalNode)
                     : new ObjectNode(originalNode);
         }
     }
 
     private static final class PackageNode extends FilterNode {
+        private final PhpProject project;
 
-        public PackageNode(final Node originalNode) {
-            super(originalNode, new FolderChildren(originalNode));
+        public PackageNode(PhpProject project, final Node originalNode) {
+            super(originalNode, new FolderChildren(project, originalNode));
+            this.project = project;
         }
 
         @Override
         public Action[] getActions(boolean context) {
-            return getOriginal().getActions(context);
+            List<Action> actions = new ArrayList<Action>();
+            actions.addAll(Arrays.asList(getOriginal().getActions(context)));
+            int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            for (int i = 0; i < FolderChildren.COMMON_ACTIONS.length; i++) {
+                if (idx >= 0 && idx + FolderChildren.COMMON_ACTIONS.length < actions.size()) {
+                    //put on the proper place after paste
+                    actions.add(idx + i + 1, FolderChildren.COMMON_ACTIONS[i]);
+                } else {
+                    //else put at the tail
+                    actions.add(FolderChildren.COMMON_ACTIONS[i]);
+                }
+            }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        @Override
+        public Image getIcon(int type) {
+            FileObject node = getOriginal().getLookup().lookup(FileObject.class);
+            if (project.getWebRootDirectory().equals(node)
+                    && !project.getSourcesDirectory().equals(node)) {
+                return ImageUtilities.mergeImages(super.getIcon(type), WEB_ROOT_BADGE, 7, 7);
+            }
+            return super.getIcon(type);
+        }
+
+        @Override
+        public Image getOpenedIcon(int type) {
+            FileObject node = getOriginal().getLookup().lookup(FileObject.class);
+            if (project.getWebRootDirectory().equals(node)
+                    && !project.getSourcesDirectory().equals(node)) {
+                return ImageUtilities.mergeImages(super.getOpenedIcon(type), WEB_ROOT_BADGE, 7, 7);
+            }
+            return super.getOpenedIcon(type);
         }
     }
 
@@ -192,23 +238,32 @@ public class SrcNode extends FilterNode {
         public Action[] getActions(boolean context) {
             List<Action> actions = new ArrayList<Action>();
             actions.addAll(Arrays.asList(getOriginal().getActions(context)));
-            Action[] toAdd = new Action[]{
-                null,
-                ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID,
-                RunSingleCommand.DISPLAY_NAME, null),
-                ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID,
-                DebugSingleCommand.DISPLAY_NAME, null)
-            };
             int idx = actions.indexOf(SystemAction.get(PasteAction.class));
+            Action[] toAdd = getCommonActions();
             for (int i = 0; i < toAdd.length; i++) {
                 if (idx >= 0 && idx + toAdd.length < actions.size()) {
-                    //put on the proper place after paste
+                    //put on the proper place after rename
                     actions.add(idx + i + 1, toAdd[i]);
                 } else {
                     //else put at the tail
                     actions.add(toAdd[i]);
                 }
             }
+            return actions.toArray(new Action[actions.size()]);
+        }
+
+        private Action[] getCommonActions() {
+            // not available for multiple selected nodes => create new instance every time
+            Action[] toAdd = new Action[] {
+                null,
+                ProjectSensitiveActions.projectCommandAction(RunSingleCommand.ID, RunSingleCommand.DISPLAY_NAME, null),
+                ProjectSensitiveActions.projectCommandAction(DebugSingleCommand.ID, DebugSingleCommand.DISPLAY_NAME, null),
+            };
+
+            List<Action> actions = new ArrayList<Action>(FolderChildren.COMMON_ACTIONS.length + toAdd.length);
+            actions.addAll(Arrays.asList(toAdd));
+            actions.addAll(Arrays.asList(FolderChildren.COMMON_ACTIONS));
+
             return actions.toArray(new Action[actions.size()]);
         }
     }
