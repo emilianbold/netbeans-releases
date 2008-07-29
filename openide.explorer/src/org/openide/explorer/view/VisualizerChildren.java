@@ -162,9 +162,11 @@ final class VisualizerChildren extends Object {
 
     final String dumpIndexes(VisualizerNode visNode) {
         StringBuilder sb = new StringBuilder();
-        sb.append(  "Seeking for: ").append(visNode.toId());
-        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()).toId());
-        sb.append("\nSeeking in : ").append(parent.toId()).append("\n");
+        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY));
+        sb.append("\nSeeking for: ").append(visNode.toId());
+        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null
+                ? ((VisualizerNode)visNode.getParent()).toId() : "null");
+        sb.append("\nSeeking in : ").append(parent != null ? parent.toId() : "null").append("\n");
         for (int i = 0; i < visNodes.size(); i++) {
             VisualizerNode node = (VisualizerNode) visNodes.get(i);
             sb.append("  ").append(i);
