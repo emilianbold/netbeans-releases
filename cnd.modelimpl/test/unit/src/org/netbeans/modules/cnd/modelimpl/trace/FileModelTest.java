@@ -421,6 +421,12 @@ public class FileModelTest extends TraceModelTestBase {
 	public void testTemplateInnerClassDtorDefinition() throws Exception {
 	    performTest("template_inner_class_dtor_definition.cc"); // NOI18N
 	}
+
+	public void testTwoBranches() throws Exception {
+            // iz #142110 For a header file, that is included with different
+            // preprocessor states, code model should include the most complete data
+	    performTest("branches_1.cc"); // NOI18N
+	}
                
         @Override
 	protected void postSetUp() {
