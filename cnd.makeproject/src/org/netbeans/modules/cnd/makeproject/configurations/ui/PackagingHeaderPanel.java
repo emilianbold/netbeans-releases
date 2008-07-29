@@ -86,7 +86,7 @@ public class PackagingHeaderPanel extends ListEditorPanel {
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
         
-        if (infoList.size() >= 0 && infoList.get(0).isMandatory()) {
+        if (infoList.size() > 0 && infoList.get(0).isMandatory()) {
             getRemoveButton().setEnabled(false);
         }
     }
