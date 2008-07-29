@@ -38,9 +38,6 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import org.netbeans.modules.cnd.api.remote.HostInfoProvider;
-import org.netbeans.modules.cnd.remote.mapper.RemoteHostInfoProvider;
-
 /**
  * There hardly is a way to unit test remote operations.
  * This is just an entry point for manual validation.
@@ -52,7 +49,7 @@ public class ScpTestCase extends RemoteTestBase {
     public ScpTestCase(String testName) {
         super(testName);
     }
-    
+
 //    public void testFileExistst() throws Exception {
 //        HostInfoProvider hip = HostInfoProvider.getDefault();
 //        assert hip.fileExists(getKey(), "/tmp/xxx");

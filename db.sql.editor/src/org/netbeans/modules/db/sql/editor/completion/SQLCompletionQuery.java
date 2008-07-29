@@ -85,8 +85,8 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
     private String quoteString;
     private SQLCompletionEnv env;
     private FromClause fromClause;
-    private int anchorOffset = -1;
-    private int substitutionOffset = 0;
+    private int anchorOffset = -1; // Relative to statement offset.
+    private int substitutionOffset = 0; // Relative to statement offset.
     private SQLCompletionItems items;
 
     public SQLCompletionQuery(DatabaseConnection dbconn) {
@@ -120,7 +120,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
             items.fill(resultSet);
         }
         if (anchorOffset != -1) {
-            resultSet.setAnchorOffset(anchorOffset);
+            resultSet.setAnchorOffset(env.getStatementOffset() + anchorOffset);
         }
         resultSet.finish();
     }
@@ -132,7 +132,7 @@ public class SQLCompletionQuery extends AsyncCompletionQuery {
         this.quoteString = quoteString;
         anchorOffset = -1;
         substitutionOffset = 0;
-        items = new SQLCompletionItems();
+        items = new SQLCompletionItems(env.getStatementOffset());
         if (env != null && env.isSelect()) {
             completeSelect();
         }

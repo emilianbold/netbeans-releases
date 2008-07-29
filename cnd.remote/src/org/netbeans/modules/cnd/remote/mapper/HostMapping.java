@@ -37,26 +37,14 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.properties.search;
+package org.netbeans.modules.cnd.remote.mapper;
 
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import org.netbeans.modules.properties.PropertiesEncoding;
-import org.netbeans.modules.properties.PropertiesEncoding.PropCharset;
-import org.netbeans.modules.search.FileObjectDecoderProvider;
-import org.openide.filesystems.FileObject;
-
-public final class PropertiesDecoderProvider implements FileObjectDecoderProvider {
-
-    public CharsetDecoder getDecoderFor(Charset charset, FileObject fileObj) {
-        if ("text/x-properties".equals(fileObj.getMIMEType())) {        //NOI18N
-            if (!PropCharset.NAME.equals(charset.name())) {
-                return null;
-            }
-            return PropertiesEncoding.createDecoder(charset, fileObj.getSize());
-        } else {
-            return null;
-        }
-    }
-
+/**
+ *
+ * @author Sergey Grinev
+ */
+public interface HostMapping {
+    boolean isApplicable(int platform);
+    String getForeignName(int platform);
+    String getInnerName();
 }

@@ -37,18 +37,34 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.search;
+package org.netbeans.modules.cnd.remote.mapper;
 
-import java.nio.charset.Charset;
-import java.nio.charset.CharsetDecoder;
-import org.openide.filesystems.FileObject;
+import java.util.HashMap;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
 
 /**
  *
- * @author  Marian Petras
+ * @author Sergey Grinev
  */
-public interface FileObjectDecoderProvider {
+public class HostMappingProviderSamba implements HostMappingProvider {
 
-    CharsetDecoder getDecoderFor(Charset charset, FileObject fileObj);
+    // TODO:
+
+    public Map<String, String> findMappings(String hkey) {
+        Map<String, String> mappings = new HashMap<String, String>();
+//        if (RemoteUtils.getHostName(hkey) == "eaglet-sr") {
+//            mappings.put("pub", "/export/pub");
+//        }
+
+//        String output = RunFacade.getInstance(hkey).run("cat /etc/sfw/smb.conf");
+//        mappings.putAll(new SambaConfParser(output).getMappings());
+        return mappings;
+    }
+
+    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
+        return otherPlatform.isWindows() && hostPlatform.isUnix();
+    }
 
 }

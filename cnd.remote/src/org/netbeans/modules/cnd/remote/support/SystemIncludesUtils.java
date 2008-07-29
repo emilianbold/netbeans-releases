@@ -85,7 +85,11 @@ public class SystemIncludesUtils {
                 }
             }
         }
-        load(hkey, storagePrefix, paths);
+        if (storagePrefix != null) {
+            load(hkey, storagePrefix, paths);
+        }
+        // TODO: we can painlessly ignore CompilerSets without tools and load() calls with empty list
+        // but existence of them should ring some bells
     }
 
     public static RequestProcessor.Task load(final String hkey, final String storagePrefix, final Collection<String> paths) {
