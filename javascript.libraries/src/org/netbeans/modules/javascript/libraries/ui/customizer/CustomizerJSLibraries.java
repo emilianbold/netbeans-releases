@@ -123,7 +123,7 @@ public class CustomizerJSLibraries extends JPanel {
         addLibraryJButton = new javax.swing.JButton();
         removeLibraryJButton = new javax.swing.JButton();
 
-        locationLabel.setLabelFor(librariesList);
+        locationLabel.setLabelFor(locationDisplay);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.locationLabel.text")); // NOI18N
 
         librariesList.setModel(new javax.swing.AbstractListModel() {
@@ -132,8 +132,10 @@ public class CustomizerJSLibraries extends JPanel {
             public Object getElementAt(int i) { return strings[i]; }
         });
         librariesListScrollPane.setViewportView(librariesList);
+        librariesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.librariesList.AccessibleContext.accessibleName")); // NOI18N
         librariesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.librariesList.AccessibleContext.accessibleDescription")); // NOI18N
 
+        libraryListLabel.setLabelFor(librariesList);
         org.openide.awt.Mnemonics.setLocalizedText(libraryListLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.libraryListLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addLibraryJButton, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.addLibraryJButton.text")); // NOI18N
