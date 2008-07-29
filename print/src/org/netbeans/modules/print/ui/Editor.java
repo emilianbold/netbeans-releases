@@ -52,7 +52,7 @@ import org.openide.DialogDisplayer;
  */
 final class Editor {
 
-  Editor (Class clazz, String title, Object value) {
+  Editor(Class clazz, String title, Object value) {
     myEditor = PropertyEditorManager.findEditor(clazz);
     myEditor.setValue(value);
     myDescriptor = new DialogDescriptor(myEditor.getCustomEditor(), title);
@@ -61,7 +61,7 @@ final class Editor {
 
   Object getValue() {
     if (myDescriptor.getValue() == DialogDescriptor.OK_OPTION) {
-        return myEditor.getValue();
+      return myEditor.getValue();
     }
     return null;
   }
