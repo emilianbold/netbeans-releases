@@ -57,7 +57,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         
         // Add tabs
         packagingInfoPanel = new PackagingInfo2Panel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
-        packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        else {
+            packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
         
         tabbedPane.addTab("Info", packagingInfoPanel);
         tabbedPane.addTab("Files", packagingFilesPanel);
@@ -116,7 +121,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         innerPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1000, 500));
+        setPreferredSize(new java.awt.Dimension(1200, 500));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());
