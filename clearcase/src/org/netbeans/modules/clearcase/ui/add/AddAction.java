@@ -114,6 +114,7 @@ public class AddAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         String contextTitle = Utils.getContextDisplayName(context);
         final JButton addButton = new JButton(); 
         addButton.setToolTipText(NbBundle.getMessage(AddAction.class, "TT_AddAction"));

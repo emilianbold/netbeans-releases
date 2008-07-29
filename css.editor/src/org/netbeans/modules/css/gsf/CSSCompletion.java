@@ -503,19 +503,17 @@ public class CSSCompletion implements CodeCompletionHandler {
             boolean addSemicolon) {
             
             String origin = value.origin();
-            if(origin == null) {
-                //for the root elements - should be probabluy fixed in PropertyModel
-                origin = element.property().name();
-            }
+            
+            assert origin != null : "Css value completion item has no origin!";
+            
             if(origin.startsWith("-")) {
-                //artificial origin, get real origin - its parent
-                Element parent = value.parent();
-                if(parent == null) {
-                    //strange 
-                    origin = "?"; //NOI18N
-                } else {
-                    origin = parent.origin();
-                }
+                //artificial origin, get real origin from the first ancestor element with an origin
+                Element parent = value;
+                while((parent = parent.parent()) != null) {
+                    if(parent.origin() != null) {
+                        origin = parent.origin();
+                    }
+                }    
             }
             
             if("color".equals(origin)) {

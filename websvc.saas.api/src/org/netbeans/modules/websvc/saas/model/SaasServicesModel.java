@@ -340,7 +340,11 @@ public class SaasServicesModel {
         String saasType = SaasUtil.getSaasType(url);
         
         if (Saas.NS_WSDL.equals(saasType)) {
-            return createWsdlService(parent, url, packageName);
+            if (WsdlUtil.hasWsdlSupport()) {
+                return createWsdlService(parent, url, packageName);
+            } else {
+                throw new RuntimeException(NbBundle.getMessage(SaasServicesModel.class, "MSG_WsdlServiceNotSupported"));
+            }
         } else if (Saas.NS_WADL.equals(saasType)) {
             return createWadlService(parent, url, packageName);
         } else {

@@ -1495,8 +1495,10 @@ public class Installer extends ModuleInstall implements Runnable {
         }
         int indexClassName = message.indexOf(':');
         if (indexClassName == -1){ // there is no message after className
-            StackTraceElement elem = thr.getStackTrace()[0];
-            return message + " at " + elem.getClassName()+"."+elem.getMethodName();
+            if (thr.getStackTrace().length != 0){
+                StackTraceElement elem = thr.getStackTrace()[0];
+                return message + " at " + elem.getClassName()+"."+elem.getMethodName();
+            }
         }
         return message;
     }
