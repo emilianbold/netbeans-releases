@@ -36,17 +36,75 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.remote.support;
 
-package org.netbeans.modules.cnd.remote.mapper;
-
-import java.util.Map;
-import org.netbeans.modules.cnd.api.utils.PlatformInfo;
+import java.io.IOException;
+import java.io.InputStream;
+import org.netbeans.modules.cnd.api.utils.RemoteUtils;
+import org.openide.util.Exceptions;
 
 /**
+ * Execution facade for simple tasks.
  *
  * @author Sergey Grinev
  */
-public interface HostMappingProvider {
-    public Map<String, String> findMappings(String hkey, String otherHkey);
-    public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform);
+public abstract class RunFacade {
+
+    public static RunFacade getInstance(String hkey) {
+        if (RemoteUtils.isLocalhost(hkey)) {
+            return new RunFacadeLocal();
+        } else {
+            return new RunFacadeRemote(hkey);
+        }
+    }
+
+    public boolean run(String command) {
+        return doRun(command) != -1;
+    }
+
+    protected abstract int doRun(String command);
+
+    protected String output = null;
+
+    public String getOutput() {
+        return output;
+    }
+
+    private static class RunFacadeLocal extends RunFacade {
+
+        @Override
+        public int doRun(String command) {
+            int exitValue = -1;
+            try {
+                Process process = Runtime.getRuntime().exec(command);
+                InputStream outputStream = process.getInputStream();
+                if (outputStream != null) {
+                    output = outputStream.toString();
+                }
+                process.waitFor();
+                exitValue = process.exitValue();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return exitValue;
+        }
+    }
+
+    private static class RunFacadeRemote extends RunFacade {
+
+        private String hkey;
+
+        public RunFacadeRemote(String hkey) {
+            this.hkey = hkey;
+        }
+
+        @Override
+        public int doRun(String command) {
+            RemoteCommandSupport support = new RemoteCommandSupport(hkey, command);
+            output = support.toString();
+            return support.getExitStatus();
+        }
+    }
 }
