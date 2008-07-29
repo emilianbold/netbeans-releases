@@ -46,7 +46,7 @@ import org.openide.nodes.Children.Keys;
  * @author Holy
  */
 public class LazyChildrenKeysTest extends NbTestCase {
-
+    
     public LazyChildrenKeysTest(String testName) {
         super(testName);
     }

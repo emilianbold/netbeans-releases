@@ -991,6 +991,8 @@ abstract class EntrySupport {
 
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
 
+        private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
+
         static final Node NONEXISTING_NODE = new NonexistingNode();
 
         public Lazy(Children ch) {
@@ -1343,7 +1345,7 @@ abstract class EntrySupport {
                 int[] idxs = new int[toAdd.size()];
                 int addIdx = 0;
                 int inx = 0;
-                boolean createNodes = toAdd.size() == 2;
+                boolean createNodes = toAdd.size() == 2 && prefetchCount > 0;
                 visibleEntries = new ArrayList<Entry>();
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
