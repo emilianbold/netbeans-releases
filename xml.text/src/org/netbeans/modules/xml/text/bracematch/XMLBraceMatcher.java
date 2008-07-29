@@ -87,11 +87,17 @@ public class XMLBraceMatcher implements BracesMatcher {
     }
     
     public int[] findOrigin() throws InterruptedException, BadLocationException {
+        
         if (MatcherContext.isTaskCanceled()) {
             return null;
         }
         //so that we could use this from unit tests
-        return doFindOrigin();
+        try {
+            return doFindOrigin();
+        } catch (Exception e) {
+            //do nothing
+        }
+        return null;
     }
 
     public int[] doFindOrigin() throws InterruptedException, BadLocationException {
@@ -146,11 +152,17 @@ public class XMLBraceMatcher implements BracesMatcher {
     }
             
     public int[] findMatches() throws InterruptedException, BadLocationException {
+       
         if (MatcherContext.isTaskCanceled()) {
             return null;
         }
-        //so that we could use this from unit tests
-        return doFindMatches();
+        try {
+            //so that we could use this from unit tests
+            return doFindMatches();
+        } catch (Exception e) {
+            //do nothing
+        }
+        return null;
     }
     
     public int[] doFindMatches() throws InterruptedException, BadLocationException {
