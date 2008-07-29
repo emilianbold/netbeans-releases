@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -24,7 +24,7 @@
  * Contributor(s):
  *
  * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
+ * Software is Sun Microsystems, Inc. Portions Copyright 1997-2008 Sun
  * Microsystems, Inc. All Rights Reserved.
  *
  * If you wish your version of this file to be governed by only the CDDL
@@ -75,6 +75,7 @@ public class OpenFileAction extends CallableSystemAction {
         return new HelpCtx(OpenFileAction.class);
     }
 
+    @Override
     protected String iconResource() {
         return "org/netbeans/modules/openfile/openFile.png"; // NOI18N
     }
@@ -140,6 +141,7 @@ public class OpenFileAction extends CallableSystemAction {
         }
     }
     
+    @Override
     protected boolean asynchronous() {
         return false;
     }
@@ -152,7 +154,7 @@ public class OpenFileAction extends CallableSystemAction {
     private static File findStartingDirectory() {
         Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
         for (int i = 0; i < nodes.length; i++) {
-            DataObject d = (DataObject) nodes[i].getCookie(DataObject.class);
+            DataObject d = nodes[i].getCookie(DataObject.class);
             if (d != null) {
                 File f = FileUtil.toFile(d.getPrimaryFile());
                 if (f != null) {

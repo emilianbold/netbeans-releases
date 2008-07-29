@@ -56,14 +56,17 @@ import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.Parameters;
 
 /**
- *
  * @author Jan Lahoda
+ * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
 class OpenedEditors implements PropertyChangeListener {
 
@@ -102,7 +105,7 @@ class OpenedEditors implements PropertyChangeListener {
 
     private void fireChangeEvent() {
         if (SHOW_TIME) System.err.println("OpenedEditors.fireChangeEvent()");
-        
+
         ChangeEvent e = new ChangeEvent(this);
         List<ChangeListener> listenersCopy = null;
 
@@ -136,9 +139,11 @@ class OpenedEditors implements PropertyChangeListener {
         for(JTextComponent editor : EditorRegistry.componentList()) {
             FileObject fo = editor != null ? getFileObject(editor) : null;
 
-            if (TRACE_FILES) System.err.printf("\tfile: %s\n", fo == null ? "null" : fo.toString());
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
-                if (editor.isValid()) { // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
+                boolean valid = isOpen((JEditorPane) editor, fo);
+                if (TRACE_FILES) System.err.printf("\tfile: %s valid: %b\n", fo == null ? "null" : fo.toString(), valid);
+                if (valid) {
                     visibleEditors.add(editor);
                 }
             }
@@ -150,6 +155,23 @@ class OpenedEditors implements PropertyChangeListener {
         }
 
         fireChangeEvent();
+    }
+
+    private boolean isOpen(JEditorPane editor, FileObject fo) {
+        try {
+            DataObject dao = DataObject.find(fo);
+            if (dao != null) {
+                EditorCookie editorCookie = dao.getCookie(EditorCookie.class);
+                if (editorCookie != null) {
+                    JEditorPane[] panes = editorCookie.getOpenedPanes();
+                    return panes != null && panes.length > 0;
+                }
+            }
+        } catch (DataObjectNotFoundException ex) {
+            // we don't need to report this exception;
+            // probably the file is just removed by user
+        }
+        return false;
     }
 
     public synchronized void propertyChange(PropertyChangeEvent evt) {
@@ -193,7 +215,7 @@ class OpenedEditors implements PropertyChangeListener {
     private final static List<String> mimeTypesList = Arrays.asList(new String[]{"text/x-c++", "text/x-c"}); //NOI18N
 
     /**
-     * Filter unsupported files from the <code>files</code> parameter. 
+     * Filter unsupported files from the <code>files</code> parameter.
      */
     public static List<FileObject> filterSupportedFiles(Collection<FileObject> files) throws NullPointerException {
         Parameters.notNull("files", files); //NOI18N
@@ -202,7 +224,7 @@ class OpenedEditors implements PropertyChangeListener {
 
         for (FileObject f : files) {
             String fileMimeType = FileUtil.getMIMEType(f);
-            
+
             if (fileMimeType == null) {
                 //unrecognized FileObject
                 continue;

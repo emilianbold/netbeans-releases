@@ -257,6 +257,7 @@ public class MappingOptionsPanel extends javax.swing.JPanel {
 
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            
             if (!componentInitialized) {
                 componentInitialized = true;
 

@@ -299,10 +299,11 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         add(extResButton, gridBagConstraints);
+        extResButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        applicationDescRadioButton.setSelected(true);
+        descButtonGroup.add(applicationDescRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(applicationDescRadioButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.applicationDescRadioButton.text")); // NOI18N
         applicationDescRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -313,7 +314,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(applicationDescRadioButton, gridBagConstraints);
+        applicationDescRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.applicationDescRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
+        appletClassLabel.setLabelFor(appletClassComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(appletClassLabel, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletClassLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -321,7 +324,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 34, 0, 4);
         jPanel1.add(appletClassLabel, gridBagConstraints);
+        appletClassLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletClassLabel.AccessibleContext.accessibleDescription")); // NOI18N
 
+        descButtonGroup.add(compDescRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(compDescRadioButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.compDescRadioButton.text")); // NOI18N
         compDescRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -334,7 +339,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(compDescRadioButton, gridBagConstraints);
+        compDescRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.compDescRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
+        descButtonGroup.add(appletDescRadioButton);
         org.openide.awt.Mnemonics.setLocalizedText(appletDescRadioButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletDescRadioButton.text")); // NOI18N
         appletDescRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -348,6 +355,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(appletDescRadioButton, gridBagConstraints);
+        appletDescRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletDescRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         appletClassComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "org.testapplication.TestApplet", "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -357,6 +365,8 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(appletClassComboBox, gridBagConstraints);
+        appletClassComboBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletClassComboBox.AccessibleContext.accessibleName")); // NOI18N
+        appletClassComboBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletClassComboBox.AccessibleContext.accessibleDescription")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(appletParamsButton, org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParamsButton.text")); // NOI18N
         appletParamsButton.addActionListener(new java.awt.event.ActionListener() {
@@ -370,6 +380,7 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(appletParamsButton, gridBagConstraints);
+        appletParamsButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParamsButton.AccessibleContext.accessibleDescription")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -388,6 +399,9 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         add(jSeparator1, gridBagConstraints);
+
+        getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleName")); // NOI18N
+        getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void codebaseComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_codebaseComboBoxActionPerformed
@@ -430,7 +444,7 @@ private void extResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     List<Map<String,String>> origProps = jwsProps.getExtResProperties();
     List<Map<String,String>> props = copyList(origProps);
     JPanel panel = new ExtensionResourcesPanel(new JWSProjectProperties.PropertiesTableModel(props, JWSProjectProperties.extResSuffixes, extResColumnNames));
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, "Extension Resources", true, null); // XXX String from bundle
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_ExtensionResources"), true, null);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -456,7 +470,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     List<Map<String,String>> props = copyList(origProps);
     TableModel appletParamsTableModel = new JWSProjectProperties.PropertiesTableModel(props, JWSProjectProperties.appletParamsSuffixes, appletParamsColumnNames);
     JPanel panel = new AppletParametersPanel((PropertiesTableModel) appletParamsTableModel, jwsProps.appletWidthDocument, jwsProps.appletHeightDocument);
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, "Applet Parameters", true, null); // XXX String from bundle
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_AppletParameters"), true, null);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {

@@ -268,6 +268,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         add(conditionCheckBox, gridBagConstraints);
+        conditionCheckBox.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ASCD_Condition_CKBX")); // NOI18N
+        conditionCheckBox.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ASCD_Condition_CKBX_Desc")); // NOI18N
 
         panelHitCountFilter.setLayout(new java.awt.GridBagLayout());
 
@@ -280,7 +282,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         panelHitCountFilter.add(tfHitCountFilter, gridBagConstraints);
-        tfHitCountFilter.getAccessibleContext().setAccessibleName("null");
+        tfHitCountFilter.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSN_HitCountTF")); // NOI18N
+        tfHitCountFilter.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_TF_HitCount_Desc")); // NOI18N
 
         cbHitStyle.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "equals to", "is greater than", "is multiple of" }));
         cbHitStyle.setToolTipText(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "TTT_CB_CondtionsPanel_HitFilterStyle")); // NOI18N
@@ -295,8 +298,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.RELATIVE;
         panelHitCountFilter.add(cbHitStyle, gridBagConstraints);
-        cbHitStyle.getAccessibleContext().setAccessibleName("null");
-        cbHitStyle.getAccessibleContext().setAccessibleDescription("null");
+        cbHitStyle.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSN_CB_HitCount_Qualifier")); // NOI18N
+        cbHitStyle.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_CB_HitCount_Desc")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(cbWhenHitCount, org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ConditionsPanel.cbWhenHitCount.text")); // NOI18N
         cbWhenHitCount.setToolTipText(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "TTT_CB_CondtionsPanel_HitFilterWhen")); // NOI18N
@@ -311,6 +314,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(3, 3, 3, 3);
         panelHitCountFilter.add(cbWhenHitCount, gridBagConstraints);
+        cbWhenHitCount.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ASCD_Break_hitCount")); // NOI18N
+        cbWhenHitCount.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSD_Break_HitCount_Desc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -326,7 +331,8 @@ public class NbJSBreakpointConditionsPanel extends javax.swing.JPanel {
         tfCondition.setContentType(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "NbJSBreakpointConditionsPanel.tfCondition.contentType")); // NOI18N
         tfCondition.setToolTipText(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "TTT_TF_Line_Breakpoint_Condition")); // NOI18N
         spCondition.setViewportView(tfCondition);
-        tfCondition.getAccessibleContext().setAccessibleName("null");
+        tfCondition.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSN_ConditionTF")); // NOI18N
+        tfCondition.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(NbJSBreakpointConditionsPanel.class, "ACSN_ConditionTF_Desc")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
