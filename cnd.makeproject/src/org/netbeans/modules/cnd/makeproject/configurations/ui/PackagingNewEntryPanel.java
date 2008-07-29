@@ -45,6 +45,7 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         scrollPane = new javax.swing.JScrollPane();
         docArea = new javax.swing.JTextArea();
         docArea.setBackground(getBackground());
+        valueLabel = new javax.swing.JLabel();
 
         setPreferredSize(new java.awt.Dimension(600, 400));
         setLayout(new java.awt.GridBagLayout());
@@ -64,6 +65,8 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(16, 4, 0, 0);
         add(entryComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
@@ -82,13 +85,21 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(8, 16, 16, 16);
         add(scrollPane, gridBagConstraints);
+
+        valueLabel.setLabelFor(entryValueTextField);
+        valueLabel.setText(org.openide.util.NbBundle.getMessage(PackagingNewEntryPanel.class, "PackagingNewEntryPanel.valueLabel.text")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(14, 8, 0, 0);
+        add(valueLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_entryComboBoxActionPerformed
@@ -133,6 +144,7 @@ public InfoElement getInfoElement() {
     private javax.swing.JLabel entryLabel;
     private javax.swing.JTextField entryValueTextField;
     private javax.swing.JScrollPane scrollPane;
+    private javax.swing.JLabel valueLabel;
     // End of variables declaration//GEN-END:variables
 
     
