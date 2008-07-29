@@ -37,27 +37,33 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.remote.support;
+package org.netbeans.modules.cnd.api.remote;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
 
 /**
- * Run a non-interactive command. Output from the command will be available via the toString() method.
+ * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
  * 
  * @author gordonp
  */
-public class RemoteCommandProvider implements CommandProvider {
+public interface InteractiveCommandProvider {
+   
+    /**
+     * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
+     * 
+     * @param hkey The user and remote host (user@host)
+     * @param cmd The command to run
+     * @param env The (possibly null) environment to send to the remote command
+     * @return true if the command started, otherwise false
+     */
+    public boolean run(String hkey, String cmd, Map<String, String> env);
     
-    private RemoteCommandSupport support;
-
-    public int run(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteCommandSupport(hkey, cmd, env);
-        return support.getExitStatus();
-    }
+    public InputStream getInputStream() throws IOException;
     
-    @Override
-    public String toString() {
-        return support.toString();
-    }
+    public OutputStream getOutputStream() throws IOException;
+    
+    public void disconnect();
 }

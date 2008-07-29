@@ -65,6 +65,8 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
@@ -191,7 +193,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private int shareToken;
     private final Disassembly disassembly;
     private GdbBreakpoint currentBreakpoint = null;
-
+    private String hkey;
+    private int platform;
+        
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
         pcs = new PropertyChangeSupport(this);
@@ -238,7 +242,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
-            if (!Utilities.isWindows() && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+            hkey = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+            platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
+            if (platform == PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -394,7 +400,19 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             finish(false);
         }
     }
-
+    
+    public String getHostKey() {
+        return hkey;
+    }
+    
+    public int getPlatform() {
+        return platform;
+    }
+    
+    public InputOutput getIO() {
+        return iotab;
+    }
+    
     private String getCompilerSetPath(ProjectActionEvent pae) {
         CompilerSet2Configuration cs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet();
         String csname = cs.getOption();
@@ -411,12 +429,24 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     private String getGdbHelper() {
-        String name = "bin/GdbHelper" + getOsName() + getOsArch() + getExtension(); // NOI18N
-        File file = InstalledFileLocator.getDefault().locate(name, null, false);
-        if (file != null && file.exists()) {
-            return fixPath(file.getAbsolutePath());
+        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
+            if (platform == PlatformTypes.PLATFORM_LINUX) {
+                return "$HOME/.netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so"; // NOI18N
+            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
+                return "$HOME/.netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so"; // NOI18N
+            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
+                return "/home/gordonp/.netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so"; // NOI18N
+            } else {
+                return "$HOME/.netbeans/6.5/cnd2/lib/GdbHelper.so"; // NOI18N
+            }
         } else {
-            return null;
+            String name = "bin/GdbHelper" + getOsName() + getOsArch() + getExtension(); // NOI18N
+            File file = InstalledFileLocator.getDefault().locate(name, null, false);
+            if (file != null && file.exists()) {
+                return fixPath(file.getAbsolutePath());
+            } else {
+                return null;
+            }
         }
     }
 
@@ -712,6 +742,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
                 gdb.gdb_exit();
+                gdb.getProxyEngine().finish();
             }
 
             stackUpdate(new ArrayList<String>());
