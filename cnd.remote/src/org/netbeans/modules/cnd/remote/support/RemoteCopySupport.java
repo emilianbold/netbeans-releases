@@ -38,7 +38,6 @@
  */
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
@@ -69,15 +68,10 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         this(key, 22);
     }
 
-    @Override
-    protected Channel createChannel() throws JSchException {
-        return session.openChannel("exec"); // NOI18N
-
-    }
-
     private void setChannelCommand(String cmd) {
         ((ChannelExec) getChannel()).setCommand(cmd);
     }
+    
     // TODO: not sure why we can't recreate channels through session?
     private void revitalize() {
         try {
@@ -198,8 +192,8 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         } finally {
             if (channel.isConnected()) {
                 setExitStatus(channel.getExitStatus());
-                channel.disconnect();
             }
+            disconnect();
             try {
                 if (fos != null) {
                     fos.close();

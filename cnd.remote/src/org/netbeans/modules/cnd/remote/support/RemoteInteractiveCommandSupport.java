@@ -41,82 +41,50 @@ package org.netbeans.modules.cnd.remote.support;
 import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.StringWriter;
+import java.io.OutputStream;
 import java.util.Map;
 
 /**
- * Run a remote command. This remote command should <b>not</b> expect input. The output
- * from the command is stored in a StringWriter and can be gotten via toString().
+ * Run an interactive remote command. This class differs from RemoteCommandSupport in that
+ * it doesn't read input. Instead, the user is expected to process all I/O.
  * 
  * @author gordonp
  */
-public class RemoteCommandSupport extends RemoteConnectionSupport {
+public class RemoteInteractiveCommandSupport extends RemoteConnectionSupport {
 
-    private BufferedReader in;
-    private StringWriter out;
+    private InputStream in;
+    private OutputStream out;
     private final String cmd;
     private final Map<String, String> env;
 
-    public static int run(String key, String cmd) {
-        RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
-        return support.getExitStatus();
+    public RemoteInteractiveCommandSupport(String hkey, String cmd, Map<String, String> env) {
+        this(hkey, cmd, env, null, null);
     }
 
-    public RemoteCommandSupport(String key, String cmd, Map<String, String> env, int port) {
-        super(key, port);
+    public RemoteInteractiveCommandSupport(String hkey, String cmd, Map<String, String> env, InputStream in, OutputStream out) {
+        super(hkey, 22);
         this.cmd = cmd;
         this.env = env;
+        this.in = in;
+        this.out = out;
 
         if (!isCancelled()) {
-            log.fine("RemoteCommandSupport<Init>: Running [" + cmd + "] on " + key);
+            log.fine("RemoteInteractiveCommandSupport<Init>: Running [" + cmd + "] on " + hkey);
             try {
                 channel = createChannel();
-                InputStream is = channel.getInputStream();
-                in = new BufferedReader(new InputStreamReader(is));
-                out = new StringWriter();
-
-                String line;
-                while ((line = in.readLine()) != null || !channel.isClosed()) {
-                    if (line != null) {
-                        out.write(line + '\n');
-                        out.flush();
-                    }
-
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                    }
-                }
-                in.close();
-                is.close();
-                setExitStatus(channel.getExitStatus());
             } catch (JSchException jse) {
-            } catch (IOException ex) {
-            } finally {
-                disconnect();
             }
         }
     }
-
-    public RemoteCommandSupport(String key, String cmd) {
-        this(key, cmd, null, 22);
+    
+    public InputStream getInputStream() throws IOException {
+        return channel.getInputStream();
     }
-
-    public RemoteCommandSupport(String key, String cmd, Map<String, String> env) {
-        this(key, cmd, env, 22);
-    }
-
-    @Override
-    public String toString() {
-        if (out != null) {
-            return out.toString();
-        } else {
-            return "";
-        }
+    
+    public OutputStream getOutputStream() throws IOException {
+        return channel.getOutputStream();
     }
 
     @Override
@@ -138,8 +106,9 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
         cmdline.append(cmd);
 
         echannel.setCommand(cmdline.toString());
-        echannel.setInputStream(null);
-        echannel.setErrStream(System.err);
+        echannel.setInputStream(in);
+        echannel.setOutputStream(out);
+        echannel.setErrStream(out);
         echannel.connect();
         return echannel;
     }
