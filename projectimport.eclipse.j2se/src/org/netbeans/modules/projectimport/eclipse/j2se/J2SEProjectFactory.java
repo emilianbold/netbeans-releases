@@ -83,6 +83,10 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         // calculate nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
+        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+            return null;
+        }
+        
         // create basic NB project
         String buildScript = null;
         if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
