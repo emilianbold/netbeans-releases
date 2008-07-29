@@ -57,15 +57,15 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  * @author   Jan Jancura and Gordon Prieur
  */
 public abstract class BreakpointImpl implements PropertyChangeListener {
-    
+
     /* valid breakpoint states */
-    public static final String BPSTATE_UNVALIDATED = "BpState_Unvalidated"; // NOI18N
-    public static final String BPSTATE_REVALIDATE = "BpState_Revalidate"; // NOI18N
-    public static final String BPSTATE_VALIDATION_PENDING = "BpState_ValidationPending"; // NOI18N
-    public static final String BPSTATE_VALIDATION_FAILED = "BpState_ValidationFailed"; // NOI18N
-    public static final String BPSTATE_VALIDATED = "BpState_Validated"; // NOI18N
-    public static final String BPSTATE_DELETION_PENDING = "BpState_DeletionPending"; // NOI18N
-    
+    private static final String BPSTATE_UNVALIDATED = "BpState_Unvalidated"; // NOI18N
+    protected static final String BPSTATE_REVALIDATE = "BpState_Revalidate"; // NOI18N
+    private static final String BPSTATE_VALIDATION_PENDING = "BpState_ValidationPending"; // NOI18N
+    private static final String BPSTATE_VALIDATION_FAILED = "BpState_ValidationFailed"; // NOI18N
+    private static final String BPSTATE_VALIDATED = "BpState_Validated"; // NOI18N
+    private static final String BPSTATE_DELETION_PENDING = "BpState_DeletionPending"; // NOI18N
+
     protected final GdbDebugger debugger;
     private String state;
     private int breakpointNumber;
@@ -74,7 +74,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
     private final Session session;
     private String err;
     private boolean runWhenValidated;
-    
+
     protected BreakpointImpl(GdbBreakpoint breakpoint, BreakpointsReader reader, GdbDebugger debugger, Session session) {
         this.debugger = debugger;
         //this.reader = reader;
@@ -88,7 +88,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     public void completeValidation(Map<String, String> map) {
         String number;
-        
+
         if (!getState().equals(BPSTATE_DELETION_PENDING)) {
             assert getState().equals(BPSTATE_VALIDATION_PENDING) : getState();
             if (map != null) {
@@ -125,7 +125,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             debugger.getBreakpointList().put(number, this);
         }
     }
-    
+
     public void addError(String err) {
         if (this.err != null) {
             this.err = this.err + err;
@@ -215,7 +215,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             debugger.getGdbProxy().break_disable(getBreakpointNumber());
         }
     }
-    
+
     protected void suspend() {
         debugger.getGdbProxy().break_delete(getBreakpointNumber());
         setState(BPSTATE_UNVALIDATED);
@@ -237,7 +237,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
             setRequests();
         }
     }
-    
+
     protected final void setValidity(Breakpoint.VALIDITY validity, String reason) {
         if (breakpoint instanceof ChangeListener) {
             ((ChangeListener) breakpoint).stateChanged(new ValidityChangeEvent(validity, reason));
@@ -246,15 +246,12 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
 
     public void propertyChange(PropertyChangeEvent evt) {
         String pname = evt.getPropertyName();
-        if (pname.equals(Breakpoint.PROP_DISPOSED)) {
-            remove();
-        }
         if (pname.equals(GdbBreakpoint.PROP_CONDITION)) {
             debugger.getGdbProxy().break_condition(breakpointNumber, evt.getNewValue().toString());
         } else if (pname.equals(GdbBreakpoint.PROP_SKIP_COUNT)) {
             debugger.getGdbProxy().break_after(breakpointNumber, evt.getNewValue().toString());
         } else if (pname.equals(GdbBreakpoint.PROP_ENABLED)) {
-            enable((Boolean)evt.getNewValue());
+            update();
         } else if (pname.equals(GdbBreakpoint.PROP_SUSPEND)) {
             suspend();
         } else if (pname.equals(GdbBreakpoint.PROP_LINE_NUMBER) && getState().equals(BPSTATE_VALIDATED)) {
@@ -276,6 +273,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         if (breakpointNumber > 0) {
             debugger.getBreakpointList().remove(breakpointNumber);
         }
+        update();
     }
 
     public GdbBreakpoint getBreakpoint() {
@@ -300,24 +298,24 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
         }
         return resume;
     }
-    
+
     public void setRunWhenValidated(boolean runWhenValidated) {
         this.runWhenValidated = runWhenValidated;
     }
-    
+
     public boolean isRunWhenValidated() {
         return runWhenValidated;
     }
-        
+
     private static final class ValidityChangeEvent extends ChangeEvent {
-        
+
         private String reason;
-        
+
         public ValidityChangeEvent(Breakpoint.VALIDITY validity, String reason) {
             super(validity);
             this.reason = reason;
         }
-        
+
         @Override
         public String toString() {
             return reason;
