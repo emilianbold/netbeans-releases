@@ -444,7 +444,7 @@ private void extResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     List<Map<String,String>> origProps = jwsProps.getExtResProperties();
     List<Map<String,String>> props = copyList(origProps);
     JPanel panel = new ExtensionResourcesPanel(new JWSProjectProperties.PropertiesTableModel(props, JWSProjectProperties.extResSuffixes, extResColumnNames));
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, "Extension Resources", true, null); // XXX String from bundle
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_ExtensionResources"), true, null);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
@@ -470,7 +470,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     List<Map<String,String>> props = copyList(origProps);
     TableModel appletParamsTableModel = new JWSProjectProperties.PropertiesTableModel(props, JWSProjectProperties.appletParamsSuffixes, appletParamsColumnNames);
     JPanel panel = new AppletParametersPanel((PropertiesTableModel) appletParamsTableModel, jwsProps.appletWidthDocument, jwsProps.appletHeightDocument);
-    DialogDescriptor dialogDesc = new DialogDescriptor(panel, "Applet Parameters", true, null); // XXX String from bundle
+    DialogDescriptor dialogDesc = new DialogDescriptor(panel, NbBundle.getMessage(JWSCustomizerPanel.class, "TITLE_AppletParameters"), true, null);
     Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDesc);
     dialog.setVisible(true);
     if (dialogDesc.getValue() == DialogDescriptor.OK_OPTION) {
