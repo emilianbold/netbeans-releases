@@ -42,6 +42,7 @@ package org.netbeans.modules.java.hints.errors;
 
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -51,6 +52,7 @@ import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
+import com.sun.tools.javac.tree.Tree.Literal;
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -95,10 +97,15 @@ public class Utilities {
     }
 
     public static String guessName(CompilationInfo info, TreePath tp) {
-        String name = getName((ExpressionTree) tp.getLeaf());
+        ExpressionTree et = (ExpressionTree) tp.getLeaf();
+        String name = getName(et);
         
         if (name == null) {
-            return "name";
+            if(et instanceof LiteralTree) {
+                String guess = (String) ((LiteralTree) et).getValue();
+                return guessLiteralName(guess);
+            } else
+                return "name";
         }
         
         Scope s = info.getTrees().getScope(tp);
@@ -121,6 +128,26 @@ public class Utilities {
         }
         
         return proposedName;
+    }
+
+    private static String guessLiteralName(String str) {
+        StringBuffer sb = new StringBuffer();
+        char first = str.charAt(0);
+        if(Character.isJavaIdentifierStart(str.charAt(0)))
+            sb.append(first);
+
+        for (int i = 1; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            if(ch == ' ') {
+                sb.append('_');
+                continue;
+            }
+            if (Character.isJavaIdentifierPart(ch))
+                sb.append(ch);
+            if (i > 40)
+                break;
+        }
+        return sb.toString();
     }
     
     public static String getName(TypeMirror tm) {

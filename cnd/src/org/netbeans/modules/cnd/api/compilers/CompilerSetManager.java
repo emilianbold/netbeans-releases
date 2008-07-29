@@ -121,7 +121,6 @@ public class CompilerSetManager {
     private final String hkey;
     private Object state;
     private int platform = -1;
-    private int current;
     private static final Logger log = Logger.getLogger("cnd.remote.logger"); // NOI18N
 
     /**
@@ -152,11 +151,6 @@ public class CompilerSetManager {
             if (csm == null) {
                 csm = new CompilerSetManager(key);
                 if (csm.isValid()) {
-                    csm.current = 0;
-                    String csName = getPreferences().get(CSM + key + CURRENT_SET_NAME, null);
-                    if (csName == null) {
-                        csName = csm.getCompilerSet(0).getName();
-                    }
                     csm.saveToDisk();
                 } else if (!csm.isPending() && !csm.isUninitialized()) {
                     no_compilers = true;
@@ -217,10 +211,9 @@ public class CompilerSetManager {
         init();
     }
 
-    private CompilerSetManager(String hkey, List<CompilerSet> sets, int current, int platform) {
+    private CompilerSetManager(String hkey, List<CompilerSet> sets, int platform) {
         this.hkey = hkey;
         this.sets = sets;
-        this.current = current;
         this.state = STATE_COMPLETE;
         this.platform = platform;
     }
@@ -290,7 +283,7 @@ public class CompilerSetManager {
         for (CompilerSet set : getCompilerSets()) {
             setsCopy.add(set.createCopy());
         }
-        CompilerSetManager copy = new CompilerSetManager(this.hkey, setsCopy, this.current, this.platform);
+        CompilerSetManager copy = new CompilerSetManager(this.hkey, setsCopy, this.platform);
         return copy;
     }
 
@@ -597,11 +590,6 @@ public class CompilerSetManager {
     public void remove(CompilerSet cs) {
         int idx = sets.indexOf(cs);
         if (idx >= 0) {
-            if (current == idx) {
-                current = 0; // switch to 0th
-            } else if (current > idx) {
-                current--; // adjust accordingly
-            }
             sets.remove(idx);
         }
     }
@@ -653,26 +641,6 @@ public class CompilerSetManager {
             return sets.get(idx);
         else
             return null;
-    }
-
-    public CompilerSet getCurrentCompilerSet() {
-        return sets.get(current);
-    }
-
-    public void setCurrentCompilerSet(int current) {
-        this.current = current;
-    }
-
-    public void setCurrentCompilerSet(String name) {
-        int i = 0;
-        for (CompilerSet cs : sets) {
-            if (cs.getName().equals(name)) {
-                current = i;
-                getPreferences().putInt(CSM + hkey + CURRENT_SET_NAME, current);
-                return;
-            }
-            i++;
-        }
     }
 
     public List<CompilerSet> getCompilerSets() {
@@ -771,7 +739,6 @@ public class CompilerSetManager {
         if (!sets.isEmpty() && getPlatform() != PlatformTypes.PLATFORM_GENERIC) {
             getPreferences().putDouble(CSM + VERSION, csm_version);
             getPreferences().putInt(CSM + hkey + NO_SETS, sets.size());
-            getPreferences().putInt(CSM + hkey + CURRENT_SET_NAME, current);
             getPreferences().putInt(CSM + hkey + SET_PLATFORM, getPlatform());
             int setCount = 0;
             for (CompilerSet cs : getCompilerSets()) {
@@ -806,7 +773,6 @@ public class CompilerSetManager {
         if (noSets < 0) {
             return null;
         }
-        int current = getPreferences().getInt(CSM + hkey + CURRENT_SET_NAME, 0);
         int pform = getPreferences().getInt(CSM + hkey + SET_PLATFORM, -1);
         if (pform < 0) {
             if (hkey.equals(LOCALHOST)) {
@@ -851,7 +817,7 @@ public class CompilerSetManager {
             css.add(cs);
         }
 
-        CompilerSetManager csm = new CompilerSetManager(hkey, css, current, pform);
+        CompilerSetManager csm = new CompilerSetManager(hkey, css, pform);
         return csm;
     }
 
@@ -906,7 +872,7 @@ public class CompilerSetManager {
             completeCompilerSet(CompilerSetManager.LOCALHOST, cs, css);
             css.add(cs);
         }
-        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, 0, computeLocalPlatform());
+        CompilerSetManager csm = new CompilerSetManager(LOCALHOST, css, computeLocalPlatform());
         return csm;
     }
 

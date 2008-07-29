@@ -52,7 +52,6 @@ import org.netbeans.modules.versioning.system.cvss.util.Context;
 import org.netbeans.modules.versioning.system.cvss.ui.actions.update.UpdateExecutor;
 import org.netbeans.modules.versioning.system.cvss.CvsVersioningSystem;
 import org.netbeans.modules.versioning.system.cvss.ExecutorGroup;
-import org.netbeans.modules.versioning.spi.VCSContext;
 import org.netbeans.lib.cvsclient.command.update.UpdateCommand;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.api.project.Project;
@@ -61,6 +60,7 @@ import org.netbeans.spi.project.SubprojectProvider;
 import java.io.File;
 import java.util.*;
 import java.awt.event.ActionEvent;
+import org.netbeans.modules.versioning.system.cvss.ui.actions.AbstractSystemAction;
 
 /**
  * Updates given project and all sources of
@@ -78,6 +78,7 @@ public final class UpdateWithDependenciesAction extends SystemAction {
 
     public void actionPerformed(ActionEvent ev) {
         setEnabled(false);
+        org.netbeans.modules.versioning.util.Utils.logVCSActionEvent("CVS");
         final Node nodes[] = WindowManager.getDefault().getRegistry().getActivatedNodes();
         RequestProcessor.getDefault().post(new Runnable() {
             public void run() {

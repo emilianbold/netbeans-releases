@@ -818,6 +818,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         private boolean cmp;
 
         boolean waitingForScan;
+        
+        private String title;
+        
+        public WizardPanel(String wizardTitle) {
+            title = wizardTitle;
+        }
 
         public DatabaseTablesPanel getComponent() {
             if (component == null) {
@@ -845,6 +851,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            wizardDescriptor.putProperty("NewFileWizard_Title", title); // NOI18N
+            
             if (!componentInitialized) {
                 componentInitialized = true;
 

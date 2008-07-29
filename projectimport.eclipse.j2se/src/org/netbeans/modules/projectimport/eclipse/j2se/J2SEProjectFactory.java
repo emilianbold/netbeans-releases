@@ -179,12 +179,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ep.setProperty(J2SEProjectProperties.JAVAC_TARGET, model.getTargetLevel());
         ep.setProperty(J2SEProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
         ep.setProperty(J2SEProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
-        String enc = model.getEncoding();
-        if (enc != null) {
-            ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc);
-        } else {
-            ep.remove(J2SEProjectProperties.SOURCE_ENCODING);
-        }
+        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, model.getEncoding());
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));

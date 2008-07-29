@@ -38,8 +38,10 @@
  */
 package org.netbeans.modules.php.editor.parser;
 
+import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Set;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.ColoringAttributes;
@@ -49,11 +51,13 @@ import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.SemanticAnalyzer;
 import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.Block;
 import org.netbeans.modules.php.editor.parser.astnodes.BodyDeclaration.Modifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FunctionName;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
@@ -148,11 +152,14 @@ public class SemanticAnalysis implements SemanticAnalyzer {
         private final Map<String, IdentifierColoring> privateFieldsUsed;
         // for unsed private method: name, identifier
         private final Map<String, IdentifierColoring> privateMethod;
+        // this is holder of blocks, which has to be scanned for usages.
+        private final List<Block> needToScan;
 
         public SemanticHighlightVisitor(Map<OffsetRange, Set<ColoringAttributes>> highlights) {
             this.highlights = highlights;
             privateFieldsUsed = new HashMap<String, IdentifierColoring>();
             privateMethod = new HashMap<String, IdentifierColoring>();
+            needToScan = new ArrayList<Block>();
         }
 
         private OffsetRange createOffsetRange(ASTNode node) {
@@ -169,6 +176,10 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             highlights.put(or, ColoringAttributes.CLASS_SET);
             cldec.getBody().accept(this);
 
+            // find all usages in the method bodies
+            for (Block block : needToScan) {
+                block.accept(this);
+            }
             // are there unused private fields?
             for (IdentifierColoring item : privateFieldsUsed.values()) {
                 or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
@@ -211,7 +222,11 @@ public class SemanticAnalysis implements SemanticAnalyzer {
                 highlights.put(createOffsetRange(identifier), coloring);
             }
             if (!Modifier.isAbstract(md.getModifier())) {
-                md.getFunction().getBody().accept(this);
+                // don't scan the body now. It should be scanned after all declarations
+                // are known
+                if (md.getFunction().getBody() != null) {
+                    needToScan.add(md.getFunction().getBody());
+                }
             }
         }
 
@@ -296,8 +311,17 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             if (isCancelled()) {
                 return;
             }
-            ASTNode name = node.getMethod().getFunctionName();
-            OffsetRange or = new OffsetRange(name.getStartOffset(), name.getEndOffset());
+            FunctionName fnName = node.getMethod().getFunctionName();
+            if (fnName.getName() instanceof Identifier) {
+                String name = ((Identifier) fnName.getName()).getName();
+                IdentifierColoring item = privateMethod.remove(name);
+                if (item != null) {
+                    OffsetRange or = new OffsetRange(item.identifier.getStartOffset(), item.identifier.getEndOffset());
+                    highlights.put(or, item.coloring);
+                    return;
+                }
+            }
+            OffsetRange or = new OffsetRange(fnName.getStartOffset(), fnName.getEndOffset());
             highlights.put(or, ColoringAttributes.STATIC_SET);
         }
 

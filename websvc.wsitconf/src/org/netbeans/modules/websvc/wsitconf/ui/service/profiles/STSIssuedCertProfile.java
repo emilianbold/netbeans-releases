@@ -139,15 +139,10 @@ public class STSIssuedCertProfile extends ProfileBase
         String keyAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String keyLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String keyPasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(keyAlias)) {
-            String defPassword = Util.getDefaultPassword(p);
-            String defLocation = Util.getStoreLocation(p, false, false);
-            if ((defPassword != null) && (defLocation != null)) {
-                if ((defPassword.equals(keyPasswd)) && 
-                    (defLocation.equals(keyLoc))) {
-                        return true;
-                }
-            }
+        if ((Util.isEqual(Util.getDefaultPassword(p), keyPasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), keyLoc)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, keyAlias))) { 
+            return true;
         }
         return false;
     }

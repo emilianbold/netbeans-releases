@@ -287,7 +287,7 @@ public class GuardedDocument extends BaseDocument
         }
 
         boolean completed = false;
-        atomicLock();
+        atomicLockImpl ();
         boolean origBreakGuarded = breakGuarded;
         try {
             breakGuarded = true;
@@ -300,7 +300,7 @@ public class GuardedDocument extends BaseDocument
                     breakAtomicLock();
                 }
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
             if (debugAtomic) {
                 System.out.println("GuardedDocument.runAtomic() finished"); // NOI18N
@@ -317,7 +317,7 @@ public class GuardedDocument extends BaseDocument
         }
 
         boolean completed = false;
-        atomicLock();
+        atomicLockImpl ();
         boolean origAtomicAsUser = atomicAsUser;
         try {
             atomicAsUser = true;
@@ -330,7 +330,7 @@ public class GuardedDocument extends BaseDocument
                     breakAtomicLock();
                 }
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
             if (debugAtomic) {
                 System.out.println("GuardedDocument.runAtomicAsUser() finished"); // NOI18N

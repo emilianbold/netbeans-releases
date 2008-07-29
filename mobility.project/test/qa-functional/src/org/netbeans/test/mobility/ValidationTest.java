@@ -171,7 +171,7 @@ public class ValidationTest extends JellyTestCase {
 
     public void testCreateMIDPApplication() {
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
-        wizard.selectCategory("Mobility");
+        wizard.selectCategory("Java ME"); // XXX use Bundle.getString instead
         wizard.selectProject("Mobile Application");
         wizard.next();
 

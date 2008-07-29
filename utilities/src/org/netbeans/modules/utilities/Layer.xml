@@ -80,7 +80,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="url">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-url-URLDataLoader.instance"/>
+                    <file name="org-netbeans-modules-url-URLDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.utilities.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
@@ -153,7 +155,9 @@ made subject to such option by the copyright holder.
         <folder name="application">
             <folder name="pdf">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-pdf-PDFDataLoader.instance"/>
+                    <file name="org-netbeans-modules-pdf-PDFDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.utilities.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="OpenAction.instance">
