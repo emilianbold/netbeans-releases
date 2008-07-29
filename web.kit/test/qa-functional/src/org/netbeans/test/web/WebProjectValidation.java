@@ -228,7 +228,7 @@ public class WebProjectValidation extends J2eeTestCase {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer(getServerNode(Server.TOMCAT).getText());
+        serverStep.selectServer(getServerNode(Server.ANY).getText());
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14"));
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
