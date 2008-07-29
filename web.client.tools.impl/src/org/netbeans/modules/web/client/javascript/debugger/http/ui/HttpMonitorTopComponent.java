@@ -64,6 +64,7 @@ final class HttpMonitorTopComponent extends TopComponent {
     /* Table Models for Request and Response Details */
     private final MapTableModel reqHeaderTableModel = new MapTableModel(EMPTY_MAP);
     private final MapTableModel resHeaderTableModel = new MapTableModel(EMPTY_MAP);
+    private final Logger LOG = Logger.getLogger(HttpMonitorTopComponent.class.getName());
 
     /* Component for main table */
     private JComponent tableView;
@@ -174,6 +175,7 @@ final class HttpMonitorTopComponent extends TopComponent {
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
             }
         });
+        LOG.info("Add Notify");
     }
 
     @Override
@@ -181,6 +183,41 @@ final class HttpMonitorTopComponent extends TopComponent {
         super.removeNotify();
         setDetailsDividerLoc();
         setHttpMonitorDividerLoc();
+        LOG.info("Remove Notify");
+    }
+
+
+    @Override
+    protected void componentClosed() {
+        super.componentClosed();
+        HttpMonitorUtility.setHttpMonitorOpened(false);
+    }
+
+
+    @Override
+    protected void componentDeactivated() {
+        super.componentDeactivated();
+    }
+
+    @Override
+    protected void componentActivated() {
+        super.componentActivated();
+    }
+
+    @Override
+    protected void componentHidden() {
+        super.componentHidden();
+    }
+
+    @Override
+    protected void componentShowing() {
+        super.componentShowing();
+    }
+
+    @Override
+    protected void componentOpened() {
+        super.componentOpened();
+        HttpMonitorUtility.setHttpMonitorOpened(true);
     }
 
     private double getHttpMonitorDividerLoc() {

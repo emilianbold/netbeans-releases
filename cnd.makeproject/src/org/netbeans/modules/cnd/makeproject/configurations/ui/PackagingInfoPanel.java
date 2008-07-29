@@ -1,10 +1,12 @@
 /*
- * PackagingInfoPanel.java
+ * PackagingInfo2Panel.java
  *
- * Created on June 23, 2008, 2:58 PM
+ * Created on July 28, 2008, 12:42 PM
  */
 
 package org.netbeans.modules.cnd.makeproject.configurations.ui;
+
+import javax.swing.JPanel;
 
 /**
  *
@@ -12,9 +14,23 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
  */
 public class PackagingInfoPanel extends javax.swing.JPanel {
 
-    /** Creates new form PackagingInfoPanel */
-    public PackagingInfoPanel() {
+    /** Creates new form PackagingInfo2Panel */
+    public PackagingInfoPanel(PackagingHeaderPanel innerPanel) {
+        java.awt.GridBagConstraints gridBagConstraints;
+        
         initComponents();
+        
+        remove(packagingHeaderOuterPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(innerPanel, gridBagConstraints);
+        
+        innerPanel.setDocArea(docTextArea);
+        innerPanel.refresh();
     }
 
     /** This method is called from within the constructor to
@@ -27,35 +43,54 @@ public class PackagingInfoPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        scrollPaneInfo = new javax.swing.JScrollPane();
-        jTable = new javax.swing.JTable();
+        packagingHeaderOuterPanel = new javax.swing.JPanel();
+        scrollPane = new javax.swing.JScrollPane();
+        docTextArea = new javax.swing.JTextArea();
+        docTextArea.setBackground(getBackground());
 
         setLayout(new java.awt.GridBagLayout());
 
-        jTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        scrollPaneInfo.setViewportView(jTable);
+        org.jdesktop.layout.GroupLayout packagingHeaderOuterPanelLayout = new org.jdesktop.layout.GroupLayout(packagingHeaderOuterPanel);
+        packagingHeaderOuterPanel.setLayout(packagingHeaderOuterPanelLayout);
+        packagingHeaderOuterPanelLayout.setHorizontalGroup(
+            packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 400, Short.MAX_VALUE)
+        );
+        packagingHeaderOuterPanelLayout.setVerticalGroup(
+            packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+            .add(0, 202, Short.MAX_VALUE)
+        );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(scrollPaneInfo, gridBagConstraints);
+        add(packagingHeaderOuterPanel, gridBagConstraints);
+
+        scrollPane.setBorder(null);
+
+        docTextArea.setColumns(20);
+        docTextArea.setEditable(false);
+        docTextArea.setLineWrap(true);
+        docTextArea.setRows(5);
+        docTextArea.setText(org.openide.util.NbBundle.getMessage(PackagingInfoPanel.class, "PackagingInfoPanel.docTextArea.text")); // NOI18N
+        docTextArea.setWrapStyleWord(true);
+        scrollPane.setViewportView(docTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
+        add(scrollPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTable jTable;
-    private javax.swing.JScrollPane scrollPaneInfo;
+    private javax.swing.JTextArea docTextArea;
+    private javax.swing.JPanel packagingHeaderOuterPanel;
+    private javax.swing.JScrollPane scrollPane;
     // End of variables declaration//GEN-END:variables
 
 }
