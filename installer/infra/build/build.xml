@@ -361,7 +361,7 @@
 	</if>
 
         <get
-            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/express/m1-latest/bundles/"
+            src="${glassfish.builds.host}/java/re/glassfish/10.0/promoted/m1-latest/bundles/"
             dest="${temp.file}"/>
         <glassfish-buildnumber 
             file="${temp.file}" 
