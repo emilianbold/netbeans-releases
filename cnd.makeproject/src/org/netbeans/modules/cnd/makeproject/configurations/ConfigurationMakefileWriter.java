@@ -646,7 +646,11 @@ public class ConfigurationMakefileWriter {
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             bw.write("# Generate tar file\n");
             bw.write("cd $TMPDIR\n");
-            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -cf " + outputRelToTmp + " *\n");
+            String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
+            if (options.charAt(0) != '-') {
+                options += '-';
+            }
+            bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n");
         }
         else {
             assert false;

@@ -129,7 +129,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         innerPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1200, 500));
+        setPreferredSize(new java.awt.Dimension(1000, 500));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());
