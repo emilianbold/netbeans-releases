@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
         <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-swing-tabcontrol.jar"/>
         <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>
-        <pathelement location="${netbeans.dest.dir}/uml5/modules/org-netbeans-modules-uml-drawingarea.jar"/>
+        <pathelement location="${netbeans.dest.dir}/uml6/modules/org-netbeans-modules-uml-drawingarea.jar"/>
         <pathelement location="../../jemmy/builds/jemmy.jar"/>                    
         <pathelement location="../../jellytools/builds/jelly2-nb.jar"/>
         <pathelement location="${xtest.home}/lib/junit.jar"/>                    
