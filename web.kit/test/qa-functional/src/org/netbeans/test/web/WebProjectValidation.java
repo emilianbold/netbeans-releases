@@ -536,6 +536,8 @@ public class WebProjectValidation extends J2eeTestCase {
         dialog.ok();
         //waitBuildSuccessful();
         editor.close();
+        getServerNode(Server.ANY).waitFinished();
+        sleep(2000);
         assertDisplayerContent("<title>Servlet with name=Servlet1</title>");
     }
     
