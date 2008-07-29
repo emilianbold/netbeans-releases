@@ -108,7 +108,7 @@ public class DesignerWebServiceTransferManager implements ConsumerFlavorProvider
                 Object data = transferable.getTransferData(ConsumerFlavorProvider.WSDL_METHOD_FLAVOR);
                 if (data instanceof WsdlSaasMethod) {
                     final WsdlSaasMethod method = (WsdlSaasMethod) data;
-                    final JavaMethod javaMethod = (JavaMethod) method.getJavaMethod();
+                    final JavaMethod javaMethod = (JavaMethod) method.getJavaMethod().getInternalJAXWSJavaMethod();
                     if (javaMethod != null && !Util.hasOutput(javaMethod)) { // NOI18N
                         result.put(new ExTransferable.Single(FLAVOR_PORT_DISPLAY_ITEM) {
                             protected Object getData() throws IOException, UnsupportedFlavorException {

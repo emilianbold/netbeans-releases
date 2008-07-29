@@ -10,10 +10,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -28,6 +30,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private MakeConfiguration conf;
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
+    private PackagingHeaderPanel packagingHeaderPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -40,9 +43,26 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
         
+        // Init default values
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            if (!packagingConfiguration.getHeader().getModified()) {
+                List<InfoElement> headerList = packagingConfiguration.getHeader().getValue();
+                headerList.add(new InfoElement("PKG", "PackageName")); // NOI18N
+                headerList.add(new InfoElement("NAME", "Package description ...")); // NOI18N
+                headerList.add(new InfoElement("ARCH", "i386")); // NOI18N
+                headerList.add(new InfoElement("CATEGORY", "application")); // NOI18N
+                headerList.add(new InfoElement("VERSION", "1.0")); // NOI18N
+            }
+        }
+        
         // Add tabs
-        packagingInfoPanel = new PackagingInfoPanel();
-        packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        packagingInfoPanel = new PackagingInfoPanel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        else {
+            packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
         
         tabbedPane.addTab("Info", packagingInfoPanel);
         tabbedPane.addTab("Files", packagingFilesPanel);
@@ -51,14 +71,17 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             // Add tabs
             tabbedPane.setEnabledAt(0,false);
             tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(1);
         }
-        else {
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             // Add tabs
             tabbedPane.setEnabledAt(0,true);
             tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(0);
         }
-        
-        tabbedPane.setSelectedIndex(1);
+        else {
+            assert false;
+        }
     }
 
         
@@ -69,9 +92,16 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        Vector v = packagingFilesPanel.getListData();
+        Vector v;
+        
+        v = packagingHeaderPanel.getListData();
+        packagingConfiguration.getHeader().setValue(new ArrayList(v));
+        
+        v = packagingFilesPanel.getListData();
         packagingConfiguration.getFiles().setValue(new ArrayList(v));
+        
 	return packagingConfiguration;
+        
     }
 
     public HelpCtx getHelpCtx() {
@@ -91,7 +121,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         innerPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1000, 400));
+        setPreferredSize(new java.awt.Dimension(1200, 500));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());

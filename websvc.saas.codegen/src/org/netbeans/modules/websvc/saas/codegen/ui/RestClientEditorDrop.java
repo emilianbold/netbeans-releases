@@ -119,7 +119,8 @@ public class RestClientEditorDrop implements ActiveEditorDrop {
                     List<ParameterInfo> allParams = bean.filterParametersByAuth(
                             bean.filterParameters(new ParamFilter[]{ParamFilter.FIXED}));
                     if(!allParams.isEmpty()) {
-                        CodeSetupPanel panel = new CodeSetupPanel(allParams);
+                        boolean showParamTypes = Util.isJava(targetDoc) || Util.isJsp(targetDoc);
+                        CodeSetupPanel panel = new CodeSetupPanel(allParams, showParamTypes);
                  
                         DialogDescriptor desc = new DialogDescriptor(panel, 
                                 NbBundle.getMessage(RestClientEditorDrop.class,

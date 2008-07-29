@@ -41,6 +41,7 @@ package org.netbeans.modules.css.editor;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -147,7 +148,30 @@ public class CssPropertyValue {
         originalStack = (Stack<String>) stack.clone();
         resolve(groupElement, stack, resolved);
         resolvedAlternatives = resolveElement(groupElement, new ArrayList<ResolvedToken>(resolved)).alternatives();
+        eliminateDuplicatedAlternatives();
         computeVisibleAlts();
+    }
+    
+    private void eliminateDuplicatedAlternatives() {
+        //Under some circumstances especially if 0-sg. multiplicity is used in a sequence
+        //it might happen that there are more alternative elements with the same toString() 
+        //value which in fact comes from various brances of the parse tree.
+        //An example if voice-family property.
+        //
+        //To eliminate these duplicities it seems to be safe to arbitrary remove the elements
+        //which toString() is equals and keep just one of them.
+        
+        log("\nEliminated duplicate alternatives:\n");
+        HashMap<String, Element> dupes = new HashMap<String, Element>();
+        for(Element e : alternatives()) {
+            if(dupes.put(e.toString(), e) != null) {
+                log(e.path() + "\n");
+            }
+        }
+        log("-----------------\n");
+        
+        alternatives().retainAll(dupes.values());
+        
     }
     
     //------------------------------------------------------------------------
@@ -159,8 +183,13 @@ public class CssPropertyValue {
         //repeat the resolvation of the element with respect to its multiplicity
         int repeat;
         
+        //previous multiplicity loop resolution
+        ResolveType previousPassResolveType;
+        
         multiplicity: for (repeat = 0; repeat < element.getMaximumOccurances(); repeat++) {
 
+            previousPassResolveType = resolveType;
+            
             //break the multiplicity loop if no element was resolved in last cycle
             if(resolveType == ResolveType.UNRESOLVED) {
                 break;
@@ -254,6 +283,11 @@ public class CssPropertyValue {
                     if(firstUnresolved == null) {
                         //the whole sequence has been resolved
                         resolveType = ResolveType.FULLY_RESOLVED;
+                    } else if(previousPassResolveType == ResolveType.FULLY_RESOLVED) {
+                        //if the previous multiplicity cycle resolved something
+                        //we need to return PARTIALLY_RESOLVED type even if nothing
+                        //was resolved in this last cycle
+                        resolveType = ResolveType.PARTIALLY_RESOLVED;
                     }
                     
                     log("sequence " + resolveType + "\n");
@@ -362,7 +396,7 @@ public class CssPropertyValue {
                 sb =
                         new StringBuffer();
 
-            } else if (c == '(') {
+            } /*else if (c == '(') {
                 //make one token until ) found
                 for (; i <
                         input.length(); i++) {
@@ -376,7 +410,7 @@ public class CssPropertyValue {
 
                 }
                 sb.append(c); //add the quotation mark into the value
-            } else if (c == ' ' || c == '\t' || c == '\n') {
+            } */else if (c == ' ' || c == '\t' || c == '\n') {
                 if (sb.length() > 0) {
                     stack.add(0, sb.toString());
                     sb =
@@ -394,7 +428,7 @@ public class CssPropertyValue {
 
             } else {
                 //handling of chars which are both delimiters and values
-                if (c == ',' || c == '/') {
+                if (c == ',' || c == '/' || c == '(' || c == ')') {
                     if (sb.length() > 0) {
                         stack.add(0, sb.toString());
                     }

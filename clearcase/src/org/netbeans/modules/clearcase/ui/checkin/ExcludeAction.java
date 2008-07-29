@@ -53,6 +53,7 @@ import org.netbeans.modules.clearcase.Clearcase;
 import org.netbeans.modules.clearcase.FileInformation;
 import org.netbeans.modules.clearcase.FileStatusCache;
 import org.netbeans.modules.clearcase.util.ClearcaseUtils;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.util.NbBundle;
 
 /**
@@ -95,6 +96,7 @@ public class ExcludeAction extends AbstractAction {
     }
     
     public void actionPerformed(ActionEvent e) {
+        Utils.logVCSActionEvent("CC");
         Set<File> roots = context.getRootFiles();
         if(roots.size() == 0 ) {
             return;
