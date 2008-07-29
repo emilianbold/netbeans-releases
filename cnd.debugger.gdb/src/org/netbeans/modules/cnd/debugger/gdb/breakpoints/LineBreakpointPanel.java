@@ -306,7 +306,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         }
         // Create a new breakpoint
         if (createBreakpoint) {
-	    DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
+	    dm.addBreakpoint(breakpoint);
 	}
         return true;
     }
