@@ -72,7 +72,7 @@ import org.openide.util.Utilities;
 
 /**
  *
- * @author  Dan
+ * @author  Daniel Prusa
  */
 public class InfoPanel extends javax.swing.JPanel {
 
@@ -660,5 +660,28 @@ public class InfoPanel extends javax.swing.JPanel {
     private javax.swing.JButton resumeDebuggerDeadlockButton;
     private javax.swing.JLabel resumeDebuggerDeadlockLabel;
     // End of variables declaration//GEN-END:variables
+
+    public JPanel createSeparator() {
+        JPanel panel = new JPanel();
+        panel.setBackground(javax.swing.UIManager.getDefaults().getColor("Separator.foreground"));
+        panel.setMaximumSize(new java.awt.Dimension(32767, 1));
+        panel.setMinimumSize(new java.awt.Dimension(10, 1));
+        panel.setPreferredSize(new java.awt.Dimension(0, 1));
+        return panel;
+    }
+
+    public JPanel createGapPanel() {
+        JPanel panel = new JPanel();
+        panel.setOpaque(false);
+        panel.setPreferredSize(new java.awt.Dimension(0, 8));
+        return panel;
+    }
+
+    public class Item {
+
+        private JPanel innerPanel;
+        private Color backgroundColor;
+        
+    }
 
 }

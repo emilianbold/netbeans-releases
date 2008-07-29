@@ -48,10 +48,11 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import junit.framework.Test;
 import junit.textui.TestRunner;
 
 import org.netbeans.jellytools.JellyTestCase;
-import org.netbeans.junit.NbTestSuite;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.versioning.VersioningManager;
 import org.netbeans.modules.versioning.spi.VersioningSystem;
 import org.openide.filesystems.FileObject;
@@ -77,11 +78,16 @@ public class VersioningSystemTest extends JellyTestCase {
         TestRunner.run(suite());
     }
     
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(new VersioningSystemTest("testOwnership"));
-        suite.addTest(new VersioningSystemTest("testInterceptor"));
-        return suite;
+    public static Test suite() {
+//        NbTestSuite suite = new NbTestSuite();
+//        suite.addTest(new VersioningSystemTest("testOwnership"));
+//        suite.addTest(new VersioningSystemTest("testInterceptor"));
+//        return suite;
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+                .addTest(VersioningSystemTest.class, 
+                        "testOwnership",
+                        "testInterceptor")
+                .enableModules(".*").clusters(".*"));
     }
 
     protected void setUp() throws Exception {

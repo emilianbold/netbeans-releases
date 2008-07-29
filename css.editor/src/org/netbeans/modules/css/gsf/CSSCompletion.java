@@ -253,24 +253,45 @@ public class CSSCompletion implements CodeCompletionHandler {
                 if(colonIndex >= 0) {
                     expressionText = propertyImage.substring(colonIndex + 1);
                 }
+               
+                //use just the current line, if the expression spans to multiple
+                //lines it is likely because of parsing error
+                int eolIndex = expressionText.indexOf('\n');
+                if (eolIndex > 0) {
+                    expressionText = expressionText.substring(0, eolIndex);
+                }
+
             }
-            
+
             Property prop = PROPERTIES.getProperty(property.image());
             if (prop != null) {
-                         
-            CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
-            
-            Collection<Element> alts = propVal.alternatives();
-                    
-            int completionItemInsertPosition = prefix.trim().length() == 0 
-                    ? caretOffset
-                    : AstUtils.documentPosition(node.startOffset(), source);
-            
-            return wrapPropertyValues(prop, 
-                    filterElements(alts, prefix), 
-                    CompletionItemKind.VALUE, 
-                    completionItemInsertPosition,
-                    false);
+
+                CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
+
+                Collection<Element> alts = propVal.alternatives();
+
+                Collection<Element> filteredByPrefix = filterElements(alts, prefix);
+
+                int completionItemInsertPosition = prefix.trim().length() == 0
+                        ? caretOffset
+                        : AstUtils.documentPosition(node.startOffset(), source);
+
+                //test the situation when completion is invoked just after a valid token
+                //like color: rgb|
+                //in such case the parser offers ( alternative which is valid
+                //so we must not use the prefix for filtering the results out.
+                if (alts.size() > 0 && filteredByPrefix.size() == 0) {
+                    completionItemInsertPosition = caretOffset; //complete on the position of caret
+                    filteredByPrefix = alts; //prefix is empty, do not filter at all
+                }
+
+                return wrapPropertyValues(prop,
+                        filteredByPrefix,
+                        CompletionItemKind.VALUE,
+                        completionItemInsertPosition,
+                        false);
+
+
             }
 
         //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
@@ -316,16 +337,34 @@ public class CSSCompletion implements CodeCompletionHandler {
             SimpleNode expression = (SimpleNode)node.jjtGetParent();
             String expressionText = expression.image();
             
+            //use just the current line, if the expression spans to multiple
+            //lines it is likely because of parsing error
+            int eolIndex = expressionText.indexOf('\n');
+            if(eolIndex > 0) {
+                expressionText = expressionText.substring(0, eolIndex);
+            }
+            
             CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
             
             Collection<Element> alts = propVal.alternatives();
                     
-            int completionItemInsertPosition = prefix.trim().length() == 0 
+            Collection<Element> filteredByPrefix = filterElements(alts, prefix);
+
+            int completionItemInsertPosition = prefix.trim().length() == 0
                     ? caretOffset
                     : AstUtils.documentPosition(node.startOffset(), source);
-            
+
+            //test the situation when completion is invoked just after a valid token
+            //like color: rgb|
+            //in such case the parser offers ( alternative which is valid
+            //so we must not use the prefix for filtering the results out.
+            if (alts.size() > 0 && filteredByPrefix.size() == 0) {
+                completionItemInsertPosition = caretOffset; //complete on the position of caret
+                filteredByPrefix = alts; //prefix is empty, do not filter at all
+            }
+
             return wrapPropertyValues(prop, 
-                    filterElements(alts, prefix), 
+                    filteredByPrefix, 
                     CompletionItemKind.VALUE, 
                     completionItemInsertPosition,
                     false);
@@ -512,6 +551,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 while((parent = parent.parent()) != null) {
                     if(parent.origin() != null) {
                         origin = parent.origin();
+                        break;
                     }
                 }    
             }
@@ -577,7 +617,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
         @Override
          public String getInsertPrefix() {
-            return getName() + (addSemicolon ? ";" : " ");
+            return getName() + (addSemicolon ? ";" : "");
         }
 
         @Override

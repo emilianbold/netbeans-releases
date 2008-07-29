@@ -85,6 +85,10 @@ public class PackagingHeaderPanel extends ListEditorPanel {
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
+        
+        if (infoList.size() >= 0 && infoList.get(0).isMandatory()) {
+            getRemoveButton().setEnabled(false);
+        }
     }
     
     public void setDocArea(JTextArea docArea) {
@@ -165,6 +169,14 @@ public class PackagingHeaderPanel extends ListEditorPanel {
                 return;
             }
             checkSelection();
+            // Disable Remove button for mandatory entries
+            int i = getSelectedIndex();
+            if (listData.size() >= 0 && i >= 0 && i < listData.size()) {
+                InfoElement infoElement = (InfoElement)listData.get(i);
+                if (infoElement.isMandatory()) {
+                    getRemoveButton().setEnabled(false);
+                }
+            }
         }
     }
 
@@ -311,6 +323,57 @@ public class PackagingHeaderPanel extends ListEditorPanel {
         }
         else if (elem.getName().equals("MAXINST")) {
             docArea.setText(getString("PACKAGING_MAXINST_DOC"));
+        }
+        else if (elem.getName().equals("ORDER")) {
+            docArea.setText(getString("PACKAGING_ORDER_DOC"));
+        }
+        else if (elem.getName().equals("PSTAMP")) {
+            docArea.setText(getString("PACKAGING_PSTAMP_DOC"));
+        }
+        else if (elem.getName().equals("RSTATES")) {
+            docArea.setText(getString("PACKAGING_RSTATES_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_ISA")) {
+            docArea.setText(getString("PACKAGING_SUNW_ISA_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_LOC")) {
+            docArea.setText(getString("PACKAGING_SUNW_LOC_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKG_DIR")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_DIR_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKG_ALLZONES")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_ALLZONES_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKG_HOLLOW")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_HOLLOW_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKG_THISZONE")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_THISZONE_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKGLIST")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKGLIST_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKGTYPE")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKGTYPE_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PKGVERS")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKGVERS_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PRODNAME")) {
+            docArea.setText(getString("PACKAGING_SUNW_PRODNAME_DOC"));
+        }
+        else if (elem.getName().equals("SUNW_PRODVERS")) {
+            docArea.setText(getString("PACKAGING_SUNW_PRODVERS_DOC"));
+        }
+        else if (elem.getName().equals("ULIMIT")) {
+            docArea.setText(getString("PACKAGING_ULIMIT_DOC"));
+        }
+        else if (elem.getName().equals("VENDOR")) {
+            docArea.setText(getString("PACKAGING_VENDOR_DOC"));
+        }
+        else if (elem.getName().equals("VSTOCK")) {
+            docArea.setText(getString("PACKAGING_VSTOCK_DOC"));
         }
     }
 

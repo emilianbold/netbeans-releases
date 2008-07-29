@@ -113,7 +113,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(ConfigureProjectPanel.class.getName());
+        return new HelpCtx(ConfigureProjectPanel.class.getName() + "." + wizardType);
     }
 
     public void readSettings(WizardDescriptor settings) {

@@ -148,47 +148,49 @@ public final class JsfTable implements ActiveEditorDrop {
             tableVarName = "item"; //NOI18N
         }
         int formType = 1;
-        ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
-        boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
         TypeMirror dateTypeMirror = controller.getElements().getTypeElement("java.util.Date").asType();
-        for (ExecutableElement method : methods) {
-            String methodName = method.getSimpleName().toString();
-            if (methodName.startsWith("get")) {
-                int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
-                String name = methodName.substring(3);
-                String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
-                if (JsfForm.isId(controller, method, fieldAccess)) {
-                    TypeMirror rType = method.getReturnType();
-                    if (TypeKind.DECLARED == rType.getKind()) {
-                        DeclaredType rTypeDeclared = (DeclaredType)rType;
-                        TypeElement rTypeElement = (TypeElement) rTypeDeclared.asElement();
-                        if (JpaControllerUtil.isEmbeddableClass(rTypeElement)) {
-                            if (embeddedPkSupport == null) {
-                                embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
-                            }
-                            for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
-                                if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
-                                    String pkMethodName = pkMethod.getSimpleName().toString();
-                                    String pkPropTitle = pkMethodName.substring(3);
-                                    String pkPropName = propName + "." + JpaControllerUtil.getPropNameFromMethod(pkMethodName);
-                                    stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {pkPropTitle, null, pkPropName, tableVarName}));
+        if (bean != null) {
+            ExecutableElement[] methods = JpaControllerUtil.getEntityMethods(bean);
+            boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
+            for (ExecutableElement method : methods) {
+                String methodName = method.getSimpleName().toString();
+                if (methodName.startsWith("get")) {
+                    int isRelationship = JpaControllerUtil.isRelationship(controller, method, fieldAccess);
+                    String name = methodName.substring(3);
+                    String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
+                    if (JsfForm.isId(controller, method, fieldAccess)) {
+                        TypeMirror rType = method.getReturnType();
+                        if (TypeKind.DECLARED == rType.getKind()) {
+                            DeclaredType rTypeDeclared = (DeclaredType)rType;
+                            TypeElement rTypeElement = (TypeElement) rTypeDeclared.asElement();
+                            if (JpaControllerUtil.isEmbeddableClass(rTypeElement)) {
+                                if (embeddedPkSupport == null) {
+                                    embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
+                                }
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, bean)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, bean, pkMethod)) {
+                                        String pkMethodName = pkMethod.getSimpleName().toString();
+                                        String pkPropTitle = pkMethodName.substring(3);
+                                        String pkPropName = propName + "." + JpaControllerUtil.getPropNameFromMethod(pkMethodName);
+                                        stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {pkPropTitle, null, pkPropName, tableVarName}));
+                                    }
                                 }
                             }
+                            else {
+                                stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName, tableVarName}));
+                            }
                         }
-                        else {
-                            stringBuffer.append(MessageFormat.format(ITEM [1], new Object [] {name, variable, propName, tableVarName}));
+                    } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
+                        //param 3 - temporal, param 4 - date/time format
+                        String temporal = JsfForm.getTemporal(controller, method, fieldAccess);
+                        if (temporal == null) {
+                            stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
+                        } else {
+                            stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal), tableVarName}));
                         }
-                    }
-                } else if (controller.getTypes().isSameType(dateTypeMirror, method.getReturnType())) {
-                    //param 3 - temporal, param 4 - date/time format
-                    String temporal = JsfForm.getTemporal(controller, method, fieldAccess);
-                    if (temporal == null) {
+                    } else if (isRelationship == JpaControllerUtil.REL_NONE || isRelationship == JpaControllerUtil.REL_TO_ONE) {
                         stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
-                    } else {
-                        stringBuffer.append(MessageFormat.format(ITEM [2], new Object [] {name, variable, propName, temporal, JsfForm.getDateTimeFormat(temporal), tableVarName}));
                     }
-                } else if (isRelationship == JpaControllerUtil.REL_NONE || isRelationship == JpaControllerUtil.REL_TO_ONE) {
-                    stringBuffer.append(MessageFormat.format(ITEM [formType], new Object [] {name, variable, propName, tableVarName}));
                 }
             }
         }
