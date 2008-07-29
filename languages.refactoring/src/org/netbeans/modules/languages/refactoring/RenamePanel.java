@@ -38,7 +38,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.languages.features.refactoring;
+package org.netbeans.modules.languages.refactoring;
 
 import java.awt.Component;
 import javax.swing.JPanel;
