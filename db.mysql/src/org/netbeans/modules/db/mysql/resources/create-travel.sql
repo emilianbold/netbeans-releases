@@ -299,8 +299,7 @@ insert into travel.hotel values (208, 21, 'Sheraton Washington', '2008-06-21', '
 insert into travel.hotel values (383, 22, 'Grenoble Garden Chateau', '2009-10-23', '2009-10-30', 1, 'Confirmed', NULL);
 insert into travel.hotel values (463, 23, 'Mounment Hostel', '2009-6-11', '2009-06-18', 1, null, NULL);
 
-create view travel.persontrip as select tripid, name from trip, person where
-trip.personid = person.personid ;
+create view travel.persontrip as select tripid, name from trip, person where trip.personid = person.personid ;
 
 CREATE TABLE travel.validation_table (
   keycol                      INTEGER
