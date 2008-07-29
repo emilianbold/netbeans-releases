@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.java.source.usages;
 
+import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import java.io.File;
 import java.util.Arrays;
 import java.util.HashSet;
