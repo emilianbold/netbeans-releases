@@ -47,11 +47,11 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             if (!packagingConfiguration.getHeader().getModified()) {
                 List<InfoElement> headerList = packagingConfiguration.getHeader().getValue();
-                headerList.add(new InfoElement("PKG", "PackageName")); // NOI18N
-                headerList.add(new InfoElement("NAME", "Package description ...")); // NOI18N
-                headerList.add(new InfoElement("ARCH", "i386")); // NOI18N
-                headerList.add(new InfoElement("CATEGORY", "application")); // NOI18N
-                headerList.add(new InfoElement("VERSION", "1.0")); // NOI18N
+                headerList.add(new InfoElement("PKG", "PackageName", true)); // NOI18N
+                headerList.add(new InfoElement("NAME", "Package description ...", true)); // NOI18N
+                headerList.add(new InfoElement("ARCH", "i386", true)); // NOI18N
+                headerList.add(new InfoElement("CATEGORY", "application", true)); // NOI18N
+                headerList.add(new InfoElement("VERSION", "1.0", true)); // NOI18N
             }
         }
         

@@ -46,10 +46,18 @@ package org.netbeans.modules.cnd.makeproject.packaging;
 public class InfoElement {
     private String name;
     private String value;
+    private boolean mandatory;
     
     public InfoElement(String name, String value) {
         this.name = name;
         this.value = value;
+        this.mandatory = false;
+    }
+    
+    public InfoElement(String name, String value, boolean mandatory) {
+        this.name = name;
+        this.value = value;
+        this.mandatory = mandatory;
     }
 
     public String getName() {
@@ -66,5 +74,13 @@ public class InfoElement {
 
     public void setValue(String value) {
         this.value = value;
+    }
+
+    public boolean isMandatory() {
+        return mandatory;
+    }
+
+    public void setMandatory(boolean mandatory) {
+        this.mandatory = mandatory;
     }
 }
