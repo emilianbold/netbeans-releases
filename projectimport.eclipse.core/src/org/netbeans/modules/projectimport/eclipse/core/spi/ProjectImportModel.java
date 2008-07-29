@@ -41,7 +41,6 @@ package org.netbeans.modules.projectimport.eclipse.core.spi;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -215,8 +214,7 @@ public final class ProjectImportModel {
     private boolean readJUnitFileHeader(FileObject fo) throws IOException {
         InputStream is = fo.getInputStream();
         try {
-            String enc = getEncoding();
-            BufferedReader input = new BufferedReader(new InputStreamReader(is, enc != null ? enc : "ISO-8859-1")); // NOI18N
+            BufferedReader input = new BufferedReader(new InputStreamReader(is, getEncoding()));
             String line;
             int maxLines = 100;
             while (null != (line = input.readLine()) && maxLines > 0) {
@@ -334,7 +332,7 @@ public final class ProjectImportModel {
 
     /**
      * Gets the encoding, if any.
-     * @return the Eclipse project's specified encoding, or null if unspecified
+     * @return the Eclipse project's specified encoding (UTF-8 is the default, so never null)
      */
     public String getEncoding() {
         Properties p = getPreferences("org.eclipse.core.resources"); // NOI18N
@@ -342,7 +340,12 @@ public final class ProjectImportModel {
         if (enc != null) {
             return enc;
         } else {
-            return p.getProperty("encoding"); // NOI18N
+            enc = p.getProperty("encoding"); // NOI18N
+            if (enc != null) {
+                return enc;
+            } else {
+                return "UTF-8"; // NOI18N
+            }
         }
     }
 
