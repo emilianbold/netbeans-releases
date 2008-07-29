@@ -850,18 +850,21 @@ public class ResourceUtils implements WizardConstants{
     }
     
     private static List getResourceNames(InstanceProperties instProps, String query, String keyProperty){
-        SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface)instProps.getDeploymentManager();
-        List retVal = Collections.EMPTY_LIST;
-        if(eightDM.isRunning()){
-            retVal = getResourceNames(eightDM, query, keyProperty);
-        }else if (eightDM.isLocal()){
-            if(query.equals(__GetJdbcResource)){
-                HashMap dsources = eightDM.getSunDatasourcesFromXml();
-                retVal = new ArrayList(dsources.keySet());
-            }else if (query.equals(__GetJdbcConnectionPool)){
-                HashMap pools = eightDM.getConnPoolsFromXml();
-                retVal = new ArrayList(pools.keySet());
-            }        
+        List retVal = new ArrayList();
+        DeploymentManager dm = instProps.getDeploymentManager();
+        if (dm instanceof SunDeploymentManagerInterface) {
+            SunDeploymentManagerInterface eightDM = (SunDeploymentManagerInterface) dm;
+            if (eightDM.isRunning()) {
+                retVal = getResourceNames(eightDM, query, keyProperty);
+            } else if (eightDM.isLocal()) {
+                if (query.equals(__GetJdbcResource)) {
+                    HashMap dsources = eightDM.getSunDatasourcesFromXml();
+                    retVal = new ArrayList(dsources.keySet());
+                } else if (query.equals(__GetJdbcConnectionPool)) {
+                    HashMap pools = eightDM.getConnPoolsFromXml();
+                    retVal = new ArrayList(pools.keySet());
+                }
+            }
         }
         return retVal;
     }
