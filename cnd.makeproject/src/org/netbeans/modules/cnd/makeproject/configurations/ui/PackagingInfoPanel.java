@@ -12,10 +12,10 @@ import javax.swing.JPanel;
  *
  * @author  thp
  */
-public class PackagingInfo2Panel extends javax.swing.JPanel {
+public class PackagingInfoPanel extends javax.swing.JPanel {
 
     /** Creates new form PackagingInfo2Panel */
-    public PackagingInfo2Panel(PackagingHeaderPanel innerPanel) {
+    public PackagingInfoPanel(PackagingHeaderPanel innerPanel) {
         java.awt.GridBagConstraints gridBagConstraints;
         
         initComponents();
@@ -73,7 +73,7 @@ public class PackagingInfo2Panel extends javax.swing.JPanel {
         docTextArea.setEditable(false);
         docTextArea.setLineWrap(true);
         docTextArea.setRows(5);
-        docTextArea.setText(org.openide.util.NbBundle.getMessage(PackagingInfo2Panel.class, "PackagingInfo2Panel.docTextArea.text")); // NOI18N
+        docTextArea.setText(org.openide.util.NbBundle.getMessage(PackagingInfoPanel.class, "PackagingInfoPanel.docTextArea.text")); // NOI18N
         docTextArea.setWrapStyleWord(true);
         scrollPane.setViewportView(docTextArea);
 

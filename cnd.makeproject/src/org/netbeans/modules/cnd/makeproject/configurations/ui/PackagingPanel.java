@@ -28,7 +28,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     PackagingConfiguration packagingConfiguration;
     private PropertyEditorSupport editor;
     private MakeConfiguration conf;
-    private PackagingInfo2Panel packagingInfoPanel = null;
+    private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
     private PackagingHeaderPanel packagingHeaderPanel = null;
     
@@ -56,7 +56,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         // Add tabs
-        packagingInfoPanel = new PackagingInfo2Panel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
+        packagingInfoPanel = new PackagingInfoPanel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
