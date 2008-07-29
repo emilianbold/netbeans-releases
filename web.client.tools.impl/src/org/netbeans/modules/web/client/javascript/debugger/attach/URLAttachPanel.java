@@ -143,7 +143,7 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
             .add(layout.createSequentialGroup()
                 .addContainerGap()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 376, Short.MAX_VALUE)
+                    .add(messageTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 384, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(debugURLLabel)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
@@ -168,6 +168,10 @@ public class URLAttachPanel extends javax.swing.JPanel implements Controller {
                 .add(messageTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
+
+        debugURLTextField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLTextField.AccessibleContext.accessibleName")); // NOI18N
+        debugURLTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.debugURLTextField.AccessibleContext.accessibleDescription")); // NOI18N
+        firefoxRadioButton.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(URLAttachPanel.class, "URLAttachPanel.firefoxRadioButton.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     @Override
