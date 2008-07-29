@@ -53,10 +53,7 @@ import org.openide.util.NbPreferences;
  *
  * @author Jiri Rechtacek
  */
-final class NbAuthenticator extends java.net.Authenticator {
-
-    private static final long TIMEOUT = 3000;
-    private static long lastTry = 0;
+class NbAuthenticator extends java.net.Authenticator {
 
     NbAuthenticator() {
         Preferences proxySettingsNode = NbPreferences.root().node("/org/netbeans/core"); //NOI18N
@@ -64,28 +61,22 @@ final class NbAuthenticator extends java.net.Authenticator {
     }
 
     @Override
-    protected PasswordAuthentication getPasswordAuthentication() {
+    protected java.net.PasswordAuthentication getPasswordAuthentication() {
         Logger.getLogger(NbAuthenticator.class.getName()).log(Level.FINER, "Authenticator.getPasswordAuthentication() with prompt " + this.getRequestingPrompt()); //NOI18N
 
         if (RequestorType.PROXY == getRequestorType() && ProxySettings.useAuthentication()) {
             Logger.getLogger(NbAuthenticator.class.getName()).log(Level.FINER, "Username set to " + ProxySettings.getAuthenticationUsername() + " while request " + this.getRequestingURL()); //NOI18N
             return new java.net.PasswordAuthentication(ProxySettings.getAuthenticationUsername(), ProxySettings.getAuthenticationPassword());
         } else {
-            if (System.currentTimeMillis() - lastTry > TIMEOUT) {
-                NbAuthenticatorPanel ui = new NbAuthenticatorPanel(getRequestingPrompt());
-                Object result = DialogDisplayer.getDefault().notify(
-                        new DialogDescriptor(ui, NbBundle.getMessage(NbAuthenticator.class, "CTL_Authentication"))); //NOI18N
-                if (DialogDescriptor.OK_OPTION == result) {
-                    lastTry = 0;
-                    return new PasswordAuthentication(ui.getUserName(), ui.getPassword());
-                } else {
-                    lastTry = System.currentTimeMillis();
-                }
+            NbAuthenticatorPanel ui = new NbAuthenticatorPanel(getRequestingPrompt());
+            Object result = DialogDisplayer.getDefault().notify(
+                    new DialogDescriptor(ui, NbBundle.getMessage(NbAuthenticator.class, "CTL_Authentication"))); //NOI18N
+            if (DialogDescriptor.OK_OPTION == result) {
+                return new PasswordAuthentication(ui.getUserName(), ui.getPassword());
             }
         }
 
         Logger.getLogger(NbAuthenticator.class.getName()).log(Level.WARNING, "No authentication set while requesting " + this.getRequestingURL()); //NOI18N
         return null;
     }
-
 }
