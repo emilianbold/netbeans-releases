@@ -169,6 +169,7 @@ public class SystemIncludesUtils {
             handle.progress("preparing local copy of " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
         }
+        copySupport.disconnect();
         return true;
     }
 

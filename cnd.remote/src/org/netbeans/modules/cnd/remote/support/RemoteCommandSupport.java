@@ -63,7 +63,9 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public static int run(String key, String cmd) {
         RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
-        return support.getExitStatus();
+        int rc = support.getExitStatus();
+        support.disconnect();
+        return rc;
     }
 
     public RemoteCommandSupport(String key, String cmd, Map<String, String> env, int port) {

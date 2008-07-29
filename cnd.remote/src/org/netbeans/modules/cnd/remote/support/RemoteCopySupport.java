@@ -192,8 +192,8 @@ public class RemoteCopySupport extends RemoteConnectionSupport {
         } finally {
             if (channel.isConnected()) {
                 setExitStatus(channel.getExitStatus());
+                channel.disconnect();
             }
-            disconnect();
             try {
                 if (fos != null) {
                     fos.close();
