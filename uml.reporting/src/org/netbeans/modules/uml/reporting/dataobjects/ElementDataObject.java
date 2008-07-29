@@ -519,6 +519,9 @@ public class ElementDataObject implements Report
                     diagram = ReportTask.loadDiagram(
                             diagrams[i].getData().getDiagram().getFilename());
                 }
+                // temporarily filter out unsupported diagram
+                if (diagram == null)
+                    continue;
                 
                 buff.append("<TR BGCOLOR=\"white\" CLASS=\"TableRowColor\">\r\n"); // NOI18N
                 

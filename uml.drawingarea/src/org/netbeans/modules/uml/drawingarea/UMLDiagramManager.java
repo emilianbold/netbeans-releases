@@ -67,8 +67,11 @@ import org.netbeans.modules.uml.ui.support.applicationmanager.IProduct;
 import org.netbeans.modules.uml.ui.support.applicationmanager.IProductDiagramManager;
 import org.netbeans.modules.uml.core.support.Debug;
 import java.awt.Dialog;
+import java.io.File;
 import java.text.MessageFormat;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagramKind;
 import org.netbeans.modules.uml.core.support.umlsupport.FileExtensions;
@@ -87,7 +90,6 @@ import org.netbeans.modules.uml.ui.support.helpers.ProgressBarHelper;
 import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
-import org.openide.explorer.ExplorerManager;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -121,16 +123,13 @@ public class UMLDiagramManager
         IDiagram retVal = null;
         TopComponent tc = null;
         try
-        {  
-            tc = WindowManager.getDefault().findTopComponent("projectTabLogical_tc");
-            if (tc == null)
-            {
-                return null;
-            }
-            final ExplorerManager manager =
-                    ((ExplorerManager.Provider) tc).getExplorerManager();
-            tc.setCursor(Utilities.createProgressCursor(tc));
+        {
+            tc = TopComponent.getRegistry().getActivated();//WindowManager.getDefault().findTopComponent("projectTabLogical_tc");
 
+            if (tc != null)
+            {
+                tc.setCursor(Utilities.createProgressCursor(tc));
+            }
             showDiagram(sTOMFilename);
 
             retVal = retrieveDiagram(sTOMFilename);
@@ -141,17 +140,15 @@ public class UMLDiagramManager
             }
             raiseWindow(retVal);
             garbageCollect();
-        }
-        catch (Exception e)
+        } catch (Exception e)
         {
             e.printStackTrace();
-        }
-        finally
+        } finally
         {
             if (tc != null)
             {
                 tc.setCursor(null);
-            }                
+            }
         }
         return retVal;
     }
@@ -424,7 +421,7 @@ public class UMLDiagramManager
     
     protected void showDiagram(String diagramFile)
     {
-        if (diagramFile != null)
+        if (diagramFile != null && (new File(diagramFile)).length() > 0)
         {
             UMLDiagramTopComponent topComponent = findTopComponent(diagramFile);
             
@@ -436,12 +433,11 @@ public class UMLDiagramManager
             
             else
             {
+                IProxyDiagramManager proxyDiaMgr = ProxyDiagramManager.instance();
+                IProxyDiagram pDia = proxyDiaMgr.getDiagram(diagramFile);
                 try 
                 {
-                    IProxyDiagramManager proxyDiaMgr = ProxyDiagramManager.instance();
-                    IProxyDiagram pDia = proxyDiaMgr.getDiagram(diagramFile);
-                    
-                    if (diagramFile.endsWith(FileExtensions.DIAGRAM_TS_LAYOUT_EXT))
+                   if (diagramFile.endsWith(FileExtensions.DIAGRAM_TS_LAYOUT_EXT))
                     {
                         if (pDia == null)
                         {
