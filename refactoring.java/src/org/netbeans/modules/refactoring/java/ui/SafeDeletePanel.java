@@ -82,7 +82,8 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
      * @param selectedElements A Collection of selected elements
      */
     public SafeDeletePanel(SafeDeleteRefactoring refactoring, boolean regulardelete, ChangeListener parent) {
-        setName(NbBundle.getMessage(SafeDeletePanel.class,"LBL_SafeDel")); // NOI18N
+        setName(NbBundle.getMessage(SafeDeletePanel.class,
+                regulardelete ? "LBL_SafeDel_Delete" : "LBL_SafeDel")); // NOI18N
         this.refactoring = refactoring;
         this.regulardelete = regulardelete;
         this.parent = parent;
