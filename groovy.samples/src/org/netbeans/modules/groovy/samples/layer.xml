@@ -5,7 +5,7 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="Groovy">
-                    <attr name="position" intvalue="150"/>
+                    <attr name="position" intvalue="620"/>
                     <file name="NBProjectGeneratorsProject.zip" url="NBProjectGeneratorsProject.zip">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.samples.Bundle"/>
                         <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.groovy.samples.nbprojectgen.NBProjectGeneratorsWizardIterator.createIterator"/>
