@@ -1601,8 +1601,8 @@ jarsigner.storepass=${jarsigner.storepass}
 
     <target name="generate-javatoolsbundle-bundles" depends="init-jtb-bundles" if="do.build.jtb">
 	<!-- Java Tools Bundle installer -->
-        <set property="jtb.bundles.prefix" value="java-tools-bundle-update5"/>
-        <set property="bundle.dmg.name"    value="Java EE 5 Tools Bundle Update 5"/>
+        <set property="jtb.bundles.prefix" value="java-tools-bundle-update6"/>
+        <set property="bundle.dmg.name"    value="Java EE 5 Tools Bundle Update 6"/>
 
 	<antcall target="generate-javatoolsbundle-bundle">
                <param name="bundle.platform"  value="windows"/>
