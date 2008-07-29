@@ -51,6 +51,23 @@ made subject to such option by the copyright holder.
     </apidefs>
 
     <changes>
+        <change id="BuildActions">
+            <api name="recent"/>
+            <summary>Externalize Build related action registration.</summary>
+            <version major="1" minor="15"/>
+            <date day="20" month="7" year="2008"/>
+            <author login="mkleint"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    For certain distributions of NetBeans (PHP or Ruby), actions like "Build project" or "Rebuild project" make no sense in the
+                    main menu. Therefore the layer registration for these actions was moved to projectui.buildmenu module
+                    which provides token "BuildActions". If a certain distribution requires these actiosn to be present it shall
+                    require this token. Java and CND do now.
+                </p>
+            </description>
+            <issue number="140731"/>
+        </change>
         <change id="project.tab.no.selection">
             <api name="recent"/>
             <summary>Don't open project view component in bluej edition.</summary>

@@ -44,19 +44,18 @@ package org.netbeans.modules.groovy.grailsproject;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.queries.SharabilityQuery;
+import org.netbeans.modules.groovy.grailsproject.ui.wizards.GrailsArtifacts;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
-
 
 /**
  *
@@ -72,60 +71,55 @@ public class GrailsSources implements Sources {
     }
     
     public SourceGroup[] getSourceGroups(String type) {
-        List<SourceGroup> result = new ArrayList<SourceGroup>();
-        
         if (Sources.TYPE_GENERIC.equals(type)) {
-            result.add(new Group(projectDir, projectDir.getName(), null, null, SourceCategory.NONE));
-        } else if ("grails-app/conf".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/conf"), // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_conf"), null, null, SourceCategory.CONFIGURATION)); // NOI18N
-        } else if ("grails-app/controllers".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/controllers"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_controllers"), null, null, SourceCategory.CONTROLLERS)); // NOI18N
-        } else if ("grails-app/domain".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/domain"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_domain"), null, null, SourceCategory.DOMAIN)); // NOI18N
-        } else if ("grails-app/i18n".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/i18n"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_i18n"), null, null, SourceCategory.MESSAGES)); // NOI18N
-        } else if ("grails-app/services".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/services"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_services"), null, null, SourceCategory.SERVICES)); // NOI18N
-        } else if ("grails-app/taglib".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/taglib"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_taglib"), null, null, SourceCategory.TAGLIB)); // NOI18N
-        } else if ("grails-app/utils".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/utils"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_utils"), null, null, SourceCategory.UTIL)); // NOI18N
-        } else if ("grails-app/views".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("grails-app/views"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_views"), null, null, SourceCategory.VIEWS)); // NOI18N
-        } else if ("web-app".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("web-app"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_web-app"), null, null, SourceCategory.VIEWS)); // NOI18N
-        } else if ("lib".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("lib"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_lib"), null, null, SourceCategory.LIB)); // NOI18N
-        } else if ("test".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("test"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_test"), null, null, SourceCategory.VIEWS)); // NOI18N
-        } else if ("src".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("src"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_src"), null, null, SourceCategory.SRC)); // NOI18N
-        } else if ("scripts".equals(type)) { // NOI18N
-            result.add(new Group(projectDir.getFileObject("scripts"),  // NOI18N
-                    NbBundle.getMessage(GrailsSources.class, "LBL_scripts"), null, null, SourceCategory.VIEWS)); // NOI18N
-        } else {
-            if(!type.startsWith(".") && !type.startsWith("grails-app/.")) { // NOI18N
-                // we have to filter-out hidden directories like .settings etc.
-                FileObject fileObject = projectDir.getFileObject(type);
-                if (fileObject != null) {
-                    result.add(new Group(fileObject, fileObject.getName(), null, null, SourceCategory.NONE));
-                }
-            }
+            return new SourceGroup[] {
+                new Group(SourceCategory.NONE, projectDir.getName())
+            };
+        } else if (JavaProjectConstants.SOURCES_TYPE_JAVA.equals(type)) {
+            return new SourceGroup[] {
+                new Group(SourceCategory.SRC_JAVA, NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava"))
+            };
         }
-        
-        return result.toArray(new SourceGroup[result.size()]);
+
+        FileObject fileObject = projectDir.getFileObject(type);
+        if (fileObject == null) {
+            return new SourceGroup[] { new Group(SourceCategory.NONE, fileObject.getName()) };
+        }
+
+        SourceCategory cat = GrailsArtifacts.getCategoryForFolder(projectDir, projectDir.getFileObject(type));
+        switch (cat) {
+            case CONFIGURATION:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_conf")) };
+            case CONTROLLERS:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_controllers")) };
+            case DOMAIN:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_domain")) };
+            case INTEGRATION_TESTS:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_IntegrationTests")) };
+            case LIB:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_lib")) };
+            case MESSAGES:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_i18n")) };
+            case SCRIPTS:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_scripts")) };
+            case SERVICES:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_services")) };
+            case SRC_GROOVY:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_SrcGroovy")) };
+            case SRC_JAVA:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_SrcJava")) };
+            case TAGLIB:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_taglib")) };
+            case UNIT_TESTS:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_UnitTests")) };
+            case UTIL:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_utils")) };
+            case VIEWS:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_grails-app_views")) };
+            case WEBAPP:
+                return new SourceGroup[] { new Group(cat, NbBundle.getMessage(GrailsSources.class, "LBL_web-app")) };
+        }
+        return new SourceGroup[] {};
     }
     
     public void addChangeListener(ChangeListener listener) {
@@ -141,17 +135,12 @@ public class GrailsSources implements Sources {
         
         private final FileObject loc;
         private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
- 
         private final String displayName;
-        private final Icon icon;
-        private final Icon openedIcon;
         private final SourceCategory category;
         
-        public Group(FileObject loc, String displayName, Icon icon, Icon openedIcon, SourceCategory category) {
-            this.loc = loc;
+        public Group(SourceCategory category, String displayName) {
+            this.loc = projectDir.getFileObject(category.dir());
             this.displayName = displayName;
-            this.icon = icon;
-            this.openedIcon = openedIcon;
             this.category = category;
         }
         
@@ -173,7 +162,7 @@ public class GrailsSources implements Sources {
         }
         
         public Icon getIcon(boolean opened) {
-            return opened ? icon : openedIcon;
+            return null;
         }
         
         public boolean contains(FileObject file) throws IllegalArgumentException {
