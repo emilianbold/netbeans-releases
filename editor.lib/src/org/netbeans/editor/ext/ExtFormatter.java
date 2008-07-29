@@ -404,61 +404,62 @@ public class ExtFormatter extends Formatter implements FormatLayer {
     * @param offset the offset of a character on the line
     * @return new offset to place cursor to
     */
-    public @Override int indentNewLine(Document doc, int offset) {
+    public @Override int indentNewLine (final Document doc, final int offset) {
+        final int[] result = new int [] {offset};
         if (doc instanceof BaseDocument) {
-            BaseDocument bdoc = (BaseDocument)doc;
-            boolean newLineInserted = false;
+            final BaseDocument bdoc = (BaseDocument)doc;
 
-            bdoc.atomicLock();
-            try {
-                bdoc.insertString(offset, "\n", null); // NOI18N
-                offset++;
-                newLineInserted = true;
+            bdoc.runAtomic (new Runnable () {
+                public void run () {
+                    boolean newLineInserted = false;
+                    try {
+                        bdoc.insertString(result [0], "\n", null); // NOI18N
+                        result [0]++;
+                        newLineInserted = true;
 
-                int eolOffset = Utilities.getRowEnd(bdoc, offset);
+                        int eolOffset = Utilities.getRowEnd(bdoc, result [0]);
 
-                // Try to change the indent of the new line
-                // It may fail when inserting '\n' before the guarded block
-                Writer w = reformat(bdoc, offset, eolOffset, true);
+                        // Try to change the indent of the new line
+                        // It may fail when inserting '\n' before the guarded block
+                        Writer w = reformat(bdoc, result [0], eolOffset, true);
 
-                // Find the caret position
-                eolOffset = Utilities.getRowFirstNonWhite(bdoc, offset);
-                if (eolOffset < 0) { // white line
-                    eolOffset = getEOLOffset(bdoc, offset);
+                        // Find the caret position
+                        eolOffset = Utilities.getRowFirstNonWhite(bdoc, result [0]);
+                        if (eolOffset < 0) { // white line
+                            eolOffset = getEOLOffset(bdoc, result [0]);
+                        }
+
+                        result [0] = eolOffset;
+
+                        // Resulting offset (caret position) can be shifted
+                        if (w instanceof FormatWriter) {
+                            result [0] += ((FormatWriter)w).getIndentShift();
+                        }
+
+                    } catch (GuardedException e) {
+                        // Possibly couldn't insert additional indentation
+                        // at the begining of the guarded block
+                        // but the initial '\n' could be fine
+                        if (!newLineInserted) {
+                            java.awt.Toolkit.getDefaultToolkit().beep();
+                        }
+
+                    } catch (BadLocationException e) {
+                        Utilities.annotateLoggable(e);
+                    } catch (IOException e) {
+                        Utilities.annotateLoggable(e);
+                    }
                 }
-
-                offset = eolOffset;
-                
-                // Resulting offset (caret position) can be shifted
-                if (w instanceof FormatWriter) {
-                    offset += ((FormatWriter)w).getIndentShift();
-                }
-
-            } catch (GuardedException e) {
-                // Possibly couldn't insert additional indentation
-                // at the begining of the guarded block
-                // but the initial '\n' could be fine
-                if (!newLineInserted) {
-                    java.awt.Toolkit.getDefaultToolkit().beep();
-                }
-
-            } catch (BadLocationException e) {
-                Utilities.annotateLoggable(e);
-            } catch (IOException e) {
-                Utilities.annotateLoggable(e);
-            } finally {
-                bdoc.atomicUnlock();
-            }
-
+            });
         } else { // not BaseDocument
             try {
-                doc.insertString (offset, "\n", null); // NOI18N
-                offset++;
+                doc.insertString (result [0], "\n", null); // NOI18N
+                result [0]++;
             } catch (BadLocationException ex) {
             }
         }
 
-        return offset;
+        return result [0];
     }
 
     /** Whether the formatter accepts the given syntax
