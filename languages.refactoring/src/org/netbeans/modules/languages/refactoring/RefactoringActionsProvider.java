@@ -39,11 +39,13 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.languages.features.refactoring;
+package org.netbeans.modules.languages.refactoring;
 
 import javax.swing.JEditorPane;
 import javax.swing.text.Document;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.JTextComponent;
 
 import org.netbeans.api.languages.ASTNode;
@@ -51,7 +53,6 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.ParseException;
 import org.netbeans.api.languages.ParserManager;
 import org.netbeans.modules.editor.NbEditorDocument;
-import org.netbeans.modules.languages.ParserManagerImpl;
 import org.netbeans.modules.refactoring.spi.ui.ActionsImplementationProvider;
 import org.netbeans.modules.refactoring.spi.ui.RefactoringUI;
 import org.netbeans.modules.refactoring.spi.ui.UI;
@@ -81,23 +82,31 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
     }
     
     public void doFindUsages(Lookup lookup) {
-        FileObject fobj = getFileObject(lookup);
-        Object[] objs = getASTPathAndDocument(lookup);
-        ASTPath path = (ASTPath)objs[0];
-        Document doc = (Document)objs[1];
-        TopComponent activetc = TopComponent.getRegistry().getActivated();
-        RefactoringUI ui = new WhereUsedQueryUI(path, fobj, doc);
-        UI.openRefactoringUI(ui, activetc);
+        try {
+            FileObject fobj = getFileObject(lookup);
+            Object[] objs = getASTPathAndDocument(lookup);
+            ASTPath path = (ASTPath)objs[0];
+            Document doc = (Document)objs[1];
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            RefactoringUI ui = new WhereUsedQueryUI(path, fobj, doc);
+            UI.openRefactoringUI(ui, activetc);
+        } catch (ParseException e) {
+            Logger.getLogger(RefactoringActionsProvider.class.getName()).log(Level.SEVERE, "Error parsing document", e);
+        }
     }
     
     public void doRename(Lookup lookup) {
-        FileObject fobj = getFileObject(lookup);
-        Object[] objs = getASTPathAndDocument(lookup);
-        ASTPath path = (ASTPath)objs[0];
-        Document doc = (Document)objs[1];
-        TopComponent activetc = TopComponent.getRegistry().getActivated();
-        RefactoringUI ui = new RenameRefactoringUI(path, fobj, doc);
-        UI.openRefactoringUI(ui, activetc);
+        try {
+            FileObject fobj = getFileObject(lookup);
+            Object[] objs = getASTPathAndDocument(lookup);
+            ASTPath path = (ASTPath)objs[0];
+            Document doc = (Document)objs[1];
+            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            RefactoringUI ui = new RenameRefactoringUI(path, fobj, doc);
+            UI.openRefactoringUI(ui, activetc);
+        } catch (ParseException e) {
+            Logger.getLogger(RefactoringActionsProvider.class.getName()).log(Level.SEVERE, "Error parsing document", e);
+        }
     }
     
     private static FileObject getFileObject(Lookup lookup) {
@@ -106,12 +115,12 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider {
         return dob.getPrimaryFile();
     }
     
-    private static Object[] getASTPathAndDocument(Lookup lookup) {
+    private static Object[] getASTPathAndDocument(Lookup lookup) throws ParseException {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
         JTextComponent textComp = ec.getOpenedPanes()[0];
         NbEditorDocument doc = (NbEditorDocument)textComp.getDocument();
         String selectedText = textComp.getSelectedText();
-        ASTNode node = ParserManagerImpl.getImpl (doc).getAST ();
+        ASTNode node = ParserManager.get (doc).getAST ();
         int position = 0;
         if (selectedText != null) {
             position = textComp.getSelectionStart();
