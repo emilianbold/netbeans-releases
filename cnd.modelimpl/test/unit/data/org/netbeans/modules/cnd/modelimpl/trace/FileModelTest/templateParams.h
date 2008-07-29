@@ -50,3 +50,18 @@ template <bool b> class T {
 };
 
 typedef T<A::b == 1> Z;
+
+template <typename ScannerT>
+static typename parser_result<chlit<>, ScannerT>::type
+parse_dot(ScannerT& scan) {
+    return ch_p('.').parse(scan);
+}
+
+typedef MakeTypelist<>::Result null_tl;
+
+typedef Loki::Seq
+<
+struct Foo,
+struct Boo
+>::Type ClassList;
+

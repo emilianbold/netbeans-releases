@@ -87,36 +87,14 @@ public class IdentifierErrorProvider extends CsmErrorProvider {
         public void visit(CsmReference ref, CsmReference prev, CsmReference parent) {
             if (ref.getReferencedObject() == null) {
                 Severity severity = Severity.ERROR;
-                if (prev != null && ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE) {
-                    CsmObject obj = prev.getReferencedObject();
-                    if (obj == null || isTemplateParameterInvolved(obj) || CsmKindUtilities.isMacro(obj)) {
-                        severity = Severity.WARNING;
-                    }
-                } else if (parent != null) {
-                    CsmObject obj = parent.getReferencedObject();
-                    if (CsmKindUtilities.isMacro(obj)) {
-                        severity = Severity.WARNING;
-                    }
+                if (CsmFileReferences.isTemplateBased(ref, prev, parent) ||
+                        CsmFileReferences.isMacroBased(ref, prev, parent)) {
+                    severity = Severity.WARNING;
                 }
                 response.addError(new IdentifierErrorInfo(
                         ref.getStartOffset(), ref.getEndOffset(),
                         ref.getText().toString(), severity));
             }
-        }
-
-        private static boolean isTemplateParameterInvolved(CsmObject obj) {
-            if (CsmKindUtilities.isTemplateParameter(obj)) {
-                return true;
-            }
-            CsmType type = null;
-            if (CsmKindUtilities.isFunction(obj)) {
-                type = ((CsmFunction)obj).getReturnType();
-            } else if (CsmKindUtilities.isVariable(obj)) {
-                type = ((CsmVariable)obj).getType();
-            } else if(CsmKindUtilities.isTypedef(obj)) {
-                type = ((CsmTypedef) obj).getType();
-            }
-            return (type == null) ? false : type.isTemplateBased();
         }
     }
 

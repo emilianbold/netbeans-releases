@@ -181,10 +181,22 @@ NodeActionsProvider, TableModel {
      * @return  display name for given node
      */
     public String getDisplayName (Object node) throws UnknownTypeException {
-        if (node instanceof TargetLister.Target) 
-            return ((TargetLister.Target) node).getName ();
-        if (node instanceof Task) 
-            return ((Task) node).getTaskStructure ().getName ();
+        if (node instanceof TargetLister.Target) {
+            try {
+                return ((TargetLister.Target) node).getName ();
+            } catch (IllegalStateException e) {
+                // thrown if ant process has been already finished
+                return "";
+            }
+        }
+        if (node instanceof Task) {
+            try {
+                return ((Task) node).getTaskStructure ().getName ();
+            } catch (IllegalStateException e) {
+                // thrown if ant process has been already finished
+                return "";
+            }
+        }
         if (node == ROOT) {
             return ROOT;
         }
