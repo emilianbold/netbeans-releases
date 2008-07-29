@@ -381,72 +381,81 @@ public class Formatter {
      * @param doc document to operate on
      * @param dotPos insertion point
      */
-    public void insertTabString(BaseDocument doc, int dotPos)
+    public void insertTabString (final BaseDocument doc, final int dotPos)
     throws BadLocationException {
-        doc.atomicLock();
-        try {
-            // Determine first white char before dotPos
-            int rsPos = Utilities.getRowStart(doc, dotPos);
-            int startPos = Utilities.getFirstNonWhiteBwd(doc, dotPos, rsPos);
-            startPos = (startPos >= 0) ? (startPos + 1) : rsPos;
-            
-            int startCol = Utilities.getVisualColumn(doc, startPos);
-            int endCol = Utilities.getNextTabColumn(doc, dotPos);
-            String tabStr = Analyzer.getWhitespaceString(startCol, endCol, expandTabs(), doc.getTabSize());
-            
-            // Search for the first non-common char
-            char[] removeChars = doc.getChars(startPos, dotPos - startPos);
-            int ind = 0;
-            while (ind < removeChars.length && removeChars[ind] == tabStr.charAt(ind)) {
-                ind++;
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    // Determine first white char before dotPos
+                    int rsPos = Utilities.getRowStart(doc, dotPos);
+                    int startPos = Utilities.getFirstNonWhiteBwd(doc, dotPos, rsPos);
+                    startPos = (startPos >= 0) ? (startPos + 1) : rsPos;
+
+                    int startCol = Utilities.getVisualColumn(doc, startPos);
+                    int endCol = Utilities.getNextTabColumn(doc, dotPos);
+                    String tabStr = Analyzer.getWhitespaceString(startCol, endCol, expandTabs(), doc.getTabSize());
+
+                    // Search for the first non-common char
+                    char[] removeChars = doc.getChars(startPos, dotPos - startPos);
+                    int ind = 0;
+                    while (ind < removeChars.length && removeChars[ind] == tabStr.charAt(ind)) {
+                        ind++;
+                    }
+
+                    startPos += ind;
+                    doc.remove(startPos, dotPos - startPos);
+                    doc.insertString(startPos, tabStr.substring(ind), null);
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
             }
-            
-            startPos += ind;
-            doc.remove(startPos, dotPos - startPos);
-            doc.insertString(startPos, tabStr.substring(ind), null);
-            
-        } finally {
-            doc.atomicUnlock();
-        }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
     }
 
     /** Change the indent of the given row. Document is atomically locked
     * during this operation.
     */
-    public void changeRowIndent(BaseDocument doc, int pos, int newIndent)
+    public void changeRowIndent (final BaseDocument doc, final int pos, final int newIndent)
     throws BadLocationException {
-        doc.atomicLock();
-        try {
-            if (newIndent < 0) {
-                newIndent = 0;
-            }
-            int firstNW = Utilities.getRowFirstNonWhite(doc, pos);
-            if (firstNW == -1) { // valid first non-blank
-                firstNW = Utilities.getRowEnd(doc, pos);
-            }
-            int replacePos = Utilities.getRowStart(doc, pos);
-            int removeLen = firstNW - replacePos;
-            CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
-            String newIndentText = getIndentString(doc, newIndent);
-            if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
-                // Skip removeLen chars at start
-                newIndentText = newIndentText.substring(removeLen);
-                replacePos += removeLen;
-                removeLen = 0;
-            } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
-                // Skip removeLen chars at the end
-                newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
-                removeLen = 0;
-            }
-            
-            if (removeLen != 0) {
-                doc.remove(replacePos, removeLen);
-            }
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    int indent = newIndent < 0 ? 0 : newIndent;
+                    int firstNW = Utilities.getRowFirstNonWhite(doc, pos);
+                    if (firstNW == -1) { // valid first non-blank
+                        firstNW = Utilities.getRowEnd(doc, pos);
+                    }
+                    int replacePos = Utilities.getRowStart(doc, pos);
+                    int removeLen = firstNW - replacePos;
+                    CharSequence removeText = DocumentUtilities.getText(doc, replacePos, removeLen);
+                    String newIndentText = getIndentString(doc, indent);
+                    if (CharSequenceUtilities.startsWith(newIndentText, removeText)) {
+                        // Skip removeLen chars at start
+                        newIndentText = newIndentText.substring(removeLen);
+                        replacePos += removeLen;
+                        removeLen = 0;
+                    } else if (CharSequenceUtilities.endsWith(newIndentText, removeText)) {
+                        // Skip removeLen chars at the end
+                        newIndentText = newIndentText.substring(0, newIndentText.length() - removeLen);
+                        removeLen = 0;
+                    }
 
-            doc.insertString(replacePos, newIndentText, null);
-        } finally {
-            doc.atomicUnlock();
-        }
+                    if (removeLen != 0) {
+                        doc.remove(replacePos, removeLen);
+                    }
+
+                    doc.insertString(replacePos, newIndentText, null);
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
+                }
+            }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
     }
 
     /** Increase/decrease indentation of the block of the code. Document
@@ -457,8 +466,8 @@ public class Formatter {
     * @param shiftCnt positive/negative count of shiftwidths by which indentation
     *   should be shifted right/left
     */
-    public void changeBlockIndent(BaseDocument doc, int startPos, int endPos,
-                                  int shiftCnt) throws BadLocationException {
+    public void changeBlockIndent (final BaseDocument doc, final int startPos, final int endPos,
+                                  final int shiftCnt) throws BadLocationException {
 
        
         GuardedDocument gdoc = (doc instanceof GuardedDocument)
@@ -472,29 +481,32 @@ public class Formatter {
             }
         }
         
-        doc.atomicLock();
-        try {
+        final BadLocationException[] badLocationExceptions = new BadLocationException [1];
+        doc.runAtomic (new Runnable () {
+            public void run () {
+                try {
+                    int indentDelta = shiftCnt * doc.getShiftWidth();
+                    int end = (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) ?
+                        endPos - 1 : endPos;
 
-            int indentDelta = shiftCnt * doc.getShiftWidth();
-            if (endPos > 0 && Utilities.getRowStart(doc, endPos) == endPos) {
-                endPos--;
-            }
-
-            int pos = Utilities.getRowStart(doc, startPos );
-            for (int lineCnt = Utilities.getRowCount(doc, startPos, endPos);
-                    lineCnt > 0; lineCnt--
-                ) {
-                int indent = Utilities.getRowIndent(doc, pos);
-                if (Utilities.isRowWhite(doc, pos)) {
-                    indent = -indentDelta; // zero indentation for white line
+                    int pos = Utilities.getRowStart(doc, startPos );
+                    for (int lineCnt = Utilities.getRowCount(doc, startPos, end);
+                            lineCnt > 0; lineCnt--
+                        ) {
+                        int indent = Utilities.getRowIndent(doc, pos);
+                        if (Utilities.isRowWhite(doc, pos)) {
+                            indent = -indentDelta; // zero indentation for white line
+                        }
+                        changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
+                        pos = Utilities.getRowStart(doc, pos, +1);
+                    }
+                } catch (BadLocationException ex) {
+                    badLocationExceptions [0] = ex;
                 }
-                changeRowIndent(doc, pos, Math.max(indent + indentDelta, 0));
-                pos = Utilities.getRowStart(doc, pos, +1);
             }
-
-        } finally {
-            doc.atomicUnlock();
-        }
+        });
+        if (badLocationExceptions[0] != null)
+            throw badLocationExceptions [0];
     }
 
     /** Shift line either left or right */

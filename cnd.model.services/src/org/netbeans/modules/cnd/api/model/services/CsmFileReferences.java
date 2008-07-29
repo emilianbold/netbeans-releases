@@ -42,7 +42,13 @@
 package org.netbeans.modules.cnd.api.model.services;
 
 import java.util.Set;
+import org.netbeans.modules.cnd.api.model.CsmFunction;
+import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmScope;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.CsmTypedef;
+import org.netbeans.modules.cnd.api.model.CsmVariable;
+import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.xref.CsmReference;
 import org.netbeans.modules.cnd.api.model.xref.CsmReferenceKind;
 import org.openide.util.Lookup;
@@ -127,6 +133,53 @@ public abstract class CsmFileReferences {
          * </pre>
          */
         void visit(CsmReference ref, CsmReference prev, CsmReference parent);
+    }
+
+    /**
+     * Determines whether reference is dereferenced template parameter
+     */
+    public static boolean isTemplateBased(CsmReference ref, CsmReference prev, CsmReference parent) {
+        if (prev != null && ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE) {
+            CsmObject obj = prev.getReferencedObject();
+            if (obj == null || isTemplateParameterInvolved(obj) || CsmKindUtilities.isMacro(obj)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Determines whether reference is dereferenced macro
+     */
+    public static boolean isMacroBased(CsmReference ref, CsmReference prev, CsmReference parent) {
+        if (prev != null && ref.getKind() == CsmReferenceKind.AFTER_DEREFERENCE_USAGE) {
+            CsmObject obj = prev.getReferencedObject();
+            if (obj == null || CsmKindUtilities.isMacro(obj)) {
+                return true;
+            }
+        } else if (parent != null) {
+            CsmObject obj = parent.getReferencedObject();
+            if (CsmKindUtilities.isMacro(obj)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    private static boolean isTemplateParameterInvolved(CsmObject obj) {
+        if (CsmKindUtilities.isTemplateParameter(obj)) {
+            return true;
+        }
+        CsmType type = null;
+        if (CsmKindUtilities.isFunction(obj)) {
+            type = ((CsmFunction)obj).getReturnType();
+        } else if (CsmKindUtilities.isVariable(obj)) {
+            type = ((CsmVariable)obj).getType();
+        } else if(CsmKindUtilities.isTypedef(obj)) {
+            type = ((CsmTypedef) obj).getType();
+        }
+        return (type == null) ? false : type.isTemplateBased();
     }
 
 }

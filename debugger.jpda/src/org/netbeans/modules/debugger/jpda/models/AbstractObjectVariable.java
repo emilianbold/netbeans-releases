@@ -663,32 +663,39 @@ class AbstractObjectVariable extends AbstractVariable implements ObjectVariable 
         ReferenceType rt,
         String parentID)
     {
-        List<Field> fields = new ArrayList<Field>();
-        List<Field> staticFields = new ArrayList<Field>();
+        List<Field> classFields = new ArrayList<Field>();
+        List<Field> classStaticFields = new ArrayList<Field>();
         List<Field> allInheretedFields = new ArrayList<Field>();
         
-        List<com.sun.jdi.Field> l = rt.allFields ();
-        Set<com.sun.jdi.Field> s = new HashSet<com.sun.jdi.Field>(rt.fields ());
+        List<com.sun.jdi.Field> l;
+        Set<com.sun.jdi.Field> s;
+        try {
+            l = rt.allFields ();
+            s = new HashSet<com.sun.jdi.Field>(rt.fields ());
+        } catch (VMDisconnectedException e) {
+            l = Collections.emptyList();
+            s = Collections.emptySet();
+        }
 
         int i, k = l.size();
         for (i = 0; i < k; i++) {
             com.sun.jdi.Field f = l.get (i);
             Field field = this.getField (f, or, this.getID());
             if (f.isStatic ())
-                staticFields.add(field);
+                classStaticFields.add(field);
             else {
                 if (s.contains (f))
-                    fields.add(field);
+                    classFields.add(field);
                 else
                     allInheretedFields.add(field);
             }
         }
-        this.fields = fields.toArray (new Field [fields.size ()]);
+        this.fields = classFields.toArray (new Field [classFields.size ()]);
         this.inheritedFields = allInheretedFields.toArray (
             new Field [allInheretedFields.size ()]
         );
-        this.staticFields = staticFields.toArray
-                (new Field [staticFields.size ()]);
+        this.staticFields = classStaticFields.toArray
+                (new Field [classStaticFields.size ()]);
     }
     
     org.netbeans.api.debugger.jpda.Field getField (

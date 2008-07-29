@@ -107,8 +107,8 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
                 }
             } else {
                 // 2. Automated mappings gathering entry point
-                // HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
-                // putAll(ham.getMappings());
+                HostMappingsAnalyzer ham = new HostMappingsAnalyzer(hkey);
+                putAll(ham.getMappings());
             }
         } else {
             // 3. Deserialization

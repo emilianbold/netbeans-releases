@@ -42,8 +42,6 @@ package org.netbeans.modules.websvc.design.multiview;
 
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -55,14 +53,14 @@ import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
 
 import org.apache.tools.ant.module.api.support.ActionUtils;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.openide.filesystems.FileAttributeEvent;
-import org.openide.filesystems.FileEvent;
-import org.openide.filesystems.FileRenameEvent;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.api.project.SourceGroup;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.DataEditorSupport;
 import org.openide.loaders.DataObject;
@@ -90,8 +88,6 @@ import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.openide.ErrorManager;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -141,7 +137,7 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             prop.setProperty("build.generated.dir", tempdir);               // we set only dir for generating WSDL
             Project project = FileOwnerQuery.getOwner(primaryFile);         // Active project
             // Test if source java file of web service contains any operation
-            JavaSource targetSource = JavaSource.forFileObject(getEditorSupport().getDataObject().getPrimaryFile());
+            JavaSource targetSource = JavaSource.forFileObject(getFileObject(service, project));
             FindMethodTask fmt = new FindMethodTask();
             try {
                 targetSource.runUserActionTask(fmt, true);
@@ -538,4 +534,16 @@ public class MultiViewSupport implements OpenCookie, EditCookie {
             return true;
         }
     }
+    
+    private FileObject getFileObject(Service service, Project prj) {
+       SourceGroup[] srcGroups = ProjectUtils.getSources(prj).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
+       String implClassResource = service.getImplementationClass().replace('.', '/') + ".java"; //NOI18N
+       for (SourceGroup srcGroup : srcGroups) {
+           FileObject implClassFo = srcGroup.getRootFolder().getFileObject(implClassResource);
+           if (implClassFo != null) {
+               return implClassFo;
+           }
+       }
+       return null;
+    } 
 }

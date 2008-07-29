@@ -86,7 +86,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
           <folder name="x-casa+xml">
             <folder name="Factories">
-                <file name="org-netbeans-modules-compapp-casaeditor-CasaDataLoader.instance"/>
+                <file name="org-netbeans-modules-compapp-casaeditor-CasaDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.compapp.casaeditor.Bundle"/>
+                    </file>
             </folder>
           </folder>
         </folder>

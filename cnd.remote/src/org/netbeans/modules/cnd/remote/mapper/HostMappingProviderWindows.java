@@ -58,13 +58,13 @@ import org.openide.util.Exceptions;
  */
 public class HostMappingProviderWindows implements HostMappingProvider {
 
-    public Map<String, String> findMappings(String hkey) {
+    public Map<String, String> findMappings(String hkey, String otherHkey) {
         Map<String, String> mappings = null;
         try {
-            Process process = Runtime.getRuntime().exec("net use");
+            Process process = Runtime.getRuntime().exec("net use"); //NOI18N
             InputStream output = process.getInputStream();
             process.waitFor();
-            mappings = parseNetUseOutput(RemoteUtils.getHostName(hkey), new InputStreamReader(output));
+            mappings = parseNetUseOutput(RemoteUtils.getHostName(otherHkey), new InputStreamReader(output));
             return mappings;
         } catch (InterruptedException ex) {
             Exceptions.printStackTrace(ex);
