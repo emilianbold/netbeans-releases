@@ -71,45 +71,44 @@ public class MainMenuTest extends JellyTestCase {
                 MainMenuTest.class).clusters(".*").enableModules(".*");
 
           conf.addTest(
-//                  "testFileMenu",
-//                  "testEditMenu",
-//                  "testViewMenu",
-//                  "testNavigateMenu",
-//                  "testSourceMenu",
-//                  "testRefactorMenu",
-//                  "testDebugMenu",
-//                  "testRunMenu",
-//                  "testHelpMenu",
-//                  "testToolsMenu",
-//                  "testVersioningMenu",
-//                  "testWindowMenu",
-//
-//                  "testFile_ProjectGroupSubMenu",
-//                  "testMnemonicsCollision",
-//                  "testNavigate_InspectSubMenu",
-//                  "testView_CodeFoldsSubMenu",
-//                  "testView_ToolbarsSubMenu",
-//                  "testProfile_AdvancedCommandsSubMenu",
-//                  "testProfile_ProfileOtherSubMenu",
-//                  "testRun_SetMainProjectSubMenu",
-//                  "testDebug_StackSubMenu",
-//                  "testSource_PreprocessorBlocksSubMenu",
-//                  "testTools_InternationalizationSubMenu",
-//                  "testTools_PaletteSubMenu",
-//                  "testVersioning_CVSSubMenu",
-//                  "testVersioning_CVS_BranchesSubMenu",
-//                  "testVersioning_LocalHistorySubMenu",
-//                  "testVersioning_Mercurial_MergeSubMenu",
-//                  "testVersioning_Mercurial_RecoverSubMenu",
-//                  "testVersioning_Mercurial_ShareSubMenu",
-//                  "testVersioning_Mercurial_ShowSubMenu"//,
-//                  "testWindow_DebuggingSubMenu",
-//                  "testWindow_NavigatingSubMenu",
-//                  "testWindow_OtherSubMenu",
-//                  "testWindow_OutputSubMenu",
-//                  "testWindow_ProfilingSubMenu",
-//                  "testWindow_VersioningSubMenu"
-                  "testPokusnac"
+                  "testFileMenu",
+                  "testEditMenu",
+                  "testViewMenu",
+                  "testNavigateMenu",
+                  "testSourceMenu",
+                  "testRefactorMenu",
+                  "testDebugMenu",
+                  "testRunMenu",
+                  "testHelpMenu",
+                  "testToolsMenu",
+                  "testVersioningMenu",
+                  "testWindowMenu",
+
+                  "testFile_ProjectGroupSubMenu",
+                  "testMnemonicsCollision",
+                  "testNavigate_InspectSubMenu",
+                  "testView_CodeFoldsSubMenu",
+                  "testView_ToolbarsSubMenu",
+                  "testProfile_AdvancedCommandsSubMenu",
+                  "testProfile_ProfileOtherSubMenu",
+                  "testRun_SetMainProjectSubMenu",
+                  "testDebug_StackSubMenu",
+                  "testSource_PreprocessorBlocksSubMenu",
+                  "testTools_InternationalizationSubMenu",
+                  "testTools_PaletteSubMenu",
+                  "testVersioning_CVSSubMenu",
+                  "testVersioning_CVS_BranchesSubMenu",
+                  "testVersioning_LocalHistorySubMenu",
+                  "testVersioning_Mercurial_MergeSubMenu",
+                  "testVersioning_Mercurial_RecoverSubMenu",
+                  "testVersioning_Mercurial_ShareSubMenu",
+                  "testVersioning_Mercurial_ShowSubMenu",
+                  "testWindow_DebuggingSubMenu",
+                  "testWindow_NavigatingSubMenu",
+                  "testWindow_OtherSubMenu",
+                  "testWindow_OutputSubMenu",
+                  "testWindow_ProfilingSubMenu",
+                  "testWindow_VersioningSubMenu"
                   );
         return NbModuleSuite.create(conf);
     }
@@ -484,13 +483,8 @@ public class MainMenuTest extends JellyTestCase {
     public JMenuBarOperator pushMainMenuItem(String mainMenuItem) {
         ///open menu to let it create sucesfully
         JMenuBarOperator mainmenuOp = MainWindowOperator.getDefault().menuBar();
-
         mainmenuOp.pushMenu(mainMenuItem);
-        try {
-            mainmenuOp.wait(100);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
         return mainmenuOp;
     }
 
