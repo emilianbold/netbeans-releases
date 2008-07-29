@@ -133,7 +133,7 @@ public class DiagramData extends ElementDataObject
             jpg += "_" + full_size_index + ReportTask.IMAGE_EXT;
             // will place the name and documentation for the diagram at the top of the html
             String diagName = pDiagram.getName();
-            String doc = pDiagram.getDocumentation();
+            String doc = pDiagram.getDocumentation() == null? "" : pDiagram.getDocumentation();
             String filename = getDirectoryPath() + File.separator + name + ReportTask.HTML_EXT;
             
             StringBuilder page = new StringBuilder();
