@@ -24,7 +24,7 @@
             <folder name="SOA">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.project.resources.Bundle"/>
                 <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/project/resources/category.html"/>
-                <attr name="position" intvalue="650"/>
+                <attr name="position" intvalue="880"/>
 
                 <file name="emptyBpelpro.xml">
                     <attr name="position" intvalue="200"/>
