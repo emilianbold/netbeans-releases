@@ -551,6 +551,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 while((parent = parent.parent()) != null) {
                     if(parent.origin() != null) {
                         origin = parent.origin();
+                        break;
                     }
                 }    
             }
