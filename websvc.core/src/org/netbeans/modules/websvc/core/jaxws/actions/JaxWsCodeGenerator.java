@@ -677,7 +677,7 @@ public class JaxWsCodeGenerator {
 
             // @insert WebServiceRef injection
             if (!task.containsWsRefInjection()) {
-                InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFieldName, wsdlUrl);
+                InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
                 targetSource.runModificationTask(modificationTask).commit();
             }
         } catch (BadLocationException badLoc) {
