@@ -73,6 +73,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
     private JButton addButton;
     private JButton addFileOrDirectoryButton;
     private JButton addFilesButton;
+    private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
     public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
         super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton()});
@@ -90,6 +91,10 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
+    }
+    
+    public void setOuterPanel(PackagingFilesOuterPanel packagingFilesOuterPanel) {
+        this.packagingFilesOuterPanel = packagingFilesOuterPanel;
     }
 
     class AddButtonAction implements java.awt.event.ActionListener {
@@ -128,7 +133,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
 
-                addObjectAction(new FileElement(files[i].isDirectory() ? FileType.DIRECTORY : FileType.FILE, itemPath, files[i].getName())); // FIXUP: softlink
+                addObjectAction(new FileElement(
+                        FileType.FILE,
+                        itemPath,
+                        files[i].getName(),
+                        packagingFilesOuterPanel.getFilePermTextField().getText(),
+                        packagingFilesOuterPanel.getOwnerTextField().getText(),
+                        packagingFilesOuterPanel.getGroupTextField().getText()
+                )); // FIXUP: softlink
             }
         }
     }
@@ -174,7 +186,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
                     toFile = FilePathAdaptor.mapToRemote(toFile);
                     toFile = FilePathAdaptor.normalize(toFile);
-                    addObjectAction(new FileElement(FileType.FILE, path, toFile)); // FIXUP: softlink
+                    addObjectAction(new FileElement(
+                            FileType.FILE,
+                            path,
+                            toFile,
+                            packagingFilesOuterPanel.getFilePermTextField().getText(),
+                            packagingFilesOuterPanel.getOwnerTextField().getText(),
+                            packagingFilesOuterPanel.getGroupTextField().getText()
+                    )); // FIXUP: softlink
                 }
             }
         }
@@ -218,9 +237,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
         // Set column sizes
         getTargetList().getColumnModel().getColumn(0).setPreferredWidth(40);
         getTargetList().getColumnModel().getColumn(0).setMaxWidth(40);
-        if (getTargetList().getColumnModel().getColumnCount() >= 6) {
+        if (getTargetList().getColumnModel().getColumnCount() >= 4) {
             getTargetList().getColumnModel().getColumn(3).setPreferredWidth(50);
             getTargetList().getColumnModel().getColumn(3).setMaxWidth(50);
+        }
+        else if (getTargetList().getColumnModel().getColumnCount() >= 6) {
             getTargetList().getColumnModel().getColumn(4).setPreferredWidth(50);
             getTargetList().getColumnModel().getColumn(4).setMaxWidth(50);
             getTargetList().getColumnModel().getColumn(5).setPreferredWidth(50);

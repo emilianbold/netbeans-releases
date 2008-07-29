@@ -635,6 +635,7 @@ public class ConfigurationMakefileWriter {
                     bw.write("mkdir -p $TMPDIR/" + toDir + "\n");
                 }
                 bw.write("cp " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + "\n");
+                bw.write("chmod " + elem.getPermission() + " $TMPDIR/" + elem.getTo() + "\n");
             }
         }
         bw.write("\n");

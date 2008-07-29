@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
@@ -32,6 +33,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
     private PackagingHeaderPanel packagingHeaderPanel = null;
+    private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -68,12 +70,16 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
         else {
             packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
+        packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
         tabbedPane.addTab("Info", packagingInfoPanel);
-        tabbedPane.addTab("Files", packagingFilesPanel);
+        tabbedPane.addTab("Files", packagingFilesOuterPanel);
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             // Add tabs

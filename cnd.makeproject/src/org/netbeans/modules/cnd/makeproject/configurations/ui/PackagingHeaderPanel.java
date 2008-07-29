@@ -126,7 +126,7 @@ public class PackagingHeaderPanel extends ListEditorPanel {
 
     @Override
     public String getListLabelText() {
-        return "Files:";
+        return "Parameters:";
     }
 
     // Overrides ListEditorPanel
