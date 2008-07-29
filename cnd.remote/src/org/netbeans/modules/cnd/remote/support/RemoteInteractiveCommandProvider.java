@@ -39,25 +39,41 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 
 /**
- * Run a non-interactive command. Output from the command will be available via the toString() method.
+ * Run a remote command which requires interactive I/O. The caller is responsible for setting up the
+ * reader and writers via the getInputStream() and getOutputStream() methods.
  * 
  * @author gordonp
  */
-public class RemoteCommandProvider implements CommandProvider {
+public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
     
-    private RemoteCommandSupport support;
+    private RemoteInteractiveCommandSupport support;
 
-    public int run(String hkey, String cmd, Map<String, String> env) {
-        support = new RemoteCommandSupport(hkey, cmd, env);
-        return support.getExitStatus();
+    public boolean run(String hkey, String cmd, Map<String, String> env) {
+        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return !support.isCancelled() && !support.isFailed();
+    }
+
+    public boolean connect(String hkey, String cmd, Map<String, String> env) {
+        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return !support.isCancelled() && !support.isFailed();
+    }
+
+    public InputStream getInputStream() throws IOException {
+        return support.getInputStream();
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return support.getOutputStream();
     }
     
-    @Override
-    public String toString() {
-        return support.toString();
+    public void disconnect() {
+        support.disconnect();
     }
 }
