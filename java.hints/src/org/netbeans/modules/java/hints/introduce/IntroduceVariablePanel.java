@@ -27,6 +27,7 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.tools.example.debug.gui.GUI;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
@@ -97,7 +98,10 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 break;
             }
         }
-        name.setText(defaultName);
+        if (introduceConstant)
+            name.setText(defaultName.toUpperCase());
+        else
+            name.setText(defaultName);
         if ( name != null && defaultName.trim().length() > 0 ) {
             this.name.setCaretPosition(defaultName.length());
             this.name.setSelectionStart(0);

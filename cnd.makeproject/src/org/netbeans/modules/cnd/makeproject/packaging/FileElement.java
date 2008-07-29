@@ -45,11 +45,26 @@ public class FileElement {
     private FileType type;
     private String from;
     private String to;
+    private String permission;
+    private String owner;
+    private String group;
     
     public FileElement(FileType type, String from, String to) {
         this.type = type;
         this.from = from;
         this.to = to;
+        this.permission = "0644"; // NOI18N
+        this.owner = "root"; // NOI18N
+        this.group = "sys"; // NOI18N
+    }
+    
+    public FileElement(FileType type, String from, String to, String permission, String owner, String group) {
+        this.type = type;
+        this.from = from;
+        this.to = to;
+        this.permission = permission;
+        this.owner = owner;
+        this.group = group;
     }
 
     public FileType getType() {
@@ -74,5 +89,29 @@ public class FileElement {
 
     public void setTo(String to) {
         this.to = to;
+    }
+
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    public String getOwner() {
+        return owner;
+    }
+
+    public void setOwner(String owner) {
+        this.owner = owner;
+    }
+
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
     }
 }

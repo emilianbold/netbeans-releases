@@ -164,7 +164,6 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
    protected final InfoHolder examineLookup(Lookup lkp) throws IOException {
        final TreePathHandle handle = lkp.lookup(TreePathHandle.class);
        final InfoHolder infoholder = new InfoHolder();
-       JavaSource source = JavaSource.forFileObject(handle.getFileObject());
        
        CancellableTask<CompilationController> info = new CancellableTask<CompilationController>() {
            public void run(CompilationController info) throws Exception {
@@ -218,7 +217,11 @@ public abstract class AbstractRefactoringPlugin implements RefactoringPlugin {
            }
            public void cancel() { }
        };
-       source.runUserActionTask(info, true);
+       JavaSource source = JavaSource.forFileObject(handle.getFileObject());
+       if (source != null) {
+           //#141945
+           source.runUserActionTask(info, true);
+       }
        return infoholder;
    }
 
