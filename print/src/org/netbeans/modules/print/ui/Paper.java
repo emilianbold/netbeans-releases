@@ -203,16 +203,8 @@ final class Paper extends JComponent {
 
     // vertical margin
     g.setColor(Color.white);
-
-    g.fillRect(
-      0, 0,
-      myPageX, myPaperHeight
-    );
-    
-    g.fillRect(
-      myPageX + myPageWidth, 0,
-      myPaperWidth, myPaperHeight
-    );
+    g.fillRect(0, 0, myPageX, myPaperHeight);
+    g.fillRect(myPageX + myPageWidth, 0, myPaperWidth, myPaperHeight);
     
     // shadow
     if (myIsPainting) {
