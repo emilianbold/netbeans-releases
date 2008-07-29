@@ -46,6 +46,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Lookup;
 import org.openide.util.Lookup.Result;
@@ -467,6 +468,7 @@ public class FilterNodeTest extends NbTestCase {
     }
 
     private static Object HOLDER;
+    @RandomlyFails // NB-Core-Build #1047
     public void testFilterNodeCanGCNodes () {
         class K extends Children.Keys {
             public int addNotify;

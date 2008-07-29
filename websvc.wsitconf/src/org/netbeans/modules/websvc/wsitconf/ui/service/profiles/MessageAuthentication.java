@@ -73,7 +73,7 @@ public class MessageAuthentication extends ProfileBaseForm {
         supportTokenCombo.addItem(ComboConstants.X509);
         supportTokenCombo.addItem(ComboConstants.USERNAME);
 
-        fillWssCombo(layoutCombo);
+        fillWssCombo(wssVersionCombo);
         fillLayoutCombo(layoutCombo);
         fillAlgoSuiteCombo(algoSuiteCombo);
         

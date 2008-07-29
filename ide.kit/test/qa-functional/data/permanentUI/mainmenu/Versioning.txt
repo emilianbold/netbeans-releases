@@ -1,7 +1,7 @@
 | Versioning |     i (mnemonics)
 ==============
 CVS            >   C
-Subversion     >   S
 Mercurial      >   M
+Subversion     >   S
 ================
 Local History  >   L

@@ -5,6 +5,7 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="PHP">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.samples.Bundle"/>
                     <attr name="position" intvalue="550"/>
                     <file name="AirAlliance" url="AirAlliance.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/php/samples/icons/AirAlliance.png"/>
