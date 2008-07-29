@@ -143,6 +143,11 @@ public class ParserManagerImpl extends ParserManager {
     public List<SyntaxError> getSyntaxErrors () {
         return syntaxErrors;
     }
+
+    @Override
+    public boolean hasSyntaxErrors() {
+        return !getSyntaxErrors().isEmpty();
+    }
     
     public ASTNode getAST () {
         return ast;
