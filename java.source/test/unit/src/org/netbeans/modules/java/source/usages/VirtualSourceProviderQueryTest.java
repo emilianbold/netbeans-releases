@@ -71,7 +71,7 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
         final File root = new File (getWorkDir(),"src");    //NOI18N
         root.mkdir();
         final File[] data = prepareData(root);
-        final Iterable<FileObjects.InferableJavaFileObject> res = VirtualSourceProviderQuery.translate(Arrays.asList(data), root);
+        final Iterable<VirtualSourceProviderQuery.Binding> res = VirtualSourceProviderQuery.translate(Arrays.asList(data), root);
         assertEquals(new String[] {"a","b","c","d"}, res);      //NOI18N
     }
     
@@ -84,11 +84,11 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
         return result;        
     }
     
-    private static void assertEquals (final String[] expected, Iterable<FileObjects.InferableJavaFileObject> data) {
+    private static void assertEquals (final String[] expected, Iterable<VirtualSourceProviderQuery.Binding> data) {
         final Set<String> es = new HashSet<String>();
         es.addAll(Arrays.asList(expected));
-        for (FileObjects.InferableJavaFileObject p : data) {
-            assertTrue (es.remove(p.inferBinaryName()));
+        for (VirtualSourceProviderQuery.Binding p : data) {
+            assertTrue (es.remove(p.virtual.inferBinaryName()));
         }
         assertTrue(es.isEmpty());
     }
@@ -100,6 +100,10 @@ public class VirtualSourceProviderQueryTest extends NbTestCase {
             result.add("groovy");   //NOI18N
             result.add ("scala");   //NOI18N
             return result;
+        }
+
+        public boolean index () {
+            return true;
         }
 
         public void translate(Iterable<File> files, File sourceRoot, VirtualSourceProvider.Result r) {
