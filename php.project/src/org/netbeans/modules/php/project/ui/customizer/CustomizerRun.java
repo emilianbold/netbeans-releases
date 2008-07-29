@@ -46,6 +46,7 @@ import java.util.TreeSet;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import javax.swing.plaf.UIResource;
 import org.netbeans.modules.php.project.connections.ConfigManager;
@@ -53,13 +54,14 @@ import org.netbeans.modules.php.project.connections.ConfigManager.Configuration;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author  Radek Matous
  */
-public class CustomizerRun extends javax.swing.JPanel {
-    private static final long serialVersionUID = -5493589817914071L;
+public class CustomizerRun extends JPanel implements HelpCtx.Provider {
+    private static final long serialVersionUID = -5494488817914071L;
     private final ConfigComboBoxModel comboModel;
     private final ConfigManager manager;
     private final RunAsPanel.InsidePanel[] insidePanels;
@@ -271,4 +273,8 @@ public class CustomizerRun extends javax.swing.JPanel {
     private javax.swing.JPanel runPanel;
     private javax.swing.JSeparator separator;
     // End of variables declaration//GEN-END:variables
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerRun.class);
+    }
 }

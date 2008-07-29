@@ -112,7 +112,9 @@ abstract class PHPCompletionItem implements CompletionProposal {
     }
 
     public Set<Modifier> getModifiers() {
-        return getElement().getModifiers();
+        Set<Modifier> emptyModifiers = Collections.emptySet();
+        ElementHandle handle = getElement();
+        return (handle != null) ? handle.getModifiers() : emptyModifiers;
     }
 
     public boolean isSmart() {

@@ -398,7 +398,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
-            if (typeName != null){
+            if (typeName != null){                
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
                     request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
@@ -412,9 +412,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     }
                 }
 
+                String prefix = (staticContext && request.prefix.startsWith("$")) //NOI18N
+                        ? request.prefix.substring(1) : request.prefix;
                 Collection<IndexedConstant> properties = includeInherited ?
-                    request.index.getAllProperties(request.result, typeName, request.prefix, nameKind, attrMask) :
-                    request.index.getProperties(request.result, typeName, request.prefix, nameKind, attrMask);
+                    request.index.getAllProperties(request.result, typeName, prefix, nameKind, attrMask) :
+                    request.index.getProperties(request.result, typeName, prefix, nameKind, attrMask);
 
                 for (IndexedConstant prop : properties){
                     if (staticContext && prop.isStatic() || instanceContext && !prop.isStatic()) {

@@ -1,0 +1,17 @@
+
+State of macro map:
+Own Map:
+MACROS (sorted 0):
+System Map:
+MACROS (sorted 0):
+
+
+========== Dumping model of FILE branches_1.cc
+Includes:
+"two_branches.h" <FAILED inclusion> [2:1/16-2:26/41]
+"two_branches.h" <FAILED inclusion> [5:1/58-5:26/83]
+Macros:
+#define '_SIZE_T' [1:1/0-1:16/15]
+
+========== Dumping model of PROJECT DummyProject
+TYPEDEF size_t  [16:1/280-16:32/311] TYPE: unsigned int TEXT=unsigned int  [16:9/288-16:21/300] SCOPE: $Global$
