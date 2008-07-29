@@ -1121,7 +1121,7 @@ public final class GemPanel extends JPanel {
         getGemManager().reset();
         StringBuilder sb = new StringBuilder();
         for (String error : errors) {
-            sb.append(error);
+            sb.append(error).append('\n');
         }
         Util.notifyLocalized(GemPanel.class, "GemPanel.GemsFetchingFailed", // NOI18N
             NotifyDescriptor.ERROR_MESSAGE, sb.toString());
