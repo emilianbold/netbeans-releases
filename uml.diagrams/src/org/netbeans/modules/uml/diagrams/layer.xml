@@ -52,6 +52,7 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-uml-diagrams-actions-CreateLiteralAction.instance"/>
         </folder>
     </folder>
+    
     <folder name="Shortcuts">
         <file name="OS-A.shadow">
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-CreateAttributesAction.instance"/>
@@ -63,6 +64,7 @@ made subject to such option by the copyright holder.
             <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-diagrams-actions-sqd-InsertOperandAction.instance"/>
         </file-->
     </folder>
+    
     <folder name="Editors">
         <folder name="modeling">
             <folder name="Popup">
@@ -73,7 +75,8 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1400"/>
                 </file>
-                <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                     <attr name="position" intvalue="1900"/>
                 </file>
                 <file name="org-openide-actions-PropertiesAction.instance">
@@ -133,7 +136,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                     <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                    <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
@@ -196,7 +200,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
@@ -223,7 +228,8 @@ made subject to such option by the copyright holder.
                         <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                         <attr name="position" intvalue="1400"/>
                     </file>
-                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance">
+                    <file name="org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.shadow">
+                        <attr name="originalFile" stringvalue="Actions/UML/org-netbeans-modules-uml-drawingarea-actions-SelectInModelAction.instance"/>
                         <attr name="position" intvalue="1900"/>
                     </file>
                     <file name="org-openide-actions-PropertiesAction.instance">
