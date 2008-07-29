@@ -702,7 +702,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             activePostModification = (postModificationDocumentListener != null
                     || postModificationDocumentListenerList.getListenerCount() > 0);
             if (activePostModification) {
-                atomicLock();
+                atomicLockImpl ();
             }
         }
         try {
@@ -802,7 +802,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                         }
                     }
                 } finally {
-                    atomicUnlock();
+                    atomicUnlockImpl();
                 }
             }
         }
@@ -858,7 +858,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 activePostModification = (postModificationDocumentListener != null
                         || postModificationDocumentListenerList.getListenerCount() > 0);
                 if (activePostModification) {
-                    atomicLock();
+                    atomicLockImpl ();
                 }
             }
             try {
@@ -939,7 +939,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                             listener.removeUpdate(postModificationEvent);
                         }
                     }
-                    atomicUnlock();
+                    atomicUnlockImpl ();
                 }
             }
 
@@ -1666,7 +1666,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                             requestProcessor = new RequestProcessor ("BaseDocument");
     private static Task     task;
 
-    @Deprecated
+    /** 
+     * 
+     * @deprecated Please use {@link BaseDocument#runAtomic(java.lang.Runnable)} instead.
+     */
     public final synchronized void atomicLock () {
         Exception exception = new Exception ();
         StackTraceElement[] stack = exception.getStackTrace ();
@@ -1693,7 +1696,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         atomicLockImpl ();
     }
     
-    private final void atomicLockImpl () {
+    final void atomicLockImpl () {
         synchronized (this) {
             NotifyModifyStatus notifyModifyStatus = (NotifyModifyStatus)STATUS.get();
             if (notifyModifyStatus == null) {
@@ -1715,7 +1718,10 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         }
     }
 
-    @Deprecated
+    /** 
+     * 
+     * @deprecated Please use {@link BaseDocument#runAtomic(java.lang.Runnable)} instead.
+     */
     public final synchronized void atomicUnlock () {
         Exception exception = new Exception ();
         StackTraceElement[] stack = exception.getStackTrace ();
@@ -1724,13 +1730,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
             openedLocks.remove (className);
         }
         atomicUnlockImpl ();
-        if (atomicDepth == 0) {
+        if (atomicDepth == 0 && task != null) {
             task.cancel ();
             task = null;
         }
     }
     
-    private final void atomicUnlockImpl () {
+    final void atomicUnlockImpl () {
         boolean modsDone = false;
         boolean lastAtomic = false;
         synchronized (this) {
@@ -2133,11 +2139,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         private boolean nonSignificant;
 
         public @Override void undo() throws CannotUndoException {
-            atomicLock();
+            atomicLockImpl ();
             try {
                 super.undo();
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
 
             if (previousEdit != null) {
@@ -2151,11 +2157,11 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 previousEdit.redo();
             }
 
-            atomicLock();
+            atomicLockImpl ();
             try {
                 super.redo();
             } finally {
-                atomicUnlock();
+                atomicUnlockImpl ();
             }
         }
 
