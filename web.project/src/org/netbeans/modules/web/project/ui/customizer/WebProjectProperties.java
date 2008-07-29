@@ -87,6 +87,8 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.java.api.common.SourceRoots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
+import org.netbeans.modules.web.api.webmodule.WebFrameworks;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.project.UpdateProjectImpl;
 import org.netbeans.modules.web.project.Utils;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -98,6 +100,7 @@ import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
 
+import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
 import org.netbeans.modules.websvc.spi.webservices.WebServicesConstants;
 import org.netbeans.spi.java.project.support.ui.IncludeExcludeVisualizer;
 import org.openide.modules.SpecificationVersion;
@@ -256,7 +259,7 @@ public class WebProjectProperties {
     
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
-    private List<String> usedFrameworkNames;
+    private List<String> currentFrameworkNames;
 
     // Private fields ----------------------------------------------------------
     private WebProject project;
@@ -401,6 +404,17 @@ public class WebProjectProperties {
             //ignore
         }
         
+        List frameworks = WebFrameworks.getFrameworks();
+        WebModule webModule = project.getAPIWebModule();
+        currentFrameworkNames = new LinkedList<String>();
+        if (frameworks != null & webModule != null) {
+            for (int i = 0; i < frameworks.size(); i++) {
+                WebFrameworkProvider framework = (WebFrameworkProvider) frameworks.get(i);
+                if (framework.isInWebModule(webModule)) {
+                    currentFrameworkNames.add(framework.getName());
+                }
+            }
+        }
     }
 
     public void save() {
@@ -435,32 +449,37 @@ public class WebProjectProperties {
             if ((addedFrameworkNames != null) && (addedFrameworkNames.size() > 0)) {
                 Utils.logUI(NbBundle.getBundle(WebProjectProperties.class),"UI_WEB_PROJECT_FRAMEWORK_ADDED", // NOI18N
                         addedFrameworkNames.toArray());
-                if (usedFrameworkNames != null) {
-                    String serverName = ""; // NOI18N
-                    try {
-                        if (logServInstID != null) {
-                            serverName = Deployment.getDefault().getServerInstance(logServInstID).getServerDisplayName();
-                        }
-                    }
-                    catch(InstanceRemovedException ier) {
-                        // ignore
-                    }
-                    StringBuffer sb = new StringBuffer(50);
-                    for (int i = 0; i < usedFrameworkNames.size(); i++) {
-                        if (sb.length() > 0) {
-                            sb.append("|"); // NOI18N
-                        }
-                        sb.append(usedFrameworkNames.get(i));
-                    }
-                    for (int i = 0; i < addedFrameworkNames.size(); i++) {
-                        if (sb.length() > 0) {
-                            sb.append("|"); // NOI18N
-                        }
-                        sb.append(addedFrameworkNames.get(i));
-                    }
-                    Utils.logUsage(WebProjectProperties.class,"USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
+            }
+            
+            // usage logging of target server and currently active frameworks
+            String serverName = ""; // NOI18N
+            try {
+                if (logServInstID != null) {
+                    serverName = Deployment.getDefault().getServerInstance(logServInstID).getServerDisplayName();
                 }
             }
+            catch(InstanceRemovedException ier) {
+                // ignore
+            }
+            
+            StringBuffer sb = new StringBuffer(50);
+            if (currentFrameworkNames != null && currentFrameworkNames.size() > 0) {
+                for (int i = 0; i < currentFrameworkNames.size(); i++) {
+                    if (sb.length() > 0) {
+                        sb.append("|"); // NOI18N
+                    }
+                    sb.append(currentFrameworkNames.get(i));
+                }
+            }
+            if (addedFrameworkNames != null && addedFrameworkNames.size() > 0) {
+                for (int i = 0; i < addedFrameworkNames.size(); i++) {
+                    if (sb.length() > 0) {
+                        sb.append("|"); // NOI18N
+                    }
+                    sb.append(addedFrameworkNames.get(i));
+                }
+            }
+            Utils.logUsage(WebProjectProperties.class, "USG_PROJECT_CONFIG_WEB", new Object[] { serverName, sb }); // NOI18N
             
             //prevent deadlock reported in the issue #54643
             //cp and serverId values are read in setNewContextPathValue() method which is called from storeProperties() before this code
@@ -997,10 +1016,6 @@ public class WebProjectProperties {
     
     public void setNewFrameworksNames(List<String> names) {
         addedFrameworkNames = names;
-    }
-    
-    public void setUsedFrameworkNames(List<String> names) {
-        usedFrameworkNames = names;
     }
     
     void loadIncludesExcludes(IncludeExcludeVisualizer v) {
