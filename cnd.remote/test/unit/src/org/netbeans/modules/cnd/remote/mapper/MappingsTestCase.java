@@ -51,7 +51,12 @@ import org.netbeans.modules.cnd.remote.support.RemoteTestBase;
 public class MappingsTestCase extends RemoteTestBase {
 
 //    public void testHMPW() throws Exception {
-//        new HostMappingProviderWindows().findMappings("randomguy@eaglet-sr");
+//        new HostMappingProviderWindows().findMappings("localhost", "randomguy@eaglet-sr");
+//    }
+
+//    public void testHMPS() throws Exception {
+//        Map<String, String> mappings = new HostMappingProviderSamba().findMappings("tester@eaglet-sr", "");
+//        assert mappings != null && "/export/pub".equals(mappings.get("pub"));
 //    }
 
     public void testHostMappingProviderWindows() throws Exception {
@@ -75,6 +80,46 @@ public class MappingsTestCase extends RemoteTestBase {
 
         map = HostMappingProviderWindows.parseNetUseOutput("name.domen.domen2.zone", new StringReader(sb.toString()));
         assert map != null && map.size() == 1 && "z:".equals(map.get("sg155630"));
+    }
+
+    public void testHostMappingProviderSamba() throws Exception {
+        Map<String, String> map;
+        map = HostMappingProviderSamba.parseOutput(new StringReader(getConfigFile().toString()));
+        assert map != null && map.size() == 1 && "/export/pub".equals(map.get("pub"));
+    }
+    
+    
+    private static StringBuilder getConfigFile() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[global]\n");
+        sb.append("\n");
+        sb.append("      workgroup = staff\n");
+        sb.append("      server string = Eaglet-SR Samba Server\n");
+        sb.append("      log file = /var/adm/samba_log.%m\n");
+        sb.append("      security = SHARE\n");
+        sb.append("\n");
+        sb.append("[pub]\n");
+        sb.append("\n");
+        sb.append("      comment = pub\n");
+        sb.append("      path = /export/pub\n");
+        sb.append("      force user = tester\n");
+        sb.append("      force group = other\n");
+        sb.append("      read only = No\n");
+        sb.append("      guest ok = No\n");
+        return sb;
+    }
+
+    public void testSimpleConfigParser() {
+        
+        SimpleConfigParser p = new SimpleConfigParser();
+        StringBuilder sb = getConfigFile();
+        sb.insert(0, "orphan=orphanValue\n");
+        p.parse(new StringReader(sb.toString()));
+        System.err.println(p.toString());
+        assert p.getSections().contains("global");
+        assert p.getOrphanAttributes().get("orphan").equals("orphanValue");
+        assert p.getAttributes("pub").get("path").equals("/export/pub");
+
     }
 
     public MappingsTestCase(String testName) {
