@@ -60,4 +60,14 @@ public final class RemoteUtils {
             return hkey;
         }
     }
+
+    public static String getUserName(String hkey) {
+        int index = hkey.indexOf('@');
+        if (index > -1 ) {
+            return hkey.substring(0, index);
+        } else {
+            assert false;
+            return hkey;
+        }
+    }
 }

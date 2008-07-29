@@ -60,6 +60,7 @@ public class JSHttpProgress implements JSHttpMessage {
     private final String status;
     private final String mimeType;
     private final String responseText;
+    private final String category;
 
     public JSHttpProgress(HttpMessage message) {
         id = message.getId();
@@ -74,6 +75,11 @@ public class JSHttpProgress implements JSHttpMessage {
         status = message.getChildValue("status");
         mimeType = message.getChildValue("mimeType");
         responseText = message.getResponseText();
+        category = message.getChildValue("category");
+    }
+
+    public String getCategory() {
+        return category;
     }
 
     public String getResponseText() {

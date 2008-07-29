@@ -45,6 +45,7 @@ import org.netbeans.lib.cvsclient.command.Command;
 import org.netbeans.lib.cvsclient.command.GlobalOptions;
 import org.netbeans.lib.cvsclient.Client;
 import org.netbeans.lib.cvsclient.connection.AuthenticationException;
+import org.netbeans.modules.versioning.util.Utils;
 import org.openide.ErrorManager;
 import org.openide.util.Cancellable;
 import org.openide.util.RequestProcessor;
@@ -91,6 +92,7 @@ class CommandRunnable implements Runnable, Cancellable {
                 String msg = "Testing retry logic. Retry attempt will be OK. (-Dnetbeans.debug.cvs.io.retry=true)"; // NOI18N
                 throw new AuthenticationException(msg, msg);
             }
+            Utils.logVCSClientEvent("CVS", "JAVALIB");
             client.executeCommand(cmd, options);
         } catch (Throwable e) {
             failure = e;

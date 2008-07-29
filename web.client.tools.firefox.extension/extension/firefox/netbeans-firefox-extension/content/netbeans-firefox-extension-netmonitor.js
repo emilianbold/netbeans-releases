@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -200,6 +200,8 @@
                 if ( activity ){
                   requestsId[id] = request;
                   sendNetActivity(activity);
+                } else if( DEBUG_METHOD ){
+                    NetBeans.Logger.log("net.onModifyRequest - activity is null");
                 }
             }
 
@@ -219,11 +221,11 @@
                 var activity = createResponseActivity(request, id);
                 if ( activity ) {
                   sendExamineNetResponse(activity);
+                } else if (DEBUG_METHOD){
+                  NetBeans.Logger.log("net.onExamineResponse - activity is null");
                 }
-            } else {
-                if (DEBUG_METHOD){
-                  NetBeans.Logger.log("Did not recognize response for: " + request.URI.asciiSpec);
-                }
+            } else if (DEBUG_METHOD){
+                  NetBeans.Logger.log("net.onExamineResponse - Did not recognize response for: " + request.URI.asciiSpec);
             }
         }
     }
@@ -251,6 +253,7 @@
         } else {
             if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - request.name:" + request.name);
             activity.urlParams = parseURLParams(request.name);
+            if (DEBUG_METHOD) NetBeans.Logger.log("netBeans.onModifyRequest - urlParams:" + activity.urlParams);
         }
         return activity;
     }
@@ -259,118 +262,114 @@
         var DEBUG_METHOD = (false & DEBUG);
 
         if( !request || !id){
-            NetBeans.Logger.log("Something is null request:" + request + " id:" + id);
+            throw new Error("net.createResponseActivity - Something is null request:" + request + " id:" + id);
         }
-
 
         var activity = new NetActivity();
         activity.uuid = id;
-        if ( activity.uuid ){
-            activity.name = request.name;
-            activity.responseHeaders = getHttpResponseHeaders(request);
-            activity.time = nowTime();
-            activity.url = request.URI.asciiSpec;
-            if (!activity.mimeType) {
-                activity.mimeType = getMimeType(request);
-                if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
-            }
-            activity.size = request.contentLength;
+        activity.name = request.name;
+        activity.responseHeaders = getHttpResponseHeaders(request);
+        activity.time = nowTime();
+        activity.url = request.URI.asciiSpec;
+        if (!activity.mimeType) {
+            activity.mimeType = getMimeType(request);
+            if( DEBUG_METHOD && ! activity.mimeType ){ NetBeans.Logger.log("Activity mime type is null for:" + activity.url); }
+        }
+        activity.size = request.contentLength;
 
-            activity.responseText = getResponseText(request);
-            activity.status = request.responseStatus;
-            if ( DEBUG ){
-                NetBeans.Logger.log("Response Status:" + request.responseStatus);
-            }
-             /* Response File Loaded: */
-            if (activity.status == "304") {
-                NetBeans.Logger.log("CACHED ENTRY");
-                  activity.fromCache = true;
-                  getCacheEntry(activity);
-            } else {
-                activity.fromCache = false;
-            }
+        activity.responseText = getResponseText(request);
+        activity.status = request.responseStatus;
+        activity.category = getRequestCategory(request);
+        if ( DEBUG_METHOD ){ NetBeans.Logger.log("Response Status:" + request.responseStatus);}
+         /* Response File Loaded: */
+        if (activity.status == "304") {
+            NetBeans.Logger.log("CACHED ENTRY");
+              activity.fromCache = true;
+//            getCacheEntry(activity);
+        } else {
+            activity.fromCache = false;
         }
 
         return activity;
     }
 
 
-    function initCacheSession()
-    {
-        if (!cacheSession)
-        {
-            var cacheService = NetBeans.Utils.CCSV(NetBeans.Constants.CacheServiceCID, NetBeans.Constants.CacheServiceIF);
-            cacheSession = cacheService.createSession("HTTP", STORE_ANYWHERE, true);
-            cacheSession.doomEntriesIfExpired = false;
-        }
-    }
+//    function initCacheSession()
+//    {
+//        if (!cacheSession)
+//        {
+//            var cacheService = NetBeans.Utils.CCSV(NetBeans.Constants.CacheServiceCID, NetBeans.Constants.CacheServiceIF);
+//            cacheSession = cacheService.createSession("HTTP", STORE_ANYWHERE, true);
+//            cacheSession.doomEntriesIfExpired = false;
+//        }
+//    }
 
 
-    function getCacheEntry(activity) {
-            try
-            {
-                NetBeans.Logger.log("Initizlizing Cache Session");
-                initCacheSession();
-                cacheSession.asyncOpenCacheEntry(activity.url, ACCESS_READ, {
-                    onCacheEntryAvailable: function(descriptor, accessGranted, status)
-                    {
-                        if (descriptor)
-                        {
-                            if(activity.size == -1)
-                            {
-                                activity.size = descriptor.dataSize;
-                            }
-                            if(descriptor.lastModified && descriptor.lastFetched &&
-                                descriptor.lastModified < Math.floor(activity.time/1000)) {
-                                activity.fromCache = true;
-                            }
-                            activity.cacheEntry = [
-                              { name: "Last Modified",
-                                value: getDateFromSeconds(descriptor.lastModified)
-                              },
-                              { name: "Last Fetched",
-                                value: getDateFromSeconds(descriptor.lastFetched)
-                              },
-                              { name: "Expires",
-                                value: getDateFromSeconds(descriptor.expirationTime)
-                              },
-                              { name: "Data Size",
-                                value: descriptor.dataSize
-                              },
-                              { name: "Fetch Count",
-                                value: descriptor.fetchCount
-                              },
-                              { name: "Device",
-                                value: descriptor.deviceID
-                              }
-                            ];
-
-                            // Get contentType from the cache.
-                            descriptor.visitMetaData({
-                                visitMetaDataElement: function(key, value) {
-                                    if (key == "response-head")
-                                    {
-                                        var contentType = getContentTypeFromResponseHead(value);
-                                        activity.mimeType = getMimeType2(contentType, activity.name);
-                                        return false;
-                                    }
-
-                                    return true;
-                                }
-                            });
-
-                            // Update file category.
-                            if (activity.mimeType)
-                            {
-                                activity.category = getRequestCategoryFromMime(activity.mimeType);
-                            }
-                        }
-                    }
-                });
-            } catch (exc) {
-                if (DEBUG) NetBeans.Logger.log(exc);
-            }
-    }
+//    function getCacheEntry(activity) {
+//            try
+//            {
+//                NetBeans.Logger.log("Initizlizing Cache Session");
+//                initCacheSession();
+//                cacheSession.asyncOpenCacheEntry(activity.url, ACCESS_READ, {
+//                    onCacheEntryAvailable: function(descriptor, accessGranted, status)
+//                    {
+//                        if (descriptor)
+//                        {
+//                            if(activity.size == -1)
+//                            {
+//                                activity.size = descriptor.dataSize;
+//                            }
+//                            if(descriptor.lastModified && descriptor.lastFetched &&
+//                                descriptor.lastModified < Math.floor(activity.time/1000)) {
+//                                activity.fromCache = true;
+//                            }
+//                            activity.cacheEntry = [
+//                              { name: "Last Modified",
+//                                value: getDateFromSeconds(descriptor.lastModified)
+//                              },
+//                              { name: "Last Fetched",
+//                                value: getDateFromSeconds(descriptor.lastFetched)
+//                              },
+//                              { name: "Expires",
+//                                value: getDateFromSeconds(descriptor.expirationTime)
+//                              },
+//                              { name: "Data Size",
+//                                value: descriptor.dataSize
+//                              },
+//                              { name: "Fetch Count",
+//                                value: descriptor.fetchCount
+//                              },
+//                              { name: "Device",
+//                                value: descriptor.deviceID
+//                              }
+//                            ];
+//
+//                            // Get contentType from the cache.
+//                            descriptor.visitMetaData({
+//                                visitMetaDataElement: function(key, value) {
+//                                    if (key == "response-head")
+//                                    {
+//                                        var contentType = getContentTypeFromResponseHead(value);
+////                                        activity.mimeType = getMimeType2(contentType, activity.name);
+//                                        return false;
+//                                    }
+//
+//                                    return true;
+//                                }
+//                            });
+//
+//                            // Update file category.
+//                            if (activity.mimeType)
+//                            {
+//                                activity.category = getRequestCategoryFromMime(activity.mimeType);
+//                            }
+//                        }
+//                    }
+//                });
+//            } catch (exc) {
+//                if (DEBUG) NetBeans.Logger.log(exc);
+//            }
+//    }
 
     function getDateFromSeconds(s)
     {
@@ -648,26 +647,7 @@
         return null;
     }
 
-    /* This is a temporary hack.. there seems to be a problem wth just moving
-     * over to this completely.
-     */
-    function getMimeType2(contentType, name)
-    {
-        try {
-            var mimeType = contentType;
-            if ( mimeType && mimeCategoryMap.hasOwnProperty(mimeType) ){
-                return mimeType;
-            }
-        } catch (exc){ }
-        var ext = getFileExtension(name);
-        if( DEBUG_METHOD ) NetBeans.Logger.log("net.getMimeType - File Extension:" + ext);
-        if (ext) {
-            var extMimeType = mimeExtensionMap[ext.toLowerCase()];
-            return extMimeType ? extMimeType : null;
-        }
-        return null;
-    }
-
+   
     /*
      * @param {string} uri
      */
@@ -691,7 +671,7 @@
         netActivity.url = aActivity.url;
         netActivity.postText = aActivity.postText;
         netActivity.load_init = aActivity.load_init;
-        netActivity.category = aActivity.category;
+//        netActivity.category = aActivity.category;
         var headers = aActivity.requestHeaders;
         for( var header in headers ){
             var tmp = headers[header];
@@ -703,78 +683,19 @@
 
         socket.send(netActivity);
     }
-
-    /*
-     * On Observe when topic is "http-on-examine-request"
-     * @param {NetActivity} aActivity;
-     */
-    function sendExamineNetResponse ( aActivity ){
-
-        var netActivity = <http/>;
-        netActivity.type = "response";
-        netActivity.id = aActivity.uuid;
-        netActivity.name = aActivity.name;
-        netActivity.timestamp = aActivity.time;
-        netActivity.status = aActivity.status;
-        netActivity.url = aActivity.url;
-        netActivity.mimeType = aActivity.mimeType;
-        netActivity.contentType = aActivity.contentType;
-        netActivity.size = aActivity.size;
-        if ( aActivity.responseText ){
-            try {
-              netActivity.responseText = window.btoa(aActivity.responseText);
-            } catch ( exc ){
-                NetBeans.Logger.log("netMonitor.sendProgresUpdate Exception:" + exc)
-                netActivity.responseText = window.btoa("TEXT DISTORTED");
-            };
-
-        }
-        var headers = aActivity.responseHeaders;
-        for( var header in headers ){
-            var tmp = headers[header];
-            netActivity.header[tmp.name] =  tmp.value;
-        }
-        if( aActivity.fromCache ){
-           var cacheEntries = aActivity.cacheEntry;
-           for ( var entry in cacheEntries ){
-            var valuePair = cacheEntries[entry];
-              netActivity.cacheEntry[valuePair.name] = valuePair.value;
-           }
+    
+    function loadXmlActivityResponse ( netActivity, activity ){
+        if( !netActivity || !activity ){
+            throw new Error("net.loadXmlActivity - NetAcitivity or Activity is null");
         }
         
-        if(DEBUG){
-            NetBeans.Logger.log(netActivity.toXMLString());
-        }
-        socket.send(netActivity);
-    }
-
-    function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
-        var DEBUG_METHOD = true & DEBUG;
-
-        if ( DEBUG_METHOD ){NetBeans.Logger.log("net.sendProgressUpdate"); }
-        var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
-        var id = requestsId.getId(request);
-        if (!id) {
-            throw new Error("Progress Request not found:" + request.URI.asciiSpec);
-        }
-        if ( DEBUG_METHOD ){NetBeans.Logger.log("net.sendProgressUpdate createResponseActivity"); }
-        var activity = createResponseActivity(request,id);
-
-
-        var netActivity = <http />;
-        netActivity.timestamp = time;
-        netActivity.type ="progress";
-        netActivity.id = id;
-        netActivity.current = current;
-        netActivity.max = max;
-        netActivity.total = total;
-        netActivity.maxTotal = maxTotal;
         netActivity.name = activity.name;
         netActivity.status = activity.status;
         netActivity.size = activity.size;
         netActivity.contentType = activity.contentType;
         netActivity.url = activity.url;
         netActivity.mimeType = activity.mimeType;
+        netActivity.category = activity.category;
         if( activity.responseText ){
             try {
               netActivity.responseText = window.btoa(activity.responseText);
@@ -795,7 +716,51 @@
               netActivity.cacheEntry[valuePair.name] = valuePair.value;
            }
         }
+    }
 
+
+    /*
+     * On Observe when topic is "http-on-examine-request"
+     * @param {NetActivity} aActivity;
+     */
+    function sendExamineNetResponse ( aActivity ){
+
+        var netActivity = <http/>;
+        netActivity.type = "response";
+        netActivity.id = aActivity.uuid;
+        netActivity.name = aActivity.name;
+        netActivity.timestamp  = aActivity.time
+        loadXmlActivityResponse( netActivity, aActivity);
+        if(DEBUG){
+            NetBeans.Logger.log(netActivity.toXMLString());
+        }
+        socket.send(netActivity);
+    }
+
+    function sendProgressUpdate(progress, aRequest, current, max, total, maxTotal, time) {
+        var DEBUG_METHOD = false & DEBUG;
+
+        if ( DEBUG_METHOD ){NetBeans.Logger.log("net.sendProgressUpdate"); }
+        var request = aRequest.QueryInterface(NetBeans.Constants.HttpChannelIF);
+        var id = requestsId.getId(request);
+        if (!id) {
+            throw new Error("Progress Request not found:" + request.URI.asciiSpec);
+        }
+        if ( DEBUG_METHOD ){NetBeans.Logger.log("net.sendProgressUpdate createResponseActivity"); }
+        var activity = createResponseActivity(request,id);
+        if( !activity ){
+            throw new Error("net.sendProgressUpdate - activity is null");
+        }
+
+        var netActivity = <http />;
+        netActivity.timestamp = time;
+        netActivity.type ="progress";
+        netActivity.id = id;
+        netActivity.current = current;
+        netActivity.max = max;
+        netActivity.total = total;
+        netActivity.maxTotal = maxTotal;
+        loadXmlActivityResponse( netActivity, activity);
         if( DEBUG ){
             NetBeans.Logger.log(netActivity.toXMLString());
         }
