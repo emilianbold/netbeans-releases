@@ -71,7 +71,7 @@ public class HttpMessage extends Message {
     public String getResponseText() {
         String value = getChild(getNode(), "responseText").getFirstChild().getNodeValue();
         if( value != null && !value.equals("null")) {
-            byte[] bytes = super.getDecodedBytes(Encoding.BASE64, value);
+            byte[] bytes = Message.getDecodedBytes(Encoding.BASE64, value);
     //        Message.checkValue(bytes, getSize());
             return new String(bytes);
         }

@@ -360,7 +360,16 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("IZ141842.cc", 13, 5, "IZ141842.cc", 5, 5);
         performTest("IZ141842.cc", 14, 5, "IZ141842.cc", 5, 5);
     }
-    
+
+    public void testIZ137897() throws Exception {
+        // IZ#137897 : parameters of function pointer are not resolved
+        performTest("IZ137897.cc", 1, 24, "IZ137897.cc", 1, 15);
+        performTest("IZ137897.cc", 1, 43, "IZ137897.cc", 1, 31);
+        performTest("IZ137897.cc", 2, 26, "IZ137897.cc", 2, 16);
+        performTest("IZ137897.cc", 2, 43, "IZ137897.cc", 2, 34);
+        performTest("IZ137897.cc", 3, 30, "IZ137897.cc", 3, 24);
+    }
+
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

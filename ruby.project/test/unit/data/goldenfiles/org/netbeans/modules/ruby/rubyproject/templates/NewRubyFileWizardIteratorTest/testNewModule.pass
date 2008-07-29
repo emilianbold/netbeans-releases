@@ -1,11 +1,9 @@
-# 
 # createdmodule.rb
 # 
 # Created on <date and time removed to make test stable...>
 # 
 # To change this template, choose Tools | Templates
 # and open the template in the editor.
- 
 
 module OutermostModule
   module OtherModule

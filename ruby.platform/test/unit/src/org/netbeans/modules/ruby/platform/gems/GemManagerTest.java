@@ -79,25 +79,24 @@ public class GemManagerTest extends RubyTestBase {
         assertEquals("righ gem dir", new File(new File(getTestRubyHome(), "bin"), "gem").getAbsolutePath(), gemManager.getGemTool());
     }
 
-    // XXX: (Try to) reenable with JRuby 1.1.3+
-//    public void testGemFetching() {
-//        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
-//        GemManager gm = jruby.getGemManager();
-//
-//        List<String> errors = new ArrayList<String>();
-//        List<Gem> available = gm.getRemoteGems(errors);
-//        assertNotNull("gem not null", available);
-//        System.out.println("available: " + available.size());
-//        assertTrue("no errros: " + errors, errors.isEmpty());
-//
-//        List<Gem> installed = gm.getInstalledGems(errors);
-//        assertNotNull("gem not null", installed);
-//        System.out.println("installed: " + installed.size());
-//        assertTrue("no errros", errors.isEmpty());
-//
-//        gm.reloadIfNeeded(errors);
-//        assertTrue("no errros", errors.isEmpty());
-//    }
+    public void testGemFetching() {
+        RubyPlatform jruby = RubyPlatformManager.getDefaultPlatform();
+        GemManager gm = jruby.getGemManager();
+
+        List<String> errors = new ArrayList<String>();
+        List<Gem> available = gm.getRemoteGems(errors);
+        assertNotNull("gem not null", available);
+        System.out.println("available: " + available.size());
+        assertTrue("no errros: " + errors, errors.isEmpty());
+
+        List<Gem> installed = gm.getInstalledGems(errors);
+        assertNotNull("gem not null", installed);
+        System.out.println("installed: " + installed.size());
+        assertTrue("no errros", errors.isEmpty());
+
+        gm.reloadIfNeeded(errors);
+        assertTrue("no errros", errors.isEmpty());
+    }
 
     public void testIsValidGemHome() throws Exception {
         assertFalse("not valid", GemManager.isValidGemHome(getWorkDir()));
@@ -240,6 +239,18 @@ public class GemManagerTest extends RubyTestBase {
         assertNotNull("rake is installed", gemManager.getLatestVersion("rake"));
     }
 
+    public void testInstallLocalWithSpaces() throws IOException {
+        RubyPlatform platform = getSafeJRuby();
+        GemManager gemManager = platform.getGemManager();
+        File rakeGem = getRakeGem();
+        FileObject rakeGemFOorig = FileUtil.toFileObject(rakeGem);
+        FileObject withSpaces = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), "with spaces");
+        FileObject rakeGemFO = FileUtil.copyFile(rakeGemFOorig, withSpaces, rakeGemFOorig.getNameExt());
+        assertNull("rake is not installed", gemManager.getLatestVersion("rake"));
+        gemManager.installLocal(FileUtil.toFile(rakeGemFO), null, false, false, false, null);
+        assertNotNull("rake is installed", gemManager.getLatestVersion("rake"));
+    }
+
     public void testGetVersions() throws IOException {
         RubyPlatform platform = getSafeJRuby();
         GemManager gemManager = platform.getGemManager();
@@ -267,7 +278,6 @@ public class GemManagerTest extends RubyTestBase {
         File rakeGem = new File(TestUtil.getXTestJRubyHome(), "lib/ruby/gems/1.8/cache/rake-0.8.1.gem");
         assertNotNull("rake gem found", rakeGem);
         assertTrue("rake gem found", rakeGem.isFile());
-
         return rakeGem;
     }
 

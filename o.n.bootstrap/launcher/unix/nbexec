@@ -403,6 +403,7 @@ while [ "$restart" ] ; do
     cp=""
     updatercp=""
     
+    build_cp "${userdir}"
     build_cp "${plathome}"
     
     if [ -f "${userdir}/modules/ext/updater.jar" ] ; then

@@ -940,8 +940,11 @@ public final class PatchedHtmlRenderer {
         }
 
         if (colorPos == pos) {
-            String out = "Could not find color identifier in font declaration"; //NOI18N
-            throwBadHTML(out, pos, ch);
+            Color result = UIManager.getColor("textText"); //NOI18N
+            //Avoid NPE in headless situation?
+            if (result == null)
+                result = Color.BLACK;
+            return result;
         }
 
         //Okay, we're now on the first character of the hex color definition

@@ -8,6 +8,7 @@
                 <attr name="iconBase" stringvalue="org/netbeans/modules/groovy/gsp/resources/gsp16.png"/>
                 <folder name="Factories">
                     <file name="org-netbeans-modules-groovy-gsp-loaders-GspDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.gsp.resources.Bundle"/>
                         <attr name="position" intvalue="99999"/>
                     </file>
                 </folder>

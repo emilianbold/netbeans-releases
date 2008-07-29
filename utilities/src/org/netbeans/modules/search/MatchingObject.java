@@ -59,7 +59,6 @@ import java.nio.charset.CharsetDecoder;
 import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,7 +68,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import static java.util.logging.Level.FINER;
 import static java.util.logging.Level.FINEST;
@@ -458,9 +456,8 @@ final class MatchingObject implements PropertyChangeListener {
         StringBuilder ret = null;
         
         ByteBuffer buf = getByteBuffer();
-        CharsetDecoder decoder = getDecoder();
         if (buf != null) {
-            CharBuffer cbuf = decodeByteBuffer(buf, decoder);
+            CharBuffer cbuf = decodeByteBuffer(buf, charset);
             String terminator
                     = System.getProperty("line.separator");         //NOI18N
 
@@ -503,25 +500,6 @@ final class MatchingObject implements PropertyChangeListener {
         }
         buffer.rewind();
         return buffer;
-    }
-
-    private CharsetDecoder getDecoder() {
-        Collection<? extends FileObjectDecoderProvider> decoderProviders
-               = Lookup.getDefault().lookupAll(FileObjectDecoderProvider.class);
-        CharsetDecoder decoder = null;
-        if (!decoderProviders.isEmpty()) {
-            final FileObject fileObj = getFileObject();
-            for (FileObjectDecoderProvider decoderProvider : decoderProviders) {
-                if ((decoder = decoderProvider.getDecoderFor(charset, fileObj)) != null) {
-                    break;
-                }
-            }
-        }
-        if (decoder == null) {
-            decoder = charset.newDecoder();
-        }
-        return decoder.onMalformedInput(CodingErrorAction.REPLACE)
-                      .onUnmappableCharacter(CodingErrorAction.REPLACE);
     }
     
     /**
@@ -804,8 +782,12 @@ final class MatchingObject implements PropertyChangeListener {
      * @see  <a href="http://www.netbeans.org/issues/show_bug.cgi?id=103067">NetBeans bug #103067</a>
      */
     private CharBuffer decodeByteBuffer(final ByteBuffer in,
-                                        final CharsetDecoder decoder)
+                                        final Charset charset)
             throws CharacterCodingException {
+        
+        final CharsetDecoder decoder = charset.newDecoder()
+                                       .onMalformedInput(CodingErrorAction.REPLACE)
+                                       .onUnmappableCharacter(CodingErrorAction.REPLACE);
         
 	int remaining = in.remaining();
         if (remaining == 0) {

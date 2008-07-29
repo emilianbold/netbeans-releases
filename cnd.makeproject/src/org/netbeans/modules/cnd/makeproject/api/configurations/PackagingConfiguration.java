@@ -192,7 +192,7 @@ public class PackagingConfiguration {
         set.put(intNodeprop = new IntNodeProp(getType(), true, "PackageType", "Package Type", "The type of this package.")); // NOI18N
 	set.put(outputNodeProp = new OutputNodeProp(getOutput(), getOutputDefault(), "Output", getString("OutputTxt"), getString("OutputHint"))); // NOI18N
         String[] texts = new String[] {"Files", "Files", "Files and other information in this package."};
-        set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", "Verbose", "Turns verbose build output on and off.")); // NOI18N
+        set.put(new BooleanNodeProp(getVerbose(), true, "Verbose", "Verbose", "Turns verbose build output on or off.")); // NOI18N
         set.put(new PackagingNodeProp(this, makeConfiguration, texts)); // NOI18N
         set.put(toolNodeProp = new StringNodeProp(getTool(), getToolDefault(), "Tool", getString("ToolTxt1"), getString("ToolHint1"))); // NOI18N
         set.put(optionsNodeProp = new StringNodeProp(getOptions(), getToolDefault(), "AdditionalOptions", getString("AdditionalOptionsTxt1"), getString("AdditionalOptionsHint"))); // NOI18N
@@ -253,7 +253,7 @@ public class PackagingConfiguration {
 	String outputPath = MakeConfiguration.DIST_FOLDER + "/" + getMakeConfiguration().getName() + "/" + getMakeConfiguration().getVariant() + "/"; // NOI18N 
         
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            outputPath += "<TBD>"; // NOI18N // FIXUP 
+            outputPath += outputName + ".pkg"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             outputPath += outputName + ".tar"; // NOI18N
@@ -278,7 +278,7 @@ public class PackagingConfiguration {
     private String getToolDefault() {
         String tool = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            tool = "<TBD>"; // NOI18N // FIXUP 
+            tool = "pkgmk"; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             tool = "tar"; // NOI18N
@@ -302,7 +302,7 @@ public class PackagingConfiguration {
     private String getOptionsDefault() {
         String option = null;
         if (getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            option = "<TBD>"; // NOI18N // FIXUP 
+            option = ""; // NOI18N // FIXUP 
         }
         else if (getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             option = "-v"; // NOI18N

@@ -127,7 +127,8 @@ public class FileReferencesImpl extends CsmFileReferences  {
         }
     }
 
-    private List<Triple<CsmReference>> getIdentifierReferences(CsmFile csmFile, BaseDocument doc, int start, int end,
+    private List<Triple<CsmReference>> getIdentifierReferences(CsmFile csmFile, final BaseDocument doc,
+                                                        final int start, final int end,
                                                         Set<CsmReferenceKind> kinds) {
         boolean needAfterDereferenceUsages = kinds.contains(CsmReferenceKind.AFTER_DEREFERENCE_USAGE);
         boolean skipPreprocDirectives = !kinds.contains(CsmReferenceKind.IN_PREPROCESSOR_DIRECTIVE);
@@ -137,14 +138,13 @@ public class FileReferencesImpl extends CsmFileReferences  {
         } else {
             deadBlocks = Collections.<CsmOffsetable>emptyList();
         }
-        try {
-            doc.atomicLock();
-            ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
-            CndTokenUtilities.processTokens(tp, doc, start, end);
-            return tp.references;
-        } finally {
-            doc.atomicUnlock();
-        }
+        final ReferencesProcessor tp = new ReferencesProcessor(csmFile, doc, skipPreprocDirectives, needAfterDereferenceUsages, deadBlocks);
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                CndTokenUtilities.processTokens(tp, doc, start, end);
+            }
+        });
+        return tp.references;
     }
 
     private static final class ReferencesProcessor extends CppAbstractTokenProcessor {
