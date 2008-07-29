@@ -396,7 +396,7 @@ public class CssPropertyValue {
                 sb =
                         new StringBuffer();
 
-            } else if (c == '(') {
+            } /*else if (c == '(') {
                 //make one token until ) found
                 for (; i <
                         input.length(); i++) {
@@ -410,7 +410,7 @@ public class CssPropertyValue {
 
                 }
                 sb.append(c); //add the quotation mark into the value
-            } else if (c == ' ' || c == '\t' || c == '\n') {
+            } */else if (c == ' ' || c == '\t' || c == '\n') {
                 if (sb.length() > 0) {
                     stack.add(0, sb.toString());
                     sb =
@@ -428,7 +428,7 @@ public class CssPropertyValue {
 
             } else {
                 //handling of chars which are both delimiters and values
-                if (c == ',' || c == '/') {
+                if (c == ',' || c == '/' || c == '(' || c == ')') {
                     if (sb.length() > 0) {
                         stack.add(0, sb.toString());
                     }
