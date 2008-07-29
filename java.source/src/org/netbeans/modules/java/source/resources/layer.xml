@@ -48,6 +48,7 @@ made subject to such option by the copyright holder.
         <folder name="x-java">
             <folder name="Factories">
                 <file name="org-netbeans-modules-java-JavaDataLoader.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.source.Bundle"/>
                     <attr name="position" intvalue="99999"/>
                 </file>
             </folder>
@@ -122,7 +123,9 @@ made subject to such option by the copyright holder.
     <folder name="application">
         <folder name="x-class-file">
             <folder name="Factories">
-                <file name="org-netbeans-modules-java-ClassDataLoader.instance"/>
+                <file name="org-netbeans-modules-java-ClassDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.source.Bundle"/>
+                </file>
             </folder>
 
             <folder name="Actions">

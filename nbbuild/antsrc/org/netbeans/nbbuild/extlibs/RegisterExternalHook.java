@@ -207,6 +207,7 @@ public class RegisterExternalHook extends Task {
                     HgExec x = new HgExec();
                     x.setProject(getProject());
                     x.createArg().setValue("checkout");
+                    x.createArg().setValue(".");
                     x.setDir(repo);
                     x.setFailonerror(true);
                     x.init();

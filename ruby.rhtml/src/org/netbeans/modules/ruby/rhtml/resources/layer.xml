@@ -4,6 +4,7 @@
     <folder name="Loaders">
         <folder name="application">
             <folder name="x-httpd-eruby">
+                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.ruby.rhtml.resources.Bundle"/>
                 <folder name="Factories">
                     <file name="org-netbeans-modules-ruby-rhtml-loaders-RhtmlDataLoader.instance"/>
                 </folder>
