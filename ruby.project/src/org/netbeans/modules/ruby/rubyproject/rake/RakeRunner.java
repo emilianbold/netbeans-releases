@@ -314,6 +314,9 @@ public final class RakeRunner {
             additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
         }
 
+        for (String param : parameters) {
+            additionalArgs.add(param);
+        }
         if (!additionalArgs.isEmpty()) {
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
         }
