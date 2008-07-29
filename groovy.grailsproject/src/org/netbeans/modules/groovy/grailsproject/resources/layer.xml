@@ -45,7 +45,6 @@
             </folder>
         </folder>
         <folder name="Groovy">
-            <attr name="position" intvalue="1351"/>
             <file name="DomainClass.groovy">
                 <attr name="position" intvalue="130"/>
                 <attr name="template" boolvalue="true"/>
