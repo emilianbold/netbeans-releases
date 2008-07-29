@@ -166,7 +166,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(RunConfigurationPanel.class.getName());
+        return new HelpCtx(RunConfigurationPanel.class);
     }
 
     public void readSettings(WizardDescriptor settings) {
