@@ -155,16 +155,21 @@ public class VisualizerNodeTest extends NbTestCase {
         assertEquals("Counter should still be 3", 3, lch.cnt);
         assertEquals("Size is 5", 5, ta.getChildCount());
 
-        assertEquals("Child is empty", VisualizerNode.EMPTY, ta.getChildAt(4));
-        assertEquals("We have just four children", 4, ta.getChildCount());
+        assertTrue("Child is empty", isDummyNode(ta.getChildAt(4)));
+        assertEquals("We have still 5 children, no opportunity to update", 5, ta.getChildCount());
         assertEquals("Three nodes created, still", 3, lch.cnt);
         
         assertEquals("x Child check", "x", ta.getChildAt(3).toString());
         
         lch.keys("a", "b", "c", "x", "-x", "-y", "y");
 
-        assertEquals("We have two more children", 6, ta.getChildCount());
-        assertEquals("Child is y", VisualizerNode.EMPTY, ta.getChildAt(4));
+        assertEquals("No time to update, should be 5", 5, ta.getChildCount());
+        assertTrue("Nothing removed, -x still present", isDummyNode(ta.getChildAt(4)));
+    }
+    
+    final boolean isDummyNode(TreeNode visNode) {
+        Node node = ((VisualizerNode)(visNode)).node;
+        return node.getClass().getName().endsWith("EntrySupport$Lazy$DummyNode");
     }
     
     static class LazyChildren extends Children.Keys<String> {

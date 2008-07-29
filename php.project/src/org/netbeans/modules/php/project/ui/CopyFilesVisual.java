@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.File;
 import javax.swing.JPanel;
 import javax.swing.MutableComboBoxModel;
 import javax.swing.event.ChangeEvent;
@@ -61,7 +62,7 @@ public class CopyFilesVisual extends JPanel {
         initComponents();
 
         localServerController = LocalServerController.create(copyFilesComboBox, copyFilesButton, sourcesFolderProvider,
-                NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
+                new BrowseCopyFiles(), NbBundle.getMessage(CopyFilesVisual.class, "LBL_SelectFolderLocation"), defaultLocalServers);
         // set default, disabled state
         localServerController.setEnabled(false);
 
@@ -180,4 +181,13 @@ public class CopyFilesVisual extends JPanel {
     private javax.swing.JLabel localServerLabel;
     // End of variables declaration//GEN-END:variables
 
+
+    private static class BrowseCopyFiles implements LocalServerController.BrowseHandler {
+        public File getCurrentDirectory() {
+            return LastUsedFolders.getCopyFiles();
+        }
+        public void locationChanged(File location) {
+            LastUsedFolders.setCopyFiles(location);
+        }
+    }
 }

@@ -80,7 +80,14 @@ public class MetadataModels {
         }
     }
 
-    public final static class Listener implements MetaDataListener {
+    private final static class Listener implements MetaDataListener {
+
+        // Remove when issue 141698 is fixed.
+        private static Listener create() {
+            return new Listener();
+        }
+
+        private Listener() {}
 
         // Refreshing in the calling thread is prone to deadlock:
         //

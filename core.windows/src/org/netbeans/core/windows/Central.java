@@ -1711,10 +1711,12 @@ final class Central implements ControllerHandler {
         // improve performance for such cases.
         if (oldActiveMode != null && oldActiveMode.equals(mode)) {
             if (tc != null && tc.equals(model.getModeSelectedTopComponent(mode))) {
-                // #82385: do repeat activation if focus is in another window
-                KeyboardFocusManager kfm = KeyboardFocusManager.getCurrentKeyboardFocusManager();
-                if (kfm.getActiveWindow() == SwingUtilities.getWindowAncestor(tc)) {
-                    //#70173 - activation request came probably from a sliding 
+                // #82385, #139319 do repeat activation if focus is not
+                // owned by tc to be activated
+                Component fOwn = KeyboardFocusManager.getCurrentKeyboardFocusManager().
+                        getFocusOwner();
+                if (fOwn != null && SwingUtilities.isDescendingFrom(fOwn, tc)) {
+                    //#70173 - activation request came probably from a sliding
                     //window in 'hover' mode, so let's hide it
                     slideOutSlidingWindows( mode );
                     return;

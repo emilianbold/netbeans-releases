@@ -111,6 +111,10 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("whereSchema"));
         suite.addTest(new SQLCompletionQueryTest("whereSchemaTable"));
 
+        suite.addTest(new SQLCompletionQueryTest("selectSubquery"));
+
+        suite.addTest(new SQLCompletionQueryTest("script"));
+
         // Does not work yet.
         // suite.addTest(new SQLCompletionQueryTest("selectFromTableInNonDefaultSchema", true));
 

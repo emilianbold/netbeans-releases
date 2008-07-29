@@ -126,7 +126,7 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         boolean enabled = ProviderUtil.isValidServerInstanceOrNone(project);
 
         if (enabled) {
-            boolean withDatasources = Util.isSupportedJavaEEVersion(project) || Util.isEjb21Module(project);
+            boolean withDatasources = Util.isContainerManaged(project) || Util.isEjb21Module(project);
             if (withDatasources) {
                 initializeWithDatasources();
             } else {
@@ -818,6 +818,12 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
         private boolean cmp;
 
         boolean waitingForScan;
+        
+        private String title;
+        
+        public WizardPanel(String wizardTitle) {
+            title = wizardTitle;
+        }
 
         public DatabaseTablesPanel getComponent() {
             if (component == null) {
@@ -845,6 +851,8 @@ public class DatabaseTablesPanel extends javax.swing.JPanel {
 
         public void readSettings(WizardDescriptor settings) {
             wizardDescriptor = settings;
+            wizardDescriptor.putProperty("NewFileWizard_Title", title); // NOI18N
+            
             if (!componentInitialized) {
                 componentInitialized = true;
 

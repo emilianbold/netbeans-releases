@@ -50,6 +50,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -70,6 +71,8 @@ import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 
 public class ConfigurationMakefileWriter {
     private MakeConfigurationDescriptor projectDescriptor;
@@ -82,8 +85,10 @@ public class ConfigurationMakefileWriter {
 	cleanup();
         writeMakefileImpl();
         Configuration[] confs = projectDescriptor.getConfs().getConfs();
-        for (int i = 0; i < confs.length; i++)
+        for (int i = 0; i < confs.length; i++) {
             writeMakefileConf((MakeConfiguration)confs[i]);
+            writePackagingScript((MakeConfiguration)confs[i]);
+        }
     }
 
     private void cleanup() {
@@ -92,6 +97,9 @@ public class ConfigurationMakefileWriter {
 	File[] children = folder.listFiles();
 	for (int i = 0; i < children.length; i++) {
 	    if (children[i].getName().startsWith("Makefile-")) { // NOI18N
+		children[i].delete();
+	    }
+	    if (children[i].getName().startsWith("Package-")) { // NOI18N
 		children[i].delete();
 	    }
 	}
@@ -182,7 +190,10 @@ public class ConfigurationMakefileWriter {
         CCCCompilerConfiguration cCompilerConfiguration = conf.getCCompilerConfiguration();
         CCCCompilerConfiguration ccCompilerConfiguration = conf.getCCCompilerConfiguration();
         FortranCompilerConfiguration fortranCompilerConfiguration = conf.getFortranCompilerConfiguration();
-        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet(); 
+        CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+        if (compilerSet == null) {
+            return;
+        }
         BasicCompiler cCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCompiler);
         BasicCompiler ccCompiler = (BasicCompiler)compilerSet.getTool(Tool.CCCompiler);
         BasicCompiler fortranCompiler = (BasicCompiler)compilerSet.getTool(Tool.FortranCompiler);
@@ -338,9 +349,13 @@ public class ConfigurationMakefileWriter {
 	    String additionalDep = null;
             for (int i = 0; i < items.length; i++) {
                 ItemConfiguration itemConfiguration = items[i].getItemConfiguration(conf); //ItemConfiguration)conf.getAuxObject(ItemConfiguration.getId(items[i].getPath()));
-                if (itemConfiguration.getExcluded().getValue())
+                if (itemConfiguration.getExcluded().getValue()) {
                     continue;
+                }
                 CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
+                if (compilerSet == null) {
+                    continue;
+                }
                 file = IpeUtils.escapeOddCharacters(compilerSet.normalizeDriveLetter(items[i].getPath()));
                 command = ""; // NOI18N
                 comment = null;
@@ -469,11 +484,14 @@ public class ConfigurationMakefileWriter {
         if (conf.isCompileConfiguration()) {
             bw.write("\t${RM} -r " + MakeConfiguration.BUILD_FOLDER + '/' + conf.getName() + "\n"); // UNIX path // NOI18N
             bw.write("\t${RM} " + getOutput(conf) + "\n"); // NOI18N
-            if (conf.getCompilerSet().getCompilerSet().isSunCompiler() &&
-                    conf.hasCPPFiles(projectDescriptor))
+            if (conf.getCompilerSet().getCompilerSet() != null &&
+                    conf.getCompilerSet().getCompilerSet().isSunCompiler() &&
+                    conf.hasCPPFiles(projectDescriptor)) {
 		bw.write("\t${CCADMIN} -clean" + "\n"); // NOI18N
-            if (conf.hasFortranFiles(projectDescriptor))
+            }
+            if (conf.hasFortranFiles(projectDescriptor)) {
 		bw.write("\t${RM} *.mod" + "\n"); // NOI18N
+            }
             
             // Also clean output from custom tool
             Item[] items = projectDescriptor.getProjectItems();
@@ -492,6 +510,10 @@ public class ConfigurationMakefileWriter {
             String command = makefileConfiguration.getCleanCommand().getValue();
             
             bw.write("\tcd " + IpeUtils.escapeOddCharacters(cwd) + " && " + command + "\n"); // NOI18N
+        }
+        
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() > 0) {
+            bw.write("\t${RM} " + conf.getPackagingConfiguration().getOutputValue() + "\n"); // NOI18N
         }
         
         writeSubProjectCleanTargets(conf, bw);
@@ -555,4 +577,83 @@ public class ConfigurationMakefileWriter {
         }
 	return false;
     }
+    
+    
+    private void writePackagingScript(MakeConfiguration conf) {
+        String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
+        
+        FileOutputStream os = null;
+        try {
+            os = new FileOutputStream(outputFileName);
+        } catch (Exception e) {
+            // FIXUP
         }
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
+        try {
+            writePackageHeader(bw, conf);
+            bw.flush();
+            bw.close();
+        } catch (IOException e) {
+            // FIXUP
+        }
+    }
+        
+    private void writePackageHeader(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        if (conf.getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            return; // FIXUP
+        }
+        String tmpdir = getObjectDir(conf) + "/tmp-packaging";
+        PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+        String output = packagingConfiguration.getOutputValue();
+        String outputDir = IpeUtils.getDirName(output);
+        String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
+        List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
+        
+        bw.write("#!/bin/bash");
+        if (conf.getPackagingConfiguration().getVerbose().getValue()) {
+            bw.write(" -x");
+        }
+        bw.write("\n");
+        bw.write("\n");
+        bw.write("# Macros\n");
+        bw.write("TOP=" + "`pwd`" + "\n");
+        bw.write("TMPDIR=" + tmpdir + "\n");
+        bw.write("\n");
+        bw.write("# Setup\n");
+        bw.write("rm -f " + output + "\n");
+        if (outputDir != null && outputDir.length() > 0) {
+            bw.write("mkdir -p " + outputDir + "\n");
+        }
+        bw.write("rm -rf $TMPDIR\n");
+        bw.write("mkdir -p $TMPDIR\n");
+        bw.write("\n");
+        bw.write("# Files\n");
+        for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.FILE) {
+                String toDir = IpeUtils.getDirName(elem.getTo());
+                if (toDir != null && toDir.length() >= 0) {
+                    bw.write("mkdir -p $TMPDIR/" + toDir + "\n");
+                }
+                bw.write("cp " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + "\n");
+            }
+        }
+        bw.write("\n");
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            bw.write("# Generate zip file\n");
+            bw.write("cd $TMPDIR\n");
+            bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n");
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            bw.write("# Generate tar file\n");
+            bw.write("cd $TMPDIR\n");
+            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -cf " + outputRelToTmp + " *\n");
+        }
+        else {
+            assert false;
+        }
+        bw.write("\n");
+        bw.write("# Cleanup\n");
+        bw.write("cd $TOP\n");
+        bw.write("rm -rf $TMPDIR\n");
+    }
+}

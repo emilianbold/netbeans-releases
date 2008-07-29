@@ -186,7 +186,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
         return processedToken;
     }
 
-    public CompletionQuery.Result query(JTextComponent component, BaseDocument doc, int offset,
+    public CompletionQuery.Result query(JTextComponent component, final BaseDocument doc, final int offset,
                                         SyntaxSupport support, boolean openingSource, boolean sort) {
         // remember baseDocument here. it is accessible by getBaseDocument() {
 
@@ -203,16 +203,14 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
         try {
             // find last separator position
-            int lastSepOffset = sup.getLastCommandSeparator(offset);
-            CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
+            final int lastSepOffset = sup.getLastCommandSeparator(offset);
+            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(offset);
             tp.setJava15(true);
-
-            try {
-                doc.atomicLock();
-                CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
-            } finally {
-                doc.atomicUnlock();
-            }
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    CndTokenUtilities.processTokens(tp, doc, lastSepOffset, offset);
+                }
+            });
 //            boolean cont = true;
 //            while (cont) {
 //                sup.tokenizeText(tp, ((lastSepOffset < offset) ? lastSepOffset + 1 : offset), offset, true);
@@ -949,6 +947,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
 
                             if (text != null && -1 == text.indexOf("namespace")) { //NOI18N
                                 res.addAll(finder.findNamespaceElements(lastNamespace, "", false, false, false)); // namespace elements //NOI18N
+//                                res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, "", false, false, false)); // namespace elements //NOI18N
                             }
                         }
                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*',  //NOI18N
@@ -1220,6 +1219,9 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                         lastType = null;
                                     } else { // package doesn't exist
                                         res = finder.findNamespaceElements(lastNamespace, var, true, false, true);
+//                                        if(res.isEmpty()) {
+//                                            res = finder.findStaticNamespaceElements(lastNamespace, endOffset, var, true, false, true);
+//                                        }
                                         CsmObject obj = res.isEmpty() ? null : (CsmObject)res.iterator().next();
                                         lastType = CsmCompletion.getObjectType(obj);
                                         cont = (lastType != null);
@@ -1229,6 +1231,7 @@ abstract public class CsmCompletionQuery implements CompletionQuery {
                                     if (last) { // get all matching fields/methods/packages
                                         List res = finder.findNestedNamespaces(lastNamespace, var, openingSource, false); // find matching nested namespaces
                                         res.addAll(finder.findNamespaceElements(lastNamespace, var, openingSource, false, false)); // matching classes
+//                                        res.addAll(finder.findStaticNamespaceElements(lastNamespace, endOffset, var, openingSource, false, false));
                                         result = new CsmCompletionResult(component, getBaseDocument(), res, searchPkg + '*', item, 0, isProjectBeeingParsed());
                                     }
                                 }

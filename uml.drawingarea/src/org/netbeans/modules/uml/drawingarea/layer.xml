@@ -142,6 +142,7 @@ made subject to such option by the copyright holder.
             <folder name="x-diagram">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-UMLDiagramDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
                         <attr name="position" intvalue="98834"/>
                     </file>
                 </folder>
@@ -149,6 +150,7 @@ made subject to such option by the copyright holder.
             <folder name="x-contextpalette">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-ContextPaletteDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
                         <attr name="position" intvalue="98835"/>
                     </file>
                 </folder>
@@ -156,6 +158,7 @@ made subject to such option by the copyright holder.
             <folder name="x-modeling_palette_item">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-PaletteItemDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
                         <attr name="position" intvalue="98836"/>
                     </file>
                 </folder>
@@ -163,6 +166,7 @@ made subject to such option by the copyright holder.
             <folder name="x-tsdiagram">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-uml-drawingarea-dataobject-ts-TSDiagramDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.uml.drawingarea.Bundle"/>
                         <attr name="position" intvalue="98837"/>
                     </file>
                 </folder>

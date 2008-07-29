@@ -172,10 +172,10 @@ public class AreVisualizersSynchronizedTest extends NbTestCase {
             List<TreeNode> children;
 
             public void run() {
-                if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
-                    Children.MUTEX.readAccess(this);
-                    return;
-                }
+//                if (!Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess()) {
+//                    Children.MUTEX.readAccess(this);
+//                    return;
+//                }
 
                 tree = Visualizer.findVisualizer(root);
                 ArrayList<TreeNode> ch = new ArrayList<TreeNode>();
@@ -192,15 +192,37 @@ public class AreVisualizersSynchronizedTest extends NbTestCase {
 
         children.doSetKeys(new String[] {"0", "Empty1", "1", "Empty2", "2", "Empty3", "3"});
         SwingUtilities.invokeAndWait(visInAwt);
+        /*class Block implements
+                Runnable {
+
+            public synchronized void run() {
+                notify();
+                try {
+                    wait();
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        Block b = new Block();
+        synchronized (b) {
+            SwingUtilities.invokeLater(b);
+            b.wait();
+        }*/
+        
         // here we get some empty nodes, removal should be scheduled
         assertEquals("0", visInAwt.children.get(0).toString());
-        assertNull(visInAwt.children.get(1).toString());
+        assertEquals("", visInAwt.children.get(1).toString());
         assertEquals("1", visInAwt.children.get(2).toString());
-        assertNull(visInAwt.children.get(3).toString());
+        assertEquals("", visInAwt.children.get(3).toString());
         assertEquals("2", visInAwt.children.get(4).toString());
-        assertNull(visInAwt.children.get(5).toString());
+        assertEquals("", visInAwt.children.get(5).toString());
         assertEquals("3", visInAwt.children.get(6).toString());
 
+       /* synchronized(b) {
+            b.notifyAll();
+        }*/
+        
         SwingUtilities.invokeAndWait(visInAwt);
         // here hidden nodes should be already removed
         assertEquals("0", visInAwt.children.get(0).toString());

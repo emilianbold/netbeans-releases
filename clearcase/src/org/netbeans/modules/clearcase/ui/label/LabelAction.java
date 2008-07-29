@@ -89,7 +89,8 @@ public class LabelAction extends AbstractAction {
         return false;
     }
     
-    public void actionPerformed(ActionEvent ev) {      
+    public void actionPerformed(ActionEvent ev) {
+        Utils.logVCSActionEvent("CC");
         Set<File> roots = context.getRootFiles();
         
         Label label = new Label(Utils.getContextDisplayName(context), roots.toArray(new File[roots.size()]));

@@ -55,8 +55,12 @@ public class NodeEvent extends java.util.EventObject {
     * @param n origin node
     */
     public NodeEvent(Node n) {
+        this(n, null);
+    }
+
+    NodeEvent(Node n, List<Node> snapshot) {
         super(n);
-        this.snapshot = n.getChildren().entrySupport().createSnapshot();
+        this.snapshot = snapshot == null ? n.getChildren().entrySupport().createSnapshot(false) : snapshot;
     }
 
     /** Get the node where the change occurred.

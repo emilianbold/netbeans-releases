@@ -146,16 +146,24 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
     public FileType getFileType(FileObject file) {
         Parameters.notNull("file", file);
 
-        FileObject path = CommonPhpSourcePath.getInternalPath();
-        if (path.equals(file) || FileUtil.isParentOf(path, file)) {
-            return FileType.INTERNAL;
+        for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                return FileType.INTERNAL;
+            }
         }
+        
+//        for (FileObject dir : PhpSourcePath.getPreindexedFolders()) {
+//            if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+//                return FileType.INTERNAL;
+//            }
+//        }
+        
         for (FileObject dir : getPlatformPath()) {
             if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
                 return FileType.INCLUDE;
             }
         }
-        path = getSrcPath();
+        FileObject path = getSrcPath();
         if (path != null
                 && (path.equals(file) || FileUtil.isParentOf(path, file))) {
             return FileType.SOURCE;
@@ -204,21 +212,26 @@ public final class ClassPathProviderImpl implements ClassPathProvider, PhpSource
         return cp;
     }
 
-    private synchronized ClassPath getBootClassPath() {
-        ClassPath cp = cache.get(ClassPathCache.PLATFORM);
-        if (cp == null) {
-            // because of global include path, we need to ensure that it is known for poperty evaluator
-            //  (=> need to be written in global properties)
-            PhpOptions.getInstance().getPhpGlobalIncludePath();
-            ClassPath internalClassPath =
-                    org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
-                    CommonPhpSourcePath.getInternalPath());
-            ClassPath includePath = ClassPathFactory.createClassPath(
-                    ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
-                    new String[] {PhpProjectProperties.INCLUDE_PATH}));
-            cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createProxyClassPath(
-                    internalClassPath, includePath);
-            cache.put(ClassPathCache.PLATFORM, cp);
+    private ClassPath getBootClassPath() {
+        // because of global include path, we need to ensure that it is known for poperty evaluator
+        //  (=> need to be written in global properties)
+        PhpOptions.getInstance().getPhpGlobalIncludePath();
+        ClassPath cp;
+        // #141746
+        synchronized (this) {
+            cp = cache.get(ClassPathCache.PLATFORM);
+            if (cp == null) {
+                List<FileObject> internalFolders = CommonPhpSourcePath.getInternalPath();
+                ClassPath internalClassPath =
+                        org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createClassPath(
+                        internalFolders.toArray(new FileObject[internalFolders.size()]));
+                ClassPath includePath = ClassPathFactory.createClassPath(
+                        ProjectClassPathSupport.createPropertyBasedClassPathImplementation(projectDirectory, evaluator,
+                        new String[] {PhpProjectProperties.INCLUDE_PATH}));
+                cp = org.netbeans.modules.gsfpath.spi.classpath.support.ClassPathSupport.createProxyClassPath(
+                        internalClassPath, includePath);
+                cache.put(ClassPathCache.PLATFORM, cp);
+            }
         }
         return cp;
     }

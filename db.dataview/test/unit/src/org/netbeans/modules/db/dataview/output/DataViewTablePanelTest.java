@@ -43,7 +43,7 @@ import org.netbeans.junit.NbTestCase;
 
 /**
  *
- * @author navaneeth
+ * @author jawed
  */
 public class DataViewTablePanelTest extends NbTestCase {
     

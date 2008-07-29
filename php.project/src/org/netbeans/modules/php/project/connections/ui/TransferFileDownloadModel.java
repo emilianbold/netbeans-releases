@@ -38,7 +38,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.php.project.connections.ui;
 
 import java.util.List;
@@ -48,15 +47,17 @@ import org.openide.util.NbBundle;
  * @author Radek Matous
  */
 public class TransferFileDownloadModel extends TransferFileUploadModel {
-    
+
     public TransferFileDownloadModel(List<TransferFileUnit> fileUnits) {
         super(fileUnits);
     }
 
+    @Override
     public String getTabTitle() {
-        return NbBundle.getMessage (TransferFileDownloadModel.class,
+        return NbBundle.getMessage(TransferFileDownloadModel.class,
                 "FileConfirmationTableModel_Download_Title");//NOI18N
     }
+
     @Override
     public Type getType() {
         return TransferFileTableModel.Type.DOWNLOAD;
@@ -64,7 +65,7 @@ public class TransferFileDownloadModel extends TransferFileUploadModel {
 
     @Override
     public String getColumnName(int column) {
-        return (column == 0) ? getBundle ("FileConfirmationTableModel_Columns_Download") ://NOI18N
-         super.getColumnName(column);
+        return (column == 0) ? getBundle("FileConfirmationTableModel_Columns_Download") ://NOI18N
+                super.getColumnName(column);
     }
 }

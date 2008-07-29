@@ -308,18 +308,18 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     public javax.swing.tree.TreeNode getChildAt(int p1) {
-        LogRecord rec = assertAccess(p1);
-        if (rec != null) {
-            LOG.log(rec);
-        }
+//        LogRecord rec = assertAccess(p1);
+//        if (rec != null) {
+//            LOG.log(rec);
+//        }
         return getChildren().getChildAt(p1);
     }
 
     public int getChildCount() {
-        LogRecord rec = assertAccess(-1);
-        if (rec != null) {
-            LOG.log(rec);
-        }
+//        LogRecord rec = assertAccess(-1);
+//        if (rec != null) {
+//            LOG.log(rec);
+//        }
         return getChildren().getChildCount();
     }
 
@@ -621,7 +621,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     static void runQueue() {
-        QUEUE.run();
+        //QUEUE.run();
     }
 
     /** Strong reference.
@@ -644,32 +644,42 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * the order of processed objects will be exactly the same as they
     * arrived.
     */
-    private static final class QP extends Object implements Runnable {
+    private static final class QP implements Runnable {
         /** queue of all requests (Runnable) that should be processed
          * AWT-Event queue.
          */
-        private LinkedList<Runnable> queue = null;
+        private LinkedList<Runnable> queue = new LinkedList<Runnable>();
 
         QP() {
         }
-
+        
+        boolean shouldBeInvokedLater(Runnable run) {
+            return run instanceof VisualizerEvent.Removed && 
+                    ((VisualizerEvent) run).originalEvent.getSnapshot().getClass().getName().contains("DelayedLazySnapshot");
+        }
+        
         /** Runs the runnable in event thread.
          * @param run what should run
          */
-        public void runSafe(Runnable run) {
-            boolean isNew = false;
+        public void runSafe(final Runnable run) {
+            boolean wasEmpty = false;
 
             synchronized (this) {
-                // access to queue variable is synchronized
-                if (queue == null) {
-                    queue = new LinkedList<Runnable>();
-                    isNew = true;
+                if (SwingUtilities.isEventDispatchThread() && shouldBeInvokedLater(run)) {
+                    if (!queue.isEmpty()) {
+                        // insert marker for interruption
+                        queue.addLast(null);
+                    }
+                    queue.addLast(run);
+                    SwingUtilities.invokeLater(this);
+                    return;
                 }
-
-                queue.add(run);
+                
+                wasEmpty = queue.isEmpty();
+                queue.addLast(run);
             }
 
-            if (isNew) {
+            if (wasEmpty) {
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
@@ -677,31 +687,27 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
             }
         }
 
-        /** Processes the queue.
-         */
         public void run() {
-            Enumeration<Runnable> en;
 
-            synchronized (this) {
-                // access to queue variable is synchronized
-                if (queue == null) {
-                    LOG.log(Level.FINER, "Queue empty"); // NOI18N
-                    return;
+            boolean isEmpty = false;
+            while (!isEmpty) {
+                Runnable r;
+                synchronized (this) {
+                    r = queue.poll();
+                    if (r == null) {
+                        LOG.log(Level.FINER, "Marker found, interrupting queue"); // NOI18N
+                        return;
+                    }
+                    isEmpty = queue.isEmpty();
                 }
-
-                en = Collections.enumeration(queue);
-                queue = null;
-                LOG.log(Level.FINER, "Queue emptied"); // NOI18N
-            }
-            while (en.hasMoreElements()) {
-                Runnable r = en.nextElement();
-                LOG.log(Level.FINER, "Running {0}", r); // NOI18N
+                LOG.log(Level.FINER, "Running from queue {0}", r); // NOI18N
                 Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
                 LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
             }
             LOG.log(Level.FINER, "Queue processing over"); // NOI18N
         }
     }
+
 
     private class PropLeafChange implements Runnable {
 
@@ -740,7 +746,7 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     }
 
     VisualizerNode[] getPathToRoot(int depth) {
-        depth++;
+       depth++;
         VisualizerNode[] retNodes;
         if (parent == null || parent.parent == null) {
             retNodes = new VisualizerNode[depth];

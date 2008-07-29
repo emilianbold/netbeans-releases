@@ -45,7 +45,7 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="SOA">
-                    <attr name="position" intvalue="500"/>
+                    <attr name="position" intvalue="680"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.bpel.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/bpel/samples/resources/category.html"/>
 

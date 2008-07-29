@@ -137,7 +137,7 @@ public class HighlightProvider  {
                         Exceptions.printStackTrace(ioe);
                     }
                     descriptions.add(desc);
-                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded to a bag %s\n", desc);
+                    if (TRACE_ANNOTATIONS) System.err.printf("\tadded to a bag %s\n", desc.toString());
                 } else {
                     if (TRACE_ANNOTATIONS) System.err.printf("\tCan't create PositionBounds for %s\n", info);
                 }
@@ -150,6 +150,7 @@ public class HighlightProvider  {
                 }
             }
         };
+        removeAnnotations(doc);
         CsmErrorProvider.getDefault().getErrors(new RequestImpl(file), response);
         CppUpToDateStatusProvider.get((BaseDocument) doc).setUpToDate(UpToDateStatus.UP_TO_DATE_OK);
         

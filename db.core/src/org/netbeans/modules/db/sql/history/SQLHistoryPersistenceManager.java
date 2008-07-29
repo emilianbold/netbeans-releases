@@ -61,7 +61,6 @@ import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
-import org.openide.filesystems.Repository;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.XMLDataObject;
 import org.openide.util.Exceptions;
@@ -131,21 +130,20 @@ public class SQLHistoryPersistenceManager {
     public void updateSQLSaved(int limit, FileObject root) {
         try {
             String historyFilePath = FileUtil.getFileDisplayName(root) + File.separator + SQL_HISTORY_FILE_NAME + ".xml"; // NOI18N
-            numElemsToRemove = SQLHistoryManager.getInstance().updateList(limit, historyFilePath, root);
-
-            boolean containsElems = true;
-            try {
-                containsElems = !SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root).isEmpty();
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ClassNotFoundException ex) {
-                Exceptions.printStackTrace(ex);
+            List<SQLHistory> updatedSQLHistoryList = SQLHistoryPersistenceManager.getInstance().retrieve(historyFilePath, root);  
+            // Remove elements from list based on the number of statements to save that is set in the SQL History dialog
+            if (limit < updatedSQLHistoryList.size()) {
+                numElemsToRemove = updatedSQLHistoryList.size() - limit;
+                boolean containsElems = true;
+                containsElems = !updatedSQLHistoryList.isEmpty();
+                if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
+                    DataFolder df = DataFolder.findFolder(root);
+                    AtomicModifier modifier = new AtomicModifier(updatedSQLHistoryList, df, SQL_HISTORY_FILE_NAME);
+                    df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
+                }
             }
-            if (containsElems && (limit == 0 || numElemsToRemove >= 0)) {
-                DataFolder df = DataFolder.findFolder(root);
-                AtomicModifier modifier = new AtomicModifier(sqlHistoryList, df, SQL_HISTORY_FILE_NAME);
-                df.getPrimaryFile().getFileSystem().runAtomicAction(modifier);
-            }
+        } catch (ClassNotFoundException ex) {
+            Exceptions.printStackTrace(ex);
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
@@ -373,7 +371,11 @@ public class SQLHistoryPersistenceManager {
                 int elemsToRemove = SQLHistoryPersistenceManager.getInstance().getNumElemsToRemove();
                 // Statements to save was set to 0                   
                 if (elemsToRemove == 0) {
-                    history.removeChild(nodes.item(0));
+                    for (int i = 0; i < nodes.getLength(); i++) {
+                        if (nodes.item(0) != null) {
+                            history.removeChild(nodes.item(0));
+                        }
+                    }
                 }
                 // Remove elements from the DOM
                 for (int i = 0; i < elemsToRemove; i++) {
@@ -524,13 +526,13 @@ public class SQLHistoryPersistenceManager {
             String sqlSetting = NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", "");
             if (!sqlSetting.equals("")) { // NOI18N
                 limit = Integer.parseInt(NbPreferences.forModule(SQLHistoryPersistenceManager.class).get("SQL_STATEMENTS_SAVED_FOR_HISTORY", ""));  // NOI18N
-            }   
-            if (xmlSqlHistoryList.size() <= limit) {
+            }
+            if ((xmlSqlHistoryList.size() <= limit) || limit == 0) {
                 xmlSqlHistoryList.add(new SQLHistory(url, sql, date));
                 setXmlSqlHistoryList(xmlSqlHistoryList);
             } else {
-                // remove a statement from the beginning of the list
-                xmlSqlHistoryList.remove(xmlSqlHistoryList.size()-1);
+                // remove a statement from the end of the list
+                xmlSqlHistoryList.remove(xmlSqlHistoryList.size() - 1);
             }
         }
  

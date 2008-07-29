@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -513,7 +515,20 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         public Action getPreferredAction () {
             return null;
         }
-        
+
+        @Override
+        public void setName(String name) {
+            // #140308 - get attributtes before rename and set them for renamed FileObject
+            FileObject fo = this.getLookup().lookup(FileObject.class);
+            FileObject parentFO = fo.getParent();
+            final HashMap<String, Object> attributes = getAttributes(fo);
+            super.setName(name);
+            try {
+                setAttributes(parentFO.getFileObject(name), attributes);
+            } catch (IOException ex) {
+                Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ex);
+            }
+        }
     }
     
     private static class DataFolderFilterChildren extends FilterNode.Children {
@@ -625,15 +640,7 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             DataObject target = source.copy(source.getFolder());
             FileObject srcFo = source.getPrimaryFile();
             FileObject targetFo = target.getPrimaryFile();
-            Enumeration<String> attributeNames = srcFo.getAttributes();
-            while(attributeNames.hasMoreElements()) {
-                String attrName = attributeNames.nextElement();
-                if (attrName == null) continue;
-                Object attrValue = srcFo.getAttribute(attrName);
-                if (attrValue != null) {
-                    targetFo.setAttribute(attrName, attrValue);
-                }
-            }
+            setAttributes(targetFo, getAttributes(srcFo));
             return target;
         } catch (IOException ioe) {
             Logger.getLogger(TemplatesPanel.class.getName()).log(Level.WARNING, null, ioe);
@@ -641,6 +648,30 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         return null;
     }
     
+    /** Returns map of attributes for given FileObject. */
+    private static HashMap<String, Object> getAttributes(FileObject fo) {
+        HashMap<String, Object> attributes = new HashMap<String, Object>();
+        Enumeration<String> attributeNames = fo.getAttributes();
+        while(attributeNames.hasMoreElements()) {
+            String attrName = attributeNames.nextElement();
+            if (attrName == null) {
+                continue;
+            }
+            Object attrValue = fo.getAttribute(attrName);
+            if (attrValue != null) {
+                attributes.put(attrName, attrValue);
+            }
+        }
+        return attributes;
+    }
+
+    /** Sets attributes for given FileObject. */
+    private static void setAttributes(FileObject fo, HashMap<String, Object> attributes) throws IOException {
+        for (Entry<String, Object> entry : attributes.entrySet()) {
+            fo.setAttribute(entry.getKey(), entry.getValue());
+        }
+    }
+
     static FileObject getTemplatesRoot () {
         if (templatesRoot == null) {
             templatesRoot = Repository.getDefault ().getDefaultFileSystem ().findResource ("Templates"); // NOI18N

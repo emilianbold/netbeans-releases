@@ -10,10 +10,12 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -28,6 +30,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private MakeConfiguration conf;
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
+    private PackagingHeaderPanel packagingHeaderPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -40,17 +43,45 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.setState(PropertyEnv.STATE_NEEDS_VALIDATION);
         env.addPropertyChangeListener(this);
         
-        // Add tabs
-        packagingInfoPanel = new PackagingInfoPanel();
-        packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
-        
-        // Combobox
-        String[] displayNames = packagingConfiguration.getDisplayNames();
-        for (int i = 0; i < displayNames.length; i++ ) {
-            packagingTypeComboBox.addItem(displayNames[i]);
+        // Init default values
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            if (!packagingConfiguration.getHeader().getModified()) {
+                List<InfoElement> headerList = packagingConfiguration.getHeader().getValue();
+                headerList.add(new InfoElement("PKG", "PackageName")); // NOI18N
+                headerList.add(new InfoElement("NAME", "Package description ...")); // NOI18N
+                headerList.add(new InfoElement("ARCH", "i386")); // NOI18N
+                headerList.add(new InfoElement("CATEGORY", "application")); // NOI18N
+                headerList.add(new InfoElement("VERSION", "1.0")); // NOI18N
+            }
         }
-        packagingTypeComboBox.setSelectedIndex(packagingConfiguration.getType().getValue());
         
+        // Add tabs
+        packagingInfoPanel = new PackagingInfoPanel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        else {
+            packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        
+        tabbedPane.addTab("Info", packagingInfoPanel);
+        tabbedPane.addTab("Files", packagingFilesPanel);
+            
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            // Add tabs
+            tabbedPane.setEnabledAt(0,false);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(1);
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            // Add tabs
+            tabbedPane.setEnabledAt(0,true);
+            tabbedPane.setEnabledAt(1,true);
+            tabbedPane.setSelectedIndex(0);
+        }
+        else {
+            assert false;
+        }
     }
 
         
@@ -61,9 +92,16 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     }
     
     private Object getPropertyValue() throws IllegalStateException {
-        Vector v = packagingFilesPanel.getListData();
+        Vector v;
+        
+        v = packagingHeaderPanel.getListData();
+        packagingConfiguration.getHeader().setValue(new ArrayList(v));
+        
+        v = packagingFilesPanel.getListData();
         packagingConfiguration.getFiles().setValue(new ArrayList(v));
+        
 	return packagingConfiguration;
+        
     }
 
     public HelpCtx getHelpCtx() {
@@ -81,29 +119,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         java.awt.GridBagConstraints gridBagConstraints;
 
         innerPanel = new javax.swing.JPanel();
-        packagingTypeLabel = new javax.swing.JLabel();
-        packagingTypeComboBox = new javax.swing.JComboBox();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1000, 400));
+        setPreferredSize(new java.awt.Dimension(1200, 500));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());
-
-        packagingTypeLabel.setText(org.openide.util.NbBundle.getMessage(PackagingPanel.class, "PackagingPanel.packagingTypeLabel.text")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        innerPanel.add(packagingTypeLabel, gridBagConstraints);
-
-        packagingTypeComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                packagingTypeComboBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        innerPanel.add(packagingTypeComboBox, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -121,26 +142,9 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         add(innerPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-private void packagingTypeComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_packagingTypeComboBoxActionPerformed
-// TODO add your handling code here:
-    int selectedType = packagingTypeComboBox.getSelectedIndex();
-    tabbedPane.removeAll();
-    if (selectedType == PackagingConfiguration.TYPE_ZIP || selectedType == PackagingConfiguration.TYPE_TAR) {
-        // Add tabs
-        tabbedPane.addTab("Files", packagingFilesPanel);
-    }
-    else {
-        // Add tabs
-        tabbedPane.addTab("Info", packagingInfoPanel);
-        tabbedPane.addTab("Files", packagingFilesPanel);
-    }
-}//GEN-LAST:event_packagingTypeComboBoxActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel innerPanel;
-    private javax.swing.JComboBox packagingTypeComboBox;
-    private javax.swing.JLabel packagingTypeLabel;
     private javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
 

@@ -54,4 +54,6 @@ public interface ServerRecord {
     public boolean isRemote();
     
     public boolean isOnline();
+    
+    public void validate();
 }

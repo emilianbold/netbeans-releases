@@ -41,7 +41,7 @@ package org.netbeans.modules.hibernate.hqleditor;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
-import org.hibernate.cfg.Configuration;
+import org.hibernate.cfg.AnnotationConfiguration;
 import org.netbeans.api.progress.ProgressHandle;
 
 /**
@@ -58,15 +58,11 @@ public class HQLExecutor {
      * @return HQLResult containing the execution result (including any errors).
      */
     public HQLResult execute(String hql, 
-            Configuration hibernateConfiguration,
+            AnnotationConfiguration hibernateConfiguration,
             int maxRowCount,
             ProgressHandle ph) {
         HQLResult result = new HQLResult();
         try {
-
-//            Configuration configuration = new Configuration();
-//            configuration.configure(FileUtil.toFile(configFileObject));
-
             ph.progress(60);
             
             SessionFactory sessionFactory = hibernateConfiguration.buildSessionFactory();

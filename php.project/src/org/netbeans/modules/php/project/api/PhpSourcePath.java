@@ -41,6 +41,7 @@ package org.netbeans.modules.php.project.api;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -49,17 +50,19 @@ import org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Parameters;
 
 /**
  * @author Tomas Mysik
- * @since 2.0
+ * @since 2.1
  */
 public final class PhpSourcePath {
     public static final String  MIME_TYPE = "text/x-php5"; // NOI18N
     public static final String  DEBUG_SESSION =  "netbeans-xdebug"; // NOI18N
 
     private static final DefaultPhpSourcePath DEFAULT_PHP_SOURCE_PATH = new DefaultPhpSourcePath();
+    private static FileObject phpStubsFolder = null;
 
     /**
      * Possible types of a file.
@@ -92,6 +95,40 @@ public final class PhpSourcePath {
             return phpSourcePath.getFileType(file);
         }
         return DEFAULT_PHP_SOURCE_PATH.getFileType(file);
+    }
+
+    /**
+     * Get list of folders, where asignatures file for PHP runtime are.
+     * These files are also preindexed.
+     * @return list of folders
+     */
+    public static List<FileObject> getPreindexedFolders() {
+        if (phpStubsFolder == null) {
+            // Core classes: Stubs generated for the "builtin" php runtime and extenstions.
+            File clusterFile = InstalledFileLocator.getDefault().locate(
+                    "modules/org-netbeans-modules-php-project.jar", null, false);   //NOI18N
+
+            if (clusterFile != null) {
+                File phpStubs =
+                        new File(clusterFile.getParentFile().getParentFile().getAbsoluteFile(),
+                        "phpstubs/phpruntime"); // NOI18N
+                assert phpStubs.exists() && phpStubs.isDirectory() : "No stubs found";
+                phpStubsFolder = FileUtil.toFileObject(phpStubs);
+            } else {
+                // During test?
+                // HACK - TODO use mock
+                String phpDir = System.getProperty("xtest.php.home");   //NOI18N
+                if (phpDir == null) {
+                    throw new RuntimeException("xtest.php.home property has to be set when running within binary distribution");  //NOI18N
+                }
+                File phpStubs = new File(phpDir + File.separator + "phpstubs/phpruntime");//NOI18N
+                if (phpStubs.exists()) {
+                    phpStubsFolder = FileUtil.toFileObject(phpStubs);
+                }
+            }
+        }
+
+        return Collections.singletonList(phpStubsFolder);
     }
 
     /**
@@ -147,9 +184,10 @@ public final class PhpSourcePath {
     private static class DefaultPhpSourcePath implements org.netbeans.modules.php.project.classpath.PhpSourcePathImplementation {
 
         public FileType getFileType(FileObject file) {
-            FileObject path = CommonPhpSourcePath.getInternalPath();
-            if (path.equals(file) || FileUtil.isParentOf(path, file)) {
-                return FileType.INTERNAL;
+            for (FileObject dir : CommonPhpSourcePath.getInternalPath()) {
+                if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {
+                    return FileType.INTERNAL;
+                }
             }
             for (FileObject dir : getPlatformPath()) {
                 if (dir.equals(file) || FileUtil.isParentOf(dir, file)) {

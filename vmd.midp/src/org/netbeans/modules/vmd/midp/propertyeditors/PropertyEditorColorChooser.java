@@ -73,6 +73,14 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
     private static final String ERROR_WARNING = NbBundle.getMessage(PropertyEditorColorChooser.class, "MSG_ILLEGAL_FORMATING"); // NOI18N
     private static final String BUTTON_NAME = NbBundle.getMessage(PropertyEditorColorChooser.class, "LBL_BUTTON_NAME"); // NOI18N
     
+    private static final String ACSN_BUTTON = NbBundle.getMessage(PropertyEditorColorChooser.class, "ACSN_COLOR_BUTTON"); // NOI18N
+    private static final String ACSD_BUTTON = NbBundle.getMessage(PropertyEditorColorChooser.class, "ACSD_COLOR_BUTTON"); // NOI18N
+    
+    private static final String ACSN_COLOR_CHOOSER = NbBundle.getMessage(
+            PropertyEditorColorChooser.class, "ACSN_COLOR_CHOOSER"); // NOI18N
+    private static final String ACSD_COLOR_CHOOSER = NbBundle.getMessage(
+            PropertyEditorColorChooser.class, "ACSD_COLOR_CHOOSER"); // NOI18N
+    
     private JColorChooser customEditorElement;
     private JRadioButton radioButton;
     private InplaceEditor inplaceEditor;
@@ -131,6 +139,11 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
     public JComponent getCustomEditorComponent() {
         if (customEditorElement == null) {
             customEditorElement = new JColorChooser();
+            
+            customEditorElement.getAccessibleContext().setAccessibleName( 
+                    ACSN_COLOR_CHOOSER);
+            customEditorElement.getAccessibleContext().setAccessibleDescription(
+                    ACSD_COLOR_CHOOSER);
         }
         return customEditorElement;
     }
@@ -139,6 +152,10 @@ public class PropertyEditorColorChooser extends PropertyEditorUserCode implement
         if (radioButton == null) {
             radioButton = new JRadioButton(BUTTON_NAME);
              Mnemonics.setLocalizedText(radioButton, BUTTON_NAME);
+             
+             radioButton.getAccessibleContext().setAccessibleName( ACSN_BUTTON );
+             radioButton.getAccessibleContext().setAccessibleDescription( 
+                     ACSD_BUTTON );
         }
         return radioButton;
     }

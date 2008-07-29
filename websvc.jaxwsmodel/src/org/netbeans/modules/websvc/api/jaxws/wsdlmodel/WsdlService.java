@@ -54,6 +54,14 @@ import org.netbeans.modules.websvc.jaxwsmodelapi.WSService;
 public class WsdlService implements WSService {
     
     private Service service;
+    
+    /** 
+     * Added this default constructor to fix an issue related to the XMLEncoder.
+     * See IZ 128161.
+     */
+    public WsdlService() {
+    }
+    
     /** Creates a new instance of WsdlService */
     WsdlService(Service service) {
         this.service=service;

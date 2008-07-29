@@ -42,6 +42,8 @@ package org.netbeans.modules.bpel.validation.schema;
 
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.validation.Schema;
@@ -50,15 +52,20 @@ import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSInput;
 import org.w3c.dom.ls.LSResourceResolver;
 
-import org.netbeans.modules.bpel.model.api.AnotherVersionBpelProcess;
-import org.netbeans.modules.bpel.model.api.BpelEntity;
-import org.netbeans.modules.bpel.model.api.BpelModel;
-import org.netbeans.modules.bpel.model.api.resources.ResourcePackageMarker;
-import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
+import org.netbeans.modules.xml.xam.Component;
 import org.netbeans.modules.xml.xam.Model;
 import org.netbeans.modules.xml.xam.spi.Validation;
 import org.netbeans.modules.xml.xam.spi.ValidationResult;
 import org.netbeans.modules.xml.xam.spi.XsdBasedValidator;
+import org.netbeans.modules.bpel.model.api.AnotherVersionBpelProcess;
+import org.netbeans.modules.bpel.model.api.BpelEntity;
+import org.netbeans.modules.bpel.model.api.BpelModel;
+import org.netbeans.modules.bpel.model.api.ConditionHolder;
+import org.netbeans.modules.bpel.model.api.Empty;
+import org.netbeans.modules.bpel.model.api.ForEach;
+import org.netbeans.modules.bpel.model.api.Scope;
+import org.netbeans.modules.bpel.model.api.resources.ResourcePackageMarker;
+import org.netbeans.modules.bpel.model.ext.logging.api.Trace;
 import static org.netbeans.modules.xml.ui.UI.*;
 
 /**
@@ -78,17 +85,103 @@ public final class Validator extends XsdBasedValidator {
 
     // # 135148
     Iterator<ResultItem> items = result.getValidationResult().iterator();
+    List<ResultItem> toBeAdded = new LinkedList<ResultItem>();
+    List<ResultItem> toBeRemoved = new LinkedList<ResultItem>();
 
     while (items.hasNext()) {
-      ResultItem item = items.next();
-      item.setDescription(fixDescription(item.getDescription()));
+      fixDescription(items.next(), toBeAdded, toBeRemoved);
     }
-    return result;
+    return updateResult(result, toBeAdded, toBeRemoved);
   }
 
-  private String fixDescription(String description) {
+  // # 137885
+  private void patch(ResultItem item, List<ResultItem> toBeAdded, List<ResultItem> toBeRemoved) {
+    if (patchCondition(item, toBeAdded, toBeRemoved)) {
+      return;
+    }
+    if (patchForEach(item, toBeAdded, toBeRemoved)) {
+      return;
+    }
+  }
+
+  private boolean patchCondition(ResultItem item, List<ResultItem> toBeAdded, List<ResultItem> toBeRemoved) {
+    Component component = item.getComponents();
+    Component parent = getParent(component);
+
+    if ( !(parent instanceof ConditionHolder)) {
+      return false;
+    }
+    ConditionHolder holder = (ConditionHolder) parent;
+
+    if (holder.getCondition() != null) {
+      return false;
+    }
+    toBeRemoved.add(item);
+    toBeAdded.add(createItem(item, (Component) holder));
+
+    return true;
+  }
+
+  private boolean patchForEach(ResultItem item, List<ResultItem> toBeAdded, List<ResultItem> toBeRemoved) {
+    Component component = item.getComponents();
+    Component parent = getParent(component);
+
+    if ( !(parent instanceof ForEach)) {
+      return false;
+    }
+    ForEach forEach = (ForEach) parent;
+
+    if (forEach.getStartCounterValue() != null && forEach.getFinalCounterValue() != null && forEach.getCompletionCondition() != null) {
+      return false;
+    }
+    toBeRemoved.add(item);
+    toBeAdded.add(createItem(item, forEach));
+
+    return true;
+  }
+
+  private ResultItem createItem(ResultItem item, Component component) {
+    return new ResultItem(this, item.getType(), component, item.getDescription());
+  }
+
+  private Component getParent(Component component) {
+    while(true) {
+      if (component == null) {
+        return null;
+      }
+      Component parent = component.getParent();
+
+      if (parent instanceof Scope) {
+        component = parent.getParent();
+        continue;
+      }
+      return parent;
+    }
+  }
+
+  private ValidationResult updateResult(ValidationResult result, List<ResultItem> toBeAdded, List<ResultItem> toBeRemoved) {
+    Iterator<ResultItem> oldItems = result.getValidationResult().iterator();
+    List<ResultItem> newItems = new LinkedList<ResultItem>();
+
+    while (oldItems.hasNext()) {
+      ResultItem item = oldItems.next();
+
+      if (toBeRemoved.contains(item)) {
+        continue;
+      }
+      newItems.add(item);
+    }
+    for (ResultItem item : toBeAdded) {
+      newItems.add(item);
+    }
+    return new ValidationResult(newItems, result.getValidatedModels());
+  }
+
+  private void fixDescription(ResultItem item, List<ResultItem> toBeAdded, List<ResultItem> toBeRemoved) {
+    String description = item.getDescription();
+
     if ( !description.startsWith("cvc-complex-type")) { // NOI18N
-      return description;
+      return;
     }
     int k = description.indexOf(": "); // NOI18N
 
@@ -100,9 +193,8 @@ public final class Validator extends XsdBasedValidator {
     description = replace(description, "\"http://docs.oasis-open.org/wsbpel/2.0/process/executable\":", ""); // NOI18N
     description = replace(description, "WC[##other:\"http://docs.oasis-open.org/wsbpel/2.0/process/executable\"], ", ""); // NOI18N
 
-    description = adjustDescription(description);
-    
-    return description;
+    item.setDescription(adjustDescription(description));
+    patch(item, toBeAdded, toBeRemoved);
   }
 
   // # 135858
@@ -136,65 +228,66 @@ public final class Validator extends XsdBasedValidator {
   }
 
   protected Schema getSchema(Model model) {
-      if ( !(model instanceof BpelModel)) {
-          return null;
-      }
-      // # 90585
-      AnotherVersionBpelProcess process = ((BpelModel) model).getAnotherVersionProcess();
+    if ( !(model instanceof BpelModel)) {
+      return null;
+    }
+    // # 90585
+    AnotherVersionBpelProcess process = ((BpelModel) model).getAnotherVersionProcess();
 
-      if (process != null) {
-          String ns = process.getNamespaceUri();
-          // we have BPEL 1.1 process file, validate against his schema
-          if (BpelEntity.BUSINESS_PROCESS_1_1_NS_URI.equals(ns)) {
-              return getBpel11Schema();
-          }
+    if (process != null) {
+      String ns = process.getNamespaceUri();
+      // we have BPEL 1.1 process file, validate against his schema
+      if (BpelEntity.BUSINESS_PROCESS_1_1_NS_URI.equals(ns)) {
+        return getBpel11Schema();
       }
-      return getBpel20Schema();
+    }
+    return getBpel20Schema();
   }
 
   private Schema getBpel20Schema() {
-      if (ourBPEL20Schema == null) {
-          ourBPEL20Schema = getCompiledSchema(new InputStream[] { Validator.class.getResourceAsStream(BPEL_XSD_URL)}, new BPELEntityResolver());
-      }
-      return ourBPEL20Schema;
+    if (ourBPEL20Schema == null) {
+      ourBPEL20Schema = getCompiledSchema(new InputStream[] { Validator.class.getResourceAsStream(BPEL_XSD_URL)}, new BPELEntityResolver());
+    }
+    return ourBPEL20Schema;
   }
   
   private Schema getBpel11Schema() {
-      if (ourBPEL11Schema == null) {
-          ourBPEL11Schema = getCompiledSchema(new InputStream[] { Validator.class.getResourceAsStream(BPEL_1_1_XSD_URL)}, new BPELEntityResolver());
-      }
-      return ourBPEL11Schema;
+    if (ourBPEL11Schema == null) {
+      ourBPEL11Schema = getCompiledSchema(new InputStream[] { Validator.class.getResourceAsStream(BPEL_1_1_XSD_URL)}, new BPELEntityResolver());
+    }
+    return ourBPEL11Schema;
   }
 
   private class BPELEntityResolver implements LSResourceResolver {
 
-      public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
-          InputStream inputStream = null;
+    public LSInput resolveResource(String type, String namespaceURI, String publicId, String systemId, String baseURI) {
+      InputStream inputStream = null;
 
-          if (systemId.equals(XML_XSD_SYSTEMID)) {
-              inputStream = Validator.class.getResourceAsStream(XML_XSD_URL);
-          }
-          else if (systemId.equals(XML_WSDL_SYSTEMID)) {
-              inputStream = Validator.class.getResourceAsStream(XML_WSDL_URL);
-          }
-          else if (systemId.equals(Trace.LOGGING_NAMESPACE_URI)) {
-              inputStream = Validator.class.getResourceAsStream(TRACE_2_0_XSD_URL);
-          }
-          if (inputStream != null) {
-              DOMImplementation domImpl = null;
-              try {
-                  domImpl = DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
-              }
-              catch (ParserConfigurationException ex) {
-                  return null;
-              }
-              DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS", "3.0"); // NOI18N
-              LSInput lsi = dols.createLSInput();
-              lsi.setByteStream(inputStream);
-              return lsi;
-          }
-          return null;
+      if (systemId.equals(XML_XSD_SYSTEMID)) {
+        inputStream = Validator.class.getResourceAsStream(XML_XSD_URL);
       }
+      else if (systemId.equals(XML_WSDL_SYSTEMID)) {
+        inputStream = Validator.class.getResourceAsStream(XML_WSDL_URL);
+      }
+      else if (systemId.equals(Trace.LOGGING_NAMESPACE_URI)) {
+        inputStream = Validator.class.getResourceAsStream(TRACE_2_0_XSD_URL);
+      }
+      if (inputStream != null) {
+        DOMImplementation domImpl = null;
+
+        try {
+          domImpl = DocumentBuilderFactory.newInstance().newDocumentBuilder().getDOMImplementation();
+        }
+        catch (ParserConfigurationException ex) {
+          return null;
+        }
+        DOMImplementationLS dols = (DOMImplementationLS) domImpl.getFeature("LS", "3.0"); // NOI18N
+        LSInput lsi = dols.createLSInput();
+        lsi.setByteStream(inputStream);
+        return lsi;
+      }
+      return null;
+    }
   }
 
   private static Schema ourBPEL11Schema; 

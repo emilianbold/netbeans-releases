@@ -45,6 +45,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.Repository;
@@ -58,21 +61,21 @@ import org.openide.util.Exceptions;
 public final class CommonPhpSourcePath {
 
     // GuardedBy(CommonPhpSourcePath.class)
-    private static FileObject internalFolder = null;
+    private static List<FileObject> internalFolders = null;
 
     private CommonPhpSourcePath() {
     }
 
-    public static synchronized FileObject getInternalPath() {
-        if (internalFolder == null) {
-            internalFolder = getInternalFolder();
+    public static synchronized List<FileObject> getInternalPath() {
+        if (internalFolders == null) {
+            internalFolders = getInternalFolders();
         }
-        return internalFolder;
+        return internalFolders;
     }
 
     // workaround because gsf uses toFile() and this causes NPE for SFS
     // see #131401 for more information
-    private static FileObject getInternalFolder() {
+    private static List<FileObject> getInternalFolders() {
         assert Thread.holdsLock(CommonPhpSourcePath.class);
 
         // FS AtomicAction should not be needed (synchronized)
@@ -105,7 +108,10 @@ public final class CommonPhpSourcePath {
         }
         File file = FileUtil.toFile(sfsFolder);
         assert file != null : "Folder PHP/RuntimeLibraries cannot be resolved as a java.io.File";
-        return FileUtil.toFileObject(file);
+        List<FileObject> folders = new ArrayList<FileObject>();
+        folders.add(sfsFolder);
+        folders.addAll(PhpSourcePath.getPreindexedFolders());
+        return folders;
     }
 
     private static void closeStreams(Closeable... streams) {

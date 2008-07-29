@@ -68,9 +68,13 @@ import org.openide.util.Union2;
  * registered subclasses of MIMEResolver are asked one by one to resolve MIME type of this FileObject.
  * Resolving is finished right after first resolver is able to resolve this FileObject or if all registered
  * resolvers returns null (not recognized).
- *
- *Resolvers are registered if they have their record in IDE_HOME\system\Services
- * in form *.instance e.g.: org-some-package-JavaResolver.instance
+ * <p>
+ * Resolvers are registered if they have their record in the Lookup area.
+ * E.g. in form : org-some-package-JavaResolver.instance file.
+ * <p>
+ * MIME resolvers can also be registered in the <code>Services/MIMEResolver</code>
+ * folder as <code>*.xml</code> files obeying a <a href="doc-files/HOWTO-MIME.html">certain format</a>.
+ * These will be interpreted before resolvers in lookup (in the order specified in that folder).
  *
  * @author  rmatous
  */
@@ -192,8 +196,8 @@ final class MIMESupport extends Object {
 
             ERR.fine("Computing resolvers"); // NOI18N
 
-            List<MIMEResolver> all = new ArrayList<MIMEResolver>(result.allInstances());
-            all.addAll(declarativeResolvers());
+            List<MIMEResolver> all = new ArrayList<MIMEResolver>(declarativeResolvers());
+            all.addAll(result.allInstances());
             MIMEResolver[] toRet = all.toArray(new MIMEResolver[all.size()]);
 
             ERR.fine("Resolvers computed"); // NOI18N

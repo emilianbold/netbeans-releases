@@ -90,7 +90,6 @@ public class EclipseUtils {
                 && FileUtil.toFileObject(workspaceDir) != null
                 && workspaceDir.isDirectory()
                 && new File(workspaceDir, Workspace.CORE_PREFERENCE).isFile()
-                && new File(workspaceDir, Workspace.LAUNCHING_PREFERENCES).isFile()
                 && new File(workspaceDir, Workspace.RESOURCE_PROJECTS_DIR).isDirectory();
     }
     

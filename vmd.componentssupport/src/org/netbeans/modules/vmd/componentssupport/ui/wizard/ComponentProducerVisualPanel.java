@@ -57,11 +57,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
-/**
- * Represents <em>Name and Location</em> panel in J2ME Library Descriptor Wizard.
- *
- * @author ads
- */
+
 final class ComponentProducerVisualPanel extends JPanel {
     
     private static final String MSG_ERR_CLASS_NAME_EMPTY 
@@ -655,8 +651,8 @@ final class ComponentProducerVisualPanel extends JPanel {
                                     .add(myCPPaletteCategoryCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 182, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                                     .add(org.jdesktop.layout.GroupLayout.TRAILING, myCompProducerPanelLayout.createSequentialGroup()
                                         .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING)
-                                            .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE)
-                                            .add(myCPSmallIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 220, Short.MAX_VALUE))
+                                            .add(myCPLargeIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE)
+                                            .add(myCPSmallIconPath, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 222, Short.MAX_VALUE))
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                         .add(myCompProducerPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                                             .add(org.jdesktop.layout.GroupLayout.TRAILING, myCPSmallIconPathButton)
@@ -737,7 +733,7 @@ final class ComponentProducerVisualPanel extends JPanel {
 private void myCPSmallIconPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCPSmallIconPathButtonActionPerformed
     JFileChooser chooser = IconUtils.getIconFileChooser(myCPSmallIconPath.getText());
     int ret = chooser.showDialog(this, getMessage(LBL_SELECT));
-    if (ret == JFileChooser.APPROVE_OPTION) {
+    if (ret == JFileChooser.APPROVE_OPTION) {//GEN-HEADEREND:event_myCPSmallIconPathButtonActionPerformed
         File iconFile = chooser.getSelectedFile();
 
         File secondIcon = getAnotherIconPath(iconFile);
@@ -760,12 +756,12 @@ private void myCPSmallIconPathButtonActionPerformed(java.awt.event.ActionEvent e
     }
 
 
-}//GEN-LAST:event_myCPSmallIconPathButtonActionPerformed
+}                                                       
 
-private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_myCPLargeIconPathButtonActionPerformed
-    JFileChooser chooser = IconUtils.getIconFileChooser(myCPLargeIconPath.getText());
+private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-LAST:event_myCPSmallIconPathButtonActionPerformed
+    JFileChooser chooser = IconUtils.getIconFileChooser(myCPLargeIconPath.getText());//GEN-FIRST:event_myCPLargeIconPathButtonActionPerformed
     int ret = chooser.showDialog(this, getMessage(LBL_SELECT));
-    if (ret == JFileChooser.APPROVE_OPTION) {
+    if (ret == JFileChooser.APPROVE_OPTION) {//GEN-HEADEREND:event_myCPLargeIconPathButtonActionPerformed
         File iconFile = chooser.getSelectedFile();
 
         File secondIcon = getAnotherIconPath(iconFile);
@@ -788,10 +784,10 @@ private void myCPLargeIconPathButtonActionPerformed(java.awt.event.ActionEvent e
     }
 
     
-}//GEN-LAST:event_myCPLargeIconPathButtonActionPerformed
+}                                                       
 
     private static File getAnotherIconPath(File iconFile) {
-        Set<File> allFiles = IconUtils.getPossibleIcons(iconFile.getAbsolutePath());
+        Set<File> allFiles = IconUtils.getPossibleIcons(iconFile.getAbsolutePath());//GEN-LAST:event_myCPLargeIconPathButtonActionPerformed
         assert allFiles.contains(iconFile);
         
         allFiles.remove(iconFile);

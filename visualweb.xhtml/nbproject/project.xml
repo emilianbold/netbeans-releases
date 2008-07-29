@@ -213,6 +213,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.visualweb.complib</friend>
                 <friend>org.netbeans.modules.visualweb.designer</friend>
                 <friend>org.netbeans.modules.visualweb.designer.jsf</friend>
+                <friend>org.netbeans.modules.visualweb.gravy</friend>
                 <friend>org.netbeans.modules.visualweb.insync</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee14classloaderprovider</friend>
                 <friend>org.netbeans.modules.visualweb.j2ee15classloaderprovider</friend>

@@ -72,6 +72,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
+// XXX upload files combobox is invisible for NB 6.5
 /**
  * @author Tomas Mysik
  */
@@ -79,7 +80,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
     private static final long serialVersionUID = -5592669886554891271L;
     static final RemoteConfiguration NO_REMOTE_CONFIGURATION =
             new RemoteConfiguration(NbBundle.getMessage(RunAsRemoteWeb.class, "LBL_NoRemoteConfiguration"));
-    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.ON_RUN;
+    private static final UploadFiles DEFAULT_UPLOAD_FILES = UploadFiles.MANUALLY;
 
     final ChangeSupport changeSupport = new ChangeSupport(this);
     private final JLabel[] labels;
@@ -98,6 +99,7 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         this.sourcesFolderProvider = sourcesFolderProvider;
 
         initComponents();
+        hideUploadFilesFields();
 
         labels = new JLabel[] {
             urlLabel,
@@ -178,6 +180,12 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
         updateRemoteConnectionHint();
     }
 
+    private void hideUploadFilesFields() {
+        uploadFilesLabel.setVisible(false);
+        uploadFilesComboBox.setVisible(false);
+        uploadFilesHintLabel.setVisible(false);
+    }
+
     @Override
     protected RunAsType getRunAsType() {
         return RunAsType.REMOTE;
@@ -245,15 +253,19 @@ public class RunAsRemoteWeb extends RunAsPanel.InsidePanel {
 
     private void selectRemoteConnection() {
         String remoteConnection = getValue(RunConfigurationPanel.REMOTE_CONNECTION);
-        if (remoteConnection == null) {
+        // #141849 - can be null if one adds remote config for the first time for a project but already has some remote connection
+        DefaultComboBoxModel model = (DefaultComboBoxModel) remoteConnectionComboBox.getModel();
+        if (remoteConnection == null
+                && model.getIndexOf(NO_REMOTE_CONFIGURATION) != -1) {
             remoteConnectionComboBox.setSelectedItem(NO_REMOTE_CONFIGURATION);
             return;
         }
         int size = remoteConnectionComboBox.getModel().getSize();
         for (int i = 0; i < size; ++i) {
             RemoteConfiguration rc = (RemoteConfiguration) remoteConnectionComboBox.getItemAt(i);
-            if (remoteConnection.equals(rc.getName())
-                    || "".equals(remoteConnection)) { // NOI18N
+            if (remoteConnection == null
+                    || "".equals(remoteConnection) // NOI18N
+                    || remoteConnection.equals(rc.getName())) {
                 // select existing or
                 // if no configuration formerly existed and now some were created => so select the first one
                 remoteConnectionComboBox.setSelectedItem(rc);
