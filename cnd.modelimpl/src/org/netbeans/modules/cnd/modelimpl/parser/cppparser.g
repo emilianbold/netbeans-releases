@@ -2817,7 +2817,7 @@ expression
 
 assignment_expression
 	:	
-        lazy_expression[false]
+        lazy_expression[false, false]
 		(options {warnWhenFollowAmbig = false;}:	
             ( ASSIGNEQUAL
             | TIMESEQUAL
@@ -2837,7 +2837,7 @@ assignment_expression
 
 constant_expression
 	:	
-		lazy_expression[false]
+		lazy_expression[false, false]
 		{#constant_expression = #(#[CSM_EXPRESSION, "CSM_EXPRESSION"], #constant_expression);}
 	;
 
@@ -2849,19 +2849,23 @@ case_expression
 
 template_param_expression
     :
-        lazy_expression[true]
+        lazy_expression[true, false]
     ;
 
 cast_expression
     :
-        lazy_expression[false]
+        lazy_expression[false, false]
     ;
 
 // Rule for fast skiping expressions
 //
 // inTemplateParams - true if we parsing template parameter
-// It means that we should stop on GREATERTHAN 
-lazy_expression[boolean inTemplateParams]
+// It means that we should stop on GREATERTHAN
+//
+// searchingGreaterthen - indicates that we are searching '>'
+// and have no need to recognize some constructions.
+// (IZ 142022 : IDE hangs while parsing Boost)
+lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen]
     :
         (options {warnWhenFollowAmbig = false;}:
             (   OR 
@@ -2941,26 +2945,26 @@ lazy_expression[boolean inTemplateParams]
                 )
             |   (LITERAL_dynamic_cast | LITERAL_static_cast | LITERAL_reinterpret_cast | LITERAL_const_cast)
                 balanceLessthanGreaterthanInExpression
-            |   {(!inTemplateParams)}? (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
-            |   {(inTemplateParams)}? (ID balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => ID balanceLessthanGreaterthanInExpression
+            |   {(!inTemplateParams && !searchingGreaterthen)}? (ID balanceLessthanGreaterthanInExpression) => ID balanceLessthanGreaterthanInExpression
+            |   {(inTemplateParams && !searchingGreaterthen)}? (ID balanceLessthanGreaterthanInExpression isGreaterthanInTheRestOfExpression) => ID balanceLessthanGreaterthanInExpression
             |   ID
             )
         )+
 
-        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false])?)?
+        ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => GREATERTHAN lazy_expression[false, false])?)?
     ;
 
 protected
 isGreaterthanInTheRestOfExpression
     :
-        (   lazy_expression[true]
+        (   lazy_expression[true, true]
         |   LITERAL_struct 
         |   LITERAL_union 
         |   LITERAL_class 
         |   LITERAL_enum
         )?
         (   COMMA 
-            (   lazy_expression[true]
+            (   lazy_expression[true, true]
             |   LITERAL_struct 
             |   LITERAL_union 
             |   LITERAL_class 
@@ -3006,14 +3010,14 @@ balanceLessthanGreaterthanInExpression
         (simpleBalanceLessthanGreaterthanInExpression)=> simpleBalanceLessthanGreaterthanInExpression
     |
         LESSTHAN
-        (   lazy_expression[true]
+        (   lazy_expression[true, false]
         |   LITERAL_struct 
         |   LITERAL_union 
         |   LITERAL_class 
         |   LITERAL_enum
         )
         (   COMMA 
-            (   lazy_expression[true]
+            (   lazy_expression[true, false]
             |   LITERAL_struct 
             |   LITERAL_union 
             |   LITERAL_class 
