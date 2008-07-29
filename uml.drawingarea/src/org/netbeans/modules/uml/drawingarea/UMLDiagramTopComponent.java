@@ -893,6 +893,8 @@ public class UMLDiagramTopComponent extends TopComponent
             } else {
                 diagramView = scene.getView();
             }
+            diagramView.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+            
             view.add(diagramView, new Integer(1));
             
             InputMap input = new InputMap();
