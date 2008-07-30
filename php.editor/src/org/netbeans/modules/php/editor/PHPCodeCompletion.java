@@ -434,9 +434,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if (staticContext) {
-                    Collection<IndexedConstant> classConstants = request.index.getClassConstants(
+                    Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
                             request.result, typeName, request.prefix, nameKind);
-
                     for (IndexedConstant constant : classConstants) {
                         proposals.add(new PHPCompletionItem.VariableItem(constant, request));
                     }
