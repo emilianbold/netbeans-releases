@@ -667,4 +667,16 @@ public class PropertyModelTest extends TestBase {
         assertEquals("ma", csspv.alternatives().iterator().next().toString());
      }
           
+      public void testJindrasCase() {
+        String rule = "[ [ x || y ] || b";
+        String text = "x b";
+        CssPropertyValue csspv = new CssPropertyValue(rule, text);
+
+        dumpResult(csspv);
+ 
+        assertTrue(csspv.success());
+        assertEquals(0, csspv.alternatives().size());
+//        assertEquals("ma", csspv.alternatives().iterator().next().toString());
+     }
+     
 }
