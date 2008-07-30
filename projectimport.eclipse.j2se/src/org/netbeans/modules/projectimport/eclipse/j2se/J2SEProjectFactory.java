@@ -83,10 +83,18 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         // calculate nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
+        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+            return null;
+        }
+        
         // create basic NB project
+        String buildScript = null;
+        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+            buildScript = "nb-build.xml"; //NOI18N
+        }
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 nbProjectDir, model.getProjectName(), model.getEclipseSourceRootsAsFileArray(), 
-                model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
+                model.getEclipseTestSourceRootsAsFileArray(), null, null, buildScript);
         
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().
@@ -179,12 +187,7 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         ep.setProperty(J2SEProjectProperties.JAVAC_TARGET, model.getTargetLevel());
         ep.setProperty(J2SEProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
         ep.setProperty(J2SEProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
-        String enc = model.getEncoding();
-        if (enc != null) {
-            ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, enc);
-        } else {
-            ep.remove(J2SEProjectProperties.SOURCE_ENCODING);
-        }
+        ep.setProperty(J2SEProjectProperties.SOURCE_ENCODING, model.getEncoding());
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(J2SEProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));

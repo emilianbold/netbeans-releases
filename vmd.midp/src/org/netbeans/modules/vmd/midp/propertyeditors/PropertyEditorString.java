@@ -265,7 +265,7 @@ public class PropertyEditorString extends PropertyEditorUserCode implements Prop
      * This element should be selected by default
      */
     public boolean isInitiallySelected() {
-        return true;
+        return databindingElement == null;
     }
 
     /*

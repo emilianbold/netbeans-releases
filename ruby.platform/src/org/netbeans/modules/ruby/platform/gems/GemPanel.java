@@ -262,6 +262,12 @@ public final class GemPanel extends JPanel {
         setEnabled(TabIndex.UPDATED, enabled);
     }
 
+    private void enableReloadGUI() {
+        reloadNewButton.setEnabled(true);
+        reloadInstalledButton.setEnabled(true);
+        reloadReposButton.setEnabled(true);
+    }
+
     private void setEnabled(TabIndex tab, boolean enabled) {
         switch (tab) {
             case NEW:
@@ -318,6 +324,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsReload() : "gemManager is reloaded";
+        LOGGER.finest("Updating UI for: " + gemManager);
         
         hideProgressBars();
 
@@ -1114,7 +1121,7 @@ public final class GemPanel extends JPanel {
         getGemManager().reset();
         StringBuilder sb = new StringBuilder();
         for (String error : errors) {
-            sb.append(error);
+            sb.append(error).append('\n');
         }
         Util.notifyLocalized(GemPanel.class, "GemPanel.GemsFetchingFailed", // NOI18N
             NotifyDescriptor.ERROR_MESSAGE, sb.toString());
@@ -1155,12 +1162,19 @@ public final class GemPanel extends JPanel {
                             showGemErrors(errors);
                             if (!platformHasChanged) {
                                 hideProgressBars();
+                                // enable Reload buttons in error state, so user
+                                // might trigger reload after attempt to fix the
+                                // problem
+                                enableReloadGUI();
                             }
                             return;
                         }
                         if (!platformHasChanged) {
                             notifyGemsUpdated();
-                        } // else platform has changed, ignore UI update
+                        } else { // platform has changed, ignore UI update
+                            LOGGER.finest("Gem Manager has changed from " + gemManager
+                                    + " to " + getGemManager() + ". Ignoring update."); // NOI18N
+                        }
                     }
                 });
             }

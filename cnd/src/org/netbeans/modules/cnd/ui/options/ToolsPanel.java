@@ -92,7 +92,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -193,6 +192,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(0);
             log.fine("TP.initialize: Done");
         }
+        cbDevHost.setRenderer(new MyDevHostListCellRenderer());
         cbDevHost.addItemListener(this);
         hkey = (String) cbDevHost.getSelectedItem();
         
@@ -409,18 +409,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
      
     /** Update the display */
-    public void update(final boolean doInitialize, final CompilerSet selectedCS) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                realUpdate(doInitialize, selectedCS);
-            }
-        });
-    }
-    
-     
-    /** Update the display */
-    private void realUpdate(boolean doInitialize, CompilerSet selectedCS) {
-        
+    public void update(boolean doInitialize, CompilerSet selectedCS) {
+
         updating = true;
         if (!initialized || doInitialize) {
             initialize();
@@ -1627,11 +1617,32 @@ private boolean selectTool(JTextField tf) {
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             CompilerSet cs = (CompilerSet)value;
             if (cs.isDefault()) {
+                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+            }
+            return comp;
+        }
+    }
+    
+    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (index == getDefaultDevHostIndex()) {
                 JLabel label = (JLabel) comp;
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
             return comp;
         }
+    }    
+    
+    private int getDefaultDevHostIndex() {
+        int index = 0;
+        if (serverUpdateCache != null) {
+            index = serverUpdateCache.getDefaultIndex();
+        } else if (serverList != null) {
+            index = serverList.getDefaultIndex();
+        }
+        return index;
     }
 
 private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed

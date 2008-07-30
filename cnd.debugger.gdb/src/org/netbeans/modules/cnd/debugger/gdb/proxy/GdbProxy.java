@@ -435,18 +435,18 @@ public class GdbProxy implements GdbMiDefinitions {
      * @param threadID The thread number for this breakpoint
      * @return token number
      */
-    public int break_insert(int flags, String name, String threadID) {
+    public int break_insert(int flags, boolean temporary, String name, String threadID) {
         StringBuilder cmd = new StringBuilder();
 
         if (GdbUtils.isMultiByte(name)) {
-            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
+            if (temporary) {
                 cmd.append("tbreak "); // NOI18N
             } else {
                 cmd.append("break "); // NOI18N
             }
         } else {
             cmd.append("-break-insert "); // NOI18N
-            if ((flags == GdbDebugger.GDB_TMP_BREAKPOINT)) {
+            if (temporary) {
                 cmd.append("-t "); // NOI18N
             }
         }
@@ -465,19 +465,6 @@ public class GdbProxy implements GdbMiDefinitions {
         cmd.append(name);
         return engine.sendCommand(cmd.toString());
     }
-    
-    /**
-     * Send "-break-insert function" to the debugger
-     * This command inserts a regular breakpoint in all functions
-     * whose names match the given name.
-     *
-     * @param flags One or more flags aout this breakpoint
-     * @param name The function name or linenumber information
-     * @return token number
-     */
-    public int break_insert(int flags, String name) {
-        return break_insert(flags, name, "");
-    }
 
     /**
      * Send "-break-insert function" to the debugger
@@ -488,7 +475,14 @@ public class GdbProxy implements GdbMiDefinitions {
      * @return token number
      */
     public int break_insert(String name) {
-        return break_insert(0, name, null);
+        return break_insert(0, false, name, null);
+    }
+
+    /**
+     * Insert temporary breakpoint
+     */
+    public int break_insert_temporary(String name) {
+        return break_insert(0, true, name, null);
     }
 
     /**
@@ -528,8 +522,8 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
     }
     
-    public int break_after(int number, String count) {
-        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
+    public int break_after(int number, int count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */

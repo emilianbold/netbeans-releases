@@ -44,17 +44,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
-
 import java.awt.Image;
-
 import java.beans.BeanInfo;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-
 import java.util.*;
-
 import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;
@@ -644,58 +638,11 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
     * the order of processed objects will be exactly the same as they
     * arrived.
     */
-    private static final class QP extends Object {
+    private static final class QP implements Runnable {
         /** queue of all requests (Runnable) that should be processed
          * AWT-Event queue.
          */
-        EventQueue queue;
-        int delayedCount = 0;
-
-        class EventQueue implements Runnable {
-
-            private LinkedList<Runnable> runList = new LinkedList<Runnable>();
-
-            public EventQueue() {
-            }
-
-            /** Processes the queue. */
-            public void run() {
-
-                synchronized (QP.this) {
-                    // access to queue variable is synchronized
-                    if (queue == this) {
-                        queue = null;
-                    }
-                }
-                Enumeration<Runnable> en = Collections.enumeration(runList);
-                while (en.hasMoreElements()) {
-                    Runnable r = en.nextElement();
-                    LOG.log(Level.FINER, "Running from queue {0}", r); // NOI18N
-                    Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
-                    LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
-                }
-                LOG.log(Level.FINER, "Queue processing over"); // NOI18N
-            }
-        }
-
-        private class DelayedEvent implements Runnable {
-
-            private Runnable run;
-
-            public DelayedEvent(Runnable run) {
-                delayedCount++;
-                this.run = run;
-            }
-
-            public void run() {
-                LOG.log(Level.FINER, "Running delayed event {0}", run); // NOI18N
-                Children.MUTEX.readAccess(run);
-                LOG.log(Level.FINER, "Finished {0}", run); // NOI18N
-                synchronized (QP.this) {
-                    delayedCount--;
-                }
-            }
-        }
+        private LinkedList<Runnable> queue = new LinkedList<Runnable>();
 
         QP() {
         }
@@ -709,45 +656,52 @@ final class VisualizerNode extends EventListenerList implements NodeListener, Tr
          * @param run what should run
          */
         public void runSafe(final Runnable run) {
-            boolean isNew = false;
-            EventQueue holdQueue;
+            boolean wasEmpty = false;
 
             synchronized (this) {
                 if (SwingUtilities.isEventDispatchThread() && shouldBeInvokedLater(run)) {
-                    SwingUtilities.invokeLater(new DelayedEvent(run));
-                    queue = null;
+                    if (!queue.isEmpty()) {
+                        // insert marker for interruption
+                        queue.addLast(null);
+                    }
+                    queue.addLast(run);
+                    SwingUtilities.invokeLater(this);
                     return;
                 }
                 
-                if (delayedCount > 0) {
-                    // still some delayed events unprocessed => invokeLater
-                    assert queue == null;
-                    SwingUtilities.invokeLater(new DelayedEvent(run));
-                    return;
-                }
-                
-                if (queue == null) {
-                    queue = new EventQueue();
-                    isNew = true;
-                }
-                queue.runList.add(run);
-
-                // if not in AWT thread invoke later while holding lock
-                if (isNew && !SwingUtilities.isEventDispatchThread()) {
-                    SwingUtilities.invokeLater(queue);
-                    return;
-                }
-                holdQueue = queue;
+                wasEmpty = queue.isEmpty();
+                queue.addLast(run);
             }
 
-            if (isNew) {
+            if (wasEmpty) {
                 // either starts the processing of the queue immediatelly
                 // (if we are in AWT-Event thread) or uses 
                 // SwingUtilities.invokeLater to do so
-                Mutex.EVENT.writeAccess(holdQueue);
+                Mutex.EVENT.writeAccess(this);
             }
         }
+
+        public void run() {
+
+            boolean isEmpty = false;
+            while (!isEmpty) {
+                Runnable r;
+                synchronized (this) {
+                    r = queue.poll();
+                    if (r == null) {
+                        LOG.log(Level.FINER, "Marker found, interrupting queue"); // NOI18N
+                        return;
+                    }
+                    isEmpty = queue.isEmpty();
+                }
+                LOG.log(Level.FINER, "Running from queue {0}", r); // NOI18N
+                Children.MUTEX.readAccess(r); // run the update under Children.MUTEX
+                LOG.log(Level.FINER, "Finished {0}", r); // NOI18N
+            }
+            LOG.log(Level.FINER, "Queue processing over"); // NOI18N
+        }
     }
+
 
     private class PropLeafChange implements Runnable {
 

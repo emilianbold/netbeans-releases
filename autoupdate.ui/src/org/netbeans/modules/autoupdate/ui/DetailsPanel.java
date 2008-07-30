@@ -90,8 +90,9 @@ public class DetailsPanel extends JTextPane  {
         addHyperlinkListener(new HyperlinkListener() {
             public void hyperlinkUpdate(HyperlinkEvent hlevt) {
                 if (EventType.ACTIVATED == hlevt.getEventType()) {
-                    assert hlevt.getURL() != null;
-                    Utilities.showURL(hlevt.getURL());
+                    if (hlevt.getURL () != null) {
+                        Utilities.showURL(hlevt.getURL());
+                    }
                 }
             }
         });

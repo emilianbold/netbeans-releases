@@ -43,14 +43,14 @@ made subject to such option by the copyright holder.
     <property file="${basedir}/build.properties"/>
     
     <!-- Name of tested module -->
-    <property name="xtest.module" value="uml5"/>
+    <property name="xtest.module" value="uml6"/>
     
-    <property name="module.name" value="uml5"/>
+    <property name="module.name" value="uml6"/>
     
     <!-- this property should be defined in the nbbuild/netbeans/moduleCluster.properties,
     but it is not there at the moment of writing this -->
     <property name="netbeans.dest.dir" location="../../nbbuild/netbeans/"/>
-    <property name="uml.dir" location="${netbeans.dest.dir}/uml5"/>
+    <property name="uml.dir" location="${netbeans.dest.dir}/uml6"/>
     <property name="uml.modules.dir" location="${uml.dir}/modules"/>
     <property name="xtest/nbjunit.dir" location="../../nbbuild/netbeans/testtools"/>
     
@@ -76,7 +76,7 @@ made subject to such option by the copyright holder.
             <fileset dir="${uml.modules.dir}">
                 <include name="**/org-netbeans*.jar"/>
             </fileset>
-            <pathelement location="${netbeans.dest.dir}/uml5/modules/org-netbeans-modules-uml-drawingarea.jar"/>
+            <pathelement location="${netbeans.dest.dir}/uml6/modules/org-netbeans-modules-uml-drawingarea.jar"/>
             <pathelement location="${netbeans.dest.dir}/platform9/modules/org-openide-nodes.jar"/>
             <pathelement location="${netbeans.dest.dir}/platform9/modules/org-openide-windows.jar"/>            
             <pathelement location="${netbeans.dest.dir}/platform9/modules/org-netbeans-api-visual.jar"/>            

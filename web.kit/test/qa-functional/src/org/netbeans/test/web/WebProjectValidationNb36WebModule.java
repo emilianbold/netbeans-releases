@@ -110,7 +110,7 @@ public class WebProjectValidationNb36WebModule extends WebProjectValidation {
         installJemmyQueue();
         new NewProjectAction().perform();
         NewProjectWizardOperator projectWizard = new NewProjectWizardOperator();
-        projectWizard.selectCategory("Web");
+        projectWizard.selectCategory("Java Web"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Web Application with Existing Sources");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator

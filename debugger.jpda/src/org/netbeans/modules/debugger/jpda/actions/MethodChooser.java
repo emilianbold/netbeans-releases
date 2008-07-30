@@ -31,6 +31,7 @@ import java.util.logging.Logger;
 import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.AttributeSet;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
@@ -41,10 +42,13 @@ import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAStep;
 import org.netbeans.api.debugger.jpda.JPDAThread;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.api.editor.settings.AttributesUtilities;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.editor.BaseCaret;
+import org.netbeans.editor.Coloring;
+import org.netbeans.editor.Utilities;
 import org.netbeans.modules.debugger.jpda.ExpressionPool.Expression;
 import org.netbeans.spi.debugger.jpda.EditorContext.Operation;
 import org.netbeans.spi.editor.highlighting.HighlightAttributeValue;
@@ -94,7 +98,9 @@ public class MethodChooser implements KeyListener, MouseListener,
     
     private JEditorPane editorPane;
     private Document doc;
-    
+
+    private int startLine;
+    private int endLine;
     private Operation[] operations;
     private Location[] locations;
     private ArrayList<Annotation> annotations;
@@ -110,6 +116,10 @@ public class MethodChooser implements KeyListener, MouseListener,
         this.clazzRef = clazz;
         //this.methodLine = methodLine; [TODO]
         this.methodOffset = methodOffset;
+        
+        Operation currOp = currentThread.getCurrentOperation();
+        List<Operation> lastOps = currentThread.getLastOperations();
+        Operation lastOp = lastOps != null && lastOps.size() > 0 ? lastOps.get(lastOps.size() -1) : null;
     }
 
     public static OffsetsBag getHighlightsBag(Document doc) {
@@ -139,6 +149,20 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
             return;
         }
+        
+        boolean selectionIsFinal = collectOperations();
+        if (selectedIndex == -1) {
+            // [TODO] perform classical Step Into
+            return;
+        }
+        if (selectionIsFinal || operations.length == 1) {
+            // perform action directly
+            String name = operations[selectedIndex].getMethodName();
+            doAction(locations[selectedIndex], name);
+            return;
+        }
+        // continue by showing method selection ui
+        
         // hack - disable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
         System.setProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips", "true"); // NOI18N
         debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
@@ -156,15 +180,14 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (caret instanceof BaseCaret) {
             ((BaseCaret)caret).setVisible(false);
         }
-        if (collectOperations()) {
-            annotateLines();
-            requestRepaint();
-        } else {
-            release();
-        }
+        annotateLines();
+        requestRepaint();
+        Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
+        Utilities.setStatusText(editorPane, NbBundle.getMessage(
+                MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
     }
 
-    private void release() {
+    private synchronized void release() {
         debugger.removePropertyChangeListener(this);
         debugger.getThreadsCollector().removePropertyChangeListener(this);
         getHighlightsBag(doc).clear();
@@ -181,8 +204,10 @@ public class MethodChooser implements KeyListener, MouseListener,
         clearAnnotations();
         // hack - enable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
         System.clearProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips"); // NOI18N
+        Utilities.clearStatusText(editorPane);
         
         if (performAction) {
+            performAction = false;
             String name = operations[selectedIndex].getMethodName();
             doAction(locations[selectedIndex], name);
         }
@@ -217,49 +242,82 @@ public class MethodChooser implements KeyListener, MouseListener,
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, aiex);
         }
         if (locs.isEmpty()) {
-            String message = NbBundle.getMessage(RunIntoMethodActionProvider.class,
-                                                 "MSG_RunIntoMeth_absentInfo",
-                                                 clazzRef.name());
-            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(message);
-            DialogDisplayer.getDefault().notify(descriptor);
             return false;
         }
         Expression expr = debugger.getExpressionPool().getExpressionAt(locs.get(0), url);
-        if (expr != null) {
-            operations = expr.getOperations();
-            locations = expr.getLocations();
-            
-            Object[][] elems = new Object[operations.length][2];
-            for (int i = 0; i < operations.length; i++) {
-                elems[i][0] = operations[i];
-                elems[i][1] = locations[i];
-            }
-            Arrays.sort(elems, new OperatorsComparator());
-            selectedIndex = 0;
-            Operation currOp = currentThread.getCurrentOperation();
-            for (int i = 0; i < operations.length; i++) {
-                operations[i] = (Operation)elems[i][0];
-                locations[i] = (Location)elems[i][1];
-                if (operations[i].equals(currOp)) {
-                    selectedIndex = i == operations.length - 1 ? 0 : i + 1;
-                }
-            }
-            for (int i = 0; i < operations.length; i++) {
-                Operation op = operations[i];
-                if (op.getMethodStartPosition().getOffset() <= methodOffset && methodOffset <= op.getMethodEndPosition().getOffset()) {
-                    selectedIndex = i;
+        if (expr == null) {
+            return false;
+        }
+        Operation currOp = currentThread.getCurrentOperation();
+        List<Operation> lastOpsList = currentThread.getLastOperations();
+        Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
+        Operation selectedOp = null;
+        operations = expr.getOperations();
+        locations = expr.getLocations();
+        if (operations.length == 0) {
+            return false;
+        }
+        startLine = operations[0].getMethodStartPosition().getLine();
+        endLine = operations[operations.length - 1].getMethodEndPosition().getLine();
+
+        int currOpIndex = -1;
+        int lastOpIndex = -1;
+
+        if (currOp != null) {
+            int index = currOp.getBytecodeIndex();
+            for (int x = 0; x < operations.length; x++) {
+                if (operations[x].getBytecodeIndex() == index) {
+                    currOpIndex = x;
                     break;
                 }
             }
         }
-        if (selectedIndex < 0) {
-            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
-                NbBundle.getMessage(RunIntoMethodActionProvider.class, "MSG_No_operations_at_line")
-            );
-            DialogDisplayer.getDefault().notify(descriptor);
-            return false;
+        if (lastOp != null) {
+            int index = lastOp.getBytecodeIndex();
+            for (int x = 0; x < operations.length; x++) {
+                if (operations[x].getBytecodeIndex() == index) {
+                    lastOpIndex = x;
+                    break;
+                }
+            }
         }
-        return true;
+
+        if (currOpIndex == -1) {
+            selectedOp = operations[operations.length - 1];
+        } else if (currOpIndex == lastOpIndex) {
+            Operation[] tempOps = new Operation[operations.length - 1 - currOpIndex];
+            Location[] tempLocs = new Location[operations.length - 1 - currOpIndex];
+            for (int x = 0; x < tempOps.length; x++) {
+                tempOps[x] = operations[x + currOpIndex + 1];
+                tempLocs[x] = locations[x + currOpIndex + 1];
+            }
+            operations = tempOps;
+            locations = tempLocs;
+            if (operations.length == 0) {
+                return false;
+            }
+            selectedOp = operations[0];
+        } else {
+            selectedIndex = currOpIndex;
+            // do not show UI, continue directly using the selection
+            return true;
+        }
+
+        Object[][] elems = new Object[operations.length][2];
+        for (int i = 0; i < operations.length; i++) {
+            elems[i][0] = operations[i];
+            elems[i][1] = locations[i];
+        }
+        Arrays.sort(elems, new OperatorsComparator());
+        selectedIndex = 0;
+        for (int i = 0; i < operations.length; i++) {
+            operations[i] = (Operation)elems[i][0];
+            locations[i] = (Location)elems[i][1];
+            if (operations[i].equals(selectedOp)) {
+                selectedIndex = i;
+            }
+        }
+        return false;
     }
 
     private void requestRepaint() {
@@ -322,8 +380,6 @@ public class MethodChooser implements KeyListener, MouseListener,
         JPDAThread thread = debugger.getCurrentThread();
         Operation currOp = thread.getCurrentOperation();
         int currentLine = currOp != null ? currOp.getStartPosition().getLine() : thread.getLineNumber(null);
-        int startLine = operations[0].getMethodStartPosition().getLine();
-        int endLine = operations[operations.length - 1].getMethodStartPosition().getLine();
         String annoType = currOp != null ?
             EditorContext.CURRENT_EXPRESSION_CURRENT_LINE_ANNOTATION_TYPE :
             EditorContext.CURRENT_LINE_ANNOTATION_TYPE;
@@ -471,7 +527,7 @@ public class MethodChooser implements KeyListener, MouseListener,
 
     public void keyPressed(KeyEvent e) {
         int code = e.getKeyCode();
-        e.consume();
+        boolean consumeEvent = true;
         switch (code) {
             case KeyEvent.VK_ENTER:
             case KeyEvent.VK_SPACE:
@@ -480,12 +536,18 @@ public class MethodChooser implements KeyListener, MouseListener,
                 performAction = true;
                 release();
                 break;
+            case KeyEvent.VK_F8:
+                // step over
+                release();
+                consumeEvent = false;
+                break;
             case KeyEvent.VK_ESCAPE:
                 // action canceled
                 release();
                 break;
             case KeyEvent.VK_RIGHT:
             case KeyEvent.VK_DOWN:
+            case KeyEvent.VK_TAB:
                 selectedIndex++;
                 if (selectedIndex == operations.length) {
                     selectedIndex = 0;
@@ -509,6 +571,9 @@ public class MethodChooser implements KeyListener, MouseListener,
                 requestRepaint();
                 break;
         }
+        if (consumeEvent) {
+            e.consume();
+        }
     }
 
     public void keyReleased(KeyEvent e) {
@@ -520,17 +585,29 @@ public class MethodChooser implements KeyListener, MouseListener,
     // **************************************************************************
     
     public void mouseClicked(MouseEvent e) {
+        if (e.isPopupTrigger()) {
+            return;
+        }
         e.consume();
-        if (!e.isPopupTrigger() && e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
-            int position = editorPane.viewToModel(e.getPoint());
+        int position = editorPane.viewToModel(e.getPoint());
+        if (e.getClickCount() == 1 && e.getButton() == MouseEvent.BUTTON1) {
             if (position < 0) {
-                return ;
+                return;
             }
             if (mousedIndex != -1) {
                 selectedIndex = mousedIndex;
                 performAction = true;
                 release();
+                return;
             }
+        }
+        try {
+            int line = Utilities.getLineOffset((BaseDocument) doc, position) + 1;
+            if (line < startLine || line > endLine) {
+                release();
+                return;
+            }
+        } catch (BadLocationException ex) {
         }
     }
     

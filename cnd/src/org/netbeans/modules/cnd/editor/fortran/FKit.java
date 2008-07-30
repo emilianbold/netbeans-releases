@@ -156,60 +156,61 @@ public class FKit extends NbEditorKit {
 	    putValue ("helpID", FFormatAction.class.getName ()); // NOI18N
 	}
 
-	public void actionPerformed(ActionEvent evt, JTextComponent target) {
+	public void actionPerformed(ActionEvent evt, final JTextComponent target) {
 	    if (target != null) {
 
 		if (!target.isEditable() || !target.isEnabled()) {
 		    target.getToolkit().beep();
 		    return;
 		}
+                
+                final Caret caret = target.getCaret();
+		final BaseDocument doc = (BaseDocument)target.getDocument();
 
-		Caret caret = target.getCaret();
-		BaseDocument doc = (BaseDocument)target.getDocument();
+		doc.runAtomic(new Runnable() {
+                    public void run() {
+                        try {
+                            int caretLine = Utilities.getLineOffset(doc, caret.getDot());
+                            int startPos;
+                            Position endPosition;
+                            if (caret.isSelectionVisible()) {
+                                startPos = target.getSelectionStart();
+                                endPosition = doc.createPosition(target.getSelectionEnd());
+                            } else {
+                                startPos = 0;
+                                endPosition = doc.createPosition(doc.getLength());
+                            }
+                            int pos = startPos;
 
-		doc.atomicLock();
-		try {
-		    int caretLine = Utilities.getLineOffset(doc, caret.getDot());
-		    int startPos;
-		    Position endPosition;
-		    if (caret.isSelectionVisible()) {
-			startPos = target.getSelectionStart();
-			endPosition = doc.createPosition(target.getSelectionEnd());
-		    } else {
-			startPos = 0;
-			endPosition = doc.createPosition(doc.getLength());
-		    }
-		    int pos = startPos;
+                            while (pos < endPosition.getOffset()) {
+                                int stopPos = endPosition.getOffset();
 
-		    while (pos < endPosition.getOffset()) {
-			int stopPos = endPosition.getOffset();
+                                CharArrayWriter cw = new CharArrayWriter();
+                                Writer w = doc.getFormatter().createWriter(doc, pos, cw);
+                                w.write(doc.getChars(pos, stopPos - pos));
+                                w.close();
+                                String out = new String(cw.toCharArray());
+                                doc.remove(pos, stopPos - pos);
+                                doc.insertString(pos, out, null);
+                                pos += out.length(); // go to the end of the area inserted
+                            }
 
-			CharArrayWriter cw = new CharArrayWriter();
-			Writer w = doc.getFormatter().createWriter(doc, pos, cw);
-			w.write(doc.getChars(pos, stopPos - pos));
-			w.close();
-			String out = new String(cw.toCharArray());
-			doc.remove(pos, stopPos - pos);
-			doc.insertString(pos, out, null);
-			pos += out.length(); // go to the end of the area inserted
-		    }
-
-		    // Restore the line
-		    pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
-		    if (pos >= 0) {
-			caret.setDot(pos);
-		    }
-		} catch (BadLocationException e) {
-		    if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-			e.printStackTrace();
-		    }
-		} catch (IOException e) {
-		    if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
-			e.printStackTrace();
-		    }
-		} finally {
-		    doc.atomicUnlock();
-		}
+                            // Restore the line
+                            pos = Utilities.getRowStartFromLineOffset(doc, caretLine);
+                            if (pos >= 0) {
+                                caret.setDot(pos);
+                            }
+                        } catch (BadLocationException e) {
+                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
+                                e.printStackTrace();
+                            }
+                        } catch (IOException e) {
+                            if (System.getProperty("netbeans.debug.exceptions") != null) { // NOI18N
+                                e.printStackTrace();
+                            }
+                        }
+                    }                    
+                });
 	    }
 	}
     }    

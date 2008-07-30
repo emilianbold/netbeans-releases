@@ -76,7 +76,7 @@ public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvid
                 errorMsg = "Unexpected length of hexadecimal color definition";
                 return false;
             }
-        } else if (token.startsWith("rgb") || token.startsWith("RGB")) {
+        } /*else if (token.startsWith("rgb") || token.startsWith("RGB")) {
             // rgb(255,0,0) 
             int braceIndex = token.indexOf('(');
             int closeBraceIndex = token.indexOf(')');
@@ -124,7 +124,7 @@ public class Color implements CssPropertyValueAcceptor, CustomErrorMessageProvid
             }
 
 
-        } else {
+        }*/ else {
             //test predefined text values
             for (int i = 0; i < COLORS.length; i++) {
                 if (COLORS[i].equalsIgnoreCase(token)) {
