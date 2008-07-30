@@ -1559,7 +1559,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
                 lastStop = null;
-                gdb.stack_list_frames();
+                updateCurrentCallStack();
                 setStopped();
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
@@ -2051,7 +2051,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void suspendBreakpointsAndSignals() {
         for (BreakpointImpl impl : getBreakpointList().values()) {
             if (impl.getBreakpoint().isEnabled()) {
-                gdb.break_disable(impl.getBreakpointNumber());
+                impl.enable(false);
             }
         }
         gdb.set_unwindonsignal("on"); // NOI18N
@@ -2065,7 +2065,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         gdb.set_unwindonsignal("off"); // NOI18N
         for (BreakpointImpl impl : getBreakpointList().values()) {
             if (impl.getBreakpoint().isEnabled()) {
-                gdb.break_enable(impl.getBreakpointNumber());
+                impl.enable(true);
             }
         }
     }
