@@ -50,10 +50,12 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=list&lt;/text>
  *
- *       &lt;!-- Metadata information. Please don't edit. -->
- *       &lt;text id="list_hidden_text" display="none">type=hidden_text&lt;/text>
+ *       &lt;g>
+ *       &lt;text id="list_hidden_text" visibility="hidden">
  *           HIDDEN TEXT
  *       &lt;/text>
+ *       &lt;text display="none">type=hidden_text&lt;/text>
+ *       &lt;/g>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=bound&lt;/text>

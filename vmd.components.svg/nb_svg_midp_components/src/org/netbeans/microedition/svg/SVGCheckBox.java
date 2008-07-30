@@ -36,10 +36,12 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *          &lt;!-- Metadata information. Please don't edit. -->
  *          &lt;text display="none">type=mark&lt;/text>
  *      &lt;/path>
- *      &lt;text id="checkbox_online_title" x="33.8" y="21.6" stroke="gray" font-size="15">
+ *      &lt;g>
+ *          &lt;text id="checkbox_online_title" x="33.8" y="21.6" stroke="gray" font-size="15">
+ *          Online&lt;/text>
  *          &lt;!-- Metadata information. Please don't edit. -->
  *          &lt;text display="none">type=text&lt;/text>
- *      Online&lt;/text>
+ *      &lt;/g>
  *  &lt;/g
  * </pre>
  * @author Pavel Benes
@@ -55,7 +57,7 @@ public class SVGCheckBox extends SVGAbstractButton {
     
     public SVGCheckBox( SVGForm form, String elemId) {
         super(form, elemId);
-        initNetedElements();
+        initNestedElements();
         verify();
         setTraitSafely( myMarkElement , TRAIT_VISIBILITY, TR_VALUE_HIDDEN );
         isSelected = false;
@@ -87,7 +89,7 @@ public class SVGCheckBox extends SVGAbstractButton {
         setTraitSafely( myTextElement, TRAIT_TEXT, text );
     }
     
-    private void initNetedElements() {
+    private void initNestedElements() {
         if (getElement().getId() != null) {
             myMarkElement = (SVGLocatableElement) getElementById(
                     getElement(), getElement().getId() + MARK_SUFFIX );
@@ -101,7 +103,7 @@ public class SVGCheckBox extends SVGAbstractButton {
         }
         
         if ( myTextElement == null ){
-            myTextElement = (SVGLocatableElement) getElementByMeta(
+            myTextElement = (SVGLocatableElement) getNestedElementByMeta(
                     getElement(), TYPE , TEXT );
         }
     }

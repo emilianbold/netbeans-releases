@@ -60,10 +60,11 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;text display="none">type=selection&lt;/text>
  *       
  *       &lt;rect  x="5" y="0" stroke="black" stroke-width="1" fill="rgb(200,200,255)" visibility="inherit" width="80" height="0"/>
+ *       &lt;g>
+ *         &lt;text id="list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
+ *          HIDDEN TEXT&lt;/text>
+ *         &lt;text display="none">type=hidden_text&lt;/text>
  *       &lt;/g>
- *   &lt;text id="list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" font-family="SunSansSemiBold">
- *       &lt;text display="none">type=hidden_text&lt;/text>
- *   &lt;/text>
  *   &lt;g id="list_content" > 
  *       &lt;!-- Metadata information. Please don't edit. -->
  *       &lt;text display="none">type=content&lt;/text> 
@@ -81,7 +82,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *   &lt;/g>
  * </pre>
  * 
- * Nested elements 'content" and 'bound' are necessary.
+ * Nested elements 'content' and 'bound' are necessary.
  * All other is used by default renderer. 
  * See {@link SVGDefaultListCellRenderer.}  
  * @author ads
@@ -205,7 +206,7 @@ public class SVGList extends SVGComponent implements DataListener {
                     getElement().getId() +SELECTION_SUFFIX );
         }
         if (myHiddenText == null) {
-            myHiddenText = (SVGLocatableElement) getElementByMeta(getElement(),
+            myHiddenText = (SVGLocatableElement) getNestedElementByMeta(getElement(),
                     TYPE, HIDDEN_TEXT);
         }
 

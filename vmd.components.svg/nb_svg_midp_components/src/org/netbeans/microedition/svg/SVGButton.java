@@ -41,12 +41,16 @@ import org.w3c.dom.svg.SVGRGBColor;
  *           &lt;animate id="button_ok_body_released" attributeName="fill" attributeType="XML" begin="indefinite" dur="0.25s" fill="freeze" to="rgb(176,196,222)"/>
  *       &lt;/rect>
  *   &lt;/g>
+ *   &lt;g>
  *   &lt;text id="button_ok_stext" x="24" y="23" fill="black" font-size="20">
+ *       OK&lt;/text>
  *       &lt;text display="none">type=shadow_text&lt;/text>
- *       OK&lt;/text>
+ *   &lt;/g>
+ *   &lt;g>
  *   &lt;text id="button_ok_text" x="23" y="21" fill="gray" font-size="20">
- *       &lt;text display="none">type=text&lt;/text>
  *       OK&lt;/text>
+ *       &lt;text display="none">type=text&lt;/text>
+ *   &lt;/g>
  *   &lt;/g>
  * </pre>
  * @author Pavel Benes
