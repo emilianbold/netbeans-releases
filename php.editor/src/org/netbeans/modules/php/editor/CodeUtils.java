@@ -192,6 +192,9 @@ public class CodeUtils {
         if (rightSideExpression instanceof Assignment) {
             // handle nested assignments, e.g. $l = $m = new ObjectName;
             return extractVariableTypeFromAssignment((Assignment) assignment.getRightHandSide());
+        } else if (rightSideExpression instanceof Reference) {
+            Reference ref = (Reference) rightSideExpression;
+            rightSideExpression = ref.getExpression();
         }
 
         if (rightSideExpression instanceof ClassInstanceCreation) {

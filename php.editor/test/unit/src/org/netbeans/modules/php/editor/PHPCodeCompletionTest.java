@@ -78,4 +78,16 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136744_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test4^", false);
     }
+    // #142024 Code completion + references
+    public void test142024() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142024.php", "$t->^", false);
+    }    
+    // #142051 CC doesn't work when an object is a refence
+    public void test142051() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name1: \".$user1->^", false);
+    }
+
+    public void test142051_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
+    }
 }
