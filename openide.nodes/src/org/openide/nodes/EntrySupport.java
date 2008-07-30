@@ -1093,10 +1093,13 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return null;
             }
+            Node node = null;
             while (true) {
-                Node node;
                 try {
                     Children.PR.enterReadAccess();
+                    if (index >= visibleEntries.size()) {
+                        return node;
+                    }
                     Entry entry = visibleEntries.get(index);
                     EntryInfo info = entryToInfo.get(entry);
                     node = info.getNode();
@@ -1578,7 +1581,7 @@ abstract class EntrySupport {
         }
 
         /** Dummy node class for entries without any node */
-        private static class DummyNode extends AbstractNode {
+        static class DummyNode extends AbstractNode {
 
             public DummyNode() {
                 super(Children.LEAF);
