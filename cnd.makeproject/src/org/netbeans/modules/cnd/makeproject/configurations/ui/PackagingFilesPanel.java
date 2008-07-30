@@ -421,9 +421,12 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     assert false;
                     label.setText(""); // NOI18N
                 }
-            } else if (col == 1) {
+            } else if (col == 2) {
                 if (elem.getType() == FileElement.FileType.DIRECTORY) {
                     return label; // Already set to blank
+                }
+                if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                    return label; // OK
                 }
                 if (!isSelected) {
                     label = new JLabel();
@@ -451,7 +454,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Type", "File", "Package File or Directry Path", "Permission", "Owner", "Group"}; // FIXUP
+        private String[] columnNames = {"Type", "File or Directry Path in Package", "Original File or Link", "Permission", "Owner", "Group"}; // FIXUP
 
         @Override
         public String getColumnName(int col) {
@@ -475,7 +478,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (col == 0) {
                 return elem.getType();
             }
-            if (col == 1) {
+            if (col == 2) {
                 if (elem.getType() == FileElement.FileType.DIRECTORY) {
                     return ""; // NOI18N
                 }
@@ -483,7 +486,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     return elem.getFrom();
                 }
             }
-            if (col == 2) {
+            if (col == 1) {
                 return elem.getTo();
             }
             if (col == 3) {
@@ -538,13 +541,13 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);
                 fireTableCellUpdated(row, 2);
-            } else if (col == 1) {
+            } else if (col == 2) {
                 elem.setFrom(value);
 
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);
                 fireTableCellUpdated(row, 2);
-            } else if (col == 2) {
+            } else if (col == 1) {
                 elem.setTo(value);
 
                 fireTableCellUpdated(row, 0);
