@@ -52,6 +52,7 @@ import org.netbeans.modules.java.source.usages.ClassIndexManagerEvent;
 import org.netbeans.modules.java.source.usages.ClassIndexManagerListener;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
+import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.util.Parameters;
@@ -91,7 +92,7 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
         final GlobalSourcePath gsp = GlobalSourcePath.getDefault();        
         for (ClassPath.Entry entry : delegate.entries()) {
             if (forcePrefSources || !gsp.isLibrary(entry.getURL())) {
-                res.add(ClassPathSupport.createResource(entry.getURL()));
+                res.add(new FR (entry));
             }
         }
         synchronized (this) {
@@ -150,6 +151,51 @@ public class SourcePath implements ClassPathImplementation, ClassIndexManagerLis
             this.eventId++;
         }
         listeners.firePropertyChange(PROP_RESOURCES, null, null);
+    }
+    
+    private static class FR implements FilteringPathResourceImplementation, PropertyChangeListener {
+        
+        private final ClassPath classPath;
+        private final ClassPath.Entry entry;
+        private final PropertyChangeSupport support;
+        private final URL[] cache;
+        
+        public FR (final ClassPath.Entry entry) {
+            assert entry != null;
+            this.support = new PropertyChangeSupport(this);
+            this.entry = entry;
+            this.classPath = entry.getDefiningClassPath();
+            this.classPath.addPropertyChangeListener(WeakListeners.propertyChange(this, classPath));
+            this.cache = new URL[] {entry.getURL()};
+        }
+
+        public boolean includes(URL root, String resource) {
+            assert this.cache[0].equals(root);
+            return entry.includes(resource);
+        }
+
+        public URL[] getRoots() {
+            return cache;
+        }
+
+        public ClassPathImplementation getContent() {
+            return null;
+        }
+
+        public void addPropertyChangeListener(PropertyChangeListener listener) {
+            this.support.addPropertyChangeListener(listener);
+        }
+
+        public void removePropertyChangeListener(PropertyChangeListener listener) {
+            this.support.removePropertyChangeListener(listener);
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (ClassPath.PROP_INCLUDES.equals(evt.getPropertyName())) {
+                this.support.firePropertyChange(PROP_INCLUDES, null, null);
+            }
+        }
+        
     }
     
     public static ClassPath create (final ClassPath cp, final boolean bkgComp) {
