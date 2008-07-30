@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.modules.java.preprocessorbridge.spi;
 
 import java.io.File;
 import java.util.Set;
@@ -50,6 +50,13 @@ import java.util.Set;
 public interface VirtualSourceProvider {
     
     public interface Result {
+        /**
+         * Registers a binding among source and virtual source
+         * @param source from which the virtual source was generated
+         * @param packageName of the virtual source
+         * @param relativeName of the virtual source without extension
+         * @param content of the virtual source
+         */
         public void add (File source, String packageName, String relativeName, CharSequence content);
     }
     
@@ -58,6 +65,12 @@ public interface VirtualSourceProvider {
      * @return a set of supported extensions
      */
     public Set<String> getSupportedExtensions ();
+    
+    /**
+     * If true the java indexer will index the virtual source
+     * @return boolean
+     */
+    public boolean index ();
 
     /**
      * Return a list of tuples {fully qualified name, file content} as a result of
