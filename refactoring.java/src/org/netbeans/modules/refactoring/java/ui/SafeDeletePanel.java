@@ -172,7 +172,6 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                     Mnemonics.setLocalizedText(safeDelete, NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelCheckBox"));
                     safeDelete.setMargin(new java.awt.Insets(2, 14, 2, 2));
                     searchInComments.setEnabled(false);
-                    safeDelete.getAccessibleContext().setAccessibleDescription(safeDelete.getText());
                     safeDelete.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent evt) {
                             searchInComments.setEnabled(safeDelete.isSelected());
