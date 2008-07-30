@@ -1,4 +1,4 @@
-Mobility
+Java ME
     Mobile Application
     Mobile Class Library
     Mobile Project with Existing MIDP Sources
