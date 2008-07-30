@@ -121,8 +121,6 @@ public final class Utils {
             return null;
         }
 
-        LastUsedFolders.setCopyFiles(newLocation);
-
         File file = null;
         if (newSubfolderName == null) {
             file = newLocation;
