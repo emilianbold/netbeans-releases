@@ -49,15 +49,15 @@ made subject to such option by the copyright holder.
             </folder>
             <folder name="NBProfiler">
                 <folder name="Categories">
-                    <folder name="IO.shadow">
+                    <file name="IO.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/IO"/>
-                    </folder>
-                    <folder name="UI.shadow">
+                    </file>
+                    <file name="UI.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/UI"/>
-                    </folder>
-                    <folder name="Lookup.shadow">
+                    </file>
+                    <file name="Lookup.shadow">
                         <attr name="originalFile" stringvalue="NBProfiler/Categories/Lookup"/>
-                    </folder>
+                    </file>
                 </folder>
             </folder>
         </folder>
