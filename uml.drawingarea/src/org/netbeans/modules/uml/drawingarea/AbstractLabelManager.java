@@ -577,6 +577,7 @@ public abstract class AbstractLabelManager implements LabelManager
     private class EdgeLabelMoveSupport implements MoveStrategy, MoveProvider
     {
         private Widget edgeWidget;
+        private Point origLoc;
 
         public EdgeLabelMoveSupport(Widget edgeWidget)
         {
@@ -589,12 +590,23 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void movementFinished(Widget widget)
         {
-            ((DesignerScene)edgeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
+            if (origLoc != null)
+            {
+                Point finalLoc = widget.getPreferredLocation();
+                if (finalLoc != null)
+                {
+                    if ( (Math.abs(finalLoc.x - origLoc.x) > 5) || (Math.abs(finalLoc.y - origLoc.y) > 5))
+                    {
+                        ((DesignerScene)edgeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
+                    }
+                }
+            }
         }
 
         public Point getOriginalLocation(Widget widget)
         {
-            return widget.getPreferredLocation();
+            origLoc = widget.getPreferredLocation();
+            return origLoc;
         }
 
         public void setNewLocation(Widget widget, Point location)
