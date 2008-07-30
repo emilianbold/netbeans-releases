@@ -136,6 +136,22 @@ public class TypesCompletionTest extends GroovyTestBase {
         checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "Scan^", false);
     }
 
+    // make sure, we don't complete in comments.
+
+    // not in block comments.
+
+    public void testNotInComments1() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "Groovy def^", false);
+    }
+
+    // ... and also not in line comments.
+
+    public void testNotInComments2() throws Exception {
+        checkCompletion(TYPES_BASE + "" + "DefaultImport1.groovy", "java.lang.ClassCastException^", false);
+    }
+
+
+
     // testing wildcard-imports
 
 //    public void testWildCardImport1() throws Exception {

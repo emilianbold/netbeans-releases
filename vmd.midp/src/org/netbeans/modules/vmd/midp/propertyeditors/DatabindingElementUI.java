@@ -41,6 +41,7 @@ import org.netbeans.modules.vmd.midp.components.databinding.IndexableDataAbstrac
 import org.netbeans.modules.vmd.midp.components.databinding.MidpDatabindingSupport;
 import org.netbeans.modules.vmd.midp.components.general.ClassCD;
 import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -48,12 +49,12 @@ import org.netbeans.modules.vmd.midp.components.sources.CommandEventSourceCD;
  */
 public class DatabindingElementUI extends javax.swing.JPanel {
 
-    private static String NULL = "<Not Defined>"; //TODO Localized
+    private static String NOT_DEFINED = NbBundle.getMessage(DatabindingElementUI.class, "LBL_NOT_DEFINED" ); //TODO Localized
     private DesignPropertyEditor propertyEditor;
     private JRadioButton radioButton;
-    private static String INDEXABLE = "[IndexableDataSet]"; //NOI18N
-    private static String DATASET = "[DataSet]"; //NOI18N
-    private static String CREATE_INDEX = "<Create Index>";//TODO Bundel.properties
+    private static String INDEXABLE = NbBundle.getMessage(DatabindingElementUI.class, "LBL_INDEXABLE" ); //NOI18N
+    private static String DATASET = NbBundle.getMessage(DatabindingElementUI.class, "LBL_DATASET" ); //NOI18N
+    private static String CREATE_INDEX  = NbBundle.getMessage(DatabindingElementUI.class, "LBL_CREATE_INDEX" ); //NOI18N
 
     /** Creates new form DataSetDatabindingElement */
     DatabindingElementUI(DesignPropertyEditor propertyEditor, final JRadioButton radioButton) {
@@ -120,14 +121,14 @@ public class DatabindingElementUI extends javax.swing.JPanel {
 
         if (radioButton.isSelected()) {
             StringBuffer warning = new StringBuffer(); 
-            if (jComboBoxDatasets.getSelectedItem() == null || jComboBoxDatasets.getSelectedItem() == NULL) {
-                warning.append("Dataset not Selected");
+            if (jComboBoxDatasets.getSelectedItem() == null || jComboBoxDatasets.getSelectedItem() == NOT_DEFINED) {
+                warning.append(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_Dataset_not_Selected"));
             }
             if (jTextFieldExpressionRead.getText() == null || jTextFieldExpressionRead.getText().length() == 0) {
                 if (warning.length() != 0) {
-                    warning.append(" and ");
+                    warning.append(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_and_"));
                 }
-                warning.append(" Empty expression");
+                warning.append(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Empty_expression"));
             }
 //            if (jComboBoxIndexNames.getSelectedItem() == null || jComboBoxIndexNames.getSelectedItem() == NULL) {
 //                if (jComboBoxDatasets.getSelectedItem() != null && ((String) jComboBoxDatasets.getSelectedItem()).contains(INDEXABLE)) {
@@ -156,7 +157,7 @@ public class DatabindingElementUI extends javax.swing.JPanel {
     }
 
     private void updateDataSetRelatedUI() {
-        if (jComboBoxDatasets.getSelectedItem() != null && jComboBoxDatasets.getSelectedItem() != NULL) {
+        if (jComboBoxDatasets.getSelectedItem() != null && jComboBoxDatasets.getSelectedItem() != NOT_DEFINED) {
             jTextFieldExpressionRead.setEnabled(true);
             
             if (jTextFieldExpressionRead.getText().equals(jTextFieldExpressionWrite.getText())) {
@@ -179,14 +180,14 @@ public class DatabindingElementUI extends javax.swing.JPanel {
         Model model = (Model) jComboBoxDatasets.getModel();
         if (model.isSelectedDataSetReadOnly() != null) {
             if (model.isSelectedDataSetReadOnly()) {
-                jLabelReadOnly.setText("Read Only");
+                jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNINGRead_Only"));
             } else {
-                jLabelReadOnly.setText("Read/Write");
+                jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Read/Write"));
             }
         } else {
-            jLabelReadOnly.setText("Not Defined");
+            jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Not_Defined"));
         }
-        if (jComboBoxIndexNames.getSelectedItem() == null || jComboBoxIndexNames.getSelectedItem() == NULL) {
+        if (jComboBoxIndexNames.getSelectedItem() == null || jComboBoxIndexNames.getSelectedItem() == NOT_DEFINED) {
             jComboBoxCommandsIndexablePrevious.setEnabled(false);
             jComboBoxIndexableNext.setEnabled(false);
         } else {
@@ -201,15 +202,15 @@ public class DatabindingElementUI extends javax.swing.JPanel {
             jComboBoxCommandsIndexablePrevious.setEnabled(true);
             jComboBoxIndexableNext.setEnabled(true);
             jComboBoxIndexNames.setEnabled(true);
-        } else if (name != null && name.contains(DATASET) || name != null && name.equals(NULL)) {
+        } else if (name != null && name.contains(DATASET) || name != null && name.equals(NOT_DEFINED)) {
             jComboBoxCommandsIndexablePrevious.setEnabled(false);
-            jComboBoxCommandsIndexablePrevious.setSelectedItem(NULL);
+            jComboBoxCommandsIndexablePrevious.setSelectedItem(NOT_DEFINED);
             jComboBoxIndexableNext.setEnabled(false);
-            jComboBoxIndexableNext.setSelectedItem(NULL);
+            jComboBoxIndexableNext.setSelectedItem(NOT_DEFINED);
             jComboBoxIndexNames.setEnabled(false);
-            jComboBoxIndexNames.setSelectedItem(NULL);
+            jComboBoxIndexNames.setSelectedItem(NOT_DEFINED);
         }
-        if (jComboBoxIndexNames.getSelectedItem() == null || jComboBoxIndexNames.getSelectedItem() == NULL) {
+        if (jComboBoxIndexNames.getSelectedItem() == null || jComboBoxIndexNames.getSelectedItem() == NOT_DEFINED) {
             jComboBoxCommandsIndexablePrevious.setEnabled(false);
             jComboBoxIndexableNext.setEnabled(false);
         } else {
@@ -554,11 +555,11 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                     setCommandComboBox(connector, jComboBoxCommandsIndexablePrevious, DataSetConnectorCD.PROP_PREVIOUS_COMMAND);
                     setReadOnlyLabel(connector);
                 } else {
-                    jComboBoxCommandUpdate.setSelectedItem(NULL);
-                    jComboBoxCommandsIndexablePrevious.setSelectedItem(NULL);
-                    jComboBoxDatasets.setSelectedItem(NULL);
-                    jComboBoxIndexNames.setSelectedItem(NULL);
-                    jComboBoxIndexableNext.setSelectedItem(NULL);
+                    jComboBoxCommandUpdate.setSelectedItem(NOT_DEFINED);
+                    jComboBoxCommandsIndexablePrevious.setSelectedItem(NOT_DEFINED);
+                    jComboBoxDatasets.setSelectedItem(NOT_DEFINED);
+                    jComboBoxIndexNames.setSelectedItem(NOT_DEFINED);
+                    jComboBoxIndexableNext.setSelectedItem(NOT_DEFINED);
                 }
             }
         });
@@ -570,9 +571,9 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private void setReadOnlyLabel(DesignComponent connector) {
         PropertyValue value = connector.getParentComponent().readProperty(DataSetAbstractCD.PROP_READ_ONLY);
         if (value != PropertyValue.createNull() && value.getPrimitiveValue() == Boolean.TRUE) {
-            jLabelReadOnly.setText("Read Only");
+            jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Read_Only"));
         } else {
-            jLabelReadOnly.setText("Read/Write");
+            jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Read/Write"));
         }
     }
     private void setCommandComboBox(DesignComponent connector, JComboBox comboBox, String propertyName) {
@@ -607,7 +608,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                             connector.writeProperty(DataSetConnectorCD.PROP_BINDED_PROPERTY, MidpTypes.createStringValue(propertyEditor.getPropertyNames().get(0)));
                             dataSet.addComponent(connector);
                         }
-                        if (jComboBoxIndexNames.getSelectedItem() != null && !jComboBoxIndexNames.getSelectedItem().equals(NULL)) {
+                        if (jComboBoxIndexNames.getSelectedItem() != null && !jComboBoxIndexNames.getSelectedItem().equals(NOT_DEFINED)) {
                             if (MidpDatabindingSupport.isIndexableDataSet(document, dataSet.getType())) {
                                 String indexName = (String) jComboBoxIndexNames.getSelectedItem();
                                 DesignComponent index = MidpDatabindingSupport.getIndex(dataSet,indexName);
@@ -660,7 +661,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         jTextFieldExpressionWrite.setEnabled(false);
         jCheckBox1.setSelected(true);
         jCheckBox1.setEnabled(false);
-        jLabelReadOnly.setText("Not defined");
+        jLabelReadOnly.setText(java.util.ResourceBundle.getBundle("org/netbeans/modules/vmd/midp/propertyeditors/Bundle").getString("LBL_WARNING_Not_defined"));
         jComboBoxIndexNames.setSelectedItem(null);
         updateWarning();
         updateIndexableUIComponents();
@@ -745,7 +746,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 }
                
             }
-            names.add(NULL);
+            names.add(NOT_DEFINED);
             names.add(CREATE_INDEX); //NOI18N
         }
         
@@ -756,7 +757,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         Model(DesignComponent component, TypeID categoryType) {
             this.categoryType = categoryType;
             this.names = new ArrayList<String>();
-            this.names.add(NULL);
+            this.names.add(NOT_DEFINED);
             Collection<DesignComponent> components = MidpDocumentSupport.getCategoryComponent(component.getDocument(), categoryType).getComponents();
             for (DesignComponent component_ : components) {
                 String name = (String) component_.readProperty(ClassCD.PROP_INSTANCE_NAME).getPrimitiveValue();
@@ -793,7 +794,7 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
 
         public void setSelectedItem(final Object item) {
             if (item == null) {
-                this.selectedItem = NULL;
+                this.selectedItem = NOT_DEFINED;
             } else if (item.equals(CREATE_INDEX)) {
                 this.lisener.contentsChanged(new ListDataEvent(this, ListDataEvent.CONTENTS_CHANGED, -1, -1));
             } else {
@@ -867,13 +868,13 @@ private void jCheckBox1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 String name = "index";//NOI18N + nameDataSet;
                 List<String> names= ((Model) jComboBoxIndexNames.getModel()).getItems();
                 names.remove(CREATE_INDEX);
-                names.remove(NULL);
+                names.remove(NOT_DEFINED);
                 int i = 0;
                 while (names.contains(name)) {
                     name = name + i++;
                 }
                 names.add(name);
-                names.add(NULL);
+                names.add(NOT_DEFINED);
                 names.add(CREATE_INDEX);
                 Model indexNamesModel = new Model(names);
                 jComboBoxIndexNames.setModel(indexNamesModel);

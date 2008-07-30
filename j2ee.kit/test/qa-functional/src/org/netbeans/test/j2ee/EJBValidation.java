@@ -46,9 +46,15 @@ import java.io.IOException;
 import java.util.Arrays;
 import junit.textui.TestRunner;
 import junit.framework.Test;
-import org.netbeans.jellytools.*;
+import org.netbeans.jellytools.Bundle;
+import org.netbeans.jellytools.EditorOperator;
+import org.netbeans.jellytools.EditorWindowOperator;
+import org.netbeans.jellytools.NbDialogOperator;
+import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.DeleteAction;
 import org.netbeans.jellytools.actions.OpenAction;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
+import org.netbeans.jellytools.modules.j2ee.J2eeTestCase.Server;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.TimeoutExpiredException;
 import org.netbeans.jemmy.operators.*;
@@ -68,7 +74,7 @@ import org.openide.util.Exceptions;
  * 
  * @author libor.martinek@sun.com
  */
-public class EJBValidation extends J2eeProjectsTest {
+public class EJBValidation extends J2eeTestCase {
 
     public static final String EAR_PROJECT_NAME = "TestingEntApp";
     public static final String WEB_PROJECT_NAME = EAR_PROJECT_NAME + "-WebModule";
