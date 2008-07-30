@@ -86,6 +86,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.Variable;
+import org.codehaus.groovy.ast.expr.ArgumentListExpression;
 import org.codehaus.groovy.ast.expr.ClassExpression;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
@@ -116,6 +117,7 @@ import org.netbeans.modules.groovy.support.api.GroovySettings;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.api.NameKind;
+import org.netbeans.modules.gsf.api.OffsetRange;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -132,7 +134,7 @@ public class CodeCompleter implements CodeCompletionHandler {
     Set<GroovyKeyword> keywords;
     
     List<String> dfltImports = new ArrayList<String>();
-
+    
     public CodeCompleter() {
         LOG.setLevel(Level.OFF);
 
@@ -516,6 +518,25 @@ private void printMethod(MetaMethod mm) {
 
     }
 
+    private ArgumentListExpression getSurroundingArgumentList(AstPath path){
+        if (path == null) {
+            LOG.log(Level.FINEST, "path == null"); // NOI18N
+            return null;
+        }
+        
+        LOG.log(Level.FINEST, "AEL, Path : {0}", path);
+        
+        for (Iterator<ASTNode> it = path.iterator(); it.hasNext();) {
+            ASTNode current = it.next();
+            if (current instanceof ArgumentListExpression) {
+
+                return (ArgumentListExpression)current;
+            }
+        }
+        return null;   
+
+    }
+    
         
     /**
      * returns the next enclosing MethodNode for the given request
@@ -599,6 +620,19 @@ private void printMethod(MetaMethod mm) {
 
         return new AstPath(root, request.astOffset, request.doc);
     }
+    
+    
+    private AstPath getPathFromInfo(final int caretOffset, final CompilationInfo info) {
+
+        assert info != null;
+
+        ASTNode root = AstUtilities.getRoot(info);
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        
+        return new AstPath(root, caretOffset, doc);
+        
+    }
+    
 
     /**
      * Complete Groovy or Java Keywords.
@@ -2699,7 +2733,60 @@ private void printMethod(MetaMethod mm) {
     }
 
     public ParameterInfo parameters(CompilationInfo info, int caretOffset, CompletionProposal proposal) {
+        LOG.log(Level.FINEST, "parameters(), caretOffset = {0}", caretOffset); // NOI18N
+
+        // here we need to calculate the list of parameters for the methods under the caret.
+        // proposal seems to be null all the time.
+
+        List<String> paramList = new ArrayList<String>();
+        
+        AstPath path = getPathFromInfo(caretOffset, info);
+        BaseDocument doc = (BaseDocument) info.getDocument();
+        
+        if(path != null){
+            
+            ArgumentListExpression ael = getSurroundingArgumentList(path);
+            
+            if (ael != null) {
+
+                List<ASTNode> children = AstUtilities.children(ael);
+
+                // populate list with *all* parameters, but let index and offset
+                // point to a specific parameter.
+
+                int idx = 1;
+                int index = -1;
+                int offset = -1;
+
+                for (ASTNode node : children) {
+                    OffsetRange range = AstUtilities.getRange(node, doc);
+                    paramList.add(node.getText());
+                    
+                    if(range.containsInclusive(caretOffset)) {
+                        offset = range.getStart();
+                        index = idx;
+                    }
+                    
+                    idx++;
+                }
+
+                // calculate the parameter we are dealing with
+
+                if (paramList != null && !paramList.isEmpty()) {
+                    return new ParameterInfo(paramList, index, offset);
+                }
+            } else {
+                LOG.log(Level.FINEST, "ArgumentListExpression ==  null"); // NOI18N
+                return ParameterInfo.NONE;
+            }
+            
+        } else {
+            LOG.log(Level.FINEST, "path ==  null"); // NOI18N
+            return ParameterInfo.NONE;
+        }
+
         return ParameterInfo.NONE;
+        
     }
 
     static class CompletionRequest {

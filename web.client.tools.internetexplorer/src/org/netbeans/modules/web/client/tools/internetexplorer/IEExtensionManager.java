@@ -89,7 +89,6 @@ public class IEExtensionManager {
     private static final String MODULE_CODEBASE = "org.netbeans.modules.web.client.tools.internetexplorer"; // NOI18N
     
     public static boolean checkRequiredComponents(HtmlBrowser.Factory browser) {
-        boolean result = true;
         try {
             //Check for MDM and PDM in the reqistry using reg.exe
             while(!queryRegistry(MDM_REGISTRY_KEY) || !queryRegistry(PDM_REGISTRY_KEY)) {
@@ -106,17 +105,19 @@ public class IEExtensionManager {
             if(!queryForBHO(bhoFilePath)) {
                 //Wait for user to agree for registering our BHO
                 if(displayBHORegisterDialog()) {
-                    if (!registerBHO(bhoFilePath)) {
-                        result = false;
+                    if (registerBHO(bhoFilePath)) {
+                        return true;
+                    }else {
                         Log.getLogger().log(Level.INFO, NbBundle.getMessage(IEExtensionManager.class, "UNABLE_TO_REGISTER"));
                     }
                 }
+            }else {
+                return true;
             }
         } catch (IOException ioe) {
             Log.getLogger().log(Level.INFO, ioe.getLocalizedMessage());
-            result = false;
         }
-        return result;
+        return false;
     }
 
     private static boolean queryForBHO(String bhoFilePath) {
@@ -158,7 +159,6 @@ public class IEExtensionManager {
         return null;
     }
     
-    @SuppressWarnings("empty-statement")
     private static String readStream(InputStream is) {
         StringBuffer result = new StringBuffer();
         InputStreamReader isr = new InputStreamReader(is);

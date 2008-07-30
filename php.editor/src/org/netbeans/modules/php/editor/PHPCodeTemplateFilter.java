@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,9 +31,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
@@ -63,7 +63,7 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
         this.caretOffset = offset;
         FileObject fo = NbUtilities.findFileObject(component);
         SourceModel model = SourceModelFactory.getInstance().getModel(fo);
-        
+
         if (!model.isScanInProgress()){
             try {
                 model.runUserActionTask(this, false);
@@ -72,35 +72,33 @@ public class PHPCodeTemplateFilter implements CodeTemplateFilter, CancellableTas
             }
         }
     }
-    
+
 
     public boolean accept(CodeTemplate template) {
         if (template.getContexts().contains("php-code")) //NOI18N
         {
             return accept;
         }
-        
+
         return true;
     }
-    
+
     public void cancel() {
-        
+
     }
 
     public void run(CompilationInfo parameter) throws Exception {
         PHPCodeCompletion.CompletionContext context = PHPCodeCompletion.findCompletionContext(parameter, caretOffset);
-        
+
         switch(context){
             case EXPRESSION:
-            case CLASS_MEMBER:
-            case STATIC_CLASS_MEMBER:
                 accept = true;
                 break;
         }
     }
-    
+
     public static final class Factory implements CodeTemplateFilter.Factory {
-        
+
         public CodeTemplateFilter createFilter(JTextComponent component, int offset) {
             return new PHPCodeTemplateFilter(component, offset);
         }
