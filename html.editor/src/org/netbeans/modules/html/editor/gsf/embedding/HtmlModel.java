@@ -200,27 +200,28 @@ public class HtmlModel {
                         // <div id="${myid}"/> or <p>${"blabla"}<p>blabla2 are ok
                     }
                 }
+
+                //beginning of the html code
+                int sourceStart = ts.offset();
+                int generatedStart = buffer.length();
+
+                //reset ts to the beginning
+                ts.moveStart();
+
+                //copy the content
+                while (ts.moveNext()) {
+                    htmlToken = ts.token();
+                    buffer.append(htmlToken.text());
+                }
+
+                int sourceEnd = htmlToken.offset(th) + htmlToken.length();
+                int generatedEnd = buffer.length();
+
+                CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
+                        generatedEnd);
+                codeBlocks.add(blockData);
+
             }
-
-            //beginning of the html code
-            int sourceStart = ts.offset();
-            int generatedStart = buffer.length();
-
-            //reset ts to the beginning
-            ts.moveStart();
-
-            //copy the content
-            while (ts.moveNext()) {
-                htmlToken = ts.token();
-                buffer.append(htmlToken.text());
-            }
-
-            int sourceEnd = htmlToken.offset(th) + htmlToken.length();
-            int generatedEnd = buffer.length();
-
-            CodeBlockData blockData = new CodeBlockData(sourceStart, sourceEnd, generatedStart,
-                    generatedEnd);
-            codeBlocks.add(blockData);
 
         }
 
