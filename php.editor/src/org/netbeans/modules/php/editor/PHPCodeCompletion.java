@@ -406,9 +406,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-
+                        List<String> notValidProposals = Arrays.asList(new String[] {"__construct","__destruct  "});//NOI18N
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
-                            proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                            if (!notValidProposals.contains(method.getName())) {
+                                proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                            }
                         }
                     }
                 }
@@ -432,9 +434,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if (staticContext) {
-                    Collection<IndexedConstant> classConstants = request.index.getClassConstants(
+                    Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
                             request.result, typeName, request.prefix, nameKind);
-
                     for (IndexedConstant constant : classConstants) {
                         proposals.add(new PHPCompletionItem.VariableItem(constant, request));
                     }
