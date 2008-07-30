@@ -45,7 +45,6 @@ import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
 import java.util.ArrayList;
 import java.util.List;
-import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CompilerSet2Configuration;
 import org.openide.nodes.Node;
 
@@ -96,7 +95,7 @@ public class CompilerSetNodeProp extends Node.Property {
     
     public void setValue(Object v) {
         configuration.setValue((String)v);
-}
+    }
     
     @Override
     public void restoreDefaultValue() {
@@ -120,7 +119,7 @@ public class CompilerSetNodeProp extends Node.Property {
     public boolean canRead() {
         return true;
     }
-    
+
     public void repaint() {
         ((CompilerSetEditor) getPropertyEditor()).repaint();
     }
@@ -150,9 +149,11 @@ public class CompilerSetNodeProp extends Node.Property {
         @Override
         public String[] getTags() {
             List<String> list = new ArrayList<String>();
-            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {
-                list.add(getOldname());
-            }
+            // TODO: this works unpredictable on switching development hosts
+            // TODO: should be resolved later on
+//            if (configuration.getCompilerSetManager().getCompilerSet(getOldname()) == null) {
+//                list.add(getOldname());
+//            }
             list.addAll(configuration.getCompilerSetManager().getCompilerSetNames());
             return (String[]) list.toArray(new String[list.size()]);
         }
