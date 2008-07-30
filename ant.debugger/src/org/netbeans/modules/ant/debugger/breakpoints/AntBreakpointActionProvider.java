@@ -61,7 +61,7 @@ import org.openide.util.WeakListeners;
 public class AntBreakpointActionProvider extends ActionsProviderSupport
                                          implements PropertyChangeListener {
     
-    private static final String ANT_MIME_TYPE = "text/x-ant+xml"; // NOI8N
+    private static final String ANT_MIME_TYPE = "text/x-ant+xml"; // NOI18N
     
     private static final Set actions = Collections.singleton (
         ActionsManager.ACTION_TOGGLE_BREAKPOINT

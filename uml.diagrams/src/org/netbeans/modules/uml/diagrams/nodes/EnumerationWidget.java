@@ -293,7 +293,7 @@ public class EnumerationWidget extends SwitchableWidget
             CollapsibleWidget cwl = new CollapsibleWidget(scene, literals);
             classView.addChild(cwl);
             initializeLiterals(element);
-            cwl.setCompartmentName(LITERALS_COMPARTMENT);//NOI8N
+            cwl.setCompartmentName(LITERALS_COMPARTMENT);//NOI18N
             addToLookup(cwl);
             
             // It turns out that attributes can be redefined as well.  I do not
@@ -317,7 +317,7 @@ public class EnumerationWidget extends SwitchableWidget
             attributeSection.addChild(membersSection);
             classView.addChild(attributeSection);
             initializeAttributes(element);
-            membersSection.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI8N
+            membersSection.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI18N
             addToLookup(membersSection);
 
             String opsTitle = NbBundle.getMessage(EnumerationWidget.class, 
@@ -331,7 +331,7 @@ public class EnumerationWidget extends SwitchableWidget
             operationSection.setVisible(false);
             classView.addChild(operationSection);
             initializeOperations(element);
-            operationSection.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
+            operationSection.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI18N
             addToLookup(operationSection);
             setFont(classView.getFont());
         }
@@ -430,7 +430,7 @@ public class EnumerationWidget extends SwitchableWidget
             
             CollapsibleWidget cw = new CollapsibleWidget(getScene(), retVal);
             classView.addChild(cw);
-            cw.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
+            cw.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI18N
             addToLookup(cw);
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
@@ -453,7 +453,7 @@ public class EnumerationWidget extends SwitchableWidget
             CollapsibleWidget cw = new CollapsibleWidget(getScene(), retVal);
             attributeSection.addChild(cw);
             attributeSection.addChild(retVal);
-            cw.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI8N
+            cw.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI18N
             addToLookup(cw);
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }

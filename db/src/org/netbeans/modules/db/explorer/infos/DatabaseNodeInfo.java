@@ -110,7 +110,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     public static final String PERM = "perm"; //NOI18N
     public static final String ADAPTOR = "adaptor"; //NOI18N
     public static final String ADAPTOR_CLASSNAME = "adaptorClass"; //NOI18N
-    public static final String REGISTERED_NODE = "registered"; // NOI8N
+    public static final String REGISTERED_NODE = "registered"; // NOI18N
 
     // Multi-operation changes are synchronized on this
     private static Map gtab = null;
