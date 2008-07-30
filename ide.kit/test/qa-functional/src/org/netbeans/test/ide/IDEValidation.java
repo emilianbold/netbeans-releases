@@ -340,7 +340,7 @@ public class IDEValidation extends JellyTestCase {
         newClassNode = new Node(sampleProjectPackage, "SampleClass11"); // NOI18N
         new DeleteAction().perform(newClassNode);
         // "Safe Delete"
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
         NbDialogOperator safeDeleteOper = new NbDialogOperator(safeDeleteTitle);
         try {
             safeDeleteOper.ok();
@@ -1046,7 +1046,7 @@ public class IDEValidation extends JellyTestCase {
             stt.stop();
             // delete sample class
             sampleClass1Node.delete();
-            String confirmTitle = Bundle.getString("org.netbeans.modules.refactoring.spi.impl.Bundle", "LBL_SafeDel"); // NOI18N
+            String confirmTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle", "LBL_SafeDel_Delete"); // NOI18N
             String confirmButton = UIManager.getDefaults().get("OptionPane.okButtonText").toString(); // NOI18N
             // "Confirm Object Deletion"
             new JButtonOperator(new NbDialogOperator(confirmTitle), confirmButton).push();

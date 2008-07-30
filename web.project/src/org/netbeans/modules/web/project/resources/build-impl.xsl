@@ -302,6 +302,7 @@ introduced by support for multiple source roots. -jglick
                         <available file="nbproject/jaxws-build.xml"/>
                     </and>
                 </condition>
+                <property name="runmain.jvmargs" value=""/>
             </target>
             
             <!-- COS feature - used in run-deploy -->
@@ -477,6 +478,7 @@ or ant -Dj2ee.platform.classpath=&lt;server_classpath&gt; (where no properties f
                             </syspropertyset>
                             <formatter type="brief" usefile="false"/>
                             <formatter type="xml"/>
+                            <jvmarg line="${{runmain.jvmargs}}"/>
                         </junit>
                     </sequential>
                 </macrodef>

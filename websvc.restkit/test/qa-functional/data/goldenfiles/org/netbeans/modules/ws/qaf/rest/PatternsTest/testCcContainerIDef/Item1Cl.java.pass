@@ -1,9 +1,5 @@
 /*
- *  Item1Cl
- *
- * Created on March 11, 2008, 10:41 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -27,7 +23,7 @@ import javax.ws.rs.PathParam;
 public class Item1Cl {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of Item1Cl */
     public Item1Cl() {
     }

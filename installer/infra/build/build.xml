@@ -397,7 +397,7 @@
                 prefix="swdp"/>
 	    -->
             <get
-                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_05/archive/fcs/latest/bundles/"
+                src="${glassfish.builds.host}/java/re/javaeesdk/5.0_06/archive/fcs/latest/bundles/"
                 dest="${temp.file}"/>
 	    <sjsam-buildnumber
 	        file="${temp.file}" 
@@ -527,10 +527,12 @@ javaeesdk-firstcup.micro.number=${javaeesdk-firstcup.micro.number}
 javaeesdk-blueprints.milestone.number=${javaeesdk-blueprints.milestone.number}
 javaeesdk-blueprints.build.number=${javaeesdk-blueprints.build.number}
 javaeesdk-blueprints.build.type=${javaeesdk-blueprints.build.type}
+javaeesdk-blueprints.update.number=${javaeesdk-blueprints.update.number}
 
 javaeesdk-samples.milestone.number=${javaeesdk-samples.milestone.number}
 javaeesdk-samples.build.type=${javaeesdk-samples.build.type}
 javaeesdk-samples.build.number=${javaeesdk-samples.build.number}
+javaeesdk-samples.update.number=${javaeesdk-samples.update.number}
 
 javaeesdk-javadocs.build.number=${javaeesdk-javadocs.build.number}
 
@@ -540,6 +542,8 @@ portletcontainer.macro.number=${portletcontainer.macro.number}
 portletcontainer.micro.number=${portletcontainer.micro.number}
 portletcontainer.minor.number=${portletcontainer.minor.number}
 
+wsrp.macro.number=${wsrp.macro.number}
+wsrp.micro.number=${wsrp.micro.number}
 wsrp.milestone.number=${wsrp.milestone.number}
 wsrp.build.number=${wsrp.build.number}
 portalpack.build.number=${portalpack.build.number}
@@ -1583,13 +1587,13 @@ jarsigner.storepass=${jarsigner.storepass}
             <component uid="nb-portalpack"         version="2.0.0.0.${portalpack.build.number}"/>            
             <component uid="sjsas"                 version="9.1.2.${sjsas.milestone.number}.${sjsas.build.number}"/>            
             <component uid="openesb"               version="5.0.5.${glassfish.milestone.number}.${openesb.build.number}"/>	                
-            <component uid="sjsam"                 version="5.0.5.${sjsas.milestone.number}.${sjsam.build.number}"/>
-	    <component uid="javaeesdk-samples"     version="1.0.0.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
-            <component uid="javaeesdk-blueprints"  version="1.0.0.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
+            <component uid="sjsam"                 version="5.0.6.${sjsas.milestone.number}.${sjsam.build.number}"/>
+	    <component uid="javaeesdk-samples"     version="1.0.${javaeesdk-samples.update.number}.${javaeesdk-samples.milestone.number}.${javaeesdk-samples.build.number}"/>
+            <component uid="javaeesdk-blueprints"  version="1.0.${javaeesdk-blueprints.update.number}.${javaeesdk-blueprints.milestone.number}.${javaeesdk-blueprints.build.number}"/>
 	    <component uid="javaeesdk-firstcup"    version="${javaeesdk-firstcup.macro.number}.${javaeesdk-firstcup.micro.number}.0.${javaeesdk-firstcup.milestone.number}.${javaeesdk-firstcup.build.number}"/>
 	    <!--component uid="javaeesdk-javadocs" version="1.0.0.0.${javaeesdk-javadocs.build.number}"/-->
 	    <component uid="portletcontainer"      version="${portletcontainer.macro.number}.${portletcontainer.micro.number}.${portletcontainer.minor.number}.${portletcontainer.milestone.number}.${portletcontainer.build.number}"/>
-	    <component uid="wsrp"                  version="1.0.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
+	    <component uid="wsrp"                  version="${wsrp.macro.number}.${wsrp.micro.number}.0.${wsrp.milestone.number}.${wsrp.build.number}"/>
 	    <bundleProperty name="${welcome.type}" value="java.tools"/>            
             <bundleProperty name="nbi.overall.license.resource" value="$S{nbi.overall.license.jtb.resource}"/>
         </create-bundle>

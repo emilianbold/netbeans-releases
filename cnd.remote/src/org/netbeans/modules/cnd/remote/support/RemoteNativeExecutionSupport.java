@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.remote.support;
 
-import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.JSchException;
 import java.io.BufferedReader;
@@ -92,10 +91,6 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
         } catch (JSchException jse) {
         } catch (IOException ex) {
-        } catch (NullPointerException npe) { // DEBUG
-            // I mistyped password and after failed validation, pressed Run button and
-            // got NPE
-            System.err.println("Got NPE");
         } finally {
             disconnect();
         } 
@@ -103,11 +98,6 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
 
     public RemoteNativeExecutionSupport(String key, File dirf, String exe, String args, String[] envp, PrintWriter out) {
         this(key, 22, dirf, exe, args, envp, out);
-    }
-
-    @Override
-    protected Channel createChannel() throws JSchException {
-        return session.openChannel("exec"); // NOI18N
     }
     
     private void setChannelCommand(File dirf, String exe, String args, String[] envp) throws JSchException {
@@ -137,7 +127,5 @@ public class RemoteNativeExecutionSupport extends RemoteConnectionSupport {
         
         channel = createChannel();
         ((ChannelExec)channel).setCommand(cmdline.replace('\\', '/'));
-        //channel.setInputStream(System.in);
-        ((ChannelExec)channel).setErrStream(System.err);
     }
 }

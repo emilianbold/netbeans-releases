@@ -40,7 +40,9 @@
  */
 package org.netbeans.modules.print.provider;
 
+import java.awt.Dimension;
 import java.awt.Graphics;
+
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -67,8 +69,8 @@ final class ComponentPanel extends JPanel {
       JComponent component = myComponents.get(i);
 //out();
 //out("see: " + component.getClass().getName());
-      int width = component.getWidth();
-      int height = component.getHeight();
+      int width = getWidth(component);
+      int height = getHeight(component);
 //out("   width: " + width);
 //out("  height: " + height);
       myWidth += width;
@@ -84,8 +86,8 @@ final class ComponentPanel extends JPanel {
     for (JComponent component : myComponents) {
       component.print(g);
 //    g.setColor(java.awt.Color.green);
-//    g.drawRect(0, 0, component.getWidth(), component.getHeight());
-      g.translate(component.getWidth(), 0);
+//    g.drawRect(0, 0, getWidth(component), getHeight(component));
+      g.translate(getWidth(component), 0);
     }
   }
 
@@ -97,6 +99,33 @@ final class ComponentPanel extends JPanel {
   @Override
   public int getHeight() {
     return myHeight;
+  }
+
+  private int getWidth(JComponent component) {
+    Dimension size = getSize(component);
+
+    if (size == null) {
+      return component.getWidth();
+    }
+    return size.width;
+  }
+
+  private int getHeight(JComponent component) {
+    Dimension size = getSize(component);
+
+    if (size == null) {
+      return component.getHeight();
+    }
+    return size.height;
+  }
+
+  private Dimension getSize(JComponent component) {
+    Object object = component.getClientProperty(PrintManager.PRINT_SIZE);
+      
+    if (object instanceof Dimension) {
+      return (Dimension) object;
+    }
+    return null;
   }
 
   private List<JComponent> sort(List<JComponent> components) {

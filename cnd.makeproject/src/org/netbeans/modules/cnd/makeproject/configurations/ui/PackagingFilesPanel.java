@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
@@ -59,10 +60,18 @@ import javax.swing.table.TableCellRenderer;
 import org.netbeans.modules.cnd.api.utils.FileChooser;
 import org.netbeans.modules.cnd.makeproject.ui.utils.ListEditorPanel;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
+import org.netbeans.modules.cnd.loaders.CoreElfObject;
+import org.netbeans.modules.cnd.loaders.ExeObject;
+import org.netbeans.modules.cnd.loaders.OrphanedElfObject;
+import org.netbeans.modules.cnd.loaders.ShellDataObject;
 import org.netbeans.modules.cnd.makeproject.api.remote.FilePathAdaptor;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement.FileType;
 import org.netbeans.modules.cnd.makeproject.ui.utils.PathPanel;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.util.NbBundle;
 
 public class PackagingFilesPanel extends ListEditorPanel {
@@ -73,6 +82,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
     private JButton addButton;
     private JButton addFileOrDirectoryButton;
     private JButton addFilesButton;
+    private PackagingFilesOuterPanel packagingFilesOuterPanel;
 
     public PackagingFilesPanel(List<FileElement> fileList, String baseDir) {
         super(fileList.toArray(), new JButton[]{new JButton(), new JButton(), new JButton()});
@@ -90,6 +100,10 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
         getEditButton().setVisible(false);
         getDefaultButton().setVisible(false);
+    }
+    
+    public void setOuterPanel(PackagingFilesOuterPanel packagingFilesOuterPanel) {
+        this.packagingFilesOuterPanel = packagingFilesOuterPanel;
     }
 
     class AddButtonAction implements java.awt.event.ActionListener {
@@ -127,10 +141,46 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 }
                 itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
-
-                addObjectAction(new FileElement(files[i].isDirectory() ? FileType.DIRECTORY : FileType.FILE, itemPath, files[i].getName())); // FIXUP: softlink
+                String perm;
+                if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) {
+                    perm = packagingFilesOuterPanel.getDirPermTextField().getText();
+                }
+                else {
+                    perm = packagingFilesOuterPanel.getFilePermTextField().getText();
+                }
+                addObjectAction(new FileElement(
+                        FileType.FILE,
+                        itemPath,
+                        files[i].getName(),
+                        perm,
+                        packagingFilesOuterPanel.getOwnerTextField().getText(),
+                        packagingFilesOuterPanel.getGroupTextField().getText()
+                )); // FIXUP: softlink
             }
         }
+    }
+    
+    private boolean isExecutable(File file) {
+        FileObject fo = null;
+        try {
+            fo = FileUtil.toFileObject(file.getCanonicalFile());
+        } catch (IOException e) {
+            return false;
+        }
+        
+        DataObject dataObject = null;
+        try {
+            dataObject = DataObject.find(fo);
+        } catch (DataObjectNotFoundException e) {
+            return false;
+        }
+        if (dataObject instanceof ExeObject || dataObject instanceof ShellDataObject) {
+            if (dataObject instanceof OrphanedElfObject || dataObject instanceof CoreElfObject) {
+                return false;
+            }
+            return true;
+        }
+        return false;
     }
     
     class AddFilesButtonAction implements java.awt.event.ActionListener {
@@ -174,7 +224,21 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
                     toFile = FilePathAdaptor.mapToRemote(toFile);
                     toFile = FilePathAdaptor.normalize(toFile);
-                    addObjectAction(new FileElement(FileType.FILE, path, toFile)); // FIXUP: softlink
+                    String perm;
+                    if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) {
+                        perm = packagingFilesOuterPanel.getDirPermTextField().getText();
+                    }
+                    else {
+                        perm = packagingFilesOuterPanel.getFilePermTextField().getText();
+                    }
+                    addObjectAction(new FileElement(
+                            FileType.FILE,
+                            path,
+                            toFile,
+                            perm,
+                            packagingFilesOuterPanel.getOwnerTextField().getText(),
+                            packagingFilesOuterPanel.getGroupTextField().getText()
+                    )); // FIXUP: softlink
                 }
             }
         }
@@ -218,9 +282,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
         // Set column sizes
         getTargetList().getColumnModel().getColumn(0).setPreferredWidth(40);
         getTargetList().getColumnModel().getColumn(0).setMaxWidth(40);
-        if (getTargetList().getColumnModel().getColumnCount() >= 6) {
+        if (getTargetList().getColumnModel().getColumnCount() >= 4) {
             getTargetList().getColumnModel().getColumn(3).setPreferredWidth(50);
             getTargetList().getColumnModel().getColumn(3).setMaxWidth(50);
+        }
+        if (getTargetList().getColumnModel().getColumnCount() >= 6) {
             getTargetList().getColumnModel().getColumn(4).setPreferredWidth(50);
             getTargetList().getColumnModel().getColumn(4).setMaxWidth(50);
             getTargetList().getColumnModel().getColumn(5).setPreferredWidth(50);

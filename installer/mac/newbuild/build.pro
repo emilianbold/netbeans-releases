@@ -60,8 +60,8 @@
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
     <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
-    <property name="mysql_10.5.dmg.name" value="netbeans-6.1-mysql-macosx10.5-x86"/>
-    <property name="mysql_10.4.dmg.name" value="netbeans-6.1-mysql-macosx10.4-x86"/>
+    <property name="mysql_10.5.dmg.name" value="netbeans-6.5-mysql-macosx10.5-x86"/>
+    <property name="mysql_10.4.dmg.name" value="netbeans-6.5-mysql-macosx10.4-x86"/>
     <property name="mysql_startup.pkg.name" value="MySQLStartupItem"/>
     <property name="mysql_prefPane.name" value="MySQL.prefPane"/>
     <property name="mysql_connector.name" value="mysql-connector-java-5.1.6-bin"/>

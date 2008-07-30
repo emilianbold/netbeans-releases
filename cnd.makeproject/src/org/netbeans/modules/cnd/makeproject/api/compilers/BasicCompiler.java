@@ -98,6 +98,14 @@ public abstract class BasicCompiler extends Tool {
         return ""; // NOI18N
     }
 
+    public String getDependencyGenerationOption() {
+        CompilerDescriptor compiler = getCompilerDescription();
+        if (compiler != null && compiler.getDependencyGenerationFlags() != null) {
+            return compiler.getDependencyGenerationFlags();
+        }
+        return ""; // NOI18N
+    }
+
     public List getSystemPreprocessorSymbols() {
         return new Vector();
     }

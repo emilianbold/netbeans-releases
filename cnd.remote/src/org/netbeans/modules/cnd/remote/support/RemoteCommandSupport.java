@@ -49,7 +49,9 @@ import java.io.StringWriter;
 import java.util.Map;
 
 /**
- *
+ * Run a remote command. This remote command should <b>not</b> expect input. The output
+ * from the command is stored in a StringWriter and can be gotten via toString().
+ * 
  * @author gordonp
  */
 public class RemoteCommandSupport extends RemoteConnectionSupport {
@@ -61,7 +63,9 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
     public static int run(String key, String cmd) {
         RemoteCommandSupport support = new RemoteCommandSupport(key, cmd);
-        return support.getExitStatus();
+        int rc = support.getExitStatus();
+        support.disconnect();
+        return rc;
     }
 
     public RemoteCommandSupport(String key, String cmd, Map<String, String> env, int port) {
@@ -94,6 +98,8 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
                 setExitStatus(channel.getExitStatus());
             } catch (JSchException jse) {
             } catch (IOException ex) {
+            } finally {
+                disconnect();
             }
         }
     }
@@ -128,13 +134,6 @@ public class RemoteCommandSupport extends RemoteConnectionSupport {
 
                 //as a workaround
                 cmdline.append( "export " + ev + "=\"" + env.get(ev) + "\";" ); // NOI18N
-
-                // TODO: skip readonly vars
-                // BASH_VERSINFO: readonly variable
-                // SHELLOPTS: readonly variable
-                // EUID: readonly variable
-                // UID: readonly variable
-                // PPID: readonly variable
             }
 
         }

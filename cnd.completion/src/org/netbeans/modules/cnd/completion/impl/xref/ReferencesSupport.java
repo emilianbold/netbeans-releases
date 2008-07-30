@@ -86,7 +86,6 @@ import org.openide.util.Parameters;
 import org.openide.util.UserQuestionException;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
-import org.netbeans.editor.AtomicLockDocument;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.CsmType;
@@ -144,18 +143,19 @@ public final class ReferencesSupport {
         return csmOwner;
     }
 
-    /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, BaseDocument doc, int offset, Token<CppTokenId> jumpToken) {
+    /*package*/ static CsmObject findReferencedObject(CsmFile csmFile, final BaseDocument doc, final int offset, Token<CppTokenId> jumpToken) {
         CsmObject csmItem = null;
         // emulate hyperlinks order
         // first ask includes handler if offset in include sring token
         CsmInclude incl = null;
         if (jumpToken == null) {
-            try {
-                doc.atomicLock();
-                jumpToken = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
-            } finally {
-                doc.atomicUnlock();
-            }
+            final Token<CppTokenId> out[] = new Token[] { null };
+            doc.runAtomic(new Runnable() {
+                public void run() {
+                    out[0] = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+                }
+            });
+            jumpToken = out[0];
         }
         if (jumpToken != null) {
             switch (jumpToken.id()) {
@@ -282,20 +282,17 @@ public final class ReferencesSupport {
     public static CsmObject findDeclaration(final CsmFile csmFile, final Document doc,
             Token<CppTokenId> tokenUnderOffset, final int offset, final QueryScope queryScope) {
         assert csmFile != null;
-        if (tokenUnderOffset == null) {
-            try {
-                if (doc instanceof AtomicLockDocument) {
-                    ((AtomicLockDocument)doc).atomicLock();
+        if (tokenUnderOffset == null && doc instanceof BaseDocument) {
+            final Token<CppTokenId> out[] = new Token[] { null };
+            ((BaseDocument)doc).runAtomic(new Runnable() {
+                public void run() {
+                    out[0] = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
                 }
-            } finally {
-                if (doc instanceof AtomicLockDocument) {
-                    ((AtomicLockDocument) doc).atomicUnlock();
-                }
-            }
+            });
+            tokenUnderOffset = out[0];
         }
-        tokenUnderOffset = tokenUnderOffset != null ? tokenUnderOffset : CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
-        // no token in document under offset position
-        if (tokenUnderOffset == null) {
+         // no token in document under offset position
+       if (tokenUnderOffset == null) {
             return null;
         }
         CsmObject csmObject = null;
@@ -324,18 +321,20 @@ public final class ReferencesSupport {
         return csmObject;
     }
 
-    /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, int offset) {
-        try {
-            doc.atomicLock();
-            Token token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
-            ReferenceImpl ref = null;
-            if (isSupportedToken(token)) {
-                ref = createReferenceImpl(file, doc, offset, token, null);
+    /*package*/ static ReferenceImpl createReferenceImpl(final CsmFile file, final BaseDocument doc, final int offset) {
+        final ReferenceImpl out[] = new ReferenceImpl[] { null };
+        doc.runAtomic(new Runnable() {
+
+            public void run() {
+                Token token = CndTokenUtilities.getOffsetTokenCheckPrev(doc, offset);
+                ReferenceImpl ref = null;
+                if (isSupportedToken(token)) {
+                    ref = createReferenceImpl(file, doc, offset, token, null);
+                }
+                out[0] = ref;
             }
-            return ref;
-        } finally {
-            doc.atomicUnlock();
-        }
+        });
+        return out[0];
     }
 
 //    /*package*/ static ReferenceImpl createReferenceImpl(CsmFile file, BaseDocument doc, TokenItem tokenItem) {
@@ -507,37 +506,33 @@ public final class ReferencesSupport {
         return kind;
     }
 
-    static CsmReferenceKind getReferenceUsageKind(CsmReference ref) {
-        CsmReferenceKind kind = CsmReferenceKind.DIRECT_USAGE;
+    static CsmReferenceKind getReferenceUsageKind(final CsmReference ref) {
+        final CsmReferenceKind kind[] = new CsmReferenceKind[] {CsmReferenceKind.DIRECT_USAGE};
         if (ref instanceof ReferenceImpl) {
             CsmReferenceKind implKind = getRefKindIfPossible(ref);
             if (implKind != null) {
                 return implKind;
             }
-            Document doc = getRefDocument(ref);
-            int offset = ref.getStartOffset();
-            try {
-                if (doc instanceof AtomicLockDocument) {
-                    ((AtomicLockDocument)doc).atomicLock();
-                }
-                // check previous token
-                Token<CppTokenId> token = CndTokenUtilities.shiftToNonWhiteBwd(doc, offset);
-                if (token != null) {
-                    switch (token.id()) {
-                        case DOT:
-                        case DOTMBR:
-                        case ARROW:
-                        case ARROWMBR:
-                        case SCOPE:
-                            kind = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
+            final BaseDocument doc = getRefDocument(ref);
+            doc.runAtomic(new Runnable() {
+
+                public void run() {
+                    int offset = ref.getStartOffset();
+                    // check previous token
+                    Token<CppTokenId> token = CndTokenUtilities.shiftToNonWhiteBwd(doc, offset);
+                    if (token != null) {
+                        switch (token.id()) {
+                            case DOT:
+                            case DOTMBR:
+                            case ARROW:
+                            case ARROWMBR:
+                            case SCOPE:
+                                kind[0] = CsmReferenceKind.AFTER_DEREFERENCE_USAGE;
+                        }
                     }
                 }
-            } finally {
-                if (doc instanceof AtomicLockDocument) {
-                    ((AtomicLockDocument)doc).atomicUnlock();
-                }
-            }
+            });
         }
-        return kind;
+        return kind[0];
     }
 }

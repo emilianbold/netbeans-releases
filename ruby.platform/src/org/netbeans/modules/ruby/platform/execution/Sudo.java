@@ -92,7 +92,7 @@ public final class Sudo {
     private List<String> compoundGksu(String gksu) {
         List<String> argList = new ArrayList<String>();
         argList.add(gksu);
-        argList.add("--preserve-env"); // NOI18N
+        argList.add("--su-mode"); // NOI18N
         argList.add("--description"); // NOI18N
         argList.add(message);
         StringBuilder asString = new StringBuilder();

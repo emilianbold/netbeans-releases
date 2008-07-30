@@ -45,6 +45,7 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.openide.filesystems.FileLock;
+import org.openide.util.Exceptions;
 
 /**
  * Base class for ErrorMaker implementations
@@ -71,26 +72,38 @@ public abstract class BaseErrorMaker implements ErrorMaker  {
     public void undone() {
     }
 
-    protected void remove(int offs, int len) throws BadLocationException {
-        BaseDocument doc = getDocument();
-        try {
-            doc.atomicLock();
-            doc.remove(offs, len);
-        } finally {
-            Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
-            doc.atomicUnlock();
+    protected void remove(final int offs, final int len) throws BadLocationException {
+        final BaseDocument doc = getDocument();
+        final BadLocationException ex[] = new BadLocationException[] { null };
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                try {
+                    doc.remove(offs, len);
+                } catch (BadLocationException e) {
+                    ex[0] = e;
+                }
+            }
+        });
+        if (ex[0] != null) {
+            throw ex[0];
         }
     }
     
-    protected void insert(int offset, String text) throws BadLocationException {
-        BaseDocument doc = getDocument();
-        try {
-            doc.atomicLock();
-            doc.insertString(offset, text, null);
-        } finally {
-            Logger.getLogger(FileLock.class.getName()).setLevel(Level.SEVERE);
-            doc.atomicUnlock();
-        }
+    protected void insert(final int offset, final String text) throws BadLocationException {
+        final BaseDocument doc = getDocument();
+        final BadLocationException ex[] = new BadLocationException[] { null };
+        doc.runAtomic(new Runnable() {
+            public void run() {
+                try {
+                    doc.insertString(offset, text, null);
+                } catch (BadLocationException e) {
+                    ex[0] = e;
+                }
+            }
+        });
+        if (ex[0] != null) {
+            throw ex[0];
+        }        
     }
 //    public void analyze(Collection<CsmErrorInfo> errors) {
 //    }

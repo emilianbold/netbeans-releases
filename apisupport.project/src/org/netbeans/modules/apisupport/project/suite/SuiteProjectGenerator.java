@@ -49,6 +49,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.apisupport.project.NbModuleProject;
 import org.netbeans.modules.apisupport.project.ProjectXMLManager;
 import org.netbeans.modules.apisupport.project.ui.customizer.BasicBrandingModel;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteCustomizerLibraries;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -140,6 +141,7 @@ public class SuiteProjectGenerator {
         if (plaf != null) {
             ModuleEntry bootstrapModule = plaf.getModule("org.netbeans.bootstrap");
             if (bootstrapModule != null) {
+                // Will be stripped of version suffix if appropriate for the platform.
                 suiteProps.setEnabledClusters(new String[] {bootstrapModule.getClusterDirectory().getName()});
             }
         }
