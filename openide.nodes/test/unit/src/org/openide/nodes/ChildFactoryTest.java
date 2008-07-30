@@ -306,7 +306,7 @@ public class ChildFactoryTest extends TestCase {
                 assertEquals("Same number of nodes", ev.getNode().getChildren().getNodesCount(), cnt);
                 for (int i = 0; i < cnt; i++) {
                     Node fromEv = snapshot.get(i);
-                    if (fromEv == EntrySupport.Lazy.NONEXISTING_NODE) {
+                    if (fromEv instanceof EntrySupport.Lazy.DummyNode) {
                         continue;
                     }
                     Node fromCh = ev.getNode().getChildren().getNodeAt(i);
