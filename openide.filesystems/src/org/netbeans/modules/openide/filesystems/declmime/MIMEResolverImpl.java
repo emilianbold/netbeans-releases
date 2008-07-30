@@ -548,7 +548,11 @@ public final class MIMEResolverImpl {
             }
             return true;
         }
-        
+
+        @SuppressWarnings("deprecation")
+        private static String getMIMEType(String extension) {
+            return FileUtil.getMIMEType(extension);
+        }
         private boolean accept(FileObject fo) throws IOException {
             // check for resource extension
             if (exts != null) {
@@ -560,7 +564,7 @@ public final class MIMEResolverImpl {
 
             if (mimes != null) {
                 boolean match = false;
-                String s = FileUtil.getMIMEType(fo.getExt());  //!!! how to obtain resource MIME type as classified by lower layers?
+                String s = getMIMEType(fo.getExt());
                 if (s == null) return false;
 
                 // RFC2045; remove content type paramaters and ignore case
