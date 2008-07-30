@@ -35,7 +35,7 @@
         <folder name="Project">
             <folder name="Web">
                 <file name="emptyGrails.xml">
-                    <attr name="position" intvalue="100"/>
+                    <attr name="position" intvalue="400"/>
                     <attr name="template" boolvalue="true"/>
                     <attr name="instantiatingIterator" newvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.NewGrailsProjectWizardIterator"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.groovy.grailsproject.ui.wizards.Bundle"/>
@@ -45,7 +45,6 @@
             </folder>
         </folder>
         <folder name="Groovy">
-            <attr name="position" intvalue="1351"/>
             <file name="DomainClass.groovy">
                 <attr name="position" intvalue="130"/>
                 <attr name="template" boolvalue="true"/>

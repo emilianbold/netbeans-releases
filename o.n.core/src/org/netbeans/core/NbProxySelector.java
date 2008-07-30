@@ -223,9 +223,9 @@ public final class NbProxySelector extends ProxySelector {
         setOrClearProperty ("https.nonProxyHosts", nonProxyHosts, false);
         setOrClearProperty ("socksProxyHost", sHost, false);
         setOrClearProperty ("socksProxyPort", sPort, true);
-        log.info ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
-        log.info ("Set System's https.proxyHost/Port to " + httpsHost + "/" + httpsPort);
-        log.info ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
+        log.fine ("Set System's http.proxyHost/Port/NonProxyHost to " + host + "/" + port + "/" + nonProxyHosts);
+        log.fine ("Set System's https.proxyHost/Port to " + httpsHost + "/" + httpsPort);
+        log.fine ("Set System's socksProxyHost/Port to " + sHost + "/" + sPort);
     }
     
     private void setOrClearProperty (String key, String value, boolean isInteger) {

@@ -80,6 +80,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     private RequestProcessor.Task checkRealUpdatesTask = null;
     private WizardDescriptor wd = null;
     private boolean forceReload;
+    private boolean canClose = false;
+
     
     /** Creates a new instance of OperationDescriptionStep */
     public LazyOperationDescriptionStep (Collection<LazyUnit> model, OperationType doOperation, boolean forceReload) {
@@ -172,6 +174,8 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
                             "", "",
                             false);
                     installModel = Collections.EMPTY_SET;
+                    new InstallUnitWizardModel (null, null).modifyOptionsForDoClose (wd);
+                    canClose = true;
                     LazyUnit.storeLazyUnits (operationType, installModel);
                     SwingUtilities.invokeLater (new Runnable () {
                         public void run () {
@@ -232,7 +236,7 @@ public class LazyOperationDescriptionStep implements WizardDescriptor.Panel<Wiza
     }
 
     public boolean isValid () {
-        return false;
+        return canClose;
     }
 
     public synchronized void addChangeListener (ChangeListener l) {

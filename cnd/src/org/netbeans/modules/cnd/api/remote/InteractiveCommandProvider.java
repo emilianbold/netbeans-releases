@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,29 +31,39 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.javascript.debugger.nondebugger;
+package org.netbeans.modules.cnd.api.remote;
 
-import java.util.logging.Logger;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 
 /**
- *
- * Package-level logger provider
- *
- * @author quynguyen
+ * An interface to allow cnd modules to run a RemoteCommandSupport from cnd.remote.
+ * 
+ * @author gordonp
  */
-class Log {
-   private static Logger logger;
-
-   static Logger getLogger() {
-       if (logger == null) {
-           logger = Logger.getLogger(Log.class.getPackage().getName()); // NOI18N
-       }
-       return logger;
-   }
+public interface InteractiveCommandProvider {
+   
+    /**
+     * Run a remote commane via cnd.remote's RemoteInteractiveCommandSupport.
+     * 
+     * @param hkey The user and remote host (user@host)
+     * @param cmd The command to run
+     * @param env The (possibly null) environment to send to the remote command
+     * @return true if the command started, otherwise false
+     */
+    public boolean run(String hkey, String cmd, Map<String, String> env);
+    
+    public InputStream getInputStream() throws IOException;
+    
+    public OutputStream getOutputStream() throws IOException;
+    
+    public void disconnect();
 }
