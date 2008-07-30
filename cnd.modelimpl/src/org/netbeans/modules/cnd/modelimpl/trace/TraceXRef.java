@@ -382,10 +382,10 @@ public class TraceXRef extends TraceModel {
             if (canceled.get()) {
                 return;
             }
-            XRefResultSet.ContextEntry entry = createLightWeightEntry(ref, printErr, reportUnresolved);
+            XRefResultSet.ContextEntry entry = createLightWeightEntry(ref, prev, parent, printErr, reportUnresolved);
             if (entry != null) {
                 bag.addEntry(XRefResultSet.ContextScope.UNRESOLVED, entry);
-                if (entry == XRefResultSet.ContextEntry.UNRESOLVED) {
+                if (entry == XRefResultSet.ContextEntry.UNRESOLVED || entry == XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED) {
                     CharSequence text = ref.getText();
                     UnresolvedEntry unres = bag.<UnresolvedEntry>getUnresolvedEntry(text);
                     if (unres == null) {
@@ -432,24 +432,32 @@ public class TraceXRef extends TraceModel {
         }
     }
     
-    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReference ref, OutputWriter printErr, boolean reportUnresolved) {
+    private static XRefResultSet.ContextEntry createLightWeightEntry(CsmReference ref, CsmReference prev, CsmReference parent, OutputWriter printErr, boolean reportUnresolved) {
         XRefResultSet.ContextEntry entry;
         CsmObject target = ref.getReferencedObject();
-        if (reportUnresolved) {
-            if (target == null) {
-                entry = XRefResultSet.ContextEntry.UNRESOLVED;
+        if (target == null) {
+            String kind = "UNRESOVED"; //NOI18N
+            entry = XRefResultSet.ContextEntry.UNRESOLVED;
+            boolean important = true;
+            if (CsmFileReferences.isTemplateBased(ref, prev, parent)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_TEMPLATE_BASED;
+                kind = "UNRESOLVED_TEMPLATE_BASED"; //NOI18N
+                important = false;
+            } else if (CsmFileReferences.isMacroBased(ref, prev, parent)) {
+                entry = XRefResultSet.ContextEntry.UNRESOLVED_MACRO_BASED;
+                kind = "UNRESOLVED_MACRO_BASED"; //NOI18N
+            }
+            if (reportUnresolved) {
                 try {
-                    printErr.println("UNRESOLVED:" + ref, new RefLink(ref), true); // NOI18N
+                    printErr.println(kind + ":" + ref, new RefLink(ref), important); // NOI18N
                 } catch (IOException ioe) {
                     // skip it
                 }
-            } else {
-                entry = XRefResultSet.ContextEntry.RESOLVED;
             }
-            return entry;
         } else {
-            return null;
+            entry = XRefResultSet.ContextEntry.RESOLVED;
         }
+        return entry;
     }    
 
     private static XRefResultSet.ContextEntry createEntry(Set<CsmObject> objectsUsedInScope, StatisticsParameters params, CsmReference ref, ObjectContext<CsmFunctionDefinition> fun, 
@@ -759,28 +767,39 @@ public class TraceXRef extends TraceModel {
         Collection<XRefResultSet.ContextScope> sortedContextScopes = XRefResultSet.sortedContextScopes(bag, false);
         int numProjectProints = 0;
         int numUnresolvedPoints = 0;
+        int numMacroBasedUnresolvedPoints = 0;
+        int numTemplateBasedUnresolvedPoints = 0;
         for (XRefResultSet.ContextScope scope : sortedContextScopes) {
             Collection<XRefResultSet.ContextEntry> entries = bag.getEntries(scope);
             numProjectProints += entries.size();
             for (ContextEntry contextEntry : entries) {
                 if (contextEntry == ContextEntry.UNRESOLVED) {
                     numUnresolvedPoints++;
+                } else if (contextEntry == ContextEntry.UNRESOLVED_MACRO_BASED) {
+                    numMacroBasedUnresolvedPoints++;
+                } else if (contextEntry == ContextEntry.UNRESOLVED_TEMPLATE_BASED) {
+                    numTemplateBasedUnresolvedPoints++;
                 }
             }
         }
-        double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * numUnresolvedPoints) / ((double) numProjectProints);
-        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) of %d checkpoints", numUnresolvedPoints, unresolvedRatio, numProjectProints); // NOI18N
+        int allUnresolvedPoints = numUnresolvedPoints + numMacroBasedUnresolvedPoints;
+        double unresolvedRatio = numProjectProints == 0 ? 0 : (100.0 * allUnresolvedPoints) / ((double) numProjectProints);
+        double unresolvedMacroBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numMacroBasedUnresolvedPoints) / ((double) numProjectProints);
+        double unresolvedTemplateBasedRatio = numProjectProints == 0 ? 0 : (100.0 * numTemplateBasedUnresolvedPoints) / ((double) numProjectProints);
+        String unresolvedStatistics = String.format("Unresolved %d (%.2f%%) where MacroBased %d (%.2f%%) of %d checkpoints [TemplateBased warnings %d (%.2f%%)]", 
+                allUnresolvedPoints, unresolvedRatio, numMacroBasedUnresolvedPoints, unresolvedMacroBasedRatio, 
+                numProjectProints, numTemplateBasedUnresolvedPoints, unresolvedTemplateBasedRatio); // NOI18N
         printOut.println(unresolvedStatistics);
         if (!params.analyzeSmartAlgorith) {
             // dump unresolved statistics
-            if (numUnresolvedPoints > 0) {
+            if (allUnresolvedPoints > 0) {
                 Collection<UnresolvedEntry> unresolvedEntries = bag.getUnresolvedEntries(new Comparator<UnresolvedEntry>() {
                     public int compare(UnresolvedEntry o1, UnresolvedEntry o2) {
                         return o2.getNrUnnamed() - o1.getNrUnnamed();
                     }
                 });
                 for (UnresolvedEntry unresolvedEntry : unresolvedEntries) {
-                    double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed())/ ((double) numUnresolvedPoints);
+                    double unresolvedEntryRatio = (100.0 * unresolvedEntry.getNrUnnamed())/ ((double) allUnresolvedPoints);
                     String msg = String.format("%20s\t|%6s\t| %.2f%% ", unresolvedEntry.getName(), unresolvedEntry.getNrUnnamed(), unresolvedEntryRatio); // NOI18N
                     try {
                         printErr.println(msg, unresolvedEntry.getLink(), false);

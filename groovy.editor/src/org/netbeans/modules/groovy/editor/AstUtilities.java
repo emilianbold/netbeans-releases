@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.codehaus.groovy.ast.ASTNode;
@@ -55,6 +56,7 @@ import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.codehaus.groovy.ast.ConstructorNode;
+import org.codehaus.groovy.ast.DynamicVariable;
 import org.codehaus.groovy.ast.Variable;
 import org.codehaus.groovy.ast.VariableScope;
 import org.codehaus.groovy.ast.expr.ClassExpression;
@@ -551,6 +553,13 @@ public class AstUtilities {
                 if (variableScope.getDeclaredVariable(variable.getName()) != null) {
                     return blockStatement;
                 }
+                // probably in script where variable is defined withoud 'def' keyword:
+                // myVar = 1
+                // echo myVar
+                Variable classVariable = variableScope.getReferencedClassVariable(variable.getName());
+                if (classVariable != null) {
+                    return moduleNode;
+                }
             }
         }
         return null;
@@ -560,7 +569,7 @@ public class AstUtilities {
      * Doesn't check VariableScope if variable is declared there,
      * but assumes it is there and makes search for given variable
      */
-    public static ASTNode getVariable(ASTNode scope, String variable) {
+    public static ASTNode getVariable(ASTNode scope, String variable, AstPath path) {
         if (scope instanceof ClosureExpression) {
             ClosureExpression closure = (ClosureExpression) scope;
             for (Parameter parameter : closure.getParameters()) {
@@ -622,7 +631,24 @@ public class AstUtilities {
             return ((ClassNode) scope).getField(variable);
         } else if (scope instanceof ModuleNode) {
             ModuleNode moduleNode = (ModuleNode) scope;
-            return getVariableInBlockStatement(moduleNode.getStatementBlock(), variable);
+            BlockStatement blockStatement = moduleNode.getStatementBlock();
+            ASTNode result = getVariableInBlockStatement(blockStatement, variable);
+            if (result == null) {
+                // probably in script where variable is defined withoud 'def' keyword:
+                // myVar = 1
+                // echo myVar
+                VariableScope variableScope = blockStatement.getVariableScope();
+                if (variableScope.getReferencedClassVariable(variable) != null) {
+                    // let's take first occurrence of the variable
+                    VariableScopeVisitor scopeVisitor = new VariableScopeVisitor(moduleNode.getContext(), path);
+                    scopeVisitor.collect();
+                    Set<ASTNode> occurrences = scopeVisitor.getOccurrences();
+                    if (!occurrences.isEmpty()) {
+                        result = occurrences.iterator().next();
+                    }
+                }
+            }
+            return result;
         }
         return null;
     }

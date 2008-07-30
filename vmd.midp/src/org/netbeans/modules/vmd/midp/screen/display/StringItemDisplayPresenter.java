@@ -74,9 +74,9 @@ public class StringItemDisplayPresenter extends ItemDisplayPresenter {
         super.reload(deviceInfo);
 
         String text = MidpValueSupport.getHumanReadableString(getComponent().readProperty(StringItemCD.PROP_TEXT));
-        PropertyValue value = getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE);
-        int appearanceMode = MidpTypes.getInteger(value);
+        PropertyValue value = getComponent().readProperty(ItemCD.PROP_APPEARANCE_MODE);        
         if (!PropertyValue.Kind.USERCODE.equals(value.getKind())) {
+            int appearanceMode = MidpTypes.getInteger(value);
             label.setBorder(appearanceMode == ItemCD.VALUE_BUTTON ? BorderFactory.createRaisedBevelBorder() : null);
             label.setForeground(appearanceMode == ItemCD.VALUE_HYPERLINK ? Color.BLUE : UIManager.getDefaults().getColor("Label.foreground")); // NOI18N
         }

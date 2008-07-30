@@ -268,7 +268,11 @@ public class ProfilesModelHelper {
                                 encTokenKind = SecurityTokensModelHelper.getSupportingToken(c, SecurityTokensModelHelper.SIGNED_ENCRYPTED);
                             }
                             if (encTokenKind != null) {
-                                return ComboConstants.PROF_USERNAME;
+                                tokenType = SecurityTokensModelHelper.getTokenType(encTokenKind);
+                                if (ComboConstants.USERNAME.equals(tokenType)) {
+                                    return ComboConstants.PROF_USERNAME;
+                                }
+                                return ComboConstants.PROF_STSISSUEDSUPPORTING;
                             }
                             tokenType = SecurityTokensModelHelper.getTokenType(tokenKind);
                             if (ComboConstants.ISSUED.equals(tokenType)) { // profile 13
