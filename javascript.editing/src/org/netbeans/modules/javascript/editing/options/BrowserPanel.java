@@ -12,20 +12,21 @@ import javax.swing.DefaultComboBoxModel;
 import org.mozilla.javascript.Context;
 import org.netbeans.modules.javascript.editing.BrowserVersion;
 import org.netbeans.modules.javascript.editing.SupportedBrowsers;
+import org.netbeans.modules.javascript.editing.spi.JSPreferencesPanel;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author  Tor Norbye
  */
-public class BrowserPanel extends javax.swing.JPanel {
+public class BrowserPanel extends JSPreferencesPanel {
+
 
     private final String[] VERSION_LABELS = new String[] {
          NbBundle.getMessage(BrowserPanel.class, "LanguageDefault"),
          "1.0", "1.1", "1.2", "1.3", "1.4", "1.5", "1.6", "1.7", "1.8"
     };
 
- 
 
    private enum BROWSER_VERSION {
        FF1(NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.ff1Rb.text")),
@@ -83,6 +84,7 @@ public class BrowserPanel extends javax.swing.JPanel {
         initComponents();
     }
 
+    @Override
     public void load() {
         SupportedBrowsers query = SupportedBrowsers.getInstance();
         if (query.isSupported(BrowserVersion.FF1)) {
@@ -130,7 +132,7 @@ public class BrowserPanel extends javax.swing.JPanel {
                 break;
             }
         }
-        // XXX TODO
+        
     }
 
     public void store() {
@@ -226,6 +228,9 @@ public class BrowserPanel extends javax.swing.JPanel {
         cbSafariVersion = new javax.swing.JComboBox();
         cbIEVersion = new javax.swing.JComboBox();
         cbFFVersion = new javax.swing.JComboBox();
+        jLabel2 = new javax.swing.JLabel();
+        jCheckBox1 = new javax.swing.JCheckBox();
+        jCheckBox2 = new javax.swing.JCheckBox();
 
         browserLabel.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.browserLabel.text")); // NOI18N
 
@@ -276,16 +281,29 @@ public class BrowserPanel extends javax.swing.JPanel {
 
         cbFFVersion.setModel(getFFVersionModel());
 
+        jLabel2.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.Warn.text")); // NOI18N
+
+        jCheckBox1.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.WarnCallLimitations.text")); // NOI18N
+        jCheckBox1.setEnabled(false);
+
+        jCheckBox2.setText(org.openide.util.NbBundle.getMessage(BrowserPanel.class, "BrowserPanel.WarnUnsupportedCalls.text")); // NOI18N
+        jCheckBox2.setEnabled(false);
+
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .addContainerGap()
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING, false)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(browserLabel)
+                    .add(languageLabel)
+                    .add(jLabel2))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                    .add(jCheckBox1)
+                    .add(jCheckBox2)
                     .add(layout.createSequentialGroup()
-                        .add(browserLabel)
-                        .add(18, 18, 18)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                             .add(ffCb)
                             .add(ieCb)
@@ -296,37 +314,46 @@ public class BrowserPanel extends javax.swing.JPanel {
                             .add(cbSafariVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(cbFFVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                             .add(cbIEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                    .add(layout.createSequentialGroup()
-                        .add(languageLabel)
-                        .add(18, 18, 18)
-                        .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(496, Short.MAX_VALUE))
+                    .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(185, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
-                .add(20, 20, 20)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(browserLabel)
                     .add(layout.createSequentialGroup()
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(ffCb)
-                            .add(cbFFVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(ieCb)
-                            .add(cbIEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                            .add(safariCb)
-                            .add(cbSafariVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(operaCb)))
-                .add(18, 18, 18)
-                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(languageLabel)
-                    .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(39, Short.MAX_VALUE))
+                        .add(20, 20, 20)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(browserLabel)
+                            .add(layout.createSequentialGroup()
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(ffCb)
+                                    .add(cbFFVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(ieCb)
+                                    .add(cbIEVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
+                                    .add(safariCb)
+                                    .add(cbSafariVersion, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                                .add(operaCb)))
+                        .add(18, 18, 18)
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(languageLabel)
+                            .add(languageCombo, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
+                            .add(layout.createSequentialGroup()
+                                .add(11, 11, 11)
+                                .add(jLabel2))
+                            .add(layout.createSequentialGroup()
+                                .add(18, 18, 18)
+                                .add(jCheckBox2))))
+                    .add(layout.createSequentialGroup()
+                        .add(219, 219, 219)
+                        .add(jCheckBox1)))
+                .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -345,6 +372,9 @@ private void itemCheckChange(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_it
     private javax.swing.ButtonGroup firefoxGroup;
     private javax.swing.JCheckBox ieCb;
     private javax.swing.ButtonGroup ieGroup;
+    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JCheckBox jCheckBox2;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JComboBox languageCombo;
     private javax.swing.JLabel languageLabel;
     private javax.swing.JCheckBox operaCb;
