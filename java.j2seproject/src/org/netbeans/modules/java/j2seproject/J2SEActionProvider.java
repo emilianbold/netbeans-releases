@@ -335,7 +335,7 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (    (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command))
-                     && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
+                     && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
                     bypassAntBuildScript(command, context, p);
 
                     return ;
@@ -744,7 +744,7 @@ class J2SEActionProvider implements ActionProvider {
     private boolean isCompileOnSaveEnabled(String propertyName) {
         String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
 
-        return compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty);
+        return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
 
     public boolean isActionEnabled( String command, Lookup context ) {
@@ -753,7 +753,7 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
+            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
