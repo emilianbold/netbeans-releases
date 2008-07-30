@@ -117,7 +117,6 @@ final class VisualizerChildren extends Object {
     
     public javax.swing.tree.TreeNode getChildAt(int pos) {
         if (pos >= visNodes.size()) {
-            assert false;
             return VisualizerNode.EMPTY;
         }
         VisualizerNode visNode = visNodes.get(pos);
@@ -240,14 +239,15 @@ final class VisualizerChildren extends Object {
             return;
         }
 
-        NodeMemberEvent origEvent = (NodeMemberEvent) ev.originalEvent;
+        //NodeMemberEvent origEvent = (NodeMemberEvent) ev.originalEvent;
         for (int i = idxs.length - 1; i >= 0; i--) {
             VisualizerNode visNode = visNodes.remove(idxs[i]);
-            if (visNode == null) {
+            /*if (visNode == null) {
                 Node node = origEvent.getDelta()[i];
                 visNode = VisualizerNode.getVisualizer(this, node);
             }
-            ev.removed.add(visNode);
+            ev.removed.add(visNode);*/
+            ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }
 
         // notify event about changed indexes
