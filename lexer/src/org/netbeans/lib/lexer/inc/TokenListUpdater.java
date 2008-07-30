@@ -391,12 +391,13 @@ public final class TokenListUpdater {
             checkPrevTokenListJoined = false;
             // Possibly increase matchIndex and matchOffset by skipping the tokens in the removed area
             // Search locally in modEtl - do not use jtl operations yet.
+            int modEtlTokenCount = modEtl.tokenCountCurrent();
             if (eventInfo.removedLength() > 0) { // At least remove token at relexOffset
                 matchIndex++;
                 matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
                 int removedEndOffset = eventInfo.modOffset() + eventInfo.removedLength();
                 // XXX review '&& (matchLocalIndex < modEtl.tokenCount())'
-                while (matchOffset < removedEndOffset && (matchLocalIndex < modEtl.tokenCount())) {
+                while (matchOffset < removedEndOffset && (matchLocalIndex < modEtlTokenCount)) {
                     matchIndex++;
                     matchOffset += modEtl.tokenOrEmbeddingUnsync(matchLocalIndex++).token().length();
                 }
@@ -419,7 +420,6 @@ public final class TokenListUpdater {
             // Note that modEtlTokenCount may also be 1 or even 0 (for insert-only).
             // Note that last token may be part of a join token and so if relex/match local index
             // points to modEtlTokenCount it may need to be corrected accordingly.
-            int modEtlTokenCount = modEtl.tokenCountCurrent();
             assert (relexLocalIndex <= matchLocalIndex);
             assert (matchLocalIndex <= modEtlTokenCount);
             if (matchLocalIndex == modEtlTokenCount) {
