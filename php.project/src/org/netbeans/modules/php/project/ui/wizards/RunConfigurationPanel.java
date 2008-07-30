@@ -540,6 +540,10 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 url = runAsRemoteWeb.getUrl();
                 indexFile = runAsRemoteWeb.getIndexFile();
                 break;
+            case SCRIPT:
+                // do not validate anything
+                return;
+                //break;
         }
         assert url != null;
         assert indexFile != null;
