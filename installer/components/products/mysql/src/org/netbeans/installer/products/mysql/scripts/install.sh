@@ -110,7 +110,9 @@ instesc=`escape "$INSTALLDIR"`
 dataesc=`escape "$INSTALLDIR/data"`
 
 sed -e "s/\[mysqld\]/\[mysqld\]\nbasedir=$instesc\ndatadir=$dataesc\n/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
-sed -e "s/^basedir=/basedir=$instesc/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
+sed -e "s/^basedir=/basedir=$instesc/g" ./support-files/mysql.server > ./support-files/mysql.server.tmp 
+touch -r ./support-files/mysql.server ./support-files/mysql.server.tmp
+mv ./support-files/mysql.server.tmp ./support-files/mysql.server
 
 
 if [ 1 -eq $ISROOT ] ; then
