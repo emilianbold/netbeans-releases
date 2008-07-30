@@ -58,6 +58,7 @@ public class ListenersSupport {
     }
 
     public synchronized void addListener(VersioningListener listener) {
+        if (listener == null) throw new IllegalArgumentException();
         HashSet copy = (HashSet) listeners.clone();
         copy.add(listener);
         listeners = copy;

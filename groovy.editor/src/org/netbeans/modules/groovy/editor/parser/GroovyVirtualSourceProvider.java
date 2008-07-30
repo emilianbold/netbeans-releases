@@ -65,7 +65,7 @@ import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.control.ResolveVisitor;
 import org.netbeans.modules.groovy.editor.elements.AstRootElement;
 import org.netbeans.modules.gsf.api.CancellableTask;
-import org.netbeans.modules.java.source.usages.VirtualSourceProvider;
+import org.netbeans.modules.java.preprocessorbridge.spi.VirtualSourceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
@@ -103,11 +103,7 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
                     sb.append("public class " + name + "{}"); // NOI18N
                     result.add(file, pkg, name, sb.toString());
                 }
-            } else {
-                
-                // TODO: temporary workaround for #134067, taking only 1st class from file!
-                classNodes = Collections.singletonList(classNodes.get(0));
-                
+            } else {                                
                 for (ClassNode classNode : classNodes) {
                     try {
                         CharSequence javaStub = generator.generateClass(classNode);
@@ -757,6 +753,10 @@ public class GroovyVirtualSourceProvider implements VirtualSourceProvider {
             out.println();
         }
 
+    }
+
+    public boolean index() {
+        return false;
     }
 
 }

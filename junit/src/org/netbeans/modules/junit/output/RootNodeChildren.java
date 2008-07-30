@@ -231,8 +231,6 @@ final class RootNodeChildren extends Children.Array {
     @Override
     protected void removeNotify() {
         super.removeNotify();
-        
-        remove(getNodes());               //PENDING
         live = false;
     }
     

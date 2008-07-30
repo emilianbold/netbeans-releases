@@ -105,6 +105,15 @@ sed -e "s/#innodb_/innodb_/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cn
 DEFAULT_MYSQL_DIR=/usr/local/mysql
 sed -e "s/`escape $DEFAULT_MYSQL_DIR`/`escape $INSTALLDIR`/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 
+#Set basedir and datadir in support-files/mysql.server and my.cnf files
+instesc=`escape "$INSTALLDIR"`
+dataesc=`escape "$INSTALLDIR/data"`
+
+sed -e "s/\[mysqld\]/\[mysqld\]\nbasedir=$instesc\ndatadir=$dataesc\n/g" ./my.cnf > ./my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
+sed -e "s/^basedir=/basedir=$instesc/g" ./support-files/mysql.server > ./support-files/mysql.server.tmp 
+touch -r ./support-files/mysql.server ./support-files/mysql.server.tmp
+mv ./support-files/mysql.server.tmp ./support-files/mysql.server
+
 
 if [ 1 -eq $ISROOT ] ; then
 
