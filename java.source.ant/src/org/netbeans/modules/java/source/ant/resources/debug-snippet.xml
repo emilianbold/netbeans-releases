@@ -65,13 +65,14 @@ made subject to such option by the copyright holder.
     <target name="debug" depends="-init-debug-args">
         <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
         <property name="run.jvmargs" value="" />
+        <property name="work.dir" value="${basedir}"/>
         <property name="application.args" value="" />
         <nbjpdastart addressproperty="jpda.address" name="${classname}" stopclassname="" transport="${debug-transport}" listeningcp="${classpath}">
             <classpath>
                 <path path="${classpath-translated}"/>
             </classpath>
         </nbjpdastart>
-        <java classpath="${classpath-translated}" classname="${classname}">
+        <java classpath="${classpath-translated}" classname="${classname}" dir="${work.dir}">
             <jvmarg line="${debug-args-line}"/>
             <jvmarg value="-Xrunjdwp:transport=${debug-transport},address=${jpda.address}"/>
             <jvmarg line="${run.jvmargs}" />

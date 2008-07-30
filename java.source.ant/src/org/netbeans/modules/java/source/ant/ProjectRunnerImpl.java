@@ -99,6 +99,14 @@ public class ProjectRunnerImpl implements ProjectRunnerImplementation{
 
         antProps.setProperty("classpath", cp);
         antProps.setProperty("classname", source.getResourceName(toRun, '.', false));
+        if (antProps.get("work.dir") == null && project != null) {                //NOI18N
+            FileObject projDirectory = project.getProjectDirectory();
+            assert projDirectory != null;
+            File file = FileUtil.toFile(projDirectory);
+            if (file != null) {
+                antProps.setProperty("work.dir", file.getAbsolutePath());       //NOI18N
+            }
+        }
         
         FileObject script = buildScript(command);
         String projectName = project != null ? ProjectUtils.getInformation(project).getDisplayName() : "";

@@ -3,8 +3,6 @@ These are the Groovy default imports from the JDK:
 
 java.io.*
 java.lang.*
-java.math.BigDecimal
-java.math.BigInteger
 java.net.*
 java.util.*
 

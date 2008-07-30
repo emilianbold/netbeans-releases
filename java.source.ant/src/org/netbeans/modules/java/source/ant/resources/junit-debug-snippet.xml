@@ -69,7 +69,8 @@ made subject to such option by the copyright holder.
             </classpath>
         </nbjpdastart>
         <property name="run.jvmargs" value="" />
-        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true">
+        <property name="work.dir" value="${basedir}"/>
+        <java classname="org.apache.tools.ant.taskdefs.optional.junit.JUnitTestRunner" fork="true" dir="${work.dir}">
             <classpath>
                 <path path="${ant.home}/lib/ant.jar:${ant.home}/lib/ant-junit.jar"/>
                 <path path="${classpath-translated}"/>
