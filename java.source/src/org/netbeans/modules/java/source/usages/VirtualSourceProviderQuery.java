@@ -142,17 +142,24 @@ public final class VirtualSourceProviderQuery {
         }
     }
     
-    private static synchronized Map<String,VirtualSourceProvider> getExt2ProvMap () {
-        if (ext2prov == null) {
-            Collection<? extends VirtualSourceProvider> allInstances = new LinkedList<VirtualSourceProvider>(result.allInstances());
-            ext2prov = new HashMap<String, VirtualSourceProvider>();
-            for (VirtualSourceProvider vsp : allInstances) {
-                for (String ext : vsp.getSupportedExtensions()) {
-                    ext2prov.put(ext, vsp);
-                }
+    private static Map<String,VirtualSourceProvider> getExt2ProvMap () {
+        synchronized (VirtualSourceProviderQuery.class) {
+            if (ext2prov != null) {
+                return ext2prov;
             }
         }
-        return ext2prov;
+        final Collection<? extends VirtualSourceProvider> allInstances = new LinkedList<VirtualSourceProvider>(result.allInstances());
+        synchronized (VirtualSourceProviderQuery.class) {
+            if (ext2prov == null) {            
+                ext2prov = new HashMap<String, VirtualSourceProvider>();
+                for (VirtualSourceProvider vsp : allInstances) {
+                    for (String ext : vsp.getSupportedExtensions()) {
+                        ext2prov.put(ext, vsp);
+                    }
+                }
+            }
+            return ext2prov;
+        }
     }
     
     private static synchronized void reset () {

@@ -141,22 +141,26 @@ public final class TaskGroupFactory {
     }
     
     private void initGroups() {
-        if( null == name2group ) {
-            if( null == lookupRes ) {
-                lookupRes = initLookup();
-                lookupRes.addLookupListener( new LookupListener() {
-                    public void resultChanged(LookupEvent ev) {
-                        name2group = null;
-                        groups = null;
-                    }
-                });
-            }
-            int index = 0;
-            groups = new ArrayList<TaskGroup>( lookupRes.allInstances() );
-            name2group = new HashMap<String,TaskGroup>(groups.size());
-            for( TaskGroup tg : groups) {
-                name2group.put( tg.getName(), tg );
-                tg.setIndex( index++ );
+        synchronized( this ) {
+            if( null == name2group ) {
+                if( null == lookupRes ) {
+                    lookupRes = initLookup();
+                    lookupRes.addLookupListener( new LookupListener() {
+                        public void resultChanged(LookupEvent ev) {
+                            synchronized( TaskGroupFactory.this ) {
+                                name2group = null;
+                                groups = null;
+                            }
+                        }
+                    });
+                }
+                int index = 0;
+                groups = new ArrayList<TaskGroup>( lookupRes.allInstances() );
+                name2group = new HashMap<String,TaskGroup>(groups.size());
+                for( TaskGroup tg : groups) {
+                    name2group.put( tg.getName(), tg );
+                    tg.setIndex( index++ );
+                }
             }
         }
     }
