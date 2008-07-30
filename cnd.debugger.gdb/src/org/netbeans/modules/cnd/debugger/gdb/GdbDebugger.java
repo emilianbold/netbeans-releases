@@ -1559,7 +1559,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
                 lastStop = null;
-                gdb.stack_list_frames();
+                updateCurrentCallStack();
                 setStopped();
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
