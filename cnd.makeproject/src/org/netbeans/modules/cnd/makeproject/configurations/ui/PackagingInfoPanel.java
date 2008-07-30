@@ -58,7 +58,7 @@ public class PackagingInfoPanel extends javax.swing.JPanel {
         );
         packagingHeaderOuterPanelLayout.setVerticalGroup(
             packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 202, Short.MAX_VALUE)
+            .add(0, 203, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -73,7 +73,6 @@ public class PackagingInfoPanel extends javax.swing.JPanel {
         docTextArea.setEditable(false);
         docTextArea.setLineWrap(true);
         docTextArea.setRows(5);
-        docTextArea.setText(org.openide.util.NbBundle.getMessage(PackagingInfoPanel.class, "PackagingInfoPanel.docTextArea.text")); // NOI18N
         docTextArea.setWrapStyleWord(true);
         scrollPane.setViewportView(docTextArea);
 

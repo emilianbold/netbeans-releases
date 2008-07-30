@@ -14,7 +14,9 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.util.HelpCtx;
@@ -31,6 +33,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private PackagingInfoPanel packagingInfoPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
     private PackagingHeaderPanel packagingHeaderPanel = null;
+    private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -46,12 +49,19 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         // Init default values
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             if (!packagingConfiguration.getHeader().getModified()) {
+                String defArch = "Architecture..."; // FIXUP
+                if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
+                    defArch = "i386"; // NOI18N
+                }
+                else if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
+                    defArch = "sparc"; // NOI18N
+                }
                 List<InfoElement> headerList = packagingConfiguration.getHeader().getValue();
-                headerList.add(new InfoElement("PKG", "PackageName")); // NOI18N
-                headerList.add(new InfoElement("NAME", "Package description ...")); // NOI18N
-                headerList.add(new InfoElement("ARCH", "i386")); // NOI18N
-                headerList.add(new InfoElement("CATEGORY", "application")); // NOI18N
-                headerList.add(new InfoElement("VERSION", "1.0")); // NOI18N
+                headerList.add(new InfoElement("PKG", "PackageName", true)); // NOI18N
+                headerList.add(new InfoElement("NAME", "Package description ...", true)); // NOI18N
+                headerList.add(new InfoElement("ARCH", defArch, true)); // NOI18N
+                headerList.add(new InfoElement("CATEGORY", "application", true)); // NOI18N
+                headerList.add(new InfoElement("VERSION", "1.0", true)); // NOI18N
             }
         }
         
@@ -60,12 +70,16 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
         else {
             packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
+        packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
         tabbedPane.addTab("Info", packagingInfoPanel);
-        tabbedPane.addTab("Files", packagingFilesPanel);
+        tabbedPane.addTab("Files", packagingFilesOuterPanel);
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             // Add tabs
@@ -121,7 +135,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         innerPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1200, 500));
+        setPreferredSize(new java.awt.Dimension(1000, 500));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());

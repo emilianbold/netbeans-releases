@@ -923,78 +923,25 @@ public class ProxyDiagramManager implements IProxyDiagramManager,
             FileObject fobj = FileUtil.toFileObject(new File(etlpFilename));
             if (fobj != null)
             {
-//                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
-//                if (parser != null && parser instanceof DiagramParser)
-//                {
-//                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
-//                    for(String str : map.keySet())
-//                    {
-//                        System.out.println(" meid "+str+ " peid = "+map.get(str).getPeid() );
-//                    }
-//                }
+                IDiagramParser parser = DiagramParserFactory.createDiagramParser(etlpFilename);
+                if (parser != null && parser instanceof DiagramParser)
+                {
+                    HashMap<String, DiagramInfo> map = ((DiagramParser)parser).getDiagramModelMap();
+                    DiagramInfo info = map.get(pModelElement.getXMIID());
+                    if(info != null)
+                    {
+                        // We found some instances
+                        for(String peid : info.getPeidList())
+                        {
+                            IPresentationTarget presTarget = new PresentationTarget();
+                            presTarget.setPresentationID(peid);
+                            presTarget.setDiagramFilename(etlFilename);
 
-//                IProductArchive pProdArch = new ProductArchiveImpl();
-//                boolean loaded = true;
-//                // Note that this loaded archive could either be a stub or a full up diagram.
-//                // so after we're done looking for normal presentation elements see if there's
-//                // a cdfs table indicating this diagram is a stub.
-//                loaded = pProdArch.load(etlpFilename);
-//                if (loaded)
-//                {
-//                    ETList<IProductArchiveElement> pElems = pProdArch.getElements();
-//                    if (pElems != null)
-//                    {
-//                        int count = pElems.size();
-//                        for (int i=0; i<count; i++)
-//                        {
-//                            IProductArchiveElement ele = pElems.get(i);
-//                            String sMEID = ele.getAttributeString(IProductArchiveDefinitions.MEID_STRING);
-//                            String sPEID = ele.getAttributeString(IProductArchiveDefinitions.PRESENTATIONELEMENTID_STRING);
-//                            
-//                            // Make sure we don't have a label
-//                            IProductArchiveAttribute pLabelAttr = ele.getAttribute(IProductArchiveDefinitions.LABELVIEW_TSLABELKIND);
-//                            IProductArchiveAttribute meidAttr = ele.getAttribute(IProductArchiveDefinitions.MEID_STRING);
-//                            IProductArchiveAttribute peidAttr = ele.getAttribute(IProductArchiveDefinitions.PRESENTATIONELEMENTID_STRING);
-//                            if (meidAttr != null && peidAttr != null && pLabelAttr == null)
-//                            {
-//                                if (sMEID != null && sMEID.equals(xmiid))
-//                                {
-//                                    // We found one instance
-//                                    IPresentationTarget presTarget = new PresentationTarget();
-//                                    presTarget.setPresentationID(sPEID);
-//                                    presTarget.setDiagramFilename(etlFilename);
-//                                    
-//                                    retObj.add(presTarget);
-//                                }
-//                            }
-//                        }
-//                        
-//                        // Now see if this diagram has a cdfs table meaning it's a stub
-//                        ETList<IProductArchiveElement> pAllElems = pProdArch.getAllTableEntries(IProductArchiveDefinitions.DIAGRAM_CDFS_STRING);
-//                        if (pAllElems != null)
-//                        {
-//                            int num = pAllElems.size();
-//                            for (int j=0; j<num; j++)
-//                            {
-//                                IProductArchiveElement pFoundEle = pAllElems.get(j);
-//                                String sMEID = pFoundEle.getID();
-//                                String sTopLevelXMIID = pFoundEle.getAttributeString(IProductArchiveDefinitions.TOPLEVELID_STRING);
-//                                if (sMEID != null && sTopLevelXMIID != null && sMEID.equals(sTopLevelXMIID))
-//                                {
-//                                    IPresentationTarget presTar = new PresentationTarget();
-//                                    presTar.setModelElementID(sMEID);
-//                                    presTar.setTopLevelID(sTopLevelXMIID);
-//                                    presTar.setDiagramFilename(etlFilename);
-//                                    retObj.add(presTar);
-//                                }
-//                            }
-//                        }
-//                    }
-//                }
-//                else
-//                {
-//                    //show error for IDS_COULDNOTLOAD etlpFilename
-//                }
+                            retObj.add(presTarget);
+                        }
+                     }
+
+                }
             }
         }
         return retObj;

@@ -157,6 +157,10 @@ public class TestBase extends NbTestCase  {
         password = System.getProperty("mysql.password", null);
         dbname = System.getProperty("mysql.dbname", null);
 
+        if (dbname == null) {
+            System.out.println("foo");
+        }
+
 
         String message = "\nPlease set the following in nbproject/private/private.properties:\n" +
                 "test-unit-sys-prop.mysql.host=<mysql-hostname> [optional, default=localhost]\n" +
@@ -164,7 +168,10 @@ public class TestBase extends NbTestCase  {
                 "test-unit-sys-prop.mysql.user=<database-user> [optional, default=root]\n" +
                 "test-unit-sys-prop.mysql.password=<database-password> [optional, default=empty]\n" +
                 "test-unit-sys-prop.mysql.dbname=<database-name>\n" +
-                "A template is available in test/private.properties.template";
+                "Here is an example:\n" +
+                "test-unit-sys-prop.mysql.dbname=test" +
+                "test-unit-sys-prop.mysql.password=root" +
+                "test-unit-sys-prop.mysql.port=8889";
 
 
         if (dbname == null) {

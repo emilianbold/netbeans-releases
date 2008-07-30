@@ -708,7 +708,7 @@ public class JarClassLoader extends ProxyClassLoader {
      */
     private static class ResURLConnection extends JarURLConnection {
         private JarSource src;
-        private String name;
+        private final String name;
         private byte[] data;
         private InputStream iStream;
 
@@ -723,8 +723,14 @@ public class JarClassLoader extends ProxyClassLoader {
             this.name = name;
         }
 
+        private boolean isFolder() {
+            return name.length() == 0 || name.endsWith("/");
+        }
 
         public void connect() throws IOException {
+            if (isFolder()) {
+                return; // #139087: odd but harmless
+            }
             if (data == null) {
                 data = src.getClassData(name);
                 if (data == null) {
@@ -743,6 +749,9 @@ public class JarClassLoader extends ProxyClassLoader {
         }
 
         public @Override int getContentLength() {
+            if (isFolder()) {
+                return -1;
+            }
             try {
                 this.connect();
                 return data.length;
@@ -753,6 +762,9 @@ public class JarClassLoader extends ProxyClassLoader {
 
 
         public @Override InputStream getInputStream() throws IOException {
+            if (isFolder()) {
+                throw new IOException("Cannot open a folder"); // NOI18N
+            }
             this.connect();
             if (iStream == null) iStream = new ByteArrayInputStream(data);
             return iStream;

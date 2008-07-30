@@ -83,10 +83,18 @@ public class J2SEProjectFactory implements ProjectTypeUpdater {
         // calculate nb project location
         File nbProjectDir = model.getNetBeansProjectLocation(); // NOI18N
         
+        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+            return null;
+        }
+        
         // create basic NB project
+        String buildScript = null;
+        if (nbProjectDir.exists() && new File(nbProjectDir, "build.xml").exists()) { //NOI18N
+            buildScript = "nb-build.xml"; //NOI18N
+        }
         final AntProjectHelper helper = J2SEProjectGenerator.createProject(
                 nbProjectDir, model.getProjectName(), model.getEclipseSourceRootsAsFileArray(), 
-                model.getEclipseTestSourceRootsAsFileArray(), null, null, null);
+                model.getEclipseTestSourceRootsAsFileArray(), null, null, buildScript);
         
         // get NB project
         J2SEProject nbProject = (J2SEProject) ProjectManager.getDefault().

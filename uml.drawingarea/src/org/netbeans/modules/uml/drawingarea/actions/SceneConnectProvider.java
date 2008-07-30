@@ -331,7 +331,6 @@ public class SceneConnectProvider implements ExConnectProvider
                     // In order to check if the widget is able to fit in the 
                     // container, the bounds needs to be resolved.
                     retVal.setPreferredLocation(location);
-//                    retVal.resolveBounds(location, retVal.getBounds());
                     
                     scene.validate();
                     
@@ -353,7 +352,13 @@ public class SceneConnectProvider implements ExConnectProvider
                 }
             }
          
-            retVal.getPreferredBounds();
+            // I do not know why we are making this call.  I am assuming it is
+            // to make sure that the widget will layout for the first time.
+            // Therefore I am first verifing that the widget is valid.
+            if(retVal != null)
+            {
+                retVal.getPreferredBounds();
+            }
             scene.validate();
         }
         

@@ -235,7 +235,7 @@ public final class ProjectImportModel {
         return platform;
     }
     
-    public String getEclipseVersion() {
+    /*public*/ String getEclipseVersion() {
         // TODO: could be useful for client to fork their import of needed
         return null;
     }
