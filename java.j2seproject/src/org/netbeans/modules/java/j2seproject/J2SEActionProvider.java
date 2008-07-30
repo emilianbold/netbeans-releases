@@ -335,7 +335,7 @@ class J2SEActionProvider implements ActionProvider {
                     return;
                 }
                 if (    (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command))
-                     && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
+                     && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
                     bypassAntBuildScript(command, context, p);
 
                     return ;
@@ -348,6 +348,10 @@ class J2SEActionProvider implements ActionProvider {
                             String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
                             if (prop != null) {
                                 p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                            }
+                            prop = evaluator.getProperty(J2SEProjectProperties.RUN_WORK_DIR);
+                            if (prop != null) {
+                                p.setProperty(J2SEProjectProperties.RUN_WORK_DIR, prop);
                             }
                             ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, p, files[0]);
                         } catch (IOException ex) {
@@ -367,6 +371,10 @@ class J2SEActionProvider implements ActionProvider {
                         String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
                         if (prop != null) {
                             p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                        }
+                        prop = evaluator.getProperty(J2SEProjectProperties.RUN_WORK_DIR);
+                        if (prop != null) {
+                            p.setProperty(J2SEProjectProperties.RUN_WORK_DIR, prop);
                         }
                         ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, p, files[0]);
                     } catch (IOException ex) {
@@ -744,7 +752,7 @@ class J2SEActionProvider implements ActionProvider {
     private boolean isCompileOnSaveEnabled(String propertyName) {
         String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
 
-        return compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty);
+        return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
 
     public boolean isActionEnabled( String command, Lookup context ) {
@@ -753,7 +761,7 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
+            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -989,12 +997,16 @@ class J2SEActionProvider implements ActionProvider {
         if (val != null) {
             p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, val);
         }
+        val = evaluator.getProperty(J2SEProjectProperties.RUN_WORK_DIR);
+        if (val != null) {
+            p.setProperty(J2SEProjectProperties.RUN_WORK_DIR, val);
+        }
         try {
             if (run) {
                 val = evaluator.getProperty(J2SEProjectProperties.APPLICATION_ARGS);
                 if (val != null) {
                     p.setProperty(J2SEProjectProperties.APPLICATION_ARGS, val);
-                }
+                }                
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, p, toRun);

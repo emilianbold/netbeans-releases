@@ -82,6 +82,7 @@ public class GroovyProjectExtender {
     private static final String GROOVY_BUILD_XML = "org/netbeans/modules/groovy/support/resources/groovy-build.xml"; // NOI18N
     private static final String J2SE_PROJECT_PROPERTIES_PATH = "nbproject/project.properties"; // NOI18N
     private static final String J2SE_EXCLUDE_PROPERTY = "build.classes.excludes"; // NOI18N
+    private static final String J2SE_DISABLE_COMPILE_ON_SAVE = "compile.on.save.unsupported.groovy"; // NOI18N
     private static final String EXCLUSION_PATTERN = "**/*.groovy"; // NOI18N
     
     private final Project project;
@@ -105,11 +106,11 @@ public class GroovyProjectExtender {
      * @return true if all mentioned operations were succesfull
      */
     public boolean enableGroovy() {
-        return addClasspath() && addExcludes() && addBuildScript();
+        return addClasspath() && addExcludes() && addBuildScript() && addDisableCompileOnSaveProperty();
     }
 
     public boolean disableGroovy() {
-        return removeClasspath() && removeExcludes() && removeBuildScript();
+        return removeClasspath() && removeExcludes() && removeBuildScript() && removeDisableCompileOnSaveProperty();
     }
 
     /**
@@ -260,6 +261,36 @@ public class GroovyProjectExtender {
         return false;
     }
 
+    /**
+     * Disables compile on save
+     */
+    private boolean addDisableCompileOnSaveProperty() {
+        try {
+            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
+            props.put(J2SE_DISABLE_COMPILE_ON_SAVE, "true");
+            storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+
+    /**
+     * Enabled compile on save
+     */
+    private boolean removeDisableCompileOnSaveProperty() {
+        try {
+            EditableProperties props = getEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH);
+            props.remove(J2SE_DISABLE_COMPILE_ON_SAVE);
+            storeEditableProperties(project, J2SE_PROJECT_PROPERTIES_PATH, props);
+            return true;
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return false;
+    }
+    
     private void copyResource(final String res, final FileObject to) throws IOException {
         InputStream inputStream = new BufferedInputStream(this.getClass().getClassLoader().getResourceAsStream(res));
         try {

@@ -2,7 +2,7 @@
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
-Copyright 2008 Sun Microsystems, Inc. All rights reserved.
+Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
 
 
 The contents of this file are subject to the terms of either the GNU
@@ -26,7 +26,7 @@ your own identifying information:
 Contributor(s):
 
 The Original Software is NetBeans. The Initial Developer of the Original
-Software is Sun Microsystems, Inc. Portions Copyright 2008 Sun
+Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
 Microsystems, Inc. All Rights Reserved.
 
 If you wish your version of this file to be governed by only the CDDL
@@ -40,18 +40,30 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<project name="{0} (test)" default="test" basedir=".">
-    <target name="test">
-        <translate-classpath classpath="${classpath}" targetProperty="classpath-translated" />
-        <property name="run.jvmargs" value="" />
-        <property name="work.dir" value="${basedir}"/>
-        <junit showoutput="true" fork="true" dir="${work.dir}">
-            <test name="${classname}" />
-            <classpath path="${classpath-translated}" />
-            <jvmarg value="-ea"/>
-            <jvmarg line="${run.jvmargs}"/>
-            <formatter type="brief" usefile="false"/>
-            <formatter type="xml"/>
-        </junit>
-    </target>
-</project>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           targetNamespace="http://www.netbeans.org/ns/ant-build-extender/1" 
+           xmlns="http://www.netbeans.org/ns/ant-build-extender/1"
+           elementFormDefault="qualified">
+    <xs:element name="buildExtensions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="extension" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="extension">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="dependency" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="file" use="required" type="xs:string"/>
+            <xs:attribute name="id" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="dependency">
+        <xs:complexType>
+            <xs:attribute name="dependsOn" use="required" type="xs:string"/>
+            <xs:attribute name="target" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
