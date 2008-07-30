@@ -47,7 +47,7 @@ made subject to such option by the copyright holder.
     <xs:element name="buildExtensions">
         <xs:complexType>
             <xs:sequence>
-                <xs:element ref="extension" minOccurs="1" maxOccurs="unbounded"/>
+                <xs:element ref="extension" minOccurs="0" maxOccurs="unbounded"/>
             </xs:sequence>
         </xs:complexType>
     </xs:element>

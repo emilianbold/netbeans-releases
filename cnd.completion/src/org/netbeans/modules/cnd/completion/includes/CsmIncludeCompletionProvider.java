@@ -234,49 +234,51 @@ public class CsmIncludeCompletionProvider implements CompletionProvider  {
             return items;
         }
         
-        private boolean init(BaseDocument doc, int caretOffset) throws BadLocationException {
+        private boolean init(final BaseDocument doc, final int caretOffset) throws BadLocationException {
             resultSetAnchorOffset = caretOffset;
             filterPrefix = null;
             queryAnchorOffset = -1;
             usrInclude = null;
             dirPrefix = "";
             if (doc != null) {
-                try {
-                    doc.atomicLock();
-                    Token<CppTokenId> tok = CndTokenUtilities.getOffsetTokenCheckPrev(doc, caretOffset);
-                    if (tok != null) {
-                        switch (tok.id()) {
-                            case PREPROCESSOR_SYS_INCLUDE:
-                                usrInclude = Boolean.FALSE;
-                                queryAnchorOffset = tok.offset(null);
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                break;
-                            case PREPROCESSOR_USER_INCLUDE:
-                                usrInclude = Boolean.TRUE;
-                                queryAnchorOffset = tok.offset(null);
-                                filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
-                                break;
-                        }
-                        if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
-                            tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);
+                doc.runAtomic(new Runnable() {
+
+                    public void run() {
+                        try {
+                            Token<CppTokenId> tok = CndTokenUtilities.getOffsetTokenCheckPrev(doc, caretOffset);
                             if (tok != null) {
                                 switch (tok.id()) {
-                                    case PREPROCESSOR_INCLUDE:
-                                    case PREPROCESSOR_INCLUDE_NEXT:
-                                        // after #include or #include_next => init query offset
-                                        usrInclude = null;
-                                        queryAnchorOffset = caretOffset;
-                                        filterPrefix = null;
+                                    case PREPROCESSOR_SYS_INCLUDE:
+                                        usrInclude = Boolean.FALSE;
+                                        queryAnchorOffset = tok.offset(null);
+                                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
+                                        break;
+                                    case PREPROCESSOR_USER_INCLUDE:
+                                        usrInclude = Boolean.TRUE;
+                                        queryAnchorOffset = tok.offset(null);
+                                        filterPrefix = doc.getText(queryAnchorOffset, caretOffset - queryAnchorOffset);
                                         break;
                                 }
+                                if (queryAnchorOffset < 0 && CppTokenId.WHITESPACE_CATEGORY.equals(tok.id().primaryCategory())) { // not inside "" or <>
+                                    tok = CndTokenUtilities.shiftToNonWhiteBwd(doc, caretOffset);
+                                    if (tok != null) {
+                                        switch (tok.id()) {
+                                            case PREPROCESSOR_INCLUDE:
+                                            case PREPROCESSOR_INCLUDE_NEXT:
+                                                // after #include or #include_next => init query offset
+                                                usrInclude = null;
+                                                queryAnchorOffset = caretOffset;
+                                                filterPrefix = null;
+                                                break;
+                                        }
+                                    }
+                                }
                             }
+                        } catch (BadLocationException ex) {
+                            // skip
                         }
                     }
-                } catch (BadLocationException ex) {
-                    // skip
-                } finally {
-                    doc.atomicUnlock();
-                }
+                });
             }
             fixFilter();
             if (TRACE) {

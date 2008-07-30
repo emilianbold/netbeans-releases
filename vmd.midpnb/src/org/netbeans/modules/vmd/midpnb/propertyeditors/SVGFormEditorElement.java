@@ -90,7 +90,7 @@ import org.openide.util.NbBundle;
 
 /**
  *
- * @author Anton Chechel
+ * @author Karol Harezlak
  */
 public class SVGFormEditorElement extends PropertyEditorResourceElement implements Runnable {
 
