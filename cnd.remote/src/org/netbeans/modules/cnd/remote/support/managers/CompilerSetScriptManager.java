@@ -98,6 +98,8 @@ public class CompilerSetScriptManager implements ScriptManager {
             } catch (JSchException ex) {
                 log.warning("CSSM.runScript: JSchException"); // NOI18N
                 support.setFailed(ex.getMessage());
+            } finally {
+                support.disconnect();
             }
         }
     }

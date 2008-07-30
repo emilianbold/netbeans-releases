@@ -435,7 +435,7 @@ public final class NbJSDebugger {
         }
         if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
-                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_STARTED")); // NOI18N
+                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_JSDEBUGGER_STARTED") + getURI()); // NOI18N
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
@@ -453,6 +453,7 @@ public final class NbJSDebugger {
         fireJSDebuggerEvent(resourcedDebuggerEvent);
         if (state.getState() == JSDebuggerState.State.DISCONNECTED) {
             if (console != null) {
+                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_CLOSE_JAVASCRIPT_DEBUGGER"));
                 console.closeInputOutput();
                 console = null;
             }

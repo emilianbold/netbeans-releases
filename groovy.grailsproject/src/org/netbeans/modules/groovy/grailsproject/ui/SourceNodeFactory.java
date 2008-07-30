@@ -98,7 +98,25 @@ public class SourceNodeFactory implements NodeFactory {
                 if ("grails-app".equals(fileObject.getName())) { // NO18N
                     for (FileObject grailsAppChild : fileObject.getChildren()) {
                         if (grailsAppChild.isFolder()) {
-                            SourceGroup[] groups = sources.getSourceGroups("grails-app/" + grailsAppChild.getName());
+                            SourceGroup[] groups = sources.getSourceGroups("grails-app/" + grailsAppChild.getName()); // NO18N
+                            for(SourceGroup sourceGroup : groups) {
+                                result.add(new SourceGroupKey(sourceGroup));
+                            }
+                        }
+                    }
+                } else if ("src".equals(fileObject.getName())) { // NO18N
+                    for (FileObject srcChild : fileObject.getChildren()) {
+                        if (srcChild.isFolder()) {
+                            SourceGroup[] groups = sources.getSourceGroups("src/" + srcChild.getName()); // NO18N
+                            for(SourceGroup sourceGroup : groups) {
+                                result.add(new SourceGroupKey(sourceGroup));
+                            }
+                        }
+                    }
+                } else if ("test".equals(fileObject.getName())) { // NO18N
+                    for (FileObject testChild : fileObject.getChildren()) {
+                        if (testChild.isFolder()) {
+                            SourceGroup[] groups = sources.getSourceGroups("test/" + testChild.getName()); // NO18N
                             for(SourceGroup sourceGroup : groups) {
                                 result.add(new SourceGroupKey(sourceGroup));
                             }
@@ -112,7 +130,7 @@ public class SourceNodeFactory implements NodeFactory {
                 }
             }
 
-            java.util.Collections.sort(result);
+//            java.util.Collections.sort(result);
             return result;
         }
         
@@ -172,7 +190,6 @@ public class SourceNodeFactory implements NodeFactory {
             
         }
         
-        
         public boolean equals(Object obj) {
             
             if (!(obj instanceof SourceGroupKey)) {
@@ -186,6 +203,11 @@ public class SourceNodeFactory implements NodeFactory {
                         thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
             }
             
+        }
+
+        @Override
+        public String toString() {
+            return group.toString();
         }
         
     }

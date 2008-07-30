@@ -127,8 +127,22 @@ public class PropertyEditorInputMode extends PropertyEditorUserCode {
         public PredefinedEditor() {
             radioButton = new JRadioButton();
             Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorInputMode.class, "LBL_PREDEFINED")); // NOI18N
+            
+            radioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, "ACSN_PREDEFINED")); // NOI18N
+            radioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, "ACSD_PREDEFINED")); // NOI18N
+            
             model = new DefaultComboBoxModel(PREDEFINED_INPUT_MODES);
             combobox = new JComboBox(model);
+            
+            combobox.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, 
+                    "ACSN_PREDEFINED_LIST")); // NOI18N
+            combobox.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, 
+                    "ACSD_PREDEFINED_LIST")); // NOI18N
+            
             combobox.addActionListener(this);
         }
 
@@ -182,8 +196,19 @@ public class PropertyEditorInputMode extends PropertyEditorUserCode {
         public CustomEditor() {
             radioButton = new JRadioButton();
             Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorInputMode.class, "LBL_CUSTOM")); // NOI18N
+            
+            radioButton.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, "ACSN_CUSTOM")); // NOI18N`
+            radioButton.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, "ACSD_CUSTOM")); // NOI18N
+            
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
+            
+            textField.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, "ACSN_CUSTOM_VALUE")); // NOI18N`
+            textField.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorInputMode.class, "ACSD_CUSTOM_VALUE")); // NOI18N
         }
 
         public void updateState(PropertyValue value) {

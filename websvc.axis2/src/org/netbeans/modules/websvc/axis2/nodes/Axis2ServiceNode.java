@@ -73,6 +73,7 @@ import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -98,7 +99,11 @@ public class Axis2ServiceNode extends AbstractNode implements OpenCookie {
         content.add(srcRoot);
         content.add(this);
         setIconBaseWithExtension(AXIS_ICON);
-        setValue(WSDL_URL_PROP, getWsdlUrl());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                Axis2ServiceNode.this.setValue(WSDL_URL_PROP, getWsdlUrl());
+            }
+        });     
     }
     
     public String getName() {

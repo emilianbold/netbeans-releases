@@ -55,7 +55,7 @@ public class ProjectRootNodeFactoryTest extends RubyProjectTestBase {
         Project p = createTestProject("rubyprj");
         ProjectRootNodeFactory instance = new ProjectRootNodeFactory();
         NodeList result = instance.createNodes(p);
-        assertSame("four children (lib, test, spec, Rakefile, README, LICENSE), but was: " + result.keys(), 6, result.keys().size());
+        assertSame("should have nodes for {lib, test, spec, Rakefile, README, LICENSE}, but has: " + result.keys(), 6, result.keys().size());
     }
 
 }
