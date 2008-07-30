@@ -24,6 +24,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         remove(tmpPanel);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
@@ -81,17 +82,18 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         tmpPanel.setLayout(tmpPanelLayout);
         tmpPanelLayout.setHorizontalGroup(
             tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 507, Short.MAX_VALUE)
+            .add(0, 499, Short.MAX_VALUE)
         );
         tmpPanelLayout.setVerticalGroup(
             tmpPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 248, Short.MAX_VALUE)
+            .add(0, 240, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(tmpPanel, gridBagConstraints);
 
         defaultsPanel.setLayout(new java.awt.GridBagLayout());
@@ -198,7 +200,7 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 4, 4, 4);
         add(defaultsPanel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 

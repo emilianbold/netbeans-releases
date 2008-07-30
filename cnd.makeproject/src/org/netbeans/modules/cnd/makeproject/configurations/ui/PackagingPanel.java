@@ -30,10 +30,10 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     PackagingConfiguration packagingConfiguration;
     private PropertyEditorSupport editor;
     private MakeConfiguration conf;
+    private PackagingInfoOuterPanel packagingInfoOuterPanel = null;
     private PackagingInfoPanel packagingInfoPanel = null;
-    private PackagingFilesPanel packagingFilesPanel = null;
-    private PackagingHeaderPanel packagingHeaderPanel = null;
     private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
+    private PackagingFilesPanel packagingFilesPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -66,7 +66,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         // Add tabs
-        packagingInfoPanel = new PackagingInfoPanel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
+        packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
@@ -78,7 +78,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
-        tabbedPane.addTab("Info", packagingInfoPanel);
+        tabbedPane.addTab("Info", packagingInfoOuterPanel);
         tabbedPane.addTab("Files", packagingFilesOuterPanel);
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
@@ -108,7 +108,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private Object getPropertyValue() throws IllegalStateException {
         Vector v;
         
-        v = packagingHeaderPanel.getListData();
+        v = packagingInfoPanel.getListData();
         packagingConfiguration.getHeader().setValue(new ArrayList(v));
         
         v = packagingFilesPanel.getListData();
