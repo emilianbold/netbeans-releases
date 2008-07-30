@@ -75,12 +75,16 @@ public class GenericWSDLComponentChildren<T extends WSDLComponent> extends Refre
     
     @Override
     public Collection<? extends WSDLComponent> getKeys() {
-        if(component != null) {
+        if(component != null && component.getModel() != null) {
             ArrayList<WSDLComponent> keys = new ArrayList<WSDLComponent>();
 
             List<WSDLComponent> children = component.getChildren();
             if(children != null) {
-                keys.addAll(children);
+                for (WSDLComponent child : children) {
+                    if (child.getModel() != null) {
+                        keys.add(child);
+                    }
+                }
             }
             return keys;
         }

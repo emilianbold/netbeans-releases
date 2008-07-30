@@ -39,22 +39,25 @@
 
 package org.netbeans.modules.uml.core.metamodel.diagrams;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author jyothi
  */
 public class DiagramInfo {
 
-    private String peid;
+    private ArrayList < String > peidList = new ArrayList < String >();;
 
-    public String getPeid()
+    public List < String > getPeidList()
     {
-        return peid;
+        return peidList;
     }
 
-    public void setPeid(String peid)
+    public void addPeid(String peid)
     {
-        this.peid = peid;
+        peidList.add(peid);
     }
     
 }

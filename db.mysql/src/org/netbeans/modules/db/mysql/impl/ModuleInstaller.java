@@ -42,18 +42,13 @@
 package org.netbeans.modules.db.mysql.impl;
 
 import org.netbeans.modules.db.mysql.util.Utils;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.db.explorer.ConnectionManager;
-import org.netbeans.api.db.explorer.DatabaseConnection;
-import org.netbeans.api.db.explorer.DatabaseException;
 import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.db.mysql.util.DatabaseUtils;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils.ConnectStatus;
-import org.netbeans.modules.db.mysql.util.DatabaseUtils.URLParser;
 import org.openide.modules.ModuleInstall;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -74,7 +69,7 @@ public class ModuleInstaller extends ModuleInstall {
     public void restored() {
         // If MySQL was already registered once for this user, don't
         // do it again
-        if ( options.isConnectionRegistered() && options.isProviderRegistered()) {
+        if ( options.isProviderRemoved() || (options.isConnectionRegistered() && options.isProviderRegistered())) {
             return;
         }
           
@@ -115,8 +110,7 @@ public class ModuleInstaller extends ModuleInstall {
             }
             
             registerConnectionListener();
-            findAndRegisterInstallation();            
-            findAndRegisterRunningServer();
+            findAndRegisterInstallation();
         }
         
         private void registerConnectionListener() {
@@ -124,52 +118,6 @@ public class ModuleInstaller extends ModuleInstall {
             // server provider when a user adds a MySQL connection
             ConnectionManager.getDefault().addConnectionListener(
                     new DbExplorerConnectionListener());
-        }
-        private void findAndRegisterRunningServer() {
-            DatabaseConnection dbconn = findDatabaseConnection();
-            if ( dbconn != null ) {
-                // The user has a registered connection for MySQL, 
-                // so let's use its settings to register the MySQL node
-                options.setAdminUser(dbconn.getUser());
-                options.setAdminPassword(dbconn.getPassword());
-
-                URLParser urlParser = new URLParser(dbconn.getDatabaseURL());
-                options.setHost(urlParser.getHost());
-                options.setPort(urlParser.getPort());
-                options.setConnectionRegistered(true);
-                registerProvider(true);
-                return;
-            }
-
-            // All right, now let's try auto-detection...
-            // host and port may have been set through installation detection
-            String host = options.getHost();
-            if ( Utils.isEmpty(host)) {
-                host = MySQLOptions.getDefaultHost();
-            }
-            
-            String port = options.getPort();
-            if ( port == null || port.length() == 0 ) {
-                port = MySQLOptions.getDefaultPort();
-            }
-            String user = MySQLOptions.getDefaultAdminUser();
-            String password = MySQLOptions.getDefaultAdminPassword();
-            
-            String url = DatabaseUtils.getURL(host, port);
-            ConnectStatus status = DatabaseUtils.testConnection(url, user, 
-                    password);
-            
-            if ( status == ConnectStatus.CONNECT_SUCCEEDED  ||
-                 status == ConnectStatus.SERVER_RUNNING ) {
-                options.setHost(host);
-                options.setPort(port);
-                options.setAdminUser(user);
-                options.setAdminPassword(password);
-                
-                registerConnection(host, port, user);
-                registerProvider(true);
-            }
-
         }
         
         private void findAndRegisterInstallation() {
@@ -198,44 +146,8 @@ public class ModuleInstaller extends ModuleInstall {
             }
             
             options.setPort(installation.getDefaultPort());
-            
-            options.setProviderRegistered(true);
+
+            ServerNodeProvider.getDefault().setRegistered(true);
         }
-
-        private DatabaseConnection findDatabaseConnection() {
-            DatabaseConnection[] connections = 
-                    ConnectionManager.getDefault().getConnections();
-            
-            for ( DatabaseConnection conn : connections ) {
-                if ( conn.getDriverClass().equals(MySQLOptions.getDriverClass())) {
-                    return conn;
-                }
-            }
-            
-            return null;
-        }
-
-        private void registerConnection(String host, String port, String user) {
-            if ( options.isConnectionRegistered() ) {
-                return;
-            }
-            
-            String url = DatabaseUtils.getURL(host, port);                        
-            DatabaseConnection dbconn = DatabaseConnection.create(jdbcDriver, url, user, 
-                 null, null, false);
-
-            try {
-             ConnectionManager.getDefault().addConnection(dbconn);
-             options.setConnectionRegistered(true);
-            } catch ( DatabaseException e ) {
-             LOGGER.log(Level.INFO, 
-                 "Unable to register default connection for MySQL", e);
-            }
-        }
-
-        private void registerProvider(boolean value) {
-            ServerNodeProvider.getDefault().setRegistered(value);
-        }
-
     }   
 }
