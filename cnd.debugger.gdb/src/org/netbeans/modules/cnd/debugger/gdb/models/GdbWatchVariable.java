@@ -120,8 +120,8 @@ public class GdbWatchVariable extends AbstractVariable implements PropertyChange
         log.fine("GWV.propertyChange: Property change for " + ev.getPropertyName()); // NOI18N
         
         final String pname = ev.getPropertyName();
-        if ((pname.equals(GdbDebugger.PROP_STATE) && ev.getNewValue().equals(GdbDebugger.STATE_STOPPED)) ||
-                pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
+        // We do not need to listen to PROP_STATE here, because we do stack update on every stop
+        if (pname.equals(GdbDebugger.PROP_CURRENT_THREAD) ||
                 pname.equals(GdbDebugger.PROP_CURRENT_CALL_STACK_FRAME) ||
                 pname.equals(Watch.PROP_EXPRESSION)) {
             final GdbWatchVariable gwv = this;

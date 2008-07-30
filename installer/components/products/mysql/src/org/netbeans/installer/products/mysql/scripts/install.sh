@@ -109,7 +109,7 @@ sed -e "s/`escape $DEFAULT_MYSQL_DIR`/`escape $INSTALLDIR`/g" ./my.cnf > ./my.cn
 awk '{ print $i ; if($i=="[mysqld]") { print a ; print b }}' a="basedir = $INSTALLDIR" b="datadir = $INSTALLDIR/data" < ./my.cnf > my.cnf.tmp && mv ./my.cnf.tmp ./my.cnf
 instdir=`escape "$INSTALLDIR"`
 contents=`sed -e "s/^basedir=/basedir=$instdir/g" ./support-files/mysql.server`
-echo "$contents" > mysql.server
+echo "$contents" > ./support-files/mysql.server
 
 
 if [ 1 -eq $ISROOT ] ; then

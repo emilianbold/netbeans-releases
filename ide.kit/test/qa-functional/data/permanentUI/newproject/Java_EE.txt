@@ -1,4 +1,4 @@
-Enterprise
+Java EE
     Enterprise Application
     Enterprise Application with Existing Sources
     EJB Module
