@@ -37,34 +37,22 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.java.source.usages;
+package org.netbeans.modules.cnd.makeproject.configurations.ui;
 
-import java.io.File;
-import java.util.Set;
+import java.util.List;
+import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 
 /**
- * This class provides a SPI used by {@link RepositoryUpdater} to generate java proxies
- * for languages which form a single compilation unit with java files, for example groovy.
- * @author Tomas Zezula
+ *
+ * @author thp
  */
-public interface VirtualSourceProvider {
-    
-    public interface Result {
-        public void add (File source, String packageName, String relativeName, CharSequence content);
+public class PackagingFiles4Panel extends PackagingFilesPanel {
+    public PackagingFiles4Panel(List<FileElement> fileList, String baseDir) {
+        super(fileList, baseDir);
     }
     
-    /**
-     * Returns a set of extensions supported by this {@link VirtualSourceProvider}
-     * @return a set of supported extensions
-     */
-    public Set<String> getSupportedExtensions ();
-
-    /**
-     * Return a list of tuples {fully qualified name, file content} as a result of
-     * transformation of given files.
-     * @param files to be transformed
-     * @param sourceRoot containing the sources
-     * @param  result of transformation
-     */
-    public void translate (Iterable<File> files, File sourceRoot, Result result);
+    @Override
+    public int getActualColumnCount() {
+        return 4;
+    }
 }

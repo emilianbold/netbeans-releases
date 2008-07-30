@@ -289,6 +289,7 @@ public class GoToPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(caseSensitive, gridBagConstraints);
+        caseSensitive.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(GoToPanel.class, "GoToPanel.caseSensitive.AccessibleContext.accessibleDescription")); // NOI18N
 
         jLabelLocation.setText(org.openide.util.NbBundle.getMessage(GoToPanel.class, "LBL_GoToType_LocationJLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

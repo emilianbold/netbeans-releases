@@ -67,7 +67,7 @@ public class SAMLAuthorizationOverSSL extends ProfileBaseForm {
 
         inSync = true;
         fillSamlCombo(samlVersionCombo);
-        fillWssCombo(layoutCombo);
+        fillWssCombo(wssVersionCombo);
         fillLayoutCombo(layoutCombo);
         fillAlgoSuiteCombo(algoSuiteCombo);
         inSync = false;

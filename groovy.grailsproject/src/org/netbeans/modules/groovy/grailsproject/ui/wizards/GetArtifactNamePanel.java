@@ -92,7 +92,20 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
                 subDirName = "taglib";
                 dirPrefix = "grails-app" + File.separatorChar;
+                suffix = "TagLib";
                 break;    
+            case INTEGRATION_TESTS:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                subDirName = "integration";
+                dirPrefix = "test" + File.separatorChar;
+                suffix = "Tests";
+                break;
+            case UNIT_TESTS:
+                setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_TAGLIB")); // NOI18N
+                subDirName = "unit";
+                dirPrefix = "test" + File.separatorChar;
+                suffix = "UnitTests";
+                break;
             case SCRIPTS:
                 setName(NbBundle.getMessage(GetArtifactNamePanel.class,"WIZARD_TITLE_SCRIPTS")); // NOI18N
                 subDirName = "scripts";
@@ -231,7 +244,7 @@ public class GetArtifactNamePanel extends WizardSettingsPanel implements Documen
   
     }
 
-    public String getDomainClassName(){
+    public String getArtifactName(){
         return classNameTextField.getText();
         }
 

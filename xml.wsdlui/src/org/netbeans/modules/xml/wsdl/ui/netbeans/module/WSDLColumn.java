@@ -132,6 +132,9 @@ public class WSDLColumn extends JPanel
         if (rootNode != null) {
             if (rootNode.getCookie(DummyDefinitionsNode.class) == null &&
                     rootNode.getCookie(DefinitionsNode.class) != null) {
+                //IZ 142123 : Call getNodes initially.
+                if (rootNode.getChildren() != null) 
+                    rootNode.getChildren().getNodes();
                 rootNode = new DummyDefinitionsNode(rootNode);
             }
             getExplorerManager().setRootContext(rootNode);

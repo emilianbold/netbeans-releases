@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- *
+ * 
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- *
+ * 
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- *
+ * 
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,32 +31,49 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- *
+ * 
  * Contributor(s):
- *
+ * 
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.client.tools.javascript.debugger.nondebugger;
+package org.netbeans.modules.cnd.remote.support;
 
-import java.net.URI;
-import org.netbeans.modules.web.client.tools.javascript.debugger.api.JSDebugger;
-import org.netbeans.modules.web.client.tools.javascript.debugger.spi.JSDebuggerFactory;
-import org.openide.awt.HtmlBrowser.Factory;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
+import org.netbeans.modules.cnd.api.remote.InteractiveCommandProvider;
 
 /**
- * This is a factory for no-op debugger.
- *
- * @author Sandip V. Chitale <sandipchitale@netbeans.org>
+ * Run a remote command which requires interactive I/O. The caller is responsible for setting up the
+ * reader and writers via the getInputStream() and getOutputStream() methods.
+ * 
+ * @author gordonp
  */
-public class NonDebbugerFactory implements JSDebuggerFactory {
+public class RemoteInteractiveCommandProvider implements InteractiveCommandProvider {
+    
+    private RemoteInteractiveCommandSupport support;
 
-    public boolean supports(Factory browser) {
-        return true;
+    public boolean run(String hkey, String cmd, Map<String, String> env) {
+        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return !support.isCancelled() && !support.isFailed();
     }
 
-    public JSDebugger startDebugging(Factory browser, URI uri) {
-        return new NonDebugger(uri, browser);
+    public boolean connect(String hkey, String cmd, Map<String, String> env) {
+        support = new RemoteInteractiveCommandSupport(hkey, cmd, env);
+        return !support.isCancelled() && !support.isFailed();
     }
 
+    public InputStream getInputStream() throws IOException {
+        return support.getInputStream();
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+        return support.getOutputStream();
+    }
+    
+    public void disconnect() {
+        support.disconnect();
+    }
 }
