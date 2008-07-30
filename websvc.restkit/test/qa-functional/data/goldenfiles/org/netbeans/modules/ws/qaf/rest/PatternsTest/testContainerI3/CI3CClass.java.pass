@@ -1,9 +1,5 @@
 /*
- *  CI3CClass
- *
- * Created on March 11, 2008, 10:42 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -28,7 +24,7 @@ import javax.ws.rs.ConsumeMime;
 public class CI3CClass {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of CI3CClass */
     public CI3CClass() {
     }

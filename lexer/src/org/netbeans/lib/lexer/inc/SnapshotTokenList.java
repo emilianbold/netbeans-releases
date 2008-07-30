@@ -382,7 +382,8 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
                     if (tokenList == null) {
                         tokenList = null; // new StandaloneTokenList<T>(change.languagePath(),
                                 // eventInfo.originalText().toCharArray(offset, offset + token.length()));
-                        token.setTokenList(tokenList);
+                        if (!token.isFlyweight())
+                            token.setTokenList(tokenList);
                     }
                 }
                 origOffsets[origTokenStartIndex] = offset;
@@ -422,7 +423,8 @@ public final class SnapshotTokenList<T extends TokenId> implements TokenList<T> 
                     if (tokenList == null) {
                         tokenList = null; // new StandaloneTokenList<T>(change.languagePath(),
                                 // eventInfo.originalText().toCharArray(offset, offset + token.length()));
-                        token.setTokenList(tokenList);
+                        if (!token.isFlyweight())
+                            token.setTokenList(tokenList);
                     }
                 }
                 origOffsets[origTokenIndex] = offset + liveTokenOffsetDiff;
