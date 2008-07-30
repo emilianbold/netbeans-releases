@@ -105,4 +105,8 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test132294_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$ts^", false);
     }
+    // #142234 $t->| shouldn't propose __construct()
+    public void test142234() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142234.php", "$t->^", false);
+    }
 }
