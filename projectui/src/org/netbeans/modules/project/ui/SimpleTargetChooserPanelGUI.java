@@ -96,7 +96,9 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
             bottomPanelContainer.add( bottomPanel, java.awt.BorderLayout.CENTER );
         }
         initValues( null, null, null );
-        
+
+        setPreferredSize(PREF_DIM);
+
         browseButton.addActionListener( this );
         locationComboBox.addActionListener( this );
         documentNameTextField.getDocument().addDocumentListener( this );
@@ -203,12 +205,6 @@ public class SimpleTargetChooserPanelGUI extends javax.swing.JPanel implements A
         else {
             return text;
         }
-    }
-    
-        
-    @Override
-    public java.awt.Dimension getPreferredSize() {
-        return PREF_DIM;
     }
     
     public void addChangeListener(ChangeListener l) {

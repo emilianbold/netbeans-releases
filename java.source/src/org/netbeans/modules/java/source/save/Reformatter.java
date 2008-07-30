@@ -83,17 +83,12 @@ public class Reformatter implements ReformatTask {
     public void reformat() throws BadLocationException {
         if (controller == null) {
             try {
-                javaSource.runUserActionTask(new Task<CompilationController>() {
-                    public void run(CompilationController controller) throws Exception {
-                        controller.toPhase(JavaSource.Phase.PARSED);
-                        Reformatter.this.controller = controller;
-                    }
-                }, true);            
+                controller = JavaSourceAccessor.getINSTANCE().createCompilationController(javaSource);
+                controller.toPhase(JavaSource.Phase.PARSED);
             } catch (IOException ioe) {
-                JavaSourceAccessor.getINSTANCE().unlockJavaCompiler();
-            }
-            if (controller == null)
+                controller = null;
                 return;
+            }
         }
         CodeStyle cs = CodeStyle.getDefault(FileOwnerQuery.getOwner(controller.getFileObject()));
         for (Context.Region region : context.indentRegions())
@@ -281,7 +276,7 @@ public class Reformatter implements ReformatTask {
     }
     
     public ExtraLock reformatLock() {
-        return new Lock();
+        return null;
     }
     
     private TreePath getCommonPath(int startOffset, int endOffset) {
@@ -304,18 +299,6 @@ public class Reformatter implements ReformatTask {
             reverseEndPath = reverseEndPath.tail;
         }
         return statementPath != null ? statementPath : path;
-    }
-    
-    private class Lock implements ExtraLock {
-
-        public void lock() {
-            JavaSourceAccessor.getINSTANCE().lockJavaCompiler();
-        }
-
-        public void unlock() {
-            controller = null;
-            JavaSourceAccessor.getINSTANCE().unlockJavaCompiler();
-        }        
     }
     
     public static class Factory implements ReformatTask.Factory {

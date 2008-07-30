@@ -1,23 +1,25 @@
 Java
-Web
-Enterprise
-Mobility
-UML
-SOA
+Java Web
+Java EE
+Java ME
 PHP
 Ruby
+Groovy
 C/C++
+UML
+SOA
 NetBeans Modules
 Samples
     Java
-    Web
+    Java Web
+    Java Web (Visual JSF)
     Web Services
-    Enterprise
-    Mobility (MIDP)
-    Mobility (Ricoh SDK/J)
-    UML
-    SOA
+    Java EE
+    Java ME (MIDP)
+    Java ME (Ricoh SDK/J)
     PHP
     Ruby
     C/C++
+    UML
+    SOA
     NetBeans Modules

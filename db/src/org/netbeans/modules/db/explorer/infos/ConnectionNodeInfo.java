@@ -187,12 +187,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         if ( conn == null ) {
             // Not connected, so no children
             setChildren(new Vector());
-            return;
+        } else {
+            setProperties();
         }
-        
-        setProperties();
-        
-        refreshChildren();
     }
     
     private void setProperties() {

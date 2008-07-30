@@ -92,7 +92,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
 
 /** Display the "Tools Default" panel */
 public class ToolsPanel extends JPanel implements ActionListener, DocumentListener,
@@ -409,18 +408,8 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
     }
      
     /** Update the display */
-    public void update(final boolean doInitialize, final CompilerSet selectedCS) {
-        RequestProcessor.getDefault().post(new Runnable() {
-            public void run() {
-                realUpdate(doInitialize, selectedCS);
-            }
-        });
-    }
-    
-     
-    /** Update the display */
-    private void realUpdate(boolean doInitialize, CompilerSet selectedCS) {
-        
+    public void update(boolean doInitialize, CompilerSet selectedCS) {
+
         updating = true;
         if (!initialized || doInitialize) {
             initialize();
