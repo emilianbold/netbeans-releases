@@ -82,7 +82,8 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
      * @param selectedElements A Collection of selected elements
      */
     public SafeDeletePanel(SafeDeleteRefactoring refactoring, boolean regulardelete, ChangeListener parent) {
-        setName(NbBundle.getMessage(SafeDeletePanel.class,"LBL_SafeDel")); // NOI18N
+        setName(NbBundle.getMessage(SafeDeletePanel.class,
+                regulardelete ? "LBL_SafeDel_Delete" : "LBL_SafeDel")); // NOI18N
         this.refactoring = refactoring;
         this.regulardelete = regulardelete;
         this.parent = parent;
@@ -170,9 +171,11 @@ public class SafeDeletePanel extends JPanel implements CustomRefactoringPanel {
                 if (regulardelete) {
                     safeDelete = new JCheckBox();
                     Mnemonics.setLocalizedText(safeDelete, NbBundle.getMessage(SafeDeletePanel.class, "LBL_SafeDelCheckBox"));
+                    safeDelete.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(
+                            SafeDeletePanel.class,
+                            "SafeDeletePanel.safeDelete.AccessibleContext.accessibleDescription"));
                     safeDelete.setMargin(new java.awt.Insets(2, 14, 2, 2));
                     searchInComments.setEnabled(false);
-                    safeDelete.getAccessibleContext().setAccessibleDescription(safeDelete.getText());
                     safeDelete.addItemListener(new ItemListener() {
                         public void itemStateChanged(ItemEvent evt) {
                             searchInComments.setEnabled(safeDelete.isSelected());
