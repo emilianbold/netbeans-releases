@@ -96,6 +96,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jTextFieldJ2EE.setVisible(false);
         jTextFieldContextPath.setDocument( uiProperties.CONTEXT_PATH_MODEL );
         jTextFieldRelativeURL.setDocument( uiProperties.LAUNCH_URL_RELATIVE_MODEL );
+        vmOptions.setDocument(uiProperties.RUNMAIN_JVM_MODEL);
         uiProperties.DISPLAY_BROWSER_MODEL.setMnemonic( jCheckBoxDisplayBrowser.getMnemonic() );
         jCheckBoxDisplayBrowser.setModel( uiProperties.DISPLAY_BROWSER_MODEL ); 
         jCheckBoxDeployOnSave.setModel(uiProperties.DEPLOY_ON_SAVE_MODEL);
@@ -135,12 +136,16 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelURLExample = new javax.swing.JLabel();
         errorLabel = new javax.swing.JLabel();
         jCheckBoxDeployOnSave = new javax.swing.JCheckBox();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel1 = new javax.swing.JLabel();
+        vmOptions = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
         jLabelServer.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_Server_LabelMnemonic").charAt(0));
         jLabelServer.setLabelFor(jComboBoxServer);
-        jLabelServer.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Server_JLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelServer, NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Server_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -165,7 +170,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jComboBoxServer.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeRun_Server_A11YDesc")); // NOI18N
 
         jLabelJ2EE.setLabelFor(jTextFieldJ2EE);
-        jLabelJ2EE.setText(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_J2EE_JLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelJ2EE, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_J2EE_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -192,7 +197,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         jLabelContextPath.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_ContextPath_LabelMnemonic").charAt(0));
         jLabelContextPath.setLabelFor(jTextFieldContextPath);
-        jLabelContextPath.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelContextPath, NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPath_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -232,7 +237,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         add(jCheckBoxDisplayBrowser, gridBagConstraints);
         jCheckBoxDisplayBrowser.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeRun_DisplayBrowser_A11YDesc")); // NOI18N
 
-        jLabelContextPathDesc.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPathDesc_JLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelContextPathDesc, NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_ContextPathDesc_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 4;
@@ -244,7 +249,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
 
         jLabelRelativeURL.setDisplayedMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/web/project/ui/customizer/Bundle").getString("LBL_CustomizeRun_RelativeURL_LabelMnemonic").charAt(0));
         jLabelRelativeURL.setLabelFor(jTextFieldRelativeURL);
-        jLabelRelativeURL.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelRelativeURL, NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_RelativeURL_JLabel")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
@@ -262,7 +267,7 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         add(jTextFieldRelativeURL, gridBagConstraints);
         jTextFieldRelativeURL.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_CustomizeRun_RelativeURL_A11YDesc")); // NOI18N
 
-        jLabelURLExample.setText(NbBundle.getMessage(CustomizerRun.class, "LBL_RelativeURLExample")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabelURLExample, NbBundle.getMessage(CustomizerRun.class, "LBL_RelativeURLExample")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
@@ -275,10 +280,11 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         org.openide.awt.Mnemonics.setLocalizedText(errorLabel, " ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridy = 11;
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(errorLabel, gridBagConstraints);
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_JCheckBox")); // NOI18N
@@ -288,9 +294,49 @@ public class CustomizerRun extends JPanel implements HelpCtx.Provider {
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
         add(jCheckBoxDeployOnSave, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 11, 0);
+        add(jSeparator1, gridBagConstraints);
+        jSeparator1.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSN_CustomizerRun_NA")); // NOI18N
+        jSeparator1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSN_CustomizerRun_NA")); // NOI18N
+
+        jLabel1.setLabelFor(vmOptions);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "Label_JVM_Argument")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        add(jLabel1, gridBagConstraints);
+        jLabel1.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSN_CustomizerRun_NA")); // NOI18N
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 5, 0);
+        add(vmOptions, gridBagConstraints);
+        vmOptions.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSN_CustomizerRun_NA")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "Label_VM_Hint")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 0);
+        add(jLabel2, gridBagConstraints);
+        jLabel2.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACSN_CustomizerRun_NA")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
     private void jTextFieldContextPathKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTextFieldContextPathKeyReleased
@@ -315,16 +361,20 @@ private void jComboBoxServerActionPerformed(java.awt.event.ActionEvent evt) {//G
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
     private javax.swing.JComboBox jComboBoxServer;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabelContextPath;
     private javax.swing.JLabel jLabelContextPathDesc;
     private javax.swing.JLabel jLabelJ2EE;
     private javax.swing.JLabel jLabelRelativeURL;
     private javax.swing.JLabel jLabelServer;
     private javax.swing.JLabel jLabelURLExample;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTextField jTextFieldContextPath;
     private javax.swing.JTextField jTextFieldJ2EE;
     private javax.swing.JTextField jTextFieldJ2EE_Display;
     private javax.swing.JTextField jTextFieldRelativeURL;
+    private javax.swing.JTextField vmOptions;
     // End of variables declaration//GEN-END:variables
 
     /** Help context where to find more about the paste type action.

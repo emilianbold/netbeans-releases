@@ -55,6 +55,7 @@ import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.LabelManager;
+import org.netbeans.modules.uml.drawingarea.LabelManager.LabelType;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
@@ -190,14 +191,7 @@ public abstract class UMLEdgeWidget extends ConnectionWidget implements DiagramE
                     else if (labelTypeStr.endsWith(LabelManager.LabelType.EDGE.toString()))
                         labelType = LabelManager.LabelType.EDGE;
                 }
-                if (labelType != null)
-                {                        
-                    manager.showLabel(edgeLabel.getLabel(), labelType);
-                }
-                else
-                {
-                     manager.showLabel(edgeLabel.getLabel());
-                }
+                    manager.showLabel(edgeLabel.getLabel(), labelType, edgeLabel.getPosition());
             }
         }
     }

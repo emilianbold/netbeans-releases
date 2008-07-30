@@ -185,6 +185,8 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
      * @param token non-null token
      */
     public void addToken(AbstractToken<T> token) {
+        if (!token.isFlyweight())
+            token.setTokenList(this);
         updateElementOffsetAdd(token); // must subtract startOffset()
         add(token);
     }
@@ -448,7 +450,10 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
         List<TokenOrEmbedding<T>> addedTokenOrEmbeddings = change.addedTokenOrEmbeddings();
         if (addedTokenOrEmbeddings != null) {
             for (TokenOrEmbedding<T> tokenOrEmbedding : addedTokenOrEmbeddings) {
-                updateElementOffsetAdd(tokenOrEmbedding.token());
+                AbstractToken<T> token = tokenOrEmbedding.token();
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
+                updateElementOffsetAdd(token);
             }
             addAll(index, addedTokenOrEmbeddings);
             laState = laState.addAll(index, change.laState());
@@ -485,6 +490,10 @@ extends FlyOffsetGapList<TokenOrEmbedding<T>> implements MutableTokenList<T> {
     public StringBuilder dumpInfo(StringBuilder sb) {
         if (sb == null) {
             sb = new StringBuilder(50);
+        }
+        EmbeddingContainer ec = embeddingContainer;
+        if (ec != null && ec.isRemoved()) {
+            sb.append("REMOVED-");
         }
         sb.append("ETL");
         if (embedding.joinSections())

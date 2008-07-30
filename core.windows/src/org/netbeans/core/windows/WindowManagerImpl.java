@@ -68,7 +68,7 @@ public final class WindowManagerImpl extends WindowManager implements Workspace 
     
     // XXX PENDING additional, not-yet officialy supported properties.
     /** Name of property change fired when active mode changed. */
-    public static final String PROP_ACTIVE_MODE = "activeMode"; // NOI8N
+    public static final String PROP_ACTIVE_MODE = "activeMode"; // NOI18N
     /** Name of property change fired when maximized mode changed. */
     public static final String PROP_MAXIMIZED_MODE = "maximizedMode"; // NOI18N
     /** Name of property change fired when editor area state changed. */
