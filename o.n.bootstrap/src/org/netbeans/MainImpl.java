@@ -299,7 +299,6 @@ final class MainImpl extends Object {
 
                 if (!toAdd.isEmpty ()) {
                     // source were already added in MainImpl.execute() method while processing userdir
-                    // addSources (toAdd);
                     metaInf = Lookups.metaInfServices(this);
                     if (handlers != null) {
                         handlers.clear();

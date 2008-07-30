@@ -195,13 +195,17 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-vmd-midp-components-databinding-DataSetCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-databinding-DataSetConnectorCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-ContactsDataSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataAbstractSetCD.instance"/>
+            <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataSetIndexCD.instance"/>
+            <!--
             <file name="org-netbeans-modules-vmd-midp-components-databinding-AddressDataSetCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-databinding-NameDataSetCD.instance"/>
-            <file name="org-netbeans-modules-vmd-midp-components-databinding-ContactsDataSetCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-databinding-PIMDataSetCD.instance"/>
             <file name="org-netbeans-modules-vmd-midp-components-databinding-ToDoDataSetCD.instance"/>
-            <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataAbstractSetCD.instance"/>
-             <file name="org-netbeans-modules-vmd-midp-components-databinding-IndexableDataSetIndexCD.instance"/>
+            
+             
+             -->
             
         </folder>
 

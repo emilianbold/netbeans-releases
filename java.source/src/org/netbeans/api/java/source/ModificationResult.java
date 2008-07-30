@@ -137,46 +137,18 @@ public final class ModificationResult {
         if (ec != null && out == null) {
             final StyledDocument doc = ec.getDocument();
             if (doc != null) {
-                if (doc instanceof BaseDocument) {
-                    final IOException[] exceptions = new IOException [1];
-                    ((BaseDocument) doc).runAtomic (new Runnable () {
-                        public void run () {
-                            try {
-                                commit2 (doc, differences, out);
-                            } catch (IOException ex) {
-                                exceptions [0] = ex;
-                            }
-                        }
-                    });
-                    if (exceptions [0] != null)
-                        throw exceptions [0];
-                } else
-                    commit2 (doc, differences, out);
-                boolean success = false;
-                try {
-                    for (Difference diff : differences) {
-                        if (diff.isExcluded())
-                            continue;
-                        switch (diff.getKind()) {
-                            case INSERT:
-                            case REMOVE:
-                            case CHANGE:
-                                processDocument(doc, diff);
-                                break;
-                            case CREATE:
-                                createUnit(diff, out);
-                                break;
+                final IOException[] exceptions = new IOException [1];
+                NbDocument.runAtomic(doc, new Runnable () {
+                    public void run () {
+                        try {
+                            commit2 (doc, differences, out);
+                        } catch (IOException ex) {
+                            exceptions [0] = ex;
                         }
                     }
-                    success = true;
-                } finally {
-                    if (doc instanceof BaseDocument) {
-                        if (!success) {
-                            //something went wrong, rollback the changes:
-                            ((BaseDocument)doc).atomicUndo();
-                        }
-                    }
-                }
+                });
+                if (exceptions [0] != null)
+                    throw exceptions [0];
                 return;
             }
         }
@@ -257,29 +229,18 @@ public final class ModificationResult {
     }
 
     private void commit2 (final StyledDocument doc, final List<Difference> differences, Writer out) throws IOException {
-        boolean success = false;
-        try {
-            for (Difference diff : differences) {
-                if (diff.isExcluded())
-                    continue;
-                switch (diff.getKind()) {
-                    case INSERT:
-                    case REMOVE:
-                    case CHANGE:
-                        processDocument(doc, diff);
-                        break;
-                    case CREATE:
-                        createUnit(diff, out);
-                        break;
-                }
-            }
-            success = true;
-        } finally {
-            if (doc instanceof BaseDocument) {
-                if (!success) {
-                    //something went wrong, rollback the changes:
-                    ((BaseDocument)doc).atomicUndo();
-                }
+        for (Difference diff : differences) {
+            if (diff.isExcluded())
+                continue;
+            switch (diff.getKind()) {
+                case INSERT:
+                case REMOVE:
+                case CHANGE:
+                    processDocument(doc, diff);
+                    break;
+                case CREATE:
+                    createUnit(diff, out);
+                    break;
             }
         }
     }

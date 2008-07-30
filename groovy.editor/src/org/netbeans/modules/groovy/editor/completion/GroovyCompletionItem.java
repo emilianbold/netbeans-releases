@@ -583,7 +583,12 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             return true;
         }
 
-
+        @Override
+        public String[] getParamListDelimiters() {
+            return new String[]{"(", ")"}; // NOI18N
+        }
+        
+        
         // See IDE help-topic: "Creating and Customizing Ruby Code Templates" or
         // RubyCodeCompleter.MethodItem.getCustomInsertTemplate() for syntax.
         @Override
@@ -598,23 +603,29 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             
             int id = 1;
             
-            sb.append("${cursor}"); // NOI18N
+            // sb.append("${cursor}"); // NOI18N
 
             for (CodeCompleter.ParamDesc paramDesc : params) {
                 
+                LOG.log(Level.FINEST, "-------------------------------------------------------------------");
                 LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.fullTypeName);
                 LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.typeName);
                 LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.name);
                 
-//                sb.append("${"); //NOI18N
-//                sb.append("gsf-cc-"); // NOI18N
-//                sb.append(Integer.toString(id++));
-//                sb.append(" default=\""); // NOI18N
-//                sb.append(paramDesc.name);
-//                sb.append("\""); // NOI18N
-//                sb.append("}"); //NOI18N
+                sb.append("${"); //NOI18N
 
+                sb.append("groovy-cc-"); // NOI18N
+                sb.append(Integer.toString(id));
+                
+                sb.append(" default=\""); // NOI18N
                 sb.append(paramDesc.name);
+                sb.append("\""); // NOI18N
+
+                sb.append("}"); //NOI18N
+
+                // simply hardcoded values. For testing purposes.
+                // sb.append(paramDesc.name);
+
 
                 if (id < params.size()) {
                     sb.append(", "); //NOI18N
@@ -624,6 +635,8 @@ import org.netbeans.modules.groovy.editor.elements.GroovyElement;
             }
             
             sb.append(")");
+            
+            LOG.log(Level.FINEST, "Template returned : {0}", sb.toString());
             return sb.toString();
 
         }

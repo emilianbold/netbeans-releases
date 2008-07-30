@@ -1,9 +1,5 @@
 /*
- *  ManufacturersResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -21,11 +17,12 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import o.n.m.ws.qaf.rest.crud.Manufacturer;
 import o.n.m.ws.qaf.rest.crud.Product;
 import o.n.m.ws.qaf.rest.crud.converter.ManufacturersConverter;
 import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
-
 
 /**
  *
@@ -35,19 +32,12 @@ import o.n.m.ws.qaf.rest.crud.converter.ManufacturerConverter;
 @Path("/manufacturers/")
 public class ManufacturersResource {
     @Context
-    private UriInfo context;
-    
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+  
     /** Creates a new instance of ManufacturersResource */
     public ManufacturersResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public ManufacturersResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -67,7 +57,7 @@ public class ManufacturersResource {
     @DefaultValue("SELECT e FROM Manufacturer e")
     String query) {
         try {
-            return new ManufacturersConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            return new ManufacturersConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -85,10 +75,11 @@ public class ManufacturersResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Manufacturer entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            Manufacturer entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getManufacturerId() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getManufacturerId() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -102,7 +93,9 @@ public class ManufacturersResource {
     @Path("{manufacturerId}/")
     public ManufacturerResource getManufacturerResource(@PathParam("manufacturerId")
     Integer id) {
-        return new ManufacturerResource(id, context);
+        ManufacturerResource resource = resourceContext.getResource(ManufacturerResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -111,7 +104,8 @@ public class ManufacturersResource {
      * @return a collection of Manufacturer instances
      */
     protected Collection<Manufacturer> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -120,7 +114,8 @@ public class ManufacturersResource {
      * @param entity the entity to persist
      */
     protected void createEntity(Manufacturer entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
         for (Product value : entity.getProductCollection()) {
             Manufacturer oldEntity = value.getManufacturerId();
             value.setManufacturerId(entity);
