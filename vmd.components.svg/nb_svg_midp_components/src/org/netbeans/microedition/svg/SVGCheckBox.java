@@ -42,6 +42,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *          &lt;!-- Metadata information. Please don't edit. -->
  *          &lt;text display="none">type=text&lt;/text>
  *      &lt;/g>
+ *      
  *  &lt;/g
  * </pre>
  * @author Pavel Benes

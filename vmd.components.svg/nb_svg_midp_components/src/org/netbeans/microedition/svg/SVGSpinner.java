@@ -77,6 +77,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=text&lt;/text>
  *       &lt;/g>
+ *       
  *       &lt;!-- The rectangle below is difference between rectangle that bounds spinner and spinner buttons ( the latter 
  *       has id = age_spinner_up and age_spinner_down ). It needed for counting bounds of input text area .
  *       It should be created programatically or SVGTextField should have API for dealing with "width"

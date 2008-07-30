@@ -211,7 +211,7 @@ public class SVGList extends SVGComponent implements DataListener {
         }
 
         if (bounds == null) {
-            bounds = (SVGLocatableElement) getElementByMeta(getElement(), TYPE,
+            bounds = (SVGLocatableElement) getNestedElementByMeta(getElement(), TYPE,
                     BOUNDS);
         }
         

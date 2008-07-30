@@ -50,10 +50,9 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *  &lt;g id="label" transform="translate(130,200)">
  *   &lt;text display="none">type=label&lt;/text>
  *   &lt;g>
- *   &lt;text id="label_text" x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
- *       Label
- *   &lt;/text>
- *   &lt;text display="none">type=text&lt;/text>
+ *        &lt;text id="label_text" x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *       Label&lt;/text>
+ *       &lt;text display="none">type=text&lt;/text>
  *   &lt;/g>
  *   &lt;/g>
  * </pre>

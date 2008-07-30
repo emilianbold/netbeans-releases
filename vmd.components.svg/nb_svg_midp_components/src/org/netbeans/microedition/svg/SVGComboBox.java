@@ -122,12 +122,11 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       be at the very end of XML file between other such figures ) because in this case it will be 
  *       on top of any other figure. Otherwise it will be hidden by following sibling component. -->
  *       &lt;g>
- *       &lt;text id="country_combobox_list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" 
+ *           &lt;text id="country_combobox_list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" 
  *                  font-family="SunSansSemiBold">
+ *           HIDDEN TEXT&lt;/text>
  *           &lt;!-- Metadata information. Please don't edit. -->
- *           HIDDEN TEXT
- *       &lt;/text>
- *       &lt;text display="none">type=hidden_text&lt;/text>
+ *           &lt;text display="none">type=hidden_text&lt;/text>
  *       &lt;/g>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->

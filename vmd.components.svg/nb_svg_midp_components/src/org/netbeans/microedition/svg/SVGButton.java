@@ -42,7 +42,7 @@ import org.w3c.dom.svg.SVGRGBColor;
  *       &lt;/rect>
  *   &lt;/g>
  *   &lt;g>
- *   &lt;text id="button_ok_stext" x="24" y="23" fill="black" font-size="20">
+ *       &lt;text id="button_ok_stext" x="24" y="23" fill="black" font-size="20">
  *       OK&lt;/text>
  *       &lt;text display="none">type=shadow_text&lt;/text>
  *   &lt;/g>

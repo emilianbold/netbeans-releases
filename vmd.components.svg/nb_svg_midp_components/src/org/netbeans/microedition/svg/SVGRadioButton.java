@@ -37,7 +37,7 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;g>
  *           &lt;text display="none">type=dot&lt;/text>
  *           &lt;circle cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
- *       &lt;g>
+ *       &lt;g    
  *          &lt;text id="radio_male_text" x="24" y="17" stroke="gray" font-size="15">
  *          Male&lt;/text>
  *          &lt;!-- Metadata information. Please don't edit. -->
