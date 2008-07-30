@@ -171,6 +171,9 @@ abstract class CompletionLayoutPopup implements FocusListener {
     
     final Dimension getPreferredSize() {
         JComponent comp = getContentComponent();
+
+        if (comp == null)
+            return new Dimension(0, 0);
         
         int screenWidth = ScreenBoundsProvider.getScreenBounds(getEditorComponent()).width;
         
@@ -185,7 +188,7 @@ abstract class CompletionLayoutPopup implements FocusListener {
         if(gap > 0) maxSize.width += gap;
 
         setMaxSize(comp, maxSize);
-        return (comp == null) ? new Dimension(0,0) : comp.getPreferredSize();
+        return comp.getPreferredSize();
     }
     
     /** 

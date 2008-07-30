@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.apisupport.project.TestBase;
-import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileUtil;
@@ -271,14 +270,14 @@ public class NbPlatformTest extends TestBase {
     
     public void testHarnessVersionDetection() throws Exception {
         NbPlatform p = NbPlatform.getDefaultPlatform();
-        assertEquals("6.1 harness detected", NbPlatform.HARNESS_VERSION_61, p.getHarnessVersion());
+        assertEquals("6.5 harness detected", NbPlatform.HARNESS_VERSION_65, p.getHarnessVersion());
         File testPlatform = new File(getWorkDir(), "test-platform");
         makePlatform(testPlatform);
         p = NbPlatform.getPlatformByDestDir(testPlatform);
         assertEquals("5.0 harness detected", NbPlatform.HARNESS_VERSION_50, p.getHarnessVersion());
         File defaultHarnessLocation = NbPlatform.getDefaultPlatform().getHarnessLocation();
         p = NbPlatform.addPlatform("test", testPlatform, defaultHarnessLocation, "Test");
-        assertEquals("6.1 harness detected", NbPlatform.HARNESS_VERSION_61, p.getHarnessVersion());
+        assertEquals("6.5 harness detected", NbPlatform.HARNESS_VERSION_65, p.getHarnessVersion());
         PropertyEvaluator eval = PropertyUtils.sequentialPropertyEvaluator(null, PropertyUtils.globalPropertyProvider());
         assertEquals(defaultHarnessLocation, FileUtil.normalizeFile(new File(eval.getProperty("nbplatform.test.harness.dir"))));
         NbPlatform.reset();
@@ -286,7 +285,7 @@ public class NbPlatformTest extends TestBase {
         assertNotNull(p);
         assertEquals(testPlatform, p.getDestDir());
         assertEquals(defaultHarnessLocation, p.getHarnessLocation());
-        assertEquals(NbPlatform.HARNESS_VERSION_61, p.getHarnessVersion());
+        assertEquals(NbPlatform.HARNESS_VERSION_65, p.getHarnessVersion());
     }
     
     public void testSourceRootChangeFiring() throws Exception {
