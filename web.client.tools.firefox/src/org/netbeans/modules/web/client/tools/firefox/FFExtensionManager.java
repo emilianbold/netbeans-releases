@@ -62,6 +62,8 @@ import java.util.StringTokenizer;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.logging.Level;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import javax.swing.JButton;
@@ -69,6 +71,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.Mnemonics;
 import org.openide.execution.NbProcessDescriptor;
@@ -124,6 +127,23 @@ public class FFExtensionManager {
     };
 
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
+        StringBuffer ffVersion = new StringBuffer();
+        if (!isSupportedFirefox(browser, ffVersion)) {
+            final JButton ok = new JButton();
+            Mnemonics.setLocalizedText(ok, NbBundle.getMessage(FFExtensionManager.class, "OK_BUTTON"));
+            
+            NotifyDescriptor nd = new NotifyDescriptor(
+                    NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_VERSION_MSG"),
+                    NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_VERSION_TITLE"),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    new Object[] { ok },
+                    ok);
+            
+            DialogDisplayer.getDefault().notify(nd);
+            return false;
+        }
+        
         File nbExtensionFile = InstalledFileLocator.getDefault().locate(FIREFOX_EXTENSION_PATH,
                 "org.netbeans.modules.web.client.tools.firefox.extension", // NOI18N
                 false);
@@ -735,10 +755,57 @@ public class FFExtensionManager {
             } catch (InvocationTargetException e) {
             }
         }
-        return "firefox"; // NOI18N
+        return null;
 
     }
 
+    private static boolean isSupportedFirefox(HtmlBrowser.Factory browser, StringBuffer actualVersion) {
+        String browserExecutable = getBrowserExecutable(browser);
+        if (browserExecutable == null) {
+            Log.getLogger().severe("Could not get Firefox executable path");
+            return false;
+        }
+        
+        File firefox_js = new File(new File(browserExecutable).getParentFile(), "defaults/pref/firefox.js"); // NOI18N
+        if (!firefox_js.exists()) {
+            Log.getLogger().severe("Could not detect Firefox version");
+            return false;
+        }
+        
+        Pattern lineMatch = Pattern.compile("\\s*pref\\s*\\(\\s*\"general\\.useragent\\.extra\\.firefox\""); // NOI18N
+        Pattern versionMatch = Pattern.compile("\"Firefox/[^\"]+\""); // NOI18N
+        int majorVersion = -1;
+        BufferedReader br = null;
+        try {
+            br = new BufferedReader(new FileReader(firefox_js));
+            while (br.ready()) {
+                String nextLine = br.readLine();
+                if (lineMatch.matcher(nextLine).find()) {
+                    Matcher matcher = versionMatch.matcher(nextLine);
+                    if (matcher.find()) {
+                        String version = matcher.group();
+                        majorVersion = Integer.valueOf(version.substring(9, 10)).intValue();
+                        actualVersion.append(version);
+                        break;
+                    }
+                }
+            }
+            
+            return majorVersion == 2;
+        } catch (IOException ex) {
+            Log.getLogger().log(Level.SEVERE, "Error reading Firefox version", ex);
+            return false;
+        } finally {
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException ex) {
+                    Log.getLogger().log(Level.SEVERE, "Could not read Firefox version file", ex);
+                }
+            }
+        }
+    }
+    
     private static boolean isHttpURLValid(URL url) {
         try {
             HttpURLConnection connection = (HttpURLConnection)url.openConnection();
