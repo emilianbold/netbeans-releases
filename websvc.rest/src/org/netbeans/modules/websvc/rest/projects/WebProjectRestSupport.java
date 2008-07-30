@@ -192,8 +192,12 @@ public class WebProjectRestSupport extends RestSupport {
         }
         return null;
     }
-
-    private ServletMapping getRestServletMapping(WebApp webApp) {
+    
+    public static ServletMapping getRestServletMapping(Project project) throws IOException {
+        return getRestServletMapping(getWebApp(project));
+    }
+    
+    public static ServletMapping getRestServletMapping(WebApp webApp) {
         for (ServletMapping sm : webApp.getServletMapping()) {
             if (REST_SERVLET_ADAPTOR.equals(sm.getServletName())) {
                 return sm;
@@ -276,16 +280,24 @@ public class WebProjectRestSupport extends RestSupport {
             webApp.write(ddFO);
         }
     }
-
+    
     private WebApp getWebApp() throws IOException {
-        FileObject fo = getWebXml();
+        return getWebApp(project);
+    }
+    
+    public static WebApp getWebApp(Project project) throws IOException {
+        FileObject fo = getWebXml(project);
         if (fo != null) {
             return DDProvider.getDefault().getDDRoot(fo);
         }
         return null;
     }
-
+    
     public FileObject getWebXml() {
+        return getWebXml(project);
+    }
+    
+    public static FileObject getWebXml(Project project) {
         WebModuleImplementation jp = (WebModuleImplementation) project.getLookup().lookup(WebModuleImplementation.class);
 
         return jp.getDeploymentDescriptor();
