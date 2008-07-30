@@ -464,7 +464,7 @@ public class CompilerSetManager {
             if (compiler != null) {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
-            initCompiler(Tool.MakeTool, path, cs, d.getMakeNames());
+            initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
             initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
         }
     }

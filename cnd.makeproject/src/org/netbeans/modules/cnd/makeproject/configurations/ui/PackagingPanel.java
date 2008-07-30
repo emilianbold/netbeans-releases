@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
@@ -29,9 +30,10 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     PackagingConfiguration packagingConfiguration;
     private PropertyEditorSupport editor;
     private MakeConfiguration conf;
+    private PackagingInfoOuterPanel packagingInfoOuterPanel = null;
     private PackagingInfoPanel packagingInfoPanel = null;
+    private PackagingFilesOuterPanel packagingFilesOuterPanel = null;
     private PackagingFilesPanel packagingFilesPanel = null;
-    private PackagingHeaderPanel packagingHeaderPanel = null;
     
     /** Creates new form PackagingPanel */
     public PackagingPanel(PackagingConfiguration packagingConfiguration, PropertyEditorSupport editor, PropertyEnv env, MakeConfiguration conf) {
@@ -64,16 +66,20 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         
         // Add tabs
-        packagingInfoPanel = new PackagingInfoPanel(packagingHeaderPanel = new PackagingHeaderPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
+        packagingInfoOuterPanel = new PackagingInfoOuterPanel(packagingInfoPanel = new PackagingInfoPanel(packagingConfiguration.getHeader().getValue(), conf.getBaseDir()));
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             packagingFilesPanel = new PackagingFilesPanel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else {
             packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
+        packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
-        tabbedPane.addTab("Info", packagingInfoPanel);
-        tabbedPane.addTab("Files", packagingFilesPanel);
+        tabbedPane.addTab("Info", packagingInfoOuterPanel);
+        tabbedPane.addTab("Files", packagingFilesOuterPanel);
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             // Add tabs
@@ -102,7 +108,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
     private Object getPropertyValue() throws IllegalStateException {
         Vector v;
         
-        v = packagingHeaderPanel.getListData();
+        v = packagingInfoPanel.getListData();
         packagingConfiguration.getHeader().setValue(new ArrayList(v));
         
         v = packagingFilesPanel.getListData();
@@ -129,7 +135,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         innerPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
 
-        setPreferredSize(new java.awt.Dimension(1200, 500));
+        setPreferredSize(new java.awt.Dimension(1000, 500));
         setLayout(new java.awt.GridBagLayout());
 
         innerPanel.setLayout(new java.awt.GridBagLayout());

@@ -39,7 +39,6 @@
 
 package org.netbeans.modules.cnd.debugger.gdb.breakpoints;
 
-import org.netbeans.api.debugger.Session;
 import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
 
 /**
@@ -48,9 +47,8 @@ import org.netbeans.modules.cnd.debugger.gdb.GdbDebugger;
  */
 public class AddressBreakpointImpl extends BreakpointImpl {
     
-    public AddressBreakpointImpl(AddressBreakpoint breakpoint, BreakpointsReader reader,
-            GdbDebugger debugger, Session session) {
-        super(breakpoint, reader, debugger, session);
+    public AddressBreakpointImpl(AddressBreakpoint breakpoint, GdbDebugger debugger) {
+        super(breakpoint, debugger);
         set();
     }
 

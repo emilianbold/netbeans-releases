@@ -166,7 +166,22 @@ public class PHPIndex {
 
         return clusterUrl;
     }
-    
+
+    /** returns constnats of a class. */
+    public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String className, String name, NameKind kind) { 
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
+
+        if (inheritanceLine != null){
+            for (IndexedClass clazz : inheritanceLine){
+                //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
+                constants.addAll(getClassConstants(context, clazz.getName(), name, kind)); //NOI18N
+            }
+        }
+
+        return constants;
+    }
+
     /** returns all methods of a class. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
@@ -223,7 +238,7 @@ public class PHPIndex {
         
         return classLine;
     }
-    
+
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String className, String name, NameKind kind) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();

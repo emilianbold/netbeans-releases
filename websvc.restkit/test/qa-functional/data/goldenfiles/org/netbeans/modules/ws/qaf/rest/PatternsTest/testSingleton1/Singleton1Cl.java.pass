@@ -1,9 +1,5 @@
 /*
- *  Singleton1Cl
- *
- * Created on March 11, 2008, 10:41 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -28,7 +24,7 @@ import org.codehaus.jettison.json.JSONString;
 public class Singleton1Cl {
     @Context
     private UriInfo context;
-    
+
     /** Creates a new instance of Singleton1Cl */
     public Singleton1Cl() {
     }

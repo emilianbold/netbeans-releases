@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -372,6 +373,9 @@ public class ConfigurationMakefileWriter {
                             }
                         }
                         command += compilerConfiguration.getOptions(compiler) + fromLinker + " "; // NOI18N
+                        if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
+                            command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
+                        }
                         command += "-o " + target + " "; // NOI18N
                         command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
                     }
@@ -520,11 +524,11 @@ public class ConfigurationMakefileWriter {
     }
     
     private void writeDependencyChecking(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        if (conf.getDependencyChecking().getValue()) {
+        ToolchainDescriptor td = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getToolchainDescriptor();
+        if (conf.getDependencyChecking().getValue() && td.getMake().getDependencySupportCode() != null) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write(".KEEP_STATE:\n"); // NOI18N
-            bw.write(".KEEP_STATE_FILE:.make.state.${CONF}\n"); // NOI18N
+            bw.write(td.getMake().getDependencySupportCode());
         }
     }
     
@@ -635,6 +639,7 @@ public class ConfigurationMakefileWriter {
                     bw.write("mkdir -p $TMPDIR/" + toDir + "\n");
                 }
                 bw.write("cp " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + "\n");
+                bw.write("chmod " + elem.getPermission() + " $TMPDIR/" + elem.getTo() + "\n");
             }
         }
         bw.write("\n");
@@ -646,7 +651,11 @@ public class ConfigurationMakefileWriter {
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             bw.write("# Generate tar file\n");
             bw.write("cd $TMPDIR\n");
-            bw.write(packagingConfiguration.getToolValue() + " " + packagingConfiguration.getOptionsValue() + " -cf " + outputRelToTmp + " *\n");
+            String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
+            if (options.charAt(0) != '-') {
+                options += '-';
+            }
+            bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n");
         }
         else {
             assert false;
