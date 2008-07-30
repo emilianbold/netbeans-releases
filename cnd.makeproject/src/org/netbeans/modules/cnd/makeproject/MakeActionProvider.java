@@ -839,11 +839,11 @@ public class MakeActionProvider implements ActionProvider {
             record.validate();
             if (!record.isOnline()) {
                 lastValidation = false;
-                return false;
-            } else {
-                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
-                lastValidation = true;
-                return true;
+                runBTA = true;
+//            } else {
+//                // TODO: Do we want to do a real validation now? Is cnd.remote able to provide it?
+//                lastValidation = true;
+//                return true;
             }
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
@@ -913,8 +913,6 @@ public class MakeActionProvider implements ActionProvider {
         
         if ( runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
             if (conf.getDevelopmentHost().isLocalhost()) {
-                // User can't change anything in BTA for remote host yet,
-                // so showing this dialog will only confuse him
                 BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
                 bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
                 ToolsPanelModel model = new LocalToolsPanelModel();
@@ -942,7 +940,11 @@ public class MakeActionProvider implements ActionProvider {
                     lastValidation = false;
                 }
             } else {
-                System.err.println("Validation for remote host failed");
+                // User can't change anything in BTA for remote host yet,
+                // so showing above dialog will only confuse him
+                NotifyDescriptor nd = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(MakeActionProvider.class, "ERR_INVALID_COMPILER_SET", cs.getName(), conf.getDevelopmentHost().getName()));
+                DialogDisplayer.getDefault().notify(nd);
                 lastValidation = false;
             }
         } else {
