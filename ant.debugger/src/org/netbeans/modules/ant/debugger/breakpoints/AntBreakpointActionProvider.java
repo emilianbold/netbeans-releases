@@ -43,28 +43,16 @@ package org.netbeans.modules.ant.debugger.breakpoints;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.Set;
-import javax.swing.JEditorPane;
-import javax.swing.SwingUtilities;
-import javax.swing.text.Caret;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
-import org.openide.ErrorManager;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
-import org.openide.nodes.Node;
 import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.WeakListeners;
-import org.openide.windows.TopComponent;
 
 /**
  *
@@ -84,7 +72,7 @@ public class AntBreakpointActionProvider extends ActionsProviderSupport
     public AntBreakpointActionProvider () {
         context.addPropertyChangeListener(ANT_MIME_TYPE,
                 WeakListeners.propertyChange(this, context));
-        setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
     }
     
     /**
