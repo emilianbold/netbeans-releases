@@ -72,13 +72,14 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  * @author Tomas Mysik
  */
-public class CustomizerSources extends JPanel implements SourcesFolderProvider {
-    private static final long serialVersionUID = -5884695129414071L;
+public class CustomizerSources extends JPanel implements SourcesFolderProvider, HelpCtx.Provider {
+    private static final long serialVersionUID = -58846951287474071L;
 
     private static final String DEFAULT_WEB_ROOT = NbBundle.getMessage(CustomizerSources.class, "LBL_DefaultWebRoot");
 
@@ -359,18 +360,18 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
                             .add(webRootLabel))
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)
+                            .add(projectFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, layout.createSequentialGroup()
-                                .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 173, Short.MAX_VALUE)
+                                .add(webRootTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(webRootButton))
-                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 268, Short.MAX_VALUE)))
-                    .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 368, Short.MAX_VALUE)
+                            .add(sourceFolderTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 280, Short.MAX_VALUE)))
+                    .add(org.jdesktop.layout.GroupLayout.TRAILING, copyFilesPanel, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 380, Short.MAX_VALUE)
                     .add(layout.createSequentialGroup()
                         .add(encodingLabel)
                         .add(40, 40, 40)
-                        .add(encodingComboBox, 0, 268, Short.MAX_VALUE)))
-                .addContainerGap())
+                        .add(encodingComboBox, 0, 280, Short.MAX_VALUE)))
+                .add(0, 0, 0))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -435,5 +436,9 @@ public class CustomizerSources extends JPanel implements SourcesFolderProvider {
         public void changedUpdate(DocumentEvent e) {
             validateFields(category);
         }
+    }
+
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx(CustomizerSources.class);
     }
 }

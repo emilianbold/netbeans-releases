@@ -97,7 +97,10 @@ public class IntroduceVariablePanel extends javax.swing.JPanel {
                 break;
             }
         }
-        name.setText(defaultName);
+        if (introduceConstant)
+            name.setText(defaultName.toUpperCase());
+        else
+            name.setText(defaultName);
         if ( name != null && defaultName.trim().length() > 0 ) {
             this.name.setCaretPosition(defaultName.length());
             this.name.setSelectionStart(0);

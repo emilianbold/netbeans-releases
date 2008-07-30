@@ -345,6 +345,10 @@ public class JaxWsChildren extends Children.Keys<Object>/* implements MDRChangeL
                             }
                         }
                     }
+
+                    if (keys[0] == null) {
+                        keys[0] = Collections.emptyList();
+                    }
                     setKeys(keys[0]);
                 }
             });
