@@ -771,6 +771,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String prefix;
                     if (upToOffset) {
                         prefix = line.substring(start, lineOffset);
+                        int lastIndexOfDollar = prefix.lastIndexOf('$');//NOI18N
+                        if (lastIndexOfDollar > 0) {
+                            prefix = prefix.substring(lastIndexOfDollar);
+                        }                        
                     } else {
                         if (lineOffset == line.length()) {
                             prefix = line.substring(start);

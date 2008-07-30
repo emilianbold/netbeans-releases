@@ -98,4 +98,11 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136092_withReference() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136092.php", "$source2 = $reques^", false);
     }
+    // #132294 [cc] cc for variables in strings not working if there are non-ws chars preceding the variablle
+    public void test132294() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $ts^", false);
+    }
+    public void test132294_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$ts^", false);
+    }
 }
