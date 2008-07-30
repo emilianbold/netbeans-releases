@@ -286,7 +286,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
             getTargetList().getColumnModel().getColumn(3).setPreferredWidth(50);
             getTargetList().getColumnModel().getColumn(3).setMaxWidth(50);
         }
-        else if (getTargetList().getColumnModel().getColumnCount() >= 6) {
+        if (getTargetList().getColumnModel().getColumnCount() >= 6) {
             getTargetList().getColumnModel().getColumn(4).setPreferredWidth(50);
             getTargetList().getColumnModel().getColumn(4).setMaxWidth(50);
             getTargetList().getColumnModel().getColumn(5).setPreferredWidth(50);
