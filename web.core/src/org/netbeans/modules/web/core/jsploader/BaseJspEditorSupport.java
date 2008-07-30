@@ -188,7 +188,10 @@ class BaseJspEditorSupport extends DataEditorSupport implements EditCookie, Edit
             FileObject wmRoot = webModule.getDocumentBase();
             // register class path listener
             ClassPath cp = ClassPath.getClassPath(wmRoot, ClassPath.EXECUTE);
-            cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
+            if (cp != null) {
+                cp.addPropertyChangeListener(WeakListeners.propertyChange(this, cp));
+
+            }
         }
     }
     
