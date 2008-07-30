@@ -548,7 +548,7 @@ public class JavaPersistenceGenerator implements PersistenceGenerator {
                 } 
                 
                 // Add @Basic(optional=false) for not nullable columns
-                if (!isPKMember && !m.isNullable()) {
+                if (!m.isNullable()) {
                     List<ExpressionTree> basicAnnArguments = new ArrayList();
                     basicAnnArguments.add(genUtils.createAnnotationArgument("optional", false)); //NOI18N
                     annotations.add(genUtils.createAnnotation("javax.persistence.Basic", basicAnnArguments)); //NOI18N
