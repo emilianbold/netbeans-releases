@@ -232,6 +232,7 @@ public class FolderChildrenTest extends NbTestCase {
         assertNodes( arr, new String[] { "B.txt", "BA.txt" } );
     }
 
+    @RandomlyFails // NB-Core-Build #1049 (in FolderChildrenLazyTest), #1051 (in this)
     public void testChangeableDataFilterOnNodeDelegate() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "BB/A.txt");
@@ -308,6 +309,7 @@ public class FolderChildrenTest extends NbTestCase {
         assertGC("Children can disappear even we hold the filter", ref);
     }
 
+    @RandomlyFails // NB-Core-Build #1043 (in FolderChildrenEagerTest)
     public void testSeemsLikeTheAbilityToRefreshIsBroken() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileObject bb = FileUtil.createFolder(fs.getRoot(), "/BB");

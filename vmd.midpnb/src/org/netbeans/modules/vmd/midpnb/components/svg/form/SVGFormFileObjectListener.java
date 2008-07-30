@@ -50,6 +50,7 @@ import java.util.Map;
 import org.netbeans.modules.vmd.api.io.DataObjectContext;
 import org.netbeans.modules.vmd.api.io.ProjectUtils;
 import org.netbeans.modules.vmd.api.io.providers.IOSupport;
+import org.netbeans.modules.vmd.api.model.DescriptorRegistry;
 import org.netbeans.modules.vmd.api.model.DesignComponent;
 import org.netbeans.modules.vmd.api.model.TypeID;
 import org.netbeans.modules.vmd.midp.components.MidpTypes;
@@ -125,9 +126,13 @@ public class SVGFormFileObjectListener implements FileChangeListener {
         svgForm.getDocument().getTransactionManager().readAccess(new Runnable() {
 
             public void run() {
-                for (DesignComponent svgComponent : svgForm.getComponents()) {
-                    String id = (String) svgComponent.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
-                    exisitngIDs.put(id, svgComponent.getType().toString());
+                DescriptorRegistry registry = svgForm.getDocument().getDescriptorRegistry();
+                    
+                for (DesignComponent component : svgForm.getComponents()) {
+                    if (registry.isInHierarchy(SVGComponentCD.TYPEID, component.getType())) {
+                        String id = (String) component.readProperty(SVGComponentCD.PROP_ID).getPrimitiveValue();
+                        exisitngIDs.put(id, component.getType().toString());
+                    }
                 }
             }
         });

@@ -52,12 +52,13 @@ public class HostMappingProviderUnix implements HostMappingProvider {
 
     // TODO:
 
-    public Map<String, String> findMappings(String hkey) {
+    public Map<String, String> findMappings(String hkey, String otherHkey) {
         Map<String, String> mappings = new HashMap<String, String>();
         return mappings;
     }
 
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform) {
+        // TODO: other platform can be Windows with SFU
         return otherPlatform.isUnix() && hostPlatform.isUnix();
     }
 

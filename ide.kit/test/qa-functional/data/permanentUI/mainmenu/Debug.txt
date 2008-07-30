@@ -1,10 +1,8 @@
-| Run |                     R (mnemonics)
-=======
-Run Main Project            R
-Debug Main Project          D
-Test Project                j
-Run File                >   n
-=========================
+| Debug |                   D (mnemonics)
+=========
+Debug Project               D   - Debug Project (project-name) - Debug Main Project
+Debug File                  l
+Debug Test for File         r
 Attach Debugger...          A
 Finish Debugger Session     F
 =========================

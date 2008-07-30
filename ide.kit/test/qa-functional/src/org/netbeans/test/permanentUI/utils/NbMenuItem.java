@@ -49,8 +49,8 @@ import javax.swing.JRadioButtonMenuItem;
  */
 public class NbMenuItem implements Comparable {
 
-    private String name;
-    private char mnemo;
+    private String name = "NONE";
+    private char mnemo = 0;
     private String accelerator = null;
     private boolean enabled = false;
     private boolean radiobutton = false;

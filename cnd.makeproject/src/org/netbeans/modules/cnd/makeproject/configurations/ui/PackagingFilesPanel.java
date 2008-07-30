@@ -218,10 +218,14 @@ public class PackagingFilesPanel extends ListEditorPanel {
         // Set column sizes
         getTargetList().getColumnModel().getColumn(0).setPreferredWidth(40);
         getTargetList().getColumnModel().getColumn(0).setMaxWidth(40);
-//	//getTargetList().getColumnModel().getColumn(1).setResizable(true);
-//	getTargetList().getColumnModel().getColumn(2).setPreferredWidth(40);
-//	getTargetList().getColumnModel().getColumn(2).setMaxWidth(40);
-//	getTargetList().getColumnModel().getColumn(2).setResizable(false);
+        if (getTargetList().getColumnModel().getColumnCount() >= 6) {
+            getTargetList().getColumnModel().getColumn(3).setPreferredWidth(50);
+            getTargetList().getColumnModel().getColumn(3).setMaxWidth(50);
+            getTargetList().getColumnModel().getColumn(4).setPreferredWidth(50);
+            getTargetList().getColumnModel().getColumn(4).setMaxWidth(50);
+            getTargetList().getColumnModel().getColumn(5).setPreferredWidth(50);
+            getTargetList().getColumnModel().getColumn(5).setMaxWidth(50);
+        }
         //
         getTargetList().getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         getTargetList().getSelectionModel().addListSelectionListener(new TargetSelectionListener());
@@ -357,16 +361,24 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     label.setForeground(Color.RED);
                 }
                 label.setText(elem.getFrom());
-            } else {
-                label.setText(elem.getTo());
             }
+//            else {
+//                label.setText(elem.getTo());
+//            }
             return label;
         }
+    }
+    
+    /*
+     * Can be overridden to show fewer colums
+     */
+    public int getActualColumnCount() {
+        return 6;
     }
 
     class MyTableModel extends DefaultTableModel {
 
-        private String[] columnNames = {"Type", "File or Directory", "Package File Path"}; // FIXUP
+        private String[] columnNames = {"Type", "File or Directory", "Package File Path", "Permission", "Owner", "Group"}; // FIXUP
 
         @Override
         public String getColumnName(int col) {
@@ -375,7 +387,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
         @Override
         public int getColumnCount() {
-            return 3;
+            return getActualColumnCount();
         }
 
         @Override
@@ -396,6 +408,15 @@ public class PackagingFilesPanel extends ListEditorPanel {
             if (col == 2) {
                 return elem.getTo();
             }
+            if (col == 3) {
+                return elem.getPermission();
+            }
+            if (col == 4) {
+                return elem.getOwner();
+            }
+            if (col == 5) {
+                return elem.getGroup();
+            }
             assert false;
             return null;
         }
@@ -404,13 +425,9 @@ public class PackagingFilesPanel extends ListEditorPanel {
         public boolean isCellEditable(int row, int col) {
             if (col == 0) {
                 return false;
-            } else if (col == 1) {
-                return true;
-            } else if (col == 2) {
+            } else {
                 return true;
             }
-            assert false;
-            return false;
         }
 
         @Override
@@ -426,6 +443,24 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 fireTableCellUpdated(row, 2);
             } else if (col == 2) {
                 elem.setTo((String) value);
+
+                fireTableCellUpdated(row, 0);
+                fireTableCellUpdated(row, 1);
+                fireTableCellUpdated(row, 2);
+            } else if (col == 3) {
+                elem.setPermission((String) value);
+
+                fireTableCellUpdated(row, 0);
+                fireTableCellUpdated(row, 1);
+                fireTableCellUpdated(row, 2);
+            } else if (col == 4) {
+                elem.setOwner((String) value);
+
+                fireTableCellUpdated(row, 0);
+                fireTableCellUpdated(row, 1);
+                fireTableCellUpdated(row, 2);
+            } else if (col == 5) {
+                elem.setGroup((String) value);
 
                 fireTableCellUpdated(row, 0);
                 fireTableCellUpdated(row, 1);

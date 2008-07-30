@@ -599,11 +599,14 @@ public class ConfigurationMakefileWriter {
     }
         
     private void writePackageHeader(BufferedWriter bw, MakeConfiguration conf) throws IOException {
-        String tmpdir = "nbproject/private/tmp-" + conf.getName();
+        if (conf.getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            return; // FIXUP
+        }
+        String tmpdir = getObjectDir(conf) + "/tmp-packaging";
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         String outputDir = IpeUtils.getDirName(output);
-        String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../" + output;
+        String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
         List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
         
         bw.write("#!/bin/bash");

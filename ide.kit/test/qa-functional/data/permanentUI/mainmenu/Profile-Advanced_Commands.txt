@@ -1,5 +1,5 @@
 Advanced Commands                  > Run Profiler Calibration             R
                                      View Command-line Arguments          V
                                      Display Internal Statistics          D
-                                     =================================-
+                                     ==================================
                                      Unintegrate Profiler from Project    U
