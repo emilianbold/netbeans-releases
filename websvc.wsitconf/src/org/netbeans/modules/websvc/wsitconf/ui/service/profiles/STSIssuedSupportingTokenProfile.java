@@ -55,10 +55,12 @@ import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.PolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProfilesModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
+import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
@@ -163,5 +165,16 @@ public class STSIssuedSupportingTokenProfile extends ProfileBase
     public void enableSecureConversation(WSDLComponent component, boolean enable) {
         ProfilesModelHelper.getInstance(PolicyModelHelper.getConfigVersion(component)).setSecureConversation(component, enable);
     }
+    
+    @Override
+    public void profileSelected(WSDLComponent component, boolean updateServiceUrl, ConfigVersion configVersion) {
+        ProfilesModelHelper pmh = ProfilesModelHelper.getInstance(configVersion);
+        RMModelHelper rmh = RMModelHelper.getInstance(configVersion);
+        pmh.setSecurityProfile(component, getDisplayName(), updateServiceUrl);
+        boolean isRM = rmh.isRMEnabled(component);
+        if (isRM) {
+            enableSecureConversation(component, true);
+        }
+    }    
 
 }

@@ -69,6 +69,7 @@ import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -372,6 +373,9 @@ public class ConfigurationMakefileWriter {
                             }
                         }
                         command += compilerConfiguration.getOptions(compiler) + fromLinker + " "; // NOI18N
+                        if (conf.getDependencyChecking().getValue() && compiler.getDependencyGenerationOption().length() > 0) {
+                            command = "${RM} $@.d\n\t" + command + compiler.getDependencyGenerationOption() + " "; // NOI18N
+                        }
                         command += "-o " + target + " "; // NOI18N
                         command += IpeUtils.escapeOddCharacters(items[i].getPath(true));
                     }
@@ -520,11 +524,11 @@ public class ConfigurationMakefileWriter {
     }
     
     private void writeDependencyChecking(MakeConfiguration conf, BufferedWriter bw) throws IOException {
-        if (conf.getDependencyChecking().getValue()) {
+        ToolchainDescriptor td = conf.getCompilerSet().getCompilerSet().getCompilerFlavor().getToolchainDescriptor();
+        if (conf.getDependencyChecking().getValue() && td.getMake().getDependencySupportCode() != null) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write(".KEEP_STATE:\n"); // NOI18N
-            bw.write(".KEEP_STATE_FILE:.make.state.${CONF}\n"); // NOI18N
+            bw.write(td.getMake().getDependencySupportCode());
         }
     }
     
@@ -582,6 +586,11 @@ public class ConfigurationMakefileWriter {
     private void writePackagingScript(MakeConfiguration conf) {
         String outputFileName = projectDescriptor.getBaseDir() + '/' + "nbproject" + '/' + "Package-" + conf.getName() + ".bash"; // UNIX path // NOI18N
         
+        if (conf.getPackagingConfiguration().getFiles().getValue().size() == 0) {
+            // Nothing to do
+            return;
+        }
+        
         FileOutputStream os = null;
         try {
             os = new FileOutputStream(outputFileName);
@@ -590,7 +599,7 @@ public class ConfigurationMakefileWriter {
         }
         BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(os));
         try {
-            writePackageHeader(bw, conf);
+            writePackagingScriptBody(bw, conf);
             bw.flush();
             bw.close();
         } catch (IOException e) {
@@ -598,67 +607,97 @@ public class ConfigurationMakefileWriter {
         }
     }
         
-    private void writePackageHeader(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+    private void writePackagingScriptBody(BufferedWriter bw, MakeConfiguration conf) throws IOException {
         if (conf.getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
             return; // FIXUP
         }
-        String tmpdir = getObjectDir(conf) + "/tmp-packaging";
+        String tmpdir = getObjectDir(conf) + "/tmp-packaging"; // NOI18N
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         String outputDir = IpeUtils.getDirName(output);
         String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
         List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
         
-        bw.write("#!/bin/bash");
+        bw.write("#!/bin/bash"); // NOI18N
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
             bw.write(" -x");
         }
-        bw.write("\n");
-        bw.write("\n");
-        bw.write("# Macros\n");
-        bw.write("TOP=" + "`pwd`" + "\n");
-        bw.write("TMPDIR=" + tmpdir + "\n");
-        bw.write("\n");
-        bw.write("# Setup\n");
-        bw.write("rm -f " + output + "\n");
+        bw.write("\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Macros\n"); // NOI18N
+        bw.write("TOP=" + "`pwd`" + "\n"); // NOI18N
+        bw.write("TMPDIR=" + tmpdir + "\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Functions\n"); // NOI18N
+        bw.write("function checkReturnCode\n"); // NOI18N
+        bw.write("{\n"); // NOI18N
+        bw.write("    rc=$?\n"); // NOI18N
+        bw.write("    if [ $rc != 0 ]\n"); // NOI18N
+        bw.write("    then\n"); // NOI18N
+        bw.write("        exit $rc\n"); // NOI18N
+        bw.write("    fi\n"); // NOI18N
+        bw.write("}\n"); // NOI18N
+        bw.write("function makeDirectory\n"); // NOI18N
+        bw.write("# $1 directory path\n"); // NOI18N
+        bw.write("{\n"); // NOI18N
+        bw.write("    mkdir -p $1\n"); // NOI18N
+        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("}\n"); // NOI18N
+        bw.write("function copyFileToTmpDir\n"); // NOI18N
+        bw.write("# $1 from-file path\n"); // NOI18N
+        bw.write("# $2 to-file path\n"); // NOI18N
+        bw.write("# $3 permission\n"); // NOI18N
+        bw.write("{\n"); // NOI18N
+        bw.write("    cp $1 $2\n"); // NOI18N
+        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("    chmod $3 $2\n"); // NOI18N
+        bw.write("    checkReturnCode\n"); // NOI18N
+        bw.write("}\n"); // NOI18N
+        
+        bw.write("# Setup\n"); // NOI18N
+        bw.write("rm -f " + output + "\n"); // NOI18N
         if (outputDir != null && outputDir.length() > 0) {
-            bw.write("mkdir -p " + outputDir + "\n");
+            bw.write("mkdir -p " + outputDir + "\n"); // NOI18N
         }
-        bw.write("rm -rf $TMPDIR\n");
-        bw.write("mkdir -p $TMPDIR\n");
-        bw.write("\n");
-        bw.write("# Files\n");
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
+        bw.write("mkdir -p $TMPDIR\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Files\n"); // NOI18N
         for (FileElement elem : fileList) {
             if (elem.getType() == FileElement.FileType.FILE) {
                 String toDir = IpeUtils.getDirName(elem.getTo());
                 if (toDir != null && toDir.length() >= 0) {
-                    bw.write("mkdir -p $TMPDIR/" + toDir + "\n");
+                    bw.write("makeDirectory " + "$TMPDIR/" + toDir + "\n"); // NOI18N
                 }
-                bw.write("cp " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + "\n");
-                bw.write("chmod " + elem.getPermission() + " $TMPDIR/" + elem.getTo() + "\n");
+                bw.write("copyFileToTmpDir " + elem.getFrom() + " $TMPDIR/" + elem.getTo() + " " + elem.getPermission() + "\n"); // NOI18N
             }
         }
-        bw.write("\n");
+        bw.write("\n"); // NOI18N
+        
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
-            bw.write("# Generate zip file\n");
-            bw.write("cd $TMPDIR\n");
+            bw.write("# Generate zip file\n"); // NOI18N
+            bw.write("cd $TMPDIR\n"); // NOI18N
             bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n");
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
-            bw.write("# Generate tar file\n");
-            bw.write("cd $TMPDIR\n");
+            bw.write("# Generate tar file\n"); // NOI18N
+            bw.write("cd $TMPDIR\n"); // NOI18N
             String options = packagingConfiguration.getOptionsValue() + "cf"; // NOI18N
-            if (options.charAt(0) != '-') {
-                options += '-';
+            if (options.charAt(0) != '-') { // NOI18N
+                options += '-'; // NOI18N
             }
-            bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n");
+            bw.write(packagingConfiguration.getToolValue() + " " + options + " " + outputRelToTmp + " *\n"); // NOI18N
         }
         else {
             assert false;
         }
-        bw.write("\n");
-        bw.write("# Cleanup\n");
-        bw.write("cd $TOP\n");
-        bw.write("rm -rf $TMPDIR\n");
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Cleanup\n"); // NOI18N
+        bw.write("cd $TOP\n"); // NOI18N
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
     }
 }

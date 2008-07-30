@@ -1,0 +1,4 @@
+Code completion result for source line:
+A135618::|
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? AAA                           [STATIC]   A135618
