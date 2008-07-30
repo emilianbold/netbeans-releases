@@ -89,6 +89,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.GlobalStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Reference;
 import org.netbeans.modules.php.editor.parser.astnodes.Statement;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -405,9 +406,11 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-
+                        List<String> notValidProposals = Arrays.asList(new String[] {"__construct","__destruct  "});//NOI18N
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
-                            proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                            if (!notValidProposals.contains(method.getName())) {
+                                proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                            }
                         }
                     }
                 }
@@ -431,9 +434,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if (staticContext) {
-                    Collection<IndexedConstant> classConstants = request.index.getClassConstants(
+                    Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
                             request.result, typeName, request.prefix, nameKind);
-
                     for (IndexedConstant constant : classConstants) {
                         proposals.add(new PHPCompletionItem.VariableItem(constant, request));
                     }
@@ -675,8 +677,13 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 FunctionDeclaration functionDeclaration = (FunctionDeclaration) statement;
 
                 for (FormalParameter param : functionDeclaration.getFormalParameters()) {
-                    if (param.getParameterName() instanceof Variable) {
-                        String varName = CodeUtils.extractVariableName((Variable) param.getParameterName());
+                    Expression parameterName = param.getParameterName();
+                    if (parameterName instanceof Reference) {
+                        Reference ref = (Reference) parameterName;
+                        parameterName = ref.getExpression();
+                    }
+                    if (parameterName instanceof Variable) {
+                        String varName = CodeUtils.extractVariableName((Variable) parameterName);
                         String type = param.getParameterType() != null ? param.getParameterType().getName() : null;
 
                         if (isPrefix(varName, namePrefix)) {
@@ -765,6 +772,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String prefix;
                     if (upToOffset) {
                         prefix = line.substring(start, lineOffset);
+                        int lastIndexOfDollar = prefix.lastIndexOf('$');//NOI18N
+                        if (lastIndexOfDollar > 0) {
+                            prefix = prefix.substring(lastIndexOfDollar);
+                        }                        
                     } else {
                         if (lineOffset == line.length()) {
                             prefix = line.substring(start);
