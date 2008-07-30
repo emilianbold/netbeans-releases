@@ -12,10 +12,10 @@ import javax.swing.JPanel;
  *
  * @author  thp
  */
-public class PackagingInfoPanel extends javax.swing.JPanel {
+public class PackagingInfoOuterPanel extends javax.swing.JPanel {
 
     /** Creates new form PackagingInfo2Panel */
-    public PackagingInfoPanel(PackagingHeaderPanel innerPanel) {
+    public PackagingInfoOuterPanel(PackagingInfoPanel innerPanel) {
         java.awt.GridBagConstraints gridBagConstraints;
         
         initComponents();
@@ -27,6 +27,7 @@ public class PackagingInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(innerPanel, gridBagConstraints);
         
         innerPanel.setDocArea(docTextArea);
@@ -54,17 +55,18 @@ public class PackagingInfoPanel extends javax.swing.JPanel {
         packagingHeaderOuterPanel.setLayout(packagingHeaderOuterPanelLayout);
         packagingHeaderOuterPanelLayout.setHorizontalGroup(
             packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 400, Short.MAX_VALUE)
+            .add(0, 392, Short.MAX_VALUE)
         );
         packagingHeaderOuterPanelLayout.setVerticalGroup(
             packagingHeaderOuterPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-            .add(0, 203, Short.MAX_VALUE)
+            .add(0, 202, Short.MAX_VALUE)
         );
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         add(packagingHeaderOuterPanel, gridBagConstraints);
 
         scrollPane.setBorder(null);
@@ -81,7 +83,7 @@ public class PackagingInfoPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(16, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(8, 4, 4, 4);
         add(scrollPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
