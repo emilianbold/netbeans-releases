@@ -278,7 +278,7 @@ final class CodeTemplatesModel {
         }
         
         public int addCodeTemplate(String abbreviation) {
-            addRow(new Object [] { abbreviation, null, null });
+            addRow(new Object [] { abbreviation, "", null }); //NOI18N
             this.modified = true;
             return getRowCount() - 1;
         }
