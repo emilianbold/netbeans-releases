@@ -80,31 +80,31 @@
                 <!--issue #127161:-->
                 <folder name="Popup">
                     <file name="in-place-refactoring">
-                        <attr name="position" intvalue="680" />
+                        <attr name="position" intvalue="680"/>
                     </file>
                     <folder name="goto">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.resources.Bundle"/>
-                        <attr name="position" intvalue="500" />
+                        <attr name="position" intvalue="500"/>
                         <file name="goto-declaration">
-                            <attr name="position" intvalue="500" />
+                            <attr name="position" intvalue="500"/>
                         </file>
                         <file name="goto">
-                            <attr name="position" intvalue="600" />
+                            <attr name="position" intvalue="600"/>
                         </file>
                     </folder>
                     <file name="SeparatorBeforeCut.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                        <attr name="position" intvalue="1200" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="1200"/>
                     </file>
                     <file name="format">
-                        <attr name="position" intvalue="750" />
+                        <attr name="position" intvalue="750"/>
                     </file>
                     <file name="generate-code">
-                        <attr name="position" intvalue="760" />
+                        <attr name="position" intvalue="760"/>
                     </file>
                     <file name="SeparatorAfterFormat.instance">
-                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator" />
-                        <attr name="position" intvalue="780" />
+                        <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                        <attr name="position" intvalue="780"/>
                     </file>
                 </folder>
                 <!--end of issue #127161-->
@@ -177,7 +177,7 @@
                     <folder name="stable">
                         <attr name="position" intvalue="200"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignementRule.instance"/>
+                        <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentRule.instance"/>
                         <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsRule.instance"/>
                     </folder>
                     <folder name="experimental">
