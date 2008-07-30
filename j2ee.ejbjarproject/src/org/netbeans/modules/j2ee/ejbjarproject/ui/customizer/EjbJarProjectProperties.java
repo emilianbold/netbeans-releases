@@ -168,6 +168,8 @@ public class EjbJarProjectProperties {
     public static final String JAVADOC_ENCODING="javadoc.encoding"; // NOI18N
     public static final String JAVADOC_ADDITIONALPARAM="javadoc.additionalparam"; // NOI18N
     
+    public static final String RUNMAIN_JVM_ARGS = "runmain.jvmargs"; // NOI18N
+    
     public static final String META_INF_EXCLUDES="meta.inf.excludes"; // NOI18N
     
     // Properties stored in the PRIVATE.PROPERTIES
@@ -239,6 +241,7 @@ public class EjbJarProjectProperties {
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL;
     ComboBoxModel J2EE_PLATFORM_MODEL;
     ButtonModel DEPLOY_ON_SAVE_MODEL;
+    Document RUNMAIN_JVM_MODEL;
 
     // CustomizerRunTest
     
@@ -351,6 +354,7 @@ public class EjbJarProjectProperties {
         J2EE_PLATFORM_MODEL = J2eePlatformUiSupport.createSpecVersionComboBoxModel(
             projectProperties.getProperty(J2EE_PLATFORM));
         DEPLOY_ON_SAVE_MODEL = projectGroup.createToggleButtonModel(evaluator, DEPLOY_ON_SAVE);
+        RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
     }
     
     public void save() {
