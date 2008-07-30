@@ -60,6 +60,8 @@ final class VisualizerChildren extends Object {
     private final List<VisualizerNode> visNodes;
     
     private List<Node> snapshot;
+    
+    private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
 
     /** Empty VisualizerChildren. */
     private VisualizerChildren () {
@@ -73,7 +75,12 @@ final class VisualizerChildren extends Object {
     public VisualizerChildren(VisualizerNode parent, int size, List<Node> snapshot) {
         this.parent = parent;
         visNodes = new ArrayList<VisualizerNode>(size);
-        for (int i = 0; i < size; i++) {
+        int prefetched = Math.min(prefetchCount, size);
+        for (int i = 0; i < prefetched; i++) {
+            VisualizerNode vn = VisualizerNode.getVisualizer(this, snapshot.get(i));
+            visNodes.add(vn);
+        }
+        for (int i = prefetched; i < size; i++) {
             visNodes.add(null);
         }
         this.snapshot = snapshot;
@@ -162,9 +169,11 @@ final class VisualizerChildren extends Object {
 
     final String dumpIndexes(VisualizerNode visNode) {
         StringBuilder sb = new StringBuilder();
-        sb.append(  "Seeking for: ").append(visNode.toId());
-        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()).toId());
-        sb.append("\nSeeking in : ").append(parent.toId()).append("\n");
+        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY));
+        sb.append("\nSeeking for: ").append(visNode.toId());
+        sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null
+                ? ((VisualizerNode)visNode.getParent()).toId() : "null");
+        sb.append("\nSeeking in : ").append(parent != null ? parent.toId() : "null").append("\n");
         for (int i = 0; i < visNodes.size(); i++) {
             VisualizerNode node = (VisualizerNode) visNodes.get(i);
             sb.append("  ").append(i);

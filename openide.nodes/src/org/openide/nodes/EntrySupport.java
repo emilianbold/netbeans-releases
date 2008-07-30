@@ -991,6 +991,8 @@ abstract class EntrySupport {
 
         private static final Logger LAZY_LOG = Logger.getLogger("org.openide.nodes.Children.getArray"); // NOI18N
 
+        private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
+
         static final Node NONEXISTING_NODE = new NonexistingNode();
 
         public Lazy(Children ch) {
@@ -1343,6 +1345,7 @@ abstract class EntrySupport {
                 int[] idxs = new int[toAdd.size()];
                 int addIdx = 0;
                 int inx = 0;
+                boolean createNodes = toAdd.size() == 2 && prefetchCount > 0;
                 visibleEntries = new ArrayList<Entry>();
                 for (int i = 0; i < entries.size(); i++) {
                     Entry entry = entries.get(i);
@@ -1350,6 +1353,13 @@ abstract class EntrySupport {
                     if (info == null) {
                         info = new EntryInfo(entry);
                         entryToInfo.put(entry, info);
+                        if (createNodes) {
+                            Node n = info.getNode();
+                            if (isDummyNode(n)) {
+                                info.setIndex(-2);
+                                continue;
+                            }
+                        }
                         idxs[addIdx++] = inx;
                     }
                     if (info.isHidden()) {
@@ -1357,6 +1367,16 @@ abstract class EntrySupport {
                     }
                     info.setIndex(inx++);
                     visibleEntries.add(entry);
+                }
+                if (addIdx == 0) {
+                    return;
+                }
+                if (idxs.length != addIdx) {
+                    int[] tmp = new int[addIdx];
+                    for (int i = 0; i < tmp.length; i++) {
+                        tmp[i] = idxs[i];
+                    }
+                    idxs = tmp;
                 }
                 fireSubNodesChangeIdx(true, idxs, null, null, null);
             }

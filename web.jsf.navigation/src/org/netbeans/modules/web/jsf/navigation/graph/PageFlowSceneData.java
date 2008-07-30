@@ -215,13 +215,6 @@ public class PageFlowSceneData {
                 allFacesConfigSceneData.putAll(map);
                 break;
         }
-        //        if ( scope.equals( PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_FACESCONFIG) ) ){
-        //            facesConfigSceneData.clear();
-        //            facesConfigSceneData.putAll(map);
-        //        } else if( scope.equals(PageFlowUtilities.getScopeLabel(PageFlowUtilities.Scope.SCOPE_PROJECT))){
-        //            projectSceneData.clear();
-        //            projectSceneData.putAll(map);
-        //        }
     }
 
     public Map<String, PageData> getScopeData(Scope scope) {

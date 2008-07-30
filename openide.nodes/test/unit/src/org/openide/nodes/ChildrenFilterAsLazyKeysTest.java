@@ -42,7 +42,10 @@
 package org.openide.nodes;
 
 public class ChildrenFilterAsLazyKeysTest extends ChildrenKeysTest {
-
+    {
+        System.setProperty("org.openide.explorer.VisualizerChildren.prefetchCount", "0");
+    }
+    
     public ChildrenFilterAsLazyKeysTest(java.lang.String testName) {
         super(testName);
     }

@@ -53,6 +53,9 @@ import org.openide.nodes.Node;
 /** VisualizerNode tests, mostly based on reported bugs.
  */
 public class VisualizerNodeTest extends NbTestCase {
+    {
+        System.setProperty("org.openide.explorer.VisualizerChildren.prefetchCount", "0");
+    }
 
     public VisualizerNodeTest(String name) {
         super(name);

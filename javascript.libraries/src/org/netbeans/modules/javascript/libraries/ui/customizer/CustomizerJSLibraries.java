@@ -123,7 +123,7 @@ public class CustomizerJSLibraries extends JPanel {
         addLibraryJButton = new javax.swing.JButton();
         removeLibraryJButton = new javax.swing.JButton();
 
-        locationLabel.setLabelFor(librariesList);
+        locationLabel.setLabelFor(locationDisplay);
         org.openide.awt.Mnemonics.setLocalizedText(locationLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.locationLabel.text")); // NOI18N
 
         librariesList.setModel(new javax.swing.AbstractListModel() {
@@ -132,8 +132,10 @@ public class CustomizerJSLibraries extends JPanel {
             public Object getElementAt(int i) { return strings[i]; }
         });
         librariesListScrollPane.setViewportView(librariesList);
+        librariesList.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.librariesList.AccessibleContext.accessibleName")); // NOI18N
         librariesList.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.librariesList.AccessibleContext.accessibleDescription")); // NOI18N
 
+        libraryListLabel.setLabelFor(librariesList);
         org.openide.awt.Mnemonics.setLocalizedText(libraryListLabel, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.libraryListLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(addLibraryJButton, org.openide.util.NbBundle.getMessage(CustomizerJSLibraries.class, "CustomizerJSLibraries.addLibraryJButton.text")); // NOI18N
@@ -156,18 +158,16 @@ public class CustomizerJSLibraries extends JPanel {
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(layout.createSequentialGroup()
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(layout.createSequentialGroup()
-                        .add(locationLabel)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(locationDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
                     .add(libraryListLabel)
-                    .add(layout.createSequentialGroup()
-                        .add(librariesListScrollPane, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 371, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                        .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                            .add(removeLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE)
-                            .add(addLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 101, Short.MAX_VALUE))))
-                .addContainerGap())
+                    .add(librariesListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE))
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
+                    .add(removeLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .add(addLibraryJButton, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 110, Short.MAX_VALUE)))
+            .add(layout.createSequentialGroup()
+                .add(locationLabel)
+                .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
+                .add(locationDisplay, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 431, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
@@ -180,7 +180,7 @@ public class CustomizerJSLibraries extends JPanel {
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(layout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
                     .add(layout.createSequentialGroup()
-                        .add(addLibraryJButton)
+                        .add(addLibraryJButton, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 29, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                         .add(removeLibraryJButton))
                     .add(librariesListScrollPane, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 252, Short.MAX_VALUE))

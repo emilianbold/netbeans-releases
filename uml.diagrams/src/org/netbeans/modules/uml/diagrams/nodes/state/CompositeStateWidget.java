@@ -119,6 +119,13 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     public void initializeNode(IPresentationElement presentation)
     {
         IElement element = presentation.getFirstSubject();
+        for (RegionWidget w: regionWidgets)
+        {
+            w.remove(w);
+        }
+        regionWidgets.clear();
+        elements.clear();
+        
         if (element instanceof State && ((State) element).getIsComposite())
         {
             state = (State) presentation.getFirstSubject();
@@ -212,7 +219,7 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     public void addRegion(IRegion region)
     {
         RegionWidget regionWidget = new RegionWidget(scene, region, this);
-
+        
         IPresentationElement pe = Util.createNodePresentationElement();
         pe.addSubject(region);
         if (scene instanceof ObjectScene)
@@ -384,7 +391,8 @@ public class CompositeStateWidget extends UMLNodeWidget implements CompositeWidg
     
     public void notifyCompartmentWidgetAdded()
     {
-        discoverRelationship();
+        if (regionWidgets.size() == state.getContents().size())
+            discoverRelationship();
     }
 
     public void addChildrenInBounds() {

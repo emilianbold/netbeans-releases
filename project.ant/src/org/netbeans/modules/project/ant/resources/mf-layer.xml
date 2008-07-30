@@ -73,5 +73,8 @@ made subject to such option by the copyright holder.
         <folder name="project-private">
             <file name="1.xsd" url="../project-private.xsd"/>
         </folder>
+        <folder name="ant-build-extender">
+            <file name="1.xsd" url="../extender1.xsd"/>
+        </folder>
     </folder>
 </filesystem>

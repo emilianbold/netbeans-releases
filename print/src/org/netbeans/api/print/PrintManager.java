@@ -41,6 +41,7 @@
 package org.netbeans.api.print;
 
 import java.awt.Container;
+import java.awt.Dimension;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.text.StyledDocument;
@@ -87,6 +88,12 @@ import org.netbeans.spi.print.PrintProvider;
  * component is used by default. The content of the header/footer
  * can be adjusted in the Print Options dialog.<p>
  *
+ * If the size of the custom component for printing differs from visual
+ * dimension, specify this with the key {@linkplain #PRINT_SIZE}:
+ *
+ * <blockquote><pre>
+ * putClientProperty("print.size", new Dimension(printWidth, printHeight)); // NOI18N</pre></blockquote>
+ *
  * If the custom data is presented by several components, all of them can
  * be enabled for print preview. The key {@linkplain #PRINT_ORDER} is used
  * for this purpose, all visible and printable components are ordered
@@ -121,6 +128,9 @@ import org.netbeans.spi.print.PrintProvider;
  * Otherwise, it tries to obtain {@linkplain #PRINT_PRINTABLE printable} components
  * among the {@linkplain Container#getComponents descendants} of the active top component.
  * All found printable components are passed into the Print Preview dialog.
+ * Note that {@linkplain JComponent#print print} method is invoked by
+ * the manager for preview and printing the component.<p>
+ *
  * If there are no printable components, printable data are retrieved from the 
  * {@linkplain TopComponent#getActivatedNodes selected nodes} of the active top
  * component. The Print manager gets {@link EditorCookie} from the {@link DataObject}
@@ -144,15 +154,21 @@ public final class PrintManager {
 
   /**
    * This key indicates the order of the component being printed.
-   * The value of the key must be Integer. All visible and printable
+   * The value of the key must be {@link Integer}. All visible and printable
    * components are ordered and shown in the Print Preview
    * dialog from the left to right.
    */
   public static final String PRINT_ORDER = "print.order"; // NOI18N
 
   /**
+   * This key indicates the size of the component being printed.
+   * The value of the key must be {@link Dimension}.
+   */
+  public static final String PRINT_SIZE = "print.size"; // NOI18N
+
+  /**
    * This key indicates whether the component is printable. To be printable
-   * the value Boolean.TRUE must be set as a client property of the component.
+   * the value {@link Boolean#TRUE} must be set as a client property of the component.
    */
   public static final String PRINT_PRINTABLE = "print.printable"; // NOI18N
 

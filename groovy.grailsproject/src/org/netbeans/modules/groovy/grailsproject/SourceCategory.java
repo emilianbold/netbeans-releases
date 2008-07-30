@@ -25,26 +25,46 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.groovy.grailsproject;
 
 /**
  *
  * @author schmidtm
+ * @author Martin Adamek
  */
-public enum SourceCategory {    NONE,
-                                CONFIGURATION,
-                                CONTROLLERS,
-                                DOMAIN,
-                                MESSAGES,
-                                SERVICES,
-                                TAGLIB,
-                                UTIL,
-                                VIEWS,
-                                TESTS,
-                                SCRIPTS,
-                                SRC,
-                                WEBAPP,
-                                LIB;
+public enum SourceCategory {
+
+    NONE("", null), // NOI18N
+    CONFIGURATION("grails-app/conf", null),
+    CONTROLLERS("grails-app/controllers", "create-controller"),
+    DOMAIN("grails-app/domain", "create-domain-class"),
+    MESSAGES("grails-app/i18n", null),
+    SERVICES("grails-app/services", "create-service"),
+    TAGLIB("grails-app/taglib", "create-tag-lib"),
+    UTIL("grails-app/utils", null),
+    VIEWS("grails-app/views", "generate-views"),
+    INTEGRATION_TESTS("test/integration", "create-integration-test"),
+    UNIT_TESTS("test/unit", "create-unit-test"),
+    SCRIPTS("scripts", "create-script"),
+    SRC_JAVA("src/java", null),
+    SRC_GROOVY("src/groovy", null),
+    WEBAPP("web-app", null),
+    LIB("lib", null);
+
+    private final String directory;
+    private final String cmd;
+
+    SourceCategory(String directory, String command) {
+        this.directory = directory;
+        this.cmd = command;
+    }
+
+    public String dir() {
+        return directory;
+    }
+
+    public String command() {
+        return cmd;
+    }
 
 }

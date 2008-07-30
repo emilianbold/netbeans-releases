@@ -210,6 +210,7 @@ public class FolderChildrenTest extends NbTestCase {
 
     }
 
+    @RandomlyFails // NB-Core-Build #1058 (in FolderChildrenLazyTest)
     public void testChangeableDataFilter() throws Exception {
         FileSystem fs = Repository.getDefault ().getDefaultFileSystem();
         FileUtil.createData (fs.getRoot (), "BB/A.txt");

@@ -2479,19 +2479,19 @@ public class BaseKit extends DefaultEditorKit {
                 final BaseDocument doc = (BaseDocument)target.getDocument();
                 doc.runAtomic (new Runnable () {
                     public void run () {
-                    DocumentUtilities.setTypingModification(doc, true);
-                    try {
-                        int dotPos = caret.getDot();
-                        int bolPos = Utilities.getRowStart(target, dotPos);
-                        int eolPos = Utilities.getRowEnd(target, dotPos);
-                        eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
-                        caret.setDot(bolPos);
-                        caret.moveDot(eolPos);
-                    } catch (BadLocationException e) {
-                        target.getToolkit().beep();
-                    } finally {
-                        DocumentUtilities.setTypingModification(doc, false);
-                    }
+                        DocumentUtilities.setTypingModification(doc, true);
+                        try {
+                            int dotPos = caret.getDot();
+                            int bolPos = Utilities.getRowStart(target, dotPos);
+                            int eolPos = Utilities.getRowEnd(target, dotPos);
+                            eolPos = Math.min(eolPos + 1, doc.getLength()); // include '\n'
+                            caret.setDot(bolPos);
+                            caret.moveDot(eolPos);
+                        } catch (BadLocationException e) {
+                            target.getToolkit().beep();
+                        } finally {
+                            DocumentUtilities.setTypingModification(doc, false);
+                        }
                     }
                 });
             }
