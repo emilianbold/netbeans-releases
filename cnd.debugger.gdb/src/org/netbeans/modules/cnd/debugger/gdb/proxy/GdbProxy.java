@@ -522,8 +522,8 @@ public class GdbProxy implements GdbMiDefinitions {
         return engine.sendCommand("-break-condition " + Integer.toString(number) + " " + condition); // NOI18N
     }
     
-    public int break_after(int number, String count) {
-        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + count); // NOI18N
+    public int break_after(int number, int count) {
+        return engine.sendCommand("-break-after " + Integer.toString(number) + " " + Integer.toString(count)); // NOI18N
     }
 
     /** Send "-stack-list-locals" to the debugger */

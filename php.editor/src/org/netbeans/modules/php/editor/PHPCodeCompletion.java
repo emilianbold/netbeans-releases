@@ -165,7 +165,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         TokenHierarchy th = TokenHierarchy.get(document);
         TokenSequence<PHPTokenId> tokenSequence = th.tokenSequence();
         tokenSequence.move(caretOffset);
-        if (!tokenSequence.moveNext()){
+        if (!tokenSequence.moveNext() && !tokenSequence.movePrevious()){
             return CompletionContext.NONE;
         }
 

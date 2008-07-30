@@ -435,20 +435,25 @@ public final class TokenListUpdater {
 
             if (relexLocalIndex == 0) {
                 checkPrevTokenListJoined = true;
-            } else if (relexLocalIndex == matchLocalIndex) {
+            }
+            if (relexLocalIndex == matchLocalIndex) {
                 // Special case when inserting at end of a token with zero lookahead
-                //   that is a last in an ETL:
-                //     doc:"{x}<a>y" and insert(3,"u")
-                // Then the relexIndex would be 1 and relexOffset would point to "y"
-                //   but it has to point to the inserted 'u'.
-                if (modEtl.joinInfo.joinTokenLastPartShift() > 0) {
-                    assert (eventInfo.removedLength() == 0) : "Insert only expected";
-                    relexIndex = jtl.activeEndJoinIndex();
-                    relexLocalIndex = relexIndex - jtl.activeStartJoinIndex();
-                    // There should be at least one token in modEtl since otherwise the (relexLocalIndex==0) would be matched
-                    relexOffset = modEtl.tokenOffsetByIndex(relexLocalIndex);
-                    if (relexLocalIndex == 0) { // Only a single token in ETL - may be joined by prev
-                        checkPrevTokenListJoined = true;
+                if (matchLocalIndex == modEtlTokenCount) {
+                    //   Token is last in an ETL => ensure the relexing starts at end of modEtl
+                    //     where the textual modification happened (instead of the begining of the next ETL).
+                    //   Example:
+                    //       doc:"{x}<a>y" and insert(3,"u") becomes "{x}u<a>y"
+                    //   Then the relexIndex would be 1 and relexOffset would normally point to "y"
+                    //     but it has to point to the inserted 'u' instead.
+                    if (modEtl.joinInfo.joinTokenLastPartShift() > 0) {
+                        assert (eventInfo.removedLength() == 0) : "Insert only expected";
+                        relexIndex = jtl.activeEndJoinIndex();
+                        relexLocalIndex = relexIndex - jtl.activeStartJoinIndex();
+                        // There should be at least one token in modEtl since otherwise the (relexLocalIndex==0) would be matched
+                        relexOffset = modEtl.tokenOffsetByIndex(relexLocalIndex);
+                        if (relexLocalIndex == 0) { // Only a single token in ETL - may be joined by prev
+                            checkPrevTokenListJoined = true;
+                        }
                     }
                 }
             }
@@ -594,7 +599,7 @@ public final class TokenListUpdater {
                     sb.append(tokenEndOffset);
                 }
                 sb.append('"');
-                CharSequenceUtilities.debugText(sb, inputSourceText.subSequence(relexOffset, tokenEndOffset));
+                token.dumpText(sb, inputSourceText);
                 sb.append('"');
                 token.dumpInfo(sb, null, false, false, 0);
                 sb.append("\n");

@@ -44,7 +44,6 @@ import java.util.Arrays;
 import java.util.List;
 import javax.swing.text.StyledDocument;
 import org.netbeans.modules.vmd.api.codegen.CodeClassLevelPresenter;
-import org.netbeans.modules.vmd.api.codegen.CodePresenter;
 import org.netbeans.modules.vmd.api.codegen.CodeReferencePresenter;
 import org.netbeans.modules.vmd.api.codegen.MultiGuardedSection;
 import org.netbeans.modules.vmd.api.model.ComponentDescriptor;

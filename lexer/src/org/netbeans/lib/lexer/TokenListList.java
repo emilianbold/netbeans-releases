@@ -318,7 +318,7 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
                 return "TOKEN-LIST-LIST Null ec at index=" + i + "\n" + this;
             }
             if (etl.embeddingContainer().isRemoved()) {
-                return "TOKEN-LIST-LIST Removed ec fat index=" + i + "\n" + this;
+                return "TOKEN-LIST-LIST Removed ec at index=" + i + "\n" + this;
             }
             lastEndOffset = etl.endOffset();
         }
@@ -346,12 +346,9 @@ public final class TokenListList<T extends TokenId> extends GapList<EmbeddedToke
             ArrayUtilities.appendBracketedIndex(sb, i, digitCount);
             EmbeddingContainer ec = etl.embeddingContainer();
             ec.updateStatus();
-            if (ec != null && ec.isRemoved()) {
-                sb.append(", <--REMOVED-->");
-            }
             etl.dumpInfo(sb);
             sb.append('\n');
-            LexerUtilsConstants.appendTokenListIndented(sb, etl, 4);
+//            LexerUtilsConstants.appendTokenListIndented(sb, etl, 4);
         }
         return sb.toString();
     }
