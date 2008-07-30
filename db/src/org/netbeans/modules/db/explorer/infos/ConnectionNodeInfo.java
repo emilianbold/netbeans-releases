@@ -495,6 +495,15 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
     }
 
     @Override
+    public Vector<DatabaseNodeInfo> getChildren() throws DatabaseException{
+        if ( ! isConnected() ) {
+            return new Vector<DatabaseNodeInfo>();
+        } else {
+            return super.getChildren();
+        }
+    }
+
+    @Override
     public void refreshChildren() throws DatabaseException {
         Vector<DatabaseNodeInfo> children = getChildren();
         for ( DatabaseNodeInfo info : children ) {
