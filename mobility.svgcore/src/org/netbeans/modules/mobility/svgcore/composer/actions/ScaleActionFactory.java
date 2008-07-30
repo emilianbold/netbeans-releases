@@ -99,7 +99,15 @@ public class ScaleActionFactory extends AbstractComposerActionFactory {
         @Override
         public ActionMouseCursor getMouseCursor(boolean isOutsideEvent) {
             return isOutsideEvent ? null : SCALE_SE_MOUSE_CURSOR;
-        }        
+        }
+
+        @Override
+        public synchronized void actionCompleted() {
+            m_scaled.repaint(SVGObjectOutline.SELECTOR_OVERLAP);
+            m_scaled.applyTextChanges();
+            m_scaled.commitChanges();
+            super.actionCompleted();
+        }
         
         protected float calculateScaleX( int x ) {
             float[] pt = m_scaled.getOutline().getScalePivotPoint();
