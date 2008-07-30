@@ -73,6 +73,7 @@ import org.netbeans.modules.apisupport.project.NbModuleProjectGenerator;
 import org.netbeans.modules.apisupport.project.Util;
 import org.netbeans.modules.apisupport.project.spi.NbModuleProvider;
 import org.netbeans.modules.apisupport.project.suite.SuiteProject;
+import org.netbeans.modules.apisupport.project.ui.customizer.SingleModuleProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteProperties;
 import org.netbeans.modules.apisupport.project.ui.customizer.SuiteUtils;
 import org.netbeans.modules.apisupport.project.universe.ModuleEntry;
@@ -722,13 +723,7 @@ public class LayerUtils {
         ModuleEntry[] entries = platform.getModules();
         Set<File> jars = new HashSet<File>(entries.length);
         for (ModuleEntry entry : entries) {
-            if (!includedClustersS.isEmpty() && !includedClustersS.contains(entry.getClusterDirectory().getName())) {
-                continue;
-            }
-            if (includedClustersS.isEmpty() && excludedClustersS.contains(entry.getClusterDirectory().getName())) {
-                continue;
-            }
-            if (excludedModulesS.contains(entry.getCodeNameBase())) {
+            if (SingleModuleProperties.isExcluded(entry, excludedModulesS, includedClustersS, excludedClustersS)) {
                 continue;
             }
             jars.add(entry.getJarLocation());

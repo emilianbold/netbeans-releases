@@ -378,16 +378,17 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         n.setDisplayName(getMessage("LBL_ModuleListClustersModules"));
         
         for (ModuleEntry platformModule : platformModules) {
-            Enabled cluster = clusterToNode.get(platformModule.getClusterDirectory());
+            File clusterDirectory = platformModule.getClusterDirectory();
+            Enabled cluster = clusterToNode.get(clusterDirectory);
             if (cluster == null) {
                 Children.SortedArray modules = new Children.SortedArray();
                 modules.setComparator(this);
                 
-                String clusterName = platformModule.getClusterDirectory().getName();
-                cluster = new Enabled(modules, enabledClusters.contains(clusterName));
+                String clusterName = clusterDirectory.getName();
+                cluster = new Enabled(modules, SingleModuleProperties.clusterMatch(enabledClusters, clusterName));
                 cluster.setName(clusterName);
                 cluster.setIconBaseWithExtension(SuiteProject.SUITE_ICON_PATH);
-                clusterToNode.put(platformModule.getClusterDirectory(), cluster);
+                clusterToNode.put(clusterDirectory, cluster);
                 n.getChildren().add(new Node[] { cluster });
             }
             String cnb = platformModule.getCodeNameBase();
@@ -815,7 +816,7 @@ public final class SuiteCustomizerLibraries extends NbPropertyPanel.Suite
         for (UniverseModule m : universeModules) {
             String cnb = m.getCodeNameBase();
             String cluster = m.getCluster();
-            if (cluster != null && (!enabledClusters.contains(cluster) || disabledModules.contains(cnb))) {
+            if (cluster != null && (!SingleModuleProperties.clusterMatch(enabledClusters, cluster) || disabledModules.contains(cnb))) {
                 excluded.add(m);
             }
             sortedModules.put(cnb, m);
