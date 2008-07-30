@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  *
  * @author Tomasz.Slota@Sun.COM
  */
-public class AccidentalAssignementRule extends PHPRule {
+public class AccidentalAssignmentRule extends PHPRule {
 
     public HintSeverity getDefaultSeverity() {
         return HintSeverity.WARNING;
@@ -64,7 +64,7 @@ public class AccidentalAssignementRule extends PHPRule {
     }
 
     public String getDescription() {
-        return NbBundle.getMessage(AccidentalAssignementRule.class, "AccidentalAssignementDesc");
+        return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDesc");
     }
 
     @Override
@@ -101,13 +101,13 @@ public class AccidentalAssignementRule extends PHPRule {
 
         OffsetRange range = new OffsetRange(expr.getStartOffset(), expr.getEndOffset());
 
-        Hint hint = new Hint(AccidentalAssignementRule.this, getDisplayName(),
+        Hint hint = new Hint(AccidentalAssignmentRule.this, getDisplayName(),
                 context.compilationInfo.getFileObject(), range, null, 500);
 
         addResult(hint);
     }
 
     public String getDisplayName() {
-        return NbBundle.getMessage(AccidentalAssignementRule.class, "AccidentalAssignementDispName");
+        return NbBundle.getMessage(AccidentalAssignmentRule.class, "AccidentalAssignmentDispName");
     }
 }

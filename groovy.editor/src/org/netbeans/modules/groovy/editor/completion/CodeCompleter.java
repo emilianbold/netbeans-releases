@@ -399,16 +399,47 @@ private void printMethod(MetaMethod mm) {
         
         return false;
     }
+
+    /**
+     * Figure-out, where we are in the code (comment, CU, class, method, etc.)
+     * @param request
+     * @return
+     */
     
-    
-    public CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
+    private CaretLocation getCaretLocationFromRequest(final CompletionRequest request) {
+        
+        
+        int position = request.lexOffset;
+        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+        
+        // are we living inside a comment?
+        
+        ts.move(position);
+        
+        if(ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()){
+            Token<? extends GroovyTokenId> t = (Token<? extends GroovyTokenId>) ts.token();
+            
+            if (t.id() == GroovyTokenId.LINE_COMMENT || t.id() == GroovyTokenId.BLOCK_COMMENT) {
+                return CaretLocation.INSIDE_COMMENT;
+            }
+            
+            // This is a special case. If we have a NLS right behind a LINE_COMMENT it
+            // should be treated as a CaretLocation.INSIDE_COMMENT. Therefore we have to rewind.
+            
+            if (t.id() == GroovyTokenId.NLS) {
+                if((ts.isValid() && ts.movePrevious() && ts.offset() >= 0)){
+                    Token<? extends GroovyTokenId> tparent = (Token<? extends GroovyTokenId>) ts.token();
+                    if (tparent.id() == GroovyTokenId.LINE_COMMENT) {
+                        return CaretLocation.INSIDE_COMMENT;
+                    }
+                }
+            }
+        }
+        
         
         // Are we above the package statement?
         // We try to figure this out by moving down the lexer Stream
-        
-        int position = request.lexOffset;
-        
-        TokenSequence<?> ts = LexUtilities.getGroovyTokenSequence(request.doc, position);
+
         ts.move(position);
         
         while (ts.isValid() && ts.moveNext() && ts.offset() < request.doc.getLength()) {
@@ -2407,8 +2438,8 @@ private void printMethod(MetaMethod mm) {
             request.location = getCaretLocationFromRequest(request);
             LOG.log(Level.FINEST, "I am here in sourcecode: {0}", request.location); // NOI18N
             
-            // if we are above a package statement, there's no completion at all.
-            if(request.location == CaretLocation.ABOVE_PACKAGE){
+            // if we are above a package statement or inside a comment there's no completion at all.
+            if(request.location == CaretLocation.ABOVE_PACKAGE || request.location == CaretLocation.INSIDE_COMMENT){
                 return new DefaultCompletionResult(proposals, false);
             }
 

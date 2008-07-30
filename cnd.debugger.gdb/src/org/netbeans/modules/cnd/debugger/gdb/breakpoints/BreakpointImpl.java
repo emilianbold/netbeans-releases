@@ -103,7 +103,7 @@ public abstract class BreakpointImpl implements PropertyChangeListener {
                 }
             }
             breakpoint.setValid();
-            debugger.getBreakpointList().put(number, this);
+            debugger.getBreakpointList().put(breakpointNumber, this);
         } else {
             breakpoint.setInvalid(err);
             setState(BPSTATE_VALIDATION_FAILED);
