@@ -358,7 +358,10 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseFolderFile(FileObject folder, JTextField textField) {
-        textField.setText(browseFolderFile(folder, textField.getText()));
+        String selected = browseFolderFile(folder, textField.getText());
+        if (selected != null) {
+            textField.setText(selected);
+        }
     }
 
     /**
@@ -381,7 +384,10 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseSourceFile(Project project, JTextField textField) {
-        textField.setText(browseSource(project, textField.getText(), false));
+        String selected = browseSource(project, textField.getText(), false);
+        if (selected != null) {
+            textField.setText(selected);
+        }
     }
 
     /**
@@ -400,7 +406,10 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseSourceFolder(Project project, JTextField textField) {
-        textField.setText(browseSource(project, textField.getText(), true));
+        String selected = browseSource(project, textField.getText(), true);
+        if (selected != null) {
+            textField.setText(selected);
+        }
     }
 
     /**
