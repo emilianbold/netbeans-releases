@@ -220,7 +220,6 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
 
     protected void fillTokenData(AbstractToken<T> token) {
         if (!recognizedTokenJoined) {
-            token.setTokenList(activeTokenList);
             // Subtract tokenLength since this is already advanced to end of token
             token.setRawOffset(realTokenStartOffset - tokenLength);
         }
@@ -261,7 +260,6 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
         PartToken<T>[] parts = new PartToken[joinPartCountEstimate];
         int partLength = activeTokenListEndOffset - realTokenStartOffset;
         PartToken<T> partToken = new PartToken<T>(id, partLength, propertyProvider, PartType.START, joinToken, 0, 0);
-        partToken.setTokenList(activeTokenList);
         partToken.setRawOffset(realTokenStartOffset); // realTokenStartOffset already decreased by tokenLength
         parts[0] = partToken;
         int partIndex = 1;
@@ -288,7 +286,6 @@ public class JoinLexerInputOperation<T extends TokenId> extends LexerInputOperat
             partToken = new PartToken<T>(id, partLength, propertyProvider, partPartType, joinToken, partIndex, partTextOffset);
             // realTokenStartOffset still points to start of activeTokenList
             partToken.setRawOffset(realTokenStartOffset); // ETL.startOffset() will be subtracted upon addition to ETL
-            partToken.setTokenList(activeTokenList);
             partTextOffset += partLength;
             parts[partIndex++] = partToken;
         } while (partTextOffset < tokenLength);
