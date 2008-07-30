@@ -44,7 +44,10 @@ import com.sun.esb.management.api.notification.EventNotification;
 import com.sun.esb.management.api.notification.EventNotificationListener;
 import com.sun.esb.management.api.notification.NotificationService;
 import com.sun.esb.management.common.ManagementRemoteException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.management.Notification;
@@ -55,6 +58,7 @@ import org.netbeans.modules.sun.manager.jbi.management.AppserverJBIMgmtControlle
 import org.netbeans.modules.sun.manager.jbi.util.Utils;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -65,8 +69,9 @@ import org.openide.util.actions.SystemAction;
 public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         implements Refreshable {
 
+    private final static Node WAIT_NODE = WaitNode.createWaitNode();
     private static Logger logger = Logger.getLogger("org.netbeans.modules.sun.manager.jbi.nodes.AppserverJBIMgmtContainerNode"); // NOI18N   
-    
+
     /**
      * Creates a new instance of AppserverJBIMgmtContainerNode.
      */
@@ -83,13 +88,13 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
         // Use non-HTML version in the property sheet's description area.
         setValue("nodeDescription", shortDescription); // NOI18N 
 
-        try {            
+        try {
             NotificationService notificationService = controller.getNotificationService();
             notificationService.addNotificationEventListener(new EventNotificationListener() {
 
                 public void processNotification(EventNotification eventNotification) {
                     Notification notification = eventNotification.getNotification();
-                    CompositeDataSupport userData = (CompositeDataSupport)notification.getUserData();
+                    CompositeDataSupport userData = (CompositeDataSupport) notification.getUserData();
                     String notificationSourceType = (String) userData.get("SourceType"); // NOI18N
                     if (needRefresh(notificationSourceType)) {
                         refresh();
@@ -101,7 +106,7 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
             logger.warning("Cannot get notification service: " + ex.getMessage()); // NOI18N
         }
     }
-    
+
     /**
      * Whether this container node needs to be refreshed (that is, children
      * regenerated) when a notification of the given source type is received
@@ -171,11 +176,20 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
 
         @Override
         protected void addNotify() {
-            try {
-                setKeys(this.cfactory.getChildrenObject(getNode(), this.type));
-            } catch (ManagementRemoteException e) {
-                getLogger().log(Level.FINE, e.getMessage(), e);
-            }
+            List<Node> keys = new ArrayList<Node>();
+            keys.add(WAIT_NODE);
+            setKeys(keys);
+
+            RequestProcessor.getDefault().post(new Runnable() {
+                Vector<Object> keys = new Vector<Object>();
+                public void run() {
+                    try {
+                        setKeys(cfactory.getChildrenObject(getNode(), type));
+                    } catch (ManagementRemoteException e) {
+                        getLogger().log(Level.FINE, e.getMessage(), e);
+                    }
+                }
+            }, 0);
         }
 
         @Override
@@ -189,7 +203,7 @@ public abstract class AppserverJBIMgmtContainerNode extends AppserverJBIMgmtNode
 
         protected Node[] createNodes(Node obj) {
             try {
-                return new Node[]{obj                        };
+                return new Node[]{obj};
             } catch (RuntimeException rex) {
                 getLogger().log(Level.FINE, rex.getMessage(), rex);
                 return new Node[]{};
