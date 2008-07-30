@@ -52,6 +52,7 @@ import java.util.logging.Logger;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ant.AntArtifact;
@@ -71,6 +72,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * Misc helper methods for implementors of ProjectTypeFactory.
@@ -81,7 +83,7 @@ public class ProjectFactorySupport {
     /** Logger for this class. */
     private static final Logger LOG =
             Logger.getLogger(ProjectFactorySupport.class.getName());
-    
+
     /**
      * Default translation of eclipse classpath to netbeans classpath. Should
      * be useful for most of the project types.
@@ -647,6 +649,19 @@ public class ProjectFactorySupport {
         if (changed) {
             helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         }
+    }
+    
+    public static boolean areSourceRootsOwned(ProjectImportModel model, List<String> importProblems) {
+        for (File sourceRootFile : model.getEclipseSourceRootsAsFileArray()) {
+            FileObject fo = FileUtil.toFileObject(sourceRootFile);
+            Project p = FileOwnerQuery.getOwner(fo);
+            if (p != null) {
+                importProblems.add(NbBundle.getMessage(EclipseProject.class, "MSG_SourceRootOwned", // NOI18N
+                        model.getProjectName(), sourceRootFile.getPath(), p.getProjectDirectory().getPath()));
+                return true;
+            }
+        }
+        return false;
     }
     
 }
