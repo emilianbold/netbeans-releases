@@ -50,6 +50,7 @@ import javax.tools.DiagnosticListener;
 import javax.tools.JavaFileObject;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.PositionConverter;
@@ -113,7 +114,12 @@ public abstract class JavaSourceAccessor {
      * @return {@link CompilationInfo} or null
      */
     public abstract CompilationInfo getCurrentCompilationInfo (JavaSource js, JavaSource.Phase phase) throws IOException;
-    
+
+    /**
+     * Expert: Private API for indentation engine only!
+     */
+    public abstract CompilationController createCompilationController (JavaSource js) throws IOException;
+
     public abstract void revalidate(JavaSource js); 
     
     public abstract JavaSource create(final ClasspathInfo cpInfo, final PositionConverter binding, final Collection<? extends FileObject> files) throws IllegalArgumentException;

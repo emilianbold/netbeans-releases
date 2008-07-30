@@ -90,4 +90,36 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test142051_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
     }
+
+    // #136092 Code completion doesn't show reference parameters
+    public void test136092_withoutReference() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136092.php", "$source1 = $reques^", false);
+    }
+    public void test136092_withReference() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136092.php", "$source2 = $reques^", false);
+    }
+    // #132294 [cc] cc for variables in strings not working if there are non-ws chars preceding the variablle
+    public void test132294() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $ts^", false);
+    }
+    public void test132294_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$ts^", false);
+    }
+    // #142234 $t->| shouldn't propose __construct()
+    public void test142234() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142234.php", "$t->^", false);
+    }
+    // #135618 [CC] Missing static members from parent classes after "self::"
+    public void test135618() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue135618.php", "self::^", false);
+    }
+    public void test135618_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue135618.php", "B135618::^", false);
+    }
+    public void test135618_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue135618.php", "A135618::^", false);
+    }
+    public void test142091() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142091.php", "function f142091 (^", false);
+    }
 }

@@ -645,7 +645,9 @@ public final class RubyPlatform {
     }
 
     String getLatestRequiredRDebugIDEVersion() {
-        return "< 0.3"; // NOI18N
+        // TODO: ideally this would be e.g. '< 0.3' but then running external
+        // process has problems with the '<'. See issue 142240.
+        return "0.2"; // NOI18N
     }
 
     /**

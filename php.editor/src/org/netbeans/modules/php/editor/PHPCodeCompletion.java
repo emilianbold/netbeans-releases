@@ -109,7 +109,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS},
         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final List<PHPTokenId[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
@@ -399,16 +401,18 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
-            if (typeName != null){                
+            if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
                     request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-
+                        List<String> notValidProposals = Arrays.asList(new String[] {"__construct","__destruct  "});//NOI18N
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
-                            proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                            if (!notValidProposals.contains(method.getName())) {
+                                proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
+                            }
                         }
                     }
                 }
@@ -432,9 +436,8 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
 
                 if (staticContext) {
-                    Collection<IndexedConstant> classConstants = request.index.getClassConstants(
+                    Collection<IndexedConstant> classConstants = request.index.getAllClassConstants(
                             request.result, typeName, request.prefix, nameKind);
-
                     for (IndexedConstant constant : classConstants) {
                         proposals.add(new PHPCompletionItem.VariableItem(constant, request));
                     }
@@ -771,6 +774,10 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     String prefix;
                     if (upToOffset) {
                         prefix = line.substring(start, lineOffset);
+                        int lastIndexOfDollar = prefix.lastIndexOf('$');//NOI18N
+                        if (lastIndexOfDollar > 0) {
+                            prefix = prefix.substring(lastIndexOfDollar);
+                        }
                     } else {
                         if (lineOffset == line.length()) {
                             prefix = line.substring(start);

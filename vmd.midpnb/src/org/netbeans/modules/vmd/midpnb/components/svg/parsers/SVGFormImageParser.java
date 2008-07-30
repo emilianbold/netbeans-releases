@@ -72,7 +72,7 @@ import org.xml.sax.helpers.XMLReaderFactory;
  */
 public class SVGFormImageParser extends SVGComponentImageParser {
     
-    private static final String DIGITS = "_\\d$"; //NOI18N
+    private static final String DIGITS = "_\\d+$"; //NOI18N
     private static final String PREFIX = "^"; //NOI18N
     private static final Pattern FORM_COMPONENT_ID_BUTTON = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_BUTTON + DIGITS); 
     private static final Pattern FORM_COMPONENT_ID_LABEL = Pattern.compile(PREFIX + SVGComponentsSupport.ID_PREFIX_LABEL + DIGITS); 
