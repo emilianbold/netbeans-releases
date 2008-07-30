@@ -768,8 +768,8 @@ public class WebProjectUtilities {
         // #113297, #118187
         ep.setProperty(WebProjectProperties.DEBUG_CLASSPATH, Utils.getDefaultDebugClassPath());
         
-        ep.setProperty("runmain.jvmargs", ""); // NOI18N
-        ep.setComment("runmain.jvmargs", new String[] { // NOI18N
+        ep.setProperty(WebProjectProperties.RUNMAIN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(WebProjectProperties.RUNMAIN_JVM_ARGS, new String[] { // NOI18N
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_runmain.jvmargs"), // NOI18N
             "# " + NbBundle.getMessage(WebProjectUtilities.class, "COMMENT_runmain.jvmargs_2"), // NOI18N
         }, false);
