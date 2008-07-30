@@ -67,9 +67,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
-import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeReader;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
-import org.netbeans.modules.uml.drawingarea.persistence.data.EdgeInfo;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.DesignerTools;
 import org.netbeans.modules.uml.drawingarea.view.UMLWidget;
@@ -185,21 +183,17 @@ public abstract class AbstractLabelManager implements LabelManager
                     scene.addObject(data, child);
                 }
 
-
-                if (!PersistenceUtil.isDiagramLoading())
+                if (type == LabelType.EDGE)
                 {
-                    if (type == LabelType.EDGE)
-                    {
-                        connector.setConstraint(child,
-                                getDefaultAlignment(name, type),
-                                0.5f);
-                    }
-                    else
-                    {
-                        connector.setConstraint(child,
-                                getDefaultAlignment(name, type),
-                                getAlignmentDistance(type));
-                    }
+                    connector.setConstraint(child,
+                            getDefaultAlignment(name, type),
+                            0.5f);
+                }
+                else
+                {
+                    connector.setConstraint(child,
+                            getDefaultAlignment(name, type),
+                            getAlignmentDistance(type));
                 }
                 scene.validate();
              }
@@ -221,13 +215,9 @@ public abstract class AbstractLabelManager implements LabelManager
         if (labelMap != null && labelMap.containsKey(completeName) && location != null)
         {
             Widget widget = labelMap.get(completeName);
-            System.out.println(" before loc = "+widget.getLocation()+" pref loc = "+widget.getPreferredLocation());
-            widget.setPreferredLocation(widget.convertLocalToScene(location));
-            System.out.println(" after = "+widget.getPreferredLocation());
-        }
+            widget.setPreferredLocation(location);
+        }        
     }
-
-
 
     public void selectLabel(String name)
     {
@@ -541,17 +531,9 @@ public abstract class AbstractLabelManager implements LabelManager
 
         public void save(EdgeWriter edgeWriter)
         {
-//            // Since this is a wrapper widget, we will simply forward the
-//            // save to the child widget.
-//            Widget child = getChildren().get(0);
-//            if (child instanceof DiagramEdgeWriter)
-//            {
-//                DiagramEdgeWriter writerWidget = (DiagramEdgeWriter) child;
-//                writerWidget.save(edgeWriter);
-//            }
             edgeWriter.setPEID(PersistenceUtil.getPEID(this));
             edgeWriter.setVisible(this.isVisible());
-            edgeWriter.setLocation(this.getLocation());
+            edgeWriter.setLocation(this.getPreferredLocation());
             edgeWriter.setSize(this.getBounds().getSize());
             edgeWriter.setPresentation("");
             edgeWriter.setHasPositionSize(true);
