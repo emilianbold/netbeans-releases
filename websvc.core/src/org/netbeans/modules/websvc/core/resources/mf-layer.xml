@@ -75,6 +75,7 @@ made subject to such option by the copyright holder.
             <file name="WebServiceFromWSDL.java">
                 <attr name="template" boolvalue="true"/>
                 <attr name="position" intvalue="200"/>
+                <attr name="javax.script.ScriptEngine" stringvalue="freemarker"/>
                 <attr name="instantiatingIterator" methodvalue="org.netbeans.modules.websvc.core.dev.wizard.NewWebServiceFromWSDLWizardIterator.create"/>
                 <attr name="templateCategory" stringvalue="web-services"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/core/dev/resources/WebServiceFromWSDL.html"/>
