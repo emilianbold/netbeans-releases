@@ -76,8 +76,7 @@ public class DeleteActionTest extends JellyTestCase {
         suite.addTest(new DeleteActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(DeleteActionTest.class, "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(DeleteActionTest.class);
     }
     
     /** Use for internal test execution inside IDE
@@ -90,6 +89,7 @@ public class DeleteActionTest extends JellyTestCase {
     private static Node node;
     
     public void setUp() throws IOException {
+        new DeleteAction().getKeyStrokes();
         System.out.println("### "+getName()+" ###");  // NOI18N
         openDataProjects("SampleProject");
         if(node == null) {

@@ -69,7 +69,7 @@ import org.netbeans.jemmy.operators.Operator;
 import org.openide.cookies.SaveCookie;
 import org.openide.loaders.DataObject;
 import org.openide.windows.TopComponent;
-import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
+//import org.netbeans.core.multiview.MultiViewCloneableTopComponent;
 import org.netbeans.swing.tabcontrol.TabbedContainer;
 
 /** Represents org.openide.windows.TopComponent. It is IDE wrapper for a lot of
@@ -478,7 +478,8 @@ public class TopComponentOperator extends JComponentOperator {
         } else {
             boolean isMultiView = false;
             try {
-                isMultiView = c instanceof MultiViewCloneableTopComponent;
+                //isMultiView = c instanceof MultiViewCloneableTopComponent;
+                isMultiView = isMultyView(c);
             } catch (Throwable t) {
                 // ignore possible NoClassDefFoundError because org.netbeans.core.multiview module is not enabled in IDE
             }
@@ -495,7 +496,17 @@ public class TopComponentOperator extends JComponentOperator {
         }
         return null;
     }
-    
+
+    private static boolean isMultyView(TopComponent c) {
+        Class clz = c.getClass();
+        do {
+            if(clz.getName().equals("org.netbeans.core.multiview.MultiViewCloneableTopComponent")) {
+                return true;
+            }
+        } while((clz = clz.getSuperclass()) != null);
+        return false;
+    }
+
     private static boolean isParentShowing(Component c) {
         while (c!=null) {
             if (c.isShowing()) return true;
@@ -583,7 +594,7 @@ public class TopComponentOperator extends JComponentOperator {
     /** Returns TabbedAdapter component from parents hierarchy.
      * Used also in EditorWindowOperator.
      */
-    TabbedContainer findTabbedAdapter() {
+    public TabbedContainer findTabbedAdapter() {
         Container parent = getSource().getParent();
         while(parent != null) {
             if(parent instanceof TabbedContainer) { // NOI18N
@@ -595,7 +606,7 @@ public class TopComponentOperator extends JComponentOperator {
         return null;
     }
     
-    Container findTabDisplayer() {
+    public Container findTabDisplayer() {
         return ContainerOperator.findContainer(findTabbedAdapter(), new ComponentChooser() {
             public boolean checkComponent(Component comp) {
                 return comp.getClass().getName().endsWith("TabDisplayer");

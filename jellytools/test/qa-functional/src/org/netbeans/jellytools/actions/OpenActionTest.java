@@ -74,8 +74,7 @@ public class OpenActionTest extends JellyTestCase {
         suite.addTest(new OpenActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(OpenActionTest.class, "testPerformPopup",
-                "testPerformAPI");
+        return createModuleTest(OpenActionTest.class);
     }
 
     @Override

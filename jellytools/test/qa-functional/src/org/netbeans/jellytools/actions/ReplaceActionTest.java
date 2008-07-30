@@ -75,8 +75,7 @@ public class ReplaceActionTest extends JellyTestCase {
         suite.addTest(new ReplaceActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(ReplaceActionTest.class, 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(ReplaceActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

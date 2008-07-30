@@ -74,8 +74,7 @@ public class MaximizeWindowActionTest extends JellyTestCase {
         suite.addTest(new MaximizeWindowActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(MaximizeWindowActionTest.class, "testPerformPopup",
-                "testPerformAPI");
+        return createModuleTest(MaximizeWindowActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

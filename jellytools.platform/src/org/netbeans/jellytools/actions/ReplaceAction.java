@@ -42,7 +42,6 @@ package org.netbeans.jellytools.actions;
 
 import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ProjectsTabOperator;
 
 /** Used to call "Edit|Replace" main menu item,
  * "org.openide.actions.ReplaceAction" or Ctrl+H shortcut.

@@ -89,7 +89,7 @@ public class J2eeServerNodeTest extends JellyTestCase {
             RuntimeTabOperator.invoke();
             serverNode = new J2eeServerNode("GlassFish");
              */
-            serverNode = getGlassFishV2Node();
+            //serverNode = getGlassFishV2Node();
         }
     }
     

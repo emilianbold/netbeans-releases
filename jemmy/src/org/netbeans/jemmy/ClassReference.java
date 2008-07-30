@@ -76,14 +76,45 @@ public class ClassReference{
      * Contructor.
      * The object created by this constructor can be used
      * to access static methods and fields only.
-     * 
+     *
      * @param	className name of class
      * @exception	ClassNotFoundException
      */
-    public ClassReference(String className) 
+    public ClassReference(String className)
     throws ClassNotFoundException {
 	super();
 	cl = Class.forName(className);
+	instance = null;
+    }
+
+    /**
+     * Contructor.
+     * The object created by this constructor can be used
+     * to access static methods and fields only.
+     *
+     * @param loader The class loader to load the class
+     * @param	className name of class
+     * @exception	ClassNotFoundException
+     */
+    public ClassReference(ClassLoader loader, String className)
+    throws ClassNotFoundException {
+	super();
+	cl = loader.loadClass(className);
+	instance = null;
+    }
+
+    /**
+     * Contructor.
+     * The object created by this constructor can be used
+     * to access static methods and fields only.
+     *
+     * @param	clss the class
+     * @exception	ClassNotFoundException
+     */
+    public ClassReference(Class clss)
+    throws ClassNotFoundException {
+	super();
+	cl = clss;
 	instance = null;
     }
 
