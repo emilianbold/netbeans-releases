@@ -54,7 +54,10 @@ public class PluginsOperator extends JDialogOperator {
         MAIN_MENU_ITEM_TOOLS = "Tools",
         MAIN_MENU_ITEM_TOOLS_PLUGINS = MAIN_MENU_ITEM_TOOLS + "|Plugins",
         DIALOG_TITLE_PLUGINS = "Plugins",
-        DIALOG_TITLE_NETBEANS_IDE_INSTALLER = "NetBeans IDE Installer",
+        //DIALOG_TITLE_NETBEANS_IDE_INSTALLER = "NetBeans IDE Installer",
+        DIALOG_TITLE_NETBEANS_IDE_INSTALLER = org.netbeans.modules.visualweb.gravy.Bundle.getStringTrimmed(
+            "org.netbeans.modules.autoupdate.ui.wizards.Bundle",
+            "InstallUnitWizard_Title"),
         DIALOG_TITLE_VALIDATION_WARNING = "Validation Warning",
         
         TAB_TITLE_AVAILABLE_PLUGINS = "Available Plugins",

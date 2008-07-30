@@ -208,6 +208,7 @@ final class TokenListListUpdate<T extends TokenId> {
         
         if (becomeJoining) {
             // Create JTL to init tokens
+            tokenListList.setJoinSections(true);
             JoinTokenList.create(tokenListList, 0, tokenListList.size());
         }
         for (int i = 0; i < addedTokenLists.size(); i++) {

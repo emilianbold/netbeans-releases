@@ -46,7 +46,7 @@
 function TestSupport() {
     this.wadlDoc = null;
     this.wadlURL = '';
-    this.wadlErr = 'Cannot access WADL: Please restart your RESTful application, and refresh this page.';
+    this.wadlErr = 'MSG_TEST_RESBEANS_wadlErr';
     this.currentValidUrl = '';
     this.breadCrumbs = [];
     this.currentMethod = '';
@@ -77,11 +77,11 @@ function TestSupport() {
     this.cg.src = "cg.gif";
 
     this.viewIds = [
-        { "id" : "table" , "name":"Tabular View", "type":"tableContent"}, 
-        { "id" : "raw" , "name":"Raw View", "type":"rawContent"}, 
-        { "id" : "structure" , "name":"Sub-Resource", "type":"structureInfo"},
-        { "id" : "header" , "name":"Headers", "type":"headerInfo"},
-        { "id" : "monitor" , "name":"Http Monitor", "type":"monitorContent"}];
+        { "id" : "table" , "name":"MSG_TEST_RESBEANS_TabularView", "type":"tableContent"}, 
+        { "id" : "raw" , "name":"MSG_TEST_RESBEANS_RawView", "type":"rawContent"}, 
+        { "id" : "structure" , "name":"MSG_TEST_RESBEANS_SubResources", "type":"structureInfo"},
+        { "id" : "header" , "name":"MSG_TEST_RESBEANS_Headers", "type":"headerInfo"},
+        { "id" : "monitor" , "name":"MSG_TEST_RESBEANS_Monitor", "type":"monitorContent"}];
     
     this.xhr = new XHR();
     this.wdr = new WADLParser();
@@ -112,7 +112,7 @@ TestSupport.prototype = {
             this.wdr.updateMenu(wadlData);
         } else {
             this.setvisibility('main', 'inherit');
-            this.updatepage('content', '<span class=bld>Help Page</span><br/><br/><p>Cannot access WADL: Please restart your REST application, and refresh this page.</p><p>If you still see this error and if you are accessing this page using Firefox with Firebug plugin, then<br/>you need to disable firebug for local files. That is from Firefox menubar, check <br/>Tools > Firebug > Disable Firebug for Local Files</p>');
+            this.updatepage('content', 'MSG_TEST_RESBEANS_Help');
         }            
     },
 
@@ -167,7 +167,7 @@ TestSupport.prototype = {
     getMethodMimeTypeCombo : function (resource) {
         var methods = resource.getElementsByTagName('method');
         var str = '<table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
-                            '<span>Choose method to test: </span></label></span></td>';
+                            '<span>MSG_TEST_RESBEANS_ChooseMethod: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
         for(var j=0;j<methods.length;j++) {
             var m = methods[j];                            
@@ -185,7 +185,7 @@ TestSupport.prototype = {
                     str += "  <option class=MnuJmpOpt_sun4 selected value='"+dispName+"["+j+"]'>"+dispName+"</option>";
             }
         }   
-        str += "</select></span></td><td width=46/><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>Test</a></td></tr></tbody></table>";
+        str += "</select></span></td><td width=46/><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>MSG_TEST_RESBEANS_TestButton</a></td></tr></tbody></table>";
         return str;
     },
     
@@ -250,14 +250,14 @@ TestSupport.prototype = {
         this.showBreadCrumbs(uri);
         
         var str = '<br/><table border=0><tbody><tr><td valign="top"><span id="j_id14"><label for="methodSel" class="LblLev2Txt_sun4">'+
-                            '<span>Choose method to test: </span></label></span></td>';
+                            '<span>MSG_TEST_RESBEANS_ChooseMethod: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='methodSel' class=MnuJmp_sun4 name='methodSel' onchange='javascript:ts.changeMethod();'>";
         str += "  <option class=MnuJmpOpt_sun4 selected value='GET'>GET</option>";
         str += "  <option class=MnuJmpOpt_sun4 value='PUT'>PUT</option>";
         str += "  <option class=MnuJmpOpt_sun4 value='DELETE'>DELETE</option>";
         str += "</select></span></td>";
         str += '<td valign="top"><span id="j_id14"><label for="methodSel" style="padding-left: 6px;" class="LblLev2Txt_sun4">'+
-            '<span>MIME: </span></label></span></td>';
+            '<span>MSG_TEST_RESBEANS_ChooseMime: </span></label></span></td>';
         str += "<td><span id=j_id14><select id='mimeSel' class=MnuJmp_sun4 name='mimeSel' onchange='javascript:ts.changeMimeType();'>";
         str += "  <option class=MnuJmpOpt_sun4 value='application/xml'>application/xml</option>";
         str += "  <option class=MnuJmpOpt_sun4 value='application/json'>application/json</option>";
@@ -267,8 +267,8 @@ TestSupport.prototype = {
         str += "  <option class=MnuJmpOpt_sun4 value='image/*'>image/*</option>"; 
         str += "</select></span></td>";
         str += "<td width=30/>"
-        str += "<td><span id=j_id14><a class='Btn2_sun4 Btn1Hov_sun4' onclick='ts.addParam()'>Add Parameter</a>";
-        str += "</span></td><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>Test</a></td></tr></tbody></table><br/>";
+        str += "<td><span id=j_id14><a class='Btn2_sun4 Btn1Hov_sun4' onclick='ts.addParam()'>MSG_TEST_RESBEANS_AddParamButton</a>";
+        str += "</span></td><td><a class='Btn1_sun4 Btn1Hov_sun4' onclick='ts.testResource()'>MSG_TEST_RESBEANS_TestButton</a></td></tr></tbody></table><br/>";
         str += this.getFormRep(null, uri, mName, mediaType);
         ts.updatepage('testaction', str);
         var paramRep = "";
@@ -289,14 +289,14 @@ TestSupport.prototype = {
         }
         if(paramRep != "") {
             paramRep = '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
-                            '<span>Click \'Test\' to continue:</span></label></span></td>'+
+                            '<span>MSG_TEST_RESBEANS_Continue:</span></label></span></td>'+
                             '<td><span id="j_id14"></span></td></tr>' + paramRep;
             ts.updatepage('pathParamHook', "<table border=0><tbody><tr>"+paramRep+"</tr></tbody></table>");
         }
         var req = uri;
         var disp = this.getDisplayUri(req);
         var uriLink = "<a id='"+req+"' class=Hyp_sun4 href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
-        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
+        this.updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
     },
     
     doShowStaticResource : function (uri, r) {
@@ -318,7 +318,7 @@ TestSupport.prototype = {
         var req = uri;
         var disp = this.getDisplayUri(req);
         var uriLink = "<a id='"+req+"' class=Hyp_sun4 href=javascript:ts.doShowContent('"+req+"') >"+this.getDisplayURL(disp, 80)+"</a>";
-        this.updatepage('request', '<span class=bld>Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
+        this.updatepage('request', '<span class=bld>MSG_TEST_RESBEANS_Resource:</span> '+uriLink+' <br/>(<a href="'+req+'" class=Hyp_sun4 target="_blank"><span>'+this.getDisplayURL(req, 90)+'</span></a>)');
     },
     
     getFormRep : function (req, uri, mName, mediaType) {
@@ -353,7 +353,7 @@ TestSupport.prototype = {
         var prevParam = document.getElementById("paramHook").innerHTML;
         if(prevParam.indexOf('Additional parameters') == -1) {
             str = '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
-                            '<span>Additional parameters:</span></label></span></td>'+
+                            '<span>Additional parameters MSG_TEST_RESBEANS_AdditionalParams:</span></label></span></td>'+
                             '<td><span id="j_id14"></span></td></tr>'+str;
         }
         document.getElementById("paramHook").innerHTML = prevParam + str;
@@ -410,7 +410,7 @@ TestSupport.prototype = {
 
     clearAll : function() {
         this.clearOutput();
-        this.updatepage('request', 'Select a node on the navigation bar (on the left side of this page) to test.');
+        this.updatepage('request', 'MSG_TEST_RESBEANS_INFO');
         this.updatepage('testaction', '');
         this.updatepage('testinput', '');
         this.updatepage('navigation', '');
@@ -470,7 +470,7 @@ TestSupport.prototype = {
                 var params = req[i].childNodes;
                 if(params != null) {
                     str += '<tr><td valign="top"><span id="j_id14"><label for="dummy" class="LblLev2Txt_sun4">'+
-                            '<span>Click \'Test\' to continue:</span></label></span></td>'+
+                            '<span>MSG_TEST_RESBEANS_Continue:</span></label></span></td>'+
                             '<td><span id="j_id14"></span></td></tr>';
                     for(var j=0;j<params.length;j++) {
                         var param = params[j];
@@ -497,15 +497,15 @@ TestSupport.prototype = {
         }
         if(mName == 'PUT' || mName == 'POST') {   
             str += '<tr><td valign="top"><span id="j_id14"><label for="blobParam" class="LblLev2Txt_sun4">'+
-                '<span>Content: </span></label></span></td>'+
-                '<td><span id="j_id14"><textarea class="TxtAra_sun4 TxtAraVld_sun4" id=blobParam name=params rows=6 cols=65>Insert content here.</textarea></span></td></tr>';
+                '<span>MSG_TEST_RESBEANS_Content: </span></label></span></td>'+
+                '<td><span id="j_id14"><textarea class="TxtAra_sun4 TxtAraVld_sun4" id=blobParam name=params rows=6 cols=65>MSG_TEST_RESBEANS_Insert</textarea></span></td></tr>';
         }
         str += '</tbody></table>';
         return str;
     },
     
     testResource : function () {
-        this.updatepage('result', 'Loading...');
+        this.updatepage('result', 'MSG_TEST_RESBEANS_Loading');
         var testInput = document.getElementById('testinput');
         testInput.className = 'ConMgn_sun4 fxdHeight';
         var mimetype = this.getFormMimeType();
@@ -647,7 +647,7 @@ TestSupport.prototype = {
     createIFrameForUrl : function (url) {
         var c = 
             '<iframe id="iFrame_" src="'+url+'" class="frame" width="'+ts.iframeWidth+'" align="left">'+
-                '<p>See <a class=Hyp_sun4 href="'+url+'">"'+url+'"</a>.</p>'+
+                '<p>MSG_TEST_RESBEANS_See <a class=Hyp_sun4 href="'+url+'">"'+url+'"</a>.</p>'+
             '</iframe>';
         return c;
     },
@@ -705,9 +705,9 @@ TestSupport.prototype = {
         var nodisp = ' class="nodisp" ';
         var rawViewStyle = ' ';
         var headerViewStyle = nodisp;
-        var rawContent = 'Received:\n<br/>'+this.printPretty(xmlHttpReq.responseText)+'\n<br/>';
+        var rawContent = 'MSG_TEST_RESBEANS_Received:\n<br/>'+this.printPretty(xmlHttpReq.responseText)+'\n<br/>';
         if(param != null && param != undefined)
-            rawContent = 'Sent:\n<br/>'+this.printPretty(param) + '\n\n<br/><br/>' + rawContent;
+            rawContent = 'MSG_TEST_RESBEANS_Sent:\n<br/>'+this.printPretty(param) + '\n\n<br/><br/>' + rawContent;
         var prev = document.getElementById('monitorText');
         var cURL = this.currentValidUrl;
         var params = '';
@@ -715,9 +715,9 @@ TestSupport.prototype = {
             params = cURL.substring(cURL.indexOf('?')+1);
             cURL = cURL.substring(0, cURL.indexOf('?')+1);
         }
-        var s = 'Request: ' + this.currentMethod + ' ' + cURL + '\n<br/>' + params +
-                    '\n\n<br/><br/>Status: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')'+
-                    '\n\n<br/><br/>Time-Stamp: ' + ' ' + xmlHttpReq.getResponseHeader('Date') + '';
+        var s = 'MSG_TEST_RESBEANS_Request: ' + this.currentMethod + ' ' + cURL + '\n<br/>' + params +
+                    '\n\n<br/><br/>MSG_TEST_RESBEANS_Status: ' + xmlHttpReq.status + ' (' + xmlHttpReq.statusText + ')'+
+                    '\n\n<br/><br/>MSG_TEST_RESBEANS_TimeStamp: ' + ' ' + xmlHttpReq.getResponseHeader('Date') + '';
         var prevs = '';
         if(this.currMonitorText != null && this.currMonitorText != undefined) {
             prevs = this.currMonitorText;        
@@ -734,11 +734,11 @@ TestSupport.prototype = {
         var showRaw = true;
         if(content != null && content != undefined) {
             if(content == '')
-                content = '---No Content---'
+                content = 'MSG_TEST_RESBEANS_NoContents'
             else 
                 content = content.replace(/'/g,"\'");
             try {
-                var cErr = 'Content may not have Container-Containee Relationship. See Raw View for content.';
+                var cErr = 'MSG_TEST_RESBEANS_No_Container';
                 var tableContent = cErr;
                 if(content.indexOf("<?xml ") != -1 || 
                         content.indexOf('{"') != -1) {
@@ -759,9 +759,9 @@ TestSupport.prototype = {
                 var structure = this.xhr.options(this.currentValidUrl, 'application/vnd.sun.wadl+xml');
                 var subResources = this.getContainerTable(ts.wdr.evaluateWADLUpdate(this.currentValidUrl, structure));
                 if(subResources == null)
-                    subResources = 'No Sub-Resources available.';
-                this.updatepage('result', '<br/><span class=bld>Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
-                    '<span class=bld>Response:</span> '+
+                    subResources = 'MSG_TEST_RESBEANS_No_SubResources';
+                this.updatepage('result', '<br/><span class=bld>MSG_TEST_RESBEANS_Status:</span> '+ this.currentXmlHttpReq.status+' ('+this.currentXmlHttpReq.statusText+')<br/><br/>'+
+                    '<span class=bld>MSG_TEST_RESBEANS_Response:</span> '+
                     '<div class="Tab1Div_sun4" id="tabTable">'+
                     '</div>'+
                     '<div class="tabMain">'+
@@ -794,8 +794,8 @@ TestSupport.prototype = {
             } catch( e ) {
                 ts.debug('updateContent() err name: [' + e.name + '] message: [' + e.message+"]");
                 var c = this.createIFrameForUrl(this.currentValidUrl);
-                this.updatepage('result', '<span class=bld>Response:</span> '+c);
-                this.updatepage('resultheaders', '<span class=bld>Response Headers:</span> '+this.getHeaderAsTable(this.currentXmlHttpReq));                    
+                this.updatepage('result', '<span class=bld>MSG_TEST_RESBEANS_Response:</span> '+c);
+                this.updatepage('resultheaders', '<span class=bld>MSG_TEST_RESBEANS_ResponseHeaders:</span> '+this.getHeaderAsTable(this.currentXmlHttpReq));                    
             }  
         }
     },
@@ -899,7 +899,7 @@ TestSupport.prototype = {
             }
         }
         if(actived)
-            return '<td class="Tab1TblSelTd_sun4"><div title="Current Selection: Text Field" class="Tab1SelTxtNew_sun4"><a name="selectedTabAnchor" id="tab'+id+'"/>'+name+'</div></td>';
+            return '<td class="Tab1TblSelTd_sun4"><div title="MSG_TEST_RESBEANS_CurrentSelection" class="Tab1SelTxtNew_sun4"><a name="selectedTabAnchor" id="tab'+id+'"/>'+name+'</div></td>';
         else {
             if(id == '')
                 return '<td style="visibility: hidden;"><a href="javascript:ts.showViews(\''+id+'\')" class="Tab1Lnk_sun4" id="tab'+id+'">'+name+'</a></td>';
@@ -911,8 +911,8 @@ TestSupport.prototype = {
     getHeaderAsTable : function (xmlHttpReq) { 
         var header = xmlHttpReq.getAllResponseHeaders();
         var colNames = new Array()
-        colNames[0] = "Name"
-        colNames[1] = "Value"
+        colNames[0] = "MSG_TEST_RESBEANS_HeaderName"
+        colNames[1] = "MSG_TEST_RESBEANS_HeaderValue"
         var colSizes = new Array()
         colSizes[0] = ""
         colSizes[1] = ""
@@ -1145,7 +1145,7 @@ TestSupport.prototype = {
             }
             var tab = 'width: 20px; border-right: #2574B7 1px solid; border-top: #2574B7 1px solid; border-left: #2574B7 1px solid; border-bottom: #2574B7 1px solid; color: #000000; text-align: center;';
             var addActionStr = '<div style="'+tab+'"><a style="text-decoration: none" href="javascript:ts.closeDebug()"><span style="color: red">X</span></a></div>';        
-            dbgComp.innerHTML = '<table><tr><td><span style="color: blue">Rest Debug Window</span></td><td>'+addActionStr + '</td></tr></table><br/>';
+            dbgComp.innerHTML = '<table><tr><td><span style="color: blue">MSG_TEST_RESBEANS_DebugWindow</span></td><td>'+addActionStr + '</td></tr></table><br/>';
         }
         var s = dbgComp.innerHTML;
         var now = new Date();
@@ -1178,7 +1178,7 @@ WADLParser.prototype = {
             return;
         }
         ts.setvisibility('main', 'inherit');
-        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL: </span><a class=MstLnk_sun4 href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
+        ts.updatepage('subheader', '<br/><span class=MstLbl_sun4>WADL MSG_TEST_RESBEANS_Wadl: </span><a class=MstLnk_sun4 href=\"'+ts.wadlURL+'\">'+ts.wadlURL+'</a>');
         ts.wadlDoc = ts.xhr.loadXml(rtext);
         if(ts.wadlDoc != null) {                
             this.initTree(ts.wadlDoc);
@@ -1731,7 +1731,7 @@ XHR.prototype = {
                 }
                 catch (e)
                 {
-                    ts.debug("Your browser does not support AJAX!");
+                    ts.debug("MSG_TEST_RESBEANS_No_AJAX");
                 }
             }
         }
@@ -1784,8 +1784,8 @@ XHR.prototype = {
             if (this.isResponseReady(xmlHttpReq, '', true)) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = 'Get failed: Server returned --> Status: (' + status+')\n'+
-                      'Response: {' + xmlHttpReq.responseText + "}";
+                  var err = 'Get MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
+                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
                   ts.debug('Failed XHR(GET, '+url+'): '+err);
                   return err;
               }
@@ -1804,8 +1804,8 @@ XHR.prototype = {
             if (this.isResponseReady(xmlHttpReq, content, true)) {
                 var status = xmlHttpReq.status;
                 if(status != 201) {
-                  var err = 'Post failed: Server returned --> Status: (' + status+')\n'+
-                      'Response: {' + xmlHttpReq.responseText + "}";
+                  var err = 'Post MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
+                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
                   ts.debug('Failed XHR(POST, '+url+'): '+err);
                   return err;
                 }
@@ -1823,8 +1823,8 @@ XHR.prototype = {
             if (this.isResponseReady(xmlHttpReq, content, true)) {
               var status = xmlHttpReq.status;
               if(status != 204) {
-                  var err = 'Put failed: Server returned --> Status: (' + status+')\n'+
-                      'Response: {' + xmlHttpReq.responseText + "}";
+                  var err = 'Put MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
+                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
                   ts.debug('Failed XHR(PUT, '+url+'): '+err);
                   return err;
               }
@@ -1842,8 +1842,8 @@ XHR.prototype = {
             if (this.isResponseReady(xmlHttpReq, '', true)) {
               var status = xmlHttpReq.status;
               if(status != 204) {
-                  var err = 'Delete failed: Server returned --> Status: (' + status+')\n'+
-                      'Response: {' + xmlHttpReq.responseText + "}";
+                  var err = 'Delete MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
+                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
                   ts.debug('Failed XHR(DELETE, '+url+'): '+err);
                   return err;
               }
@@ -1861,8 +1861,8 @@ XHR.prototype = {
             if (this.isResponseReady(xmlHttpReq, '', false)) {
               var rtext = xmlHttpReq.responseText;
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
-                  var err = 'Get failed: Server returned --> Status: (' + status+')\n'+
-                      'Response: {' + xmlHttpReq.responseText + "}";
+                  var err = 'Options MSG_TEST_RESBEANS_RequestFailed --> MSG_TEST_RESBEANS_Status: (' + status+')\n'+
+                      'MSG_TEST_RESBEANS_Response: {' + xmlHttpReq.responseText + "}";
                   ts.debug('Failed XHR(GET, '+url+'): '+err);
                   return err;
               }

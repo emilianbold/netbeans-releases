@@ -1,23 +1,18 @@
 /*
- *  MicroMarketConverter
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
 package o.n.m.ws.qaf.rest.crud.converter;
 
 import java.net.URI;
+import o.n.m.ws.qaf.rest.crud.MicroMarket;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlTransient;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.ws.rs.core.UriBuilder;
-import o.n.m.ws.qaf.rest.crud.MicroMarket;
-import o.n.m.ws.qaf.rest.crud.service.PersistenceService;
-
+import javax.persistence.EntityManager;
 
 /**
  *
@@ -29,9 +24,10 @@ public class MicroMarketConverter {
     private MicroMarket entity;
     private URI uri;
     private int expandLevel;
-    
+  
     /** Creates a new instance of MicroMarketConverter */
     public MicroMarketConverter() {
+        entity = new MicroMarket();
     }
 
     /**
@@ -65,7 +61,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public String getZipCode() {
-        return (expandLevel > 0) ? getEntity().getZipCode() : null;
+        return (expandLevel > 0) ? entity.getZipCode() : null;
     }
 
     /**
@@ -74,7 +70,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setZipCode(String value) {
-        getEntity().setZipCode(value);
+        entity.setZipCode(value);
     }
 
     /**
@@ -84,7 +80,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public Double getRadius() {
-        return (expandLevel > 0) ? getEntity().getRadius() : null;
+        return (expandLevel > 0) ? entity.getRadius() : null;
     }
 
     /**
@@ -93,7 +89,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setRadius(Double value) {
-        getEntity().setRadius(value);
+        entity.setRadius(value);
     }
 
     /**
@@ -103,7 +99,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public Double getAreaLength() {
-        return (expandLevel > 0) ? getEntity().getAreaLength() : null;
+        return (expandLevel > 0) ? entity.getAreaLength() : null;
     }
 
     /**
@@ -112,7 +108,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setAreaLength(Double value) {
-        getEntity().setAreaLength(value);
+        entity.setAreaLength(value);
     }
 
     /**
@@ -122,7 +118,7 @@ public class MicroMarketConverter {
      */
     @XmlElement
     public Double getAreaWidth() {
-        return (expandLevel > 0) ? getEntity().getAreaWidth() : null;
+        return (expandLevel > 0) ? entity.getAreaWidth() : null;
     }
 
     /**
@@ -131,7 +127,7 @@ public class MicroMarketConverter {
      * @param value the value to set
      */
     public void setAreaWidth(Double value) {
-        getEntity().setAreaWidth(value);
+        entity.setAreaWidth(value);
     }
 
     /**
@@ -159,8 +155,11 @@ public class MicroMarketConverter {
      */
     @XmlTransient
     public MicroMarket getEntity() {
-        if (entity == null) {
-            entity = new MicroMarket();
+        if (entity.getZipCode() == null) {
+            MicroMarketConverter converter = UriResolver.getInstance().resolve(MicroMarketConverter.class, uri);
+            if (converter != null) {
+                entity = converter.getEntity();
+            }
         }
         return entity;
     }
@@ -170,11 +169,7 @@ public class MicroMarketConverter {
      *
      * @return an resolved entity
      */
-    public MicroMarket resolveEntity() {
-        if (entity != null) {
-            return PersistenceService.getInstance().resolveEntity(MicroMarket.class, entity.getZipCode());
-        } else {
-            return (MicroMarket) UriResolver.getInstance().resolve(MicroMarketConverter.class, uri);
-        }
+    public MicroMarket resolveEntity(EntityManager em) {
+        return entity;
     }
 }

@@ -2472,8 +2472,22 @@ template_argument_list
 // but it does not make correct AST.
 // It's used in predicates only.
 lazy_template_argument_list
-	:	template_param_expression (COMMA template_param_expression)*
-        |    
+	:	
+        (   LITERAL_struct 
+        |   LITERAL_union 
+        |   LITERAL_class 
+        |   LITERAL_enum
+        )?
+        template_param_expression
+        (   
+            COMMA 
+            (   LITERAL_struct 
+            |   LITERAL_union 
+            |   LITERAL_class 
+            |   LITERAL_enum
+            )?
+            template_param_expression
+        )*
 	;
 
 /* Here assignment_expression was changed to shift_expression to rule out
@@ -3015,7 +3029,7 @@ balanceLessthanGreaterthanInExpression
         |   LITERAL_union 
         |   LITERAL_class 
         |   LITERAL_enum
-        )
+        )?
         (   COMMA 
             (   lazy_expression[true, false]
             |   LITERAL_struct 
@@ -3032,7 +3046,7 @@ simpleBalanceLessthanGreaterthanInExpression
         LESSTHAN
         (   ID (simpleBalanceLessthanGreaterthanInExpression)?
         |   constant
-        )
+        )?
         (   COMMA 
             (   ID (simpleBalanceLessthanGreaterthanInExpression)?
             |   constant
@@ -3180,7 +3194,7 @@ scope_override returns [String s = ""]
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
-        ((ID (LESSTHAN lazy_template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?
+        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part)?
         {
             sitem.append(sp);
             s = sitem.toString();
@@ -3199,7 +3213,7 @@ scope_override_part returns [String s = ""]
             sitem.append(id.getText());
             sitem.append("::");
         }
-        ((ID (LESSTHAN lazy_template_argument_list GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
+        ((ID (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part)?            
         {
             sitem.append(sp);
             s = sitem.toString();

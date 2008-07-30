@@ -556,6 +556,12 @@ public class EjbJarProjectGenerator {
         ep.setProperty(EjbJarProjectProperties.JAVADOC_PREVIEW, "true"); // NOI18N
         ep.setProperty(EjbJarProjectProperties.JAVADOC_ADDITIONALPARAM, ""); // NOI18N
         
+        ep.setProperty(EjbJarProjectProperties.RUNMAIN_JVM_ARGS, ""); // NOI18N
+        ep.setComment(EjbJarProjectProperties.RUNMAIN_JVM_ARGS, new String[] { // NOI18N
+            "# " + NbBundle.getMessage(EjbJarProjectGenerator.class, "COMMENT_runmain.jvmargs"), // NOI18N
+            "# " + NbBundle.getMessage(EjbJarProjectGenerator.class, "COMMENT_runmain.jvmargs_2"), // NOI18N
+        }, false);
+        
         // use the default encoding
         Charset enc = FileEncodingQuery.getDefaultEncoding();
         ep.setProperty(EjbJarProjectProperties.SOURCE_ENCODING, enc.name());

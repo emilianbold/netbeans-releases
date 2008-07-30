@@ -120,12 +120,10 @@ public class JavaScriptVolumeCustomizer extends javax.swing.JPanel implements Cu
         this.downButton.setEnabled (false);
         this.removeButton.setEnabled (false);
         if (this.volumeType.equals(JavaScriptLibraryTypeProvider.VOLUME_TYPE_SCRIPTPATH)) {  //NOI18N
-            this.addButton.setText (NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"CTL_AddScriptPath"));
-            this.addButton.setMnemonic(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"MNE_AddScriptPath").charAt(0));
-            this.message.setText(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"CTL_ContentScriptPath"));
-            this.message.setDisplayedMnemonic(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"MNE_ContentClassPath").charAt(0));
-            this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"AD_AddClassPath"));
-            this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"AD_ContentClassPath"));
+              org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getBundle(JavaScriptVolumeCustomizer.class).getString("CTL_AddScriptPath"));
+              org.openide.awt.Mnemonics.setLocalizedText(message, org.openide.util.NbBundle.getBundle(JavaScriptVolumeCustomizer.class).getString("CTL_ContentScriptPath"));
+              this.addButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"AD_AddClassPath"));
+              this.message.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"AD_ContentClassPath"));
         }
         /* else if (this.volumeType.equals(ThemeLibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {  //NOI18N
             this.addButton.setText(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"CTL_AddJavadoc"));
@@ -348,7 +346,6 @@ public class JavaScriptVolumeCustomizer extends javax.swing.JPanel implements Cu
             chooser.setFileFilter (new SimpleFileFilter(NbBundle.getMessage(
                     JavaScriptVolumeCustomizer.class,"TXT_Classpath"),new String[] {"ZIP","JAR"}));   //NOI18N
             chooser.setApproveButtonText(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"CTL_SelectCP"));
-            chooser.setApproveButtonMnemonic(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"MNE_SelectCP").charAt(0));
         }
         /* else if (this.volumeType.equalsIgnoreCase(ThemeLibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {     //NOI18N
             chooser.setDialogTitle(NbBundle.getMessage(JavaScriptVolumeCustomizer.class,"TXT_OpenJavadoc"));

@@ -56,19 +56,21 @@ made subject to such option by the copyright holder.
                         </xsd:restriction>
                     </xsd:simpleType>
                 </xsd:element>
-                <xsd:element name="explicit-platform" minOccurs="0">
-                    <xsd:complexType>
-                        <xsd:attribute name="explicit-source-supported" use="required">
-                            <xsd:simpleType>
-                                <xsd:restriction base="xsd:NMTOKEN">
-                                    <xsd:enumeration value="true"/>
-                                    <xsd:enumeration value="false"/>
-                                </xsd:restriction>
-                            </xsd:simpleType>
-                        </xsd:attribute>
-                    </xsd:complexType>
-                </xsd:element>
-                <xsd:element name="web-service-clients" minOccurs="0" type="webServiceClientsType"/>
+                <xsd:choice maxOccurs="2">
+                    <xsd:element name="explicit-platform" minOccurs="0">
+                        <xsd:complexType>
+                            <xsd:attribute name="explicit-source-supported" use="required">
+                                <xsd:simpleType>
+                                    <xsd:restriction base="xsd:NMTOKEN">
+                                        <xsd:enumeration value="true"/>
+                                        <xsd:enumeration value="false"/>
+                                    </xsd:restriction>
+                                </xsd:simpleType>
+                            </xsd:attribute>
+                        </xsd:complexType>
+                    </xsd:element>
+                    <xsd:element name="web-service-clients" minOccurs="0" type="webServiceClientsType"/>
+                </xsd:choice>
                 <xsd:element name="source-roots">
                     <xsd:complexType>
                         <xsd:sequence>

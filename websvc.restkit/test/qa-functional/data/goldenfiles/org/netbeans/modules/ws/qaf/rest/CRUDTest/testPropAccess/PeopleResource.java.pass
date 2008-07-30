@@ -1,9 +1,5 @@
 /*
- *  PeopleResource
- *
- * Created on July 8, 2008, 10:54 PM
- *
- * To change this template, choose Tools | Template Manager
+ * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
 
@@ -22,9 +18,10 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
+import com.sun.jersey.api.core.ResourceContext;
+import javax.persistence.EntityManager;
 import converter.PeopleConverter;
 import converter.PersonConverter;
-
 
 /**
  *
@@ -34,19 +31,12 @@ import converter.PersonConverter;
 @Path("/people/")
 public class PeopleResource {
     @Context
-    private UriInfo context;
-    
+    protected UriInfo uriInfo;
+    @Context
+    protected ResourceContext resourceContext;
+  
     /** Creates a new instance of PeopleResource */
     public PeopleResource() {
-    }
-
-    /**
-     * Constructor used for instantiating an instance of dynamic resource.
-     *
-     * @param context HttpContext inherited from the parent resource
-     */
-    public PeopleResource(UriInfo context) {
-        this.context = context;
     }
 
     /**
@@ -66,7 +56,7 @@ public class PeopleResource {
     @DefaultValue("SELECT e FROM Person e")
     String query) {
         try {
-            return new PeopleConverter(getEntities(start, max, query), context.getAbsolutePath(), expandLevel);
+            return new PeopleConverter(getEntities(start, max, query), uriInfo.getAbsolutePath(), expandLevel);
         } finally {
             PersistenceService.getInstance().close();
         }
@@ -84,10 +74,11 @@ public class PeopleResource {
         PersistenceService persistenceSvc = PersistenceService.getInstance();
         try {
             persistenceSvc.beginTx();
-            Person entity = data.getEntity();
-            createEntity(entity);
+            EntityManager em = persistenceSvc.getEntityManager();
+            Person entity = data.resolveEntity(em);
+            createEntity(data.resolveEntity(em));
             persistenceSvc.commitTx();
-            return Response.created(context.getAbsolutePath().resolve(entity.getId() + "/")).build();
+            return Response.created(uriInfo.getAbsolutePath().resolve(entity.getId() + "/")).build();
         } finally {
             persistenceSvc.close();
         }
@@ -101,7 +92,9 @@ public class PeopleResource {
     @Path("{id}/")
     public PersonResource getPersonResource(@PathParam("id")
     String id) {
-        return new PersonResource(id, context);
+        PersonResource resource = resourceContext.getResource(PersonResource.class);
+        resource.setId(id);
+        return resource;
     }
 
     /**
@@ -110,7 +103,8 @@ public class PeopleResource {
      * @return a collection of Person instances
      */
     protected Collection<Person> getEntities(int start, int max, String query) {
-        return PersistenceService.getInstance().createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        return em.createQuery(query).setFirstResult(start).setMaxResults(max).getResultList();
     }
 
     /**
@@ -119,6 +113,7 @@ public class PeopleResource {
      * @param entity the entity to persist
      */
     protected void createEntity(Person entity) {
-        PersistenceService.getInstance().persistEntity(entity);
+        EntityManager em = PersistenceService.getInstance().getEntityManager();
+        em.persist(entity);
     }
 }

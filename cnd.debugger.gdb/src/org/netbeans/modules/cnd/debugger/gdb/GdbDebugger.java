@@ -65,6 +65,11 @@ import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
+import org.netbeans.modules.cnd.api.remote.CommandProvider;
+import org.netbeans.modules.cnd.api.remote.ServerList;
+import org.netbeans.modules.cnd.api.remote.ServerRecord;
 import org.netbeans.modules.cnd.api.utils.CppUtils;
 import org.netbeans.modules.cnd.debugger.gdb.actions.GdbActionHandler;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.AddressBreakpoint;
@@ -95,6 +100,7 @@ import org.openide.ErrorManager;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
+import org.openide.util.Lookup;
 import org.openide.util.Utilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -169,7 +175,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private boolean continueAfterFirstStop = true;
     private final ArrayList<GdbVariable> localVariables = new ArrayList<GdbVariable>();
     private final Map<Integer, BreakpointImpl> pendingBreakpointMap = new HashMap<Integer, BreakpointImpl>();
-    private final Map<String, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<String, BreakpointImpl>());
+    private final Map<Integer, BreakpointImpl> breakpointList = Collections.synchronizedMap(new HashMap<Integer, BreakpointImpl>());
     private final List<String> temporaryBreakpoints = new ArrayList<String>();
     private static final Map<String, TypeInfo> ticache = new HashMap<String, TypeInfo>();
     private static final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
@@ -191,6 +197,8 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private int shareToken;
     private final Disassembly disassembly;
     private GdbBreakpoint currentBreakpoint = null;
+    private String hkey;
+    private int platform;
 
     public GdbDebugger(ContextProvider lookupProvider) {
         this.lookupProvider = lookupProvider;
@@ -238,7 +246,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
             runDirectory = pae.getProfile().getRunDirectory().replace("\\", "/") + "/";  // NOI18N
             profile = (GdbProfile) pae.getConfiguration().getAuxObject(GdbProfile.GDB_PROFILE_ID);
             conType = pae.getProfile().getConsoleType().getValue();
-            if (!Utilities.isWindows() && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
+            hkey = ((MakeConfiguration) pae.getConfiguration()).getDevelopmentHost().getName();
+            platform = ((MakeConfiguration) pae.getConfiguration()).getPlatform().getValue();
+            if (platform == PlatformTypes.PLATFORM_WINDOWS && conType != RunProfile.CONSOLE_TYPE_OUTPUT_WINDOW &&
                     pae.getID() != DEBUG_ATTACH) {
                 termpath = pae.getProfile().getTerminalPath();
             }
@@ -395,6 +405,18 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
+    public String getHostKey() {
+        return hkey;
+    }
+
+    public int getPlatform() {
+        return platform;
+    }
+
+    public InputOutput getIO() {
+        return iotab;
+    }
+
     private String getCompilerSetPath(ProjectActionEvent pae) {
         CompilerSet2Configuration cs = ((MakeConfiguration) pae.getConfiguration()).getCompilerSet();
         String csname = cs.getOption();
@@ -411,12 +433,35 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     private String getGdbHelper() {
-        String name = "bin/GdbHelper" + getOsName() + getOsArch() + getExtension(); // NOI18N
-        File file = InstalledFileLocator.getDefault().locate(name, null, false);
-        if (file != null && file.exists()) {
-            return fixPath(file.getAbsolutePath());
+        if (!hkey.equals(CompilerSetManager.LOCALHOST)) {
+            String home = null;
+            CommandProvider provider = (CommandProvider) Lookup.getDefault().lookup(CommandProvider.class);
+            if (provider != null) {
+                int rc = provider.run(hkey, "echo $HOME", null); // NOI18N
+                if (rc == 0) {
+                    home = provider.toString().trim(); // remote the newline
+                }
+            }
+            if (home == null) {
+                home = "/home/" + System.getProperty("user.name"); // NOI18N
+            }
+            if (platform == PlatformTypes.PLATFORM_LINUX) {
+                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper-Linux-x86.so"; // NOI18N
+            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_SPARC) {
+                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper-SunOS-sparc.so"; // NOI18N
+            } else if (platform == PlatformTypes.PLATFORM_SOLARIS_INTEL) {
+                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper-SunOS-x86.so"; // NOI18N
+            } else {
+                return home + "/.netbeans/6.5/cnd2/lib/GdbHelper.so"; // NOI18N
+            }
         } else {
-            return null;
+            String name = "bin/GdbHelper" + getOsName() + getOsArch() + getExtension(); // NOI18N
+            File file = InstalledFileLocator.getDefault().locate(name, null, false);
+            if (file != null && file.exists()) {
+                return fixPath(file.getAbsolutePath());
+            } else {
+                return null;
+            }
         }
     }
 
@@ -712,6 +757,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                     }
                 }
                 gdb.gdb_exit();
+                gdb.getProxyEngine().finish();
             }
 
             stackUpdate(new ArrayList<String>());
@@ -947,7 +993,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 int end = msg.indexOf(".", start); // NOI18N
                 if (end != -1) {
                     String breakpoinIdx = msg.substring(start, end).trim();
-                    BreakpointImpl breakpoint = breakpointList.get(breakpoinIdx);
+                    BreakpointImpl breakpoint = findBreakpoint(breakpoinIdx);
                     if (breakpoint != null) {
                         DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                                 NbBundle.getMessage(GdbDebugger.class, "ERR_InvalidBreakpoint", breakpoint.getBreakpoint())));
@@ -1445,7 +1491,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 if (tid != null && !tid.equals(currentThreadID)) {
                     currentThreadID = tid;
                 }
-                BreakpointImpl impl = getBreakpointList().get(map.get("bkptno")); // NOI18N
+                BreakpointImpl impl = findBreakpoint(map.get("bkptno")); // NOI18N
                 if (impl == null) {
                     int idx = temporaryBreakpoints.indexOf(map.get("bkptno")); // NOI18N
                     if (idx >= 0) {
@@ -1513,7 +1559,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
                 }
             } else if (reason.equals("end-stepping-range")) { // NOI18N
                 lastStop = null;
-                gdb.stack_list_frames();
+                updateCurrentCallStack();
                 setStopped();
                 String frame = map.get("frame"); // NOI18N
                 if (frame != null) {
@@ -2005,7 +2051,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     private void suspendBreakpointsAndSignals() {
         for (BreakpointImpl impl : getBreakpointList().values()) {
             if (impl.getBreakpoint().isEnabled()) {
-                gdb.break_disable(impl.getBreakpointNumber());
+                impl.enable(false);
             }
         }
         gdb.set_unwindonsignal("on"); // NOI18N
@@ -2019,7 +2065,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         gdb.set_unwindonsignal("off"); // NOI18N
         for (BreakpointImpl impl : getBreakpointList().values()) {
             if (impl.getBreakpoint().isEnabled()) {
-                gdb.break_enable(impl.getBreakpointNumber());
+                impl.enable(true);
             }
         }
     }
@@ -2124,8 +2170,16 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         }
     }
 
-    public Map<String, BreakpointImpl> getBreakpointList() {
+    public Map<Integer, BreakpointImpl> getBreakpointList() {
         return breakpointList;
+    }
+
+    private BreakpointImpl findBreakpoint(String id) {
+        try {
+            return breakpointList.get(Integer.valueOf(id));
+        } catch (NumberFormatException nfe) {
+            return null;
+        }
     }
 
     /**
