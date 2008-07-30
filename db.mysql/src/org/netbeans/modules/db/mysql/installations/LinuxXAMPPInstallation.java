@@ -51,10 +51,10 @@ import org.openide.util.Utilities;
  * @author David Van Couvering
  */
 public class LinuxXAMPPInstallation implements Installation {
-    private static final String LAMPP = "/opt/lampp/lampp"; // NOI8N
+    private static final String LAMPP = "/opt/lampp/lampp"; // NOI18N
     private static final String ADMIN_URL = "http://localhost/phpmyadmin"; // NOI18N
     private static final String DEFAULT_PORT = "3306"; // NOI18N
-    private static final String GKSU = "/usr/bin/gksu"; // NOI8N
+    private static final String GKSU = "/usr/bin/gksu"; // NOI18N
         
     private static final LinuxXAMPPInstallation DEFAULT = 
             new LinuxXAMPPInstallation();
