@@ -192,6 +192,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
             cbDevHost.setSelectedIndex(0);
             log.fine("TP.initialize: Done");
         }
+        cbDevHost.setRenderer(new MyDevHostListCellRenderer());
         cbDevHost.addItemListener(this);
         hkey = (String) cbDevHost.getSelectedItem();
         
@@ -1616,11 +1617,32 @@ private boolean selectTool(JTextField tf) {
             Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
             CompilerSet cs = (CompilerSet)value;
             if (cs.isDefault()) {
+                comp.setFont(comp.getFont().deriveFont(Font.BOLD));
+            }
+            return comp;
+        }
+    }
+    
+    class MyDevHostListCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component comp = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (index == getDefaultDevHostIndex()) {
                 JLabel label = (JLabel) comp;
                 label.setFont(label.getFont().deriveFont(Font.BOLD));
             }
             return comp;
         }
+    }    
+    
+    private int getDefaultDevHostIndex() {
+        int index = 0;
+        if (serverUpdateCache != null) {
+            index = serverUpdateCache.getDefaultIndex();
+        } else if (serverList != null) {
+            index = serverList.getDefaultIndex();
+        }
+        return index;
     }
 
 private void btCBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btCBrowseActionPerformed

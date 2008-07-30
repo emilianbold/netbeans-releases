@@ -58,9 +58,7 @@ import org.netbeans.modules.debugger.jpda.util.Executor;
 import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 
 import org.netbeans.spi.debugger.jpda.EditorContext;
-import org.openide.DialogDisplayer;
 import org.openide.ErrorManager;
-import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
@@ -130,7 +128,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         return bag;
     }
     
-    public void run() {
+    public boolean run() {
         DataObject dobj = getDataObject(url);
         final EditorCookie ec = (EditorCookie) dobj.getCookie(EditorCookie.class);
         try {
@@ -147,19 +145,19 @@ public class MethodChooser implements KeyListener, MouseListener,
         doc = editorPane.getDocument();
         
         if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED) {
-            return;
+            return false;
         }
         
         boolean selectionIsFinal = collectOperations();
         if (selectedIndex == -1) {
             // [TODO] perform classical Step Into
-            return;
+            return false;
         }
         if (selectionIsFinal || operations.length == 1) {
             // perform action directly
             String name = operations[selectedIndex].getMethodName();
             doAction(locations[selectedIndex], name);
-            return;
+            return true;
         }
         // continue by showing method selection ui
         
@@ -185,6 +183,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         Coloring coloring = new Coloring(null, 0, null, Color.CYAN);
         Utilities.setStatusText(editorPane, NbBundle.getMessage(
                 MethodChooser.class, "MSG_RunIntoMethod_Status_Line_Help"), coloring);
+        return true;
     }
 
     private synchronized void release() {
@@ -252,8 +251,14 @@ public class MethodChooser implements KeyListener, MouseListener,
         List<Operation> lastOpsList = currentThread.getLastOperations();
         Operation lastOp = lastOpsList != null && lastOpsList.size() > 0 ? lastOpsList.get(lastOpsList.size() - 1) : null;
         Operation selectedOp = null;
-        operations = expr.getOperations();
-        locations = expr.getLocations();
+        Operation[] tempOps = expr.getOperations();
+        Location[] tempLocs = expr.getLocations();
+        operations = new Operation[tempOps.length];
+        locations = new Location[tempOps.length];
+        for (int x = 0; x < tempOps.length; x++) {
+            operations[x] = tempOps[x];
+            locations[x] = tempLocs[x];
+        }
         if (operations.length == 0) {
             return false;
         }
@@ -285,8 +290,8 @@ public class MethodChooser implements KeyListener, MouseListener,
         if (currOpIndex == -1) {
             selectedOp = operations[operations.length - 1];
         } else if (currOpIndex == lastOpIndex) {
-            Operation[] tempOps = new Operation[operations.length - 1 - currOpIndex];
-            Location[] tempLocs = new Location[operations.length - 1 - currOpIndex];
+            tempOps = new Operation[operations.length - 1 - currOpIndex];
+            tempLocs = new Location[operations.length - 1 - currOpIndex];
             for (int x = 0; x < tempOps.length; x++) {
                 tempOps[x] = operations[x + currOpIndex + 1];
                 tempLocs[x] = locations[x + currOpIndex + 1];

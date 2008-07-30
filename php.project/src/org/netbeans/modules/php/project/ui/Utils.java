@@ -75,7 +75,8 @@ import org.openide.util.Utilities;
  */
 public final class Utils {
 
-    public static final String URL_REGEXP = "^https?://[^/?# ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
+    // protocol://[user[:password]@]domain[:port]/rel/path?query#anchor
+    public static final String URL_REGEXP = "^https?://([^/?#: ]+(:[^/?#: ]+)?@)?[^/?#: ]+(:\\d+)?/[^?# ]*(\\?[^#]*)?(#\\w*)?$"; // NOI18N
     private static final Pattern URL_PATTERN = Pattern.compile(URL_REGEXP);
     private static final char[] INVALID_FILENAME_CHARS = new char[] {'/', '\\', '|', ':', '*', '?', '"', '<', '>'}; // NOI18N
 
@@ -119,8 +120,6 @@ public final class Utils {
         if (newLocation == null) {
             return null;
         }
-
-        LastUsedFolders.setCopyFiles(newLocation);
 
         File file = null;
         if (newSubfolderName == null) {
@@ -359,7 +358,10 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseFolderFile(FileObject folder, JTextField textField) {
-        textField.setText(browseFolderFile(folder, textField.getText()));
+        String selected = browseFolderFile(folder, textField.getText());
+        if (selected != null) {
+            textField.setText(selected);
+        }
     }
 
     /**
@@ -382,7 +384,10 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseSourceFile(Project project, JTextField textField) {
-        textField.setText(browseSource(project, textField.getText(), false));
+        String selected = browseSource(project, textField.getText(), false);
+        if (selected != null) {
+            textField.setText(selected);
+        }
     }
 
     /**
@@ -401,7 +406,10 @@ public final class Utils {
      * @param textField textfield to update.
      */
     public static void browseSourceFolder(Project project, JTextField textField) {
-        textField.setText(browseSource(project, textField.getText(), true));
+        String selected = browseSource(project, textField.getText(), true);
+        if (selected != null) {
+            textField.setText(selected);
+        }
     }
 
     /**

@@ -73,6 +73,7 @@ public class UtilsTest extends NbTestCase {
             "test",
             "https://user : pwd @ localhost/phpProject1",
             "https://localhost/phpProject1/s u b d i r 1 / s u b  d i r 2 /",
+            "http://:/", // #141991
         };
 
         for (String url : correctUrls) {
