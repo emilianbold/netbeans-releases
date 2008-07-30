@@ -153,7 +153,9 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         //
         // see http://www.netbeans.org/issues/show_bug.cgi?id=67257
         //
-        final PaletteController controller = createPalette();
+        if (null == controller) {
+            controller = createPalette();
+        }
         nodesHack = new InstanceContent();
         nodesHack.add(controller);
         /*controller.addPropertyChangeListener( new PropertyChangeListener() {
@@ -200,7 +202,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
     }
 
     private PaletteController createPalette() throws IOException {
-        PaletteController controller = PaletteSupport.createPalette(topPanel);
+        PaletteController controller = new PaletteSupport().createPalette(topPanel);
         return controller;
     }
 
