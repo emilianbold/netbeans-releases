@@ -170,11 +170,7 @@ public class MakeNBM extends Task {
 		    first = false;
 		} else {
 		    int i;
-		    for (i = 0;
-			 i < line.length () &&
-			     Character.isWhitespace (line.charAt (i));
-			 i++)
-			;
+                    for (i = 0; i < line.length() && Character.isWhitespace(line.charAt(i)); i++) {}
 		    if (i < min) min = i;
 		}
 	    }
@@ -314,7 +310,7 @@ public class MakeNBM extends Task {
     private String targetcluster = null;
     private String jarSignerMaxMemory = "96m";
     private Blurb license = null;
-    private Blurb description = null;
+    private Blurb desc = null;
     private Blurb notification = null;
     private Signature signature = null;
     private long mostRecentInput = 0L;
@@ -420,7 +416,7 @@ public class MakeNBM extends Task {
     }    
     public Blurb createDescription () {
         log(getLocation() + "The <description> subelement in <makenbm> is deprecated except for emergency patches, please ensure your module has an OpenIDE-Module-Long-Description instead", Project.MSG_WARN);
-	return (description = new Blurb ());
+        return desc = new Blurb();
     }
     public Signature createSignature () {
 	return (signature = new Signature ());
@@ -571,12 +567,12 @@ public class MakeNBM extends Task {
             locales = new ArrayList<String>();
         }
 
-    File file;
+    File nbm;
     String rootDir = getProject ().getProperty ("nbm.target.dir");
     if (rootDir != null && !rootDir.equals ("")) { 
-        file = new File (rootDir, this.file.getName ());
+        nbm = new File(rootDir, this.file.getName());
     } else {
-        file = this.file;
+        nbm = this.file;
     }
 
 	// If desired, override the license and/or URL. //
@@ -599,11 +595,11 @@ public class MakeNBM extends Task {
             if (mostRecentInput < mMod) mostRecentInput = mMod;
         }
 
-        if (mostRecentInput < file.lastModified()) {
-            log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + file.lastModified(), Project.MSG_VERBOSE);
+        if (mostRecentInput < nbm.lastModified()) {
+            log("Skipping NBM creation as most recent input is younger: " + mostRecentInput + " than the target file: " + nbm.lastModified(), Project.MSG_VERBOSE);
             return;
         } else {
-            log("Most recent input: " + mostRecentInput + " file: " + file.lastModified(), Project.MSG_DEBUG);
+            log("Most recent input: " + mostRecentInput + " file: " + nbm.lastModified(), Project.MSG_DEBUG);
         }
         
         ArrayList<ZipFileSet> infoXMLFileSets = new ArrayList<ZipFileSet>();
@@ -648,11 +644,11 @@ public class MakeNBM extends Task {
  	fs.setPrefix("netbeans/");
 
 	// JAR it all up together.
-	long jarModified = file.lastModified (); // may be 0
+        long jarModified = nbm.lastModified(); // may be 0
 	//log ("Ensuring existence of NBM file " + file);
 	Jar jar = (Jar) getProject().createTask("jar");
     
-        jar.setDestFile(file);
+        jar.setDestFile(nbm);
         jar.addZipfileset(fs);
         for (ZipFileSet zfs : infoXMLFileSets) {
             jar.addFileset(zfs);
@@ -669,7 +665,7 @@ public class MakeNBM extends Task {
 	jar.execute ();
 
 	// Print messages if we overrode anything. //
-	if( file.lastModified () != jarModified) {
+        if (nbm.lastModified() != jarModified) {
 	  if( overrideLicense()) {
 	    log( "Overriding license with: " + getLicenseOverride()) ;
 	  }
@@ -679,7 +675,7 @@ public class MakeNBM extends Task {
 	}
 
 	// Maybe sign it.
-	if (signature != null && file.lastModified () != jarModified) {
+        if (signature != null && nbm.lastModified() != jarModified) {
 	    if (signature.keystore == null)
 		throw new BuildException ("must define keystore attribute on <signature/>");
 	    if (signature.storepass == null)
@@ -687,10 +683,10 @@ public class MakeNBM extends Task {
 	    if (signature.alias == null)
 		throw new BuildException ("must define alias attribute on <signature/>");
             if (signature.storepass.equals ("?") || signature.storepass.indexOf("${") != -1 || !signature.keystore.exists()) {
-                log ("Not signing NBM file " + file + "; no stored-key password provided or keystore (" 
+                log("Not signing NBM file " + nbm + "; no stored-key password provided or keystore ("
 		     + signature.keystore.toString() + ") doesn't exist", Project.MSG_WARN);
             } else {
-                log ("Signing NBM file " + file);
+                log("Signing NBM file " + nbm);
                 SignJar signjar = (SignJar) getProject().createTask("signjar");
                 try { // Signatures changed in various Ant versions.
                     try {
@@ -699,9 +695,9 @@ public class MakeNBM extends Task {
                         SignJar.class.getMethod("setKeystore", String.class).invoke(signjar, signature.keystore.getAbsolutePath());
                     }
                     try {
-                        SignJar.class.getMethod("setJar", File.class).invoke(signjar, file);
+                        SignJar.class.getMethod("setJar", File.class).invoke(signjar, nbm);
                     } catch (NoSuchMethodException x) {
-                        SignJar.class.getMethod("setJar", String.class).invoke(signjar, file.getAbsolutePath());
+                        SignJar.class.getMethod("setJar", String.class).invoke(signjar, nbm.getAbsolutePath());
                     }
                 } catch (BuildException x) {
                     throw x;
@@ -796,8 +792,8 @@ public class MakeNBM extends Task {
             releasedate = DATE_FORMAT.format(new Date(System.currentTimeMillis()));
         }
         module.setAttribute("releasedate", releasedate);
-        if (description != null) {
-            module.appendChild(doc.createElement("description")).appendChild(description.getTextNode(doc));
+        if (desc != null) {
+            module.appendChild(doc.createElement("description")).appendChild(desc.getTextNode(doc));
         }
         if (notification != null) {
             module.appendChild(doc.createElement("module_notification")).appendChild(notification.getTextNode(doc));
