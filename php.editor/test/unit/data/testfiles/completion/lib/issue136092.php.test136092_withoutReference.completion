@@ -1,0 +1,4 @@
+Code completion result for source line:
+$source1 = $reques|;
+(QueryType=COMPLETION, NameKind=PREFIX)
+VARIABLE   ? $request1                                issue136092.php
