@@ -137,7 +137,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
             ClassLoader cl = DatabaseNodeInfo.class.getClassLoader();
             InputStream stream = cl.getResourceAsStream(gtabfile);
             if (stream == null) {
-                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"), new String[] {gtabfile}); // NOI18N
+                String message = MessageFormat.format(bundle().getString("EXC_UnableToOpenStream"),gtabfile); // NOI18N
                 throw new Exception(message);
             }
             PListReader reader = new PListReader(stream);
@@ -169,14 +169,14 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         } else {
             String message = MessageFormat.format(bundle().
                     getString("EXC_UnableToFindClassInfo"), 
-                    new String[] {nodecode}); // NOI18N
+                    nodecode); // NOI18N
             throw new DatabaseException(message);
         }
 
         if (e_ni != null) {
             e_ni.setParentInfo(parent, nodecode);
         } else {
-            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), new String[] {nodecode}); // NOI18N
+            String message = MessageFormat.format(bundle().getString("EXC_UnableToCreateNodeInfo"), nodecode); // NOI18N
             throw new DatabaseException(message);
         }
         return e_ni;
@@ -321,6 +321,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
         return connectionpcsKeys;
     }
     
+    @Override
     public Object put(String key, Object obj)
     {
         Object old = get(key);
@@ -801,7 +802,7 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
                         } catch (MissingResourceException e) {
                             locname = xname;
                             
-                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), new String[] {xname}); // NOI18N
+                            String message = MessageFormat.format(bundle().getString("ERR_UnableToLocateLocalizedMenuItem"), xname); // NOI18N
                             System.out.println(message);
                         }
 
