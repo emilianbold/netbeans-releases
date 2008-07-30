@@ -118,36 +118,44 @@ public final class ModificationResult {
         // writer where he wants to see changes, commit the changes to 
         // found document.
         if (ec != null && out == null) {
-            Document doc = ec.getDocument();
+            final Document doc = ec.getDocument();
             if (doc != null) {
-                if (doc instanceof BaseDocument)
-                    ((BaseDocument)doc).atomicLock();
-                try {
-                    for (Difference diff : differences) {
-                        if (diff.isExcluded())
-                            continue;
-                        try {
-                            switch (diff.getKind()) {
-                                case INSERT:
-                                    doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
-                                    break;
-                                case REMOVE:
-                                    doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
-                                    break;
-                                case CHANGE:
-                                    doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
-                                    doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
-                                    break;
+                final IOException ioe[] = new IOException[] { null };
+                Runnable runnable = new Runnable() {
+                    public void run() {
+                        for (Difference diff : differences) {
+                            if (diff.isExcluded()) {
+                                continue;
+
                             }
-                        } catch (BadLocationException ex) {
-                            IOException ioe = new IOException();
-                            ioe.initCause(ex);
-                            throw ioe;
+                            try {
+                                switch (diff.getKind()) {
+                                    case INSERT:
+                                        doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
+                                        break;
+                                    case REMOVE:
+                                        doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
+                                        break;
+                                    case CHANGE:
+                                        doc.remove(diff.getStartPosition().getOffset(), diff.getEndPosition().getOffset() - diff.getStartPosition().getOffset());
+                                        doc.insertString(diff.getStartPosition().getOffset(), diff.getNewText(), null);
+                                        break;
+                                }
+                            } catch (BadLocationException ex) {
+                                IOException ioex = new IOException();
+                                ioex.initCause(ex);
+                                ioe[0] = ioex;
+                            }
                         }
                     }
-                } finally {
-                    if (doc instanceof BaseDocument)
-                        ((BaseDocument)doc).atomicUnlock();
+                };
+                if (doc instanceof BaseDocument) {
+                    ((BaseDocument)doc).runAtomic(runnable);
+                } else {
+                    runnable.run();
+                }
+                if (ioe[0] != null) {
+                    throw ioe[0];
                 }
                 return;
             }
