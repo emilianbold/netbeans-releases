@@ -109,7 +109,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS},
         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING}
+        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
+        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.PHP_TOKEN},
+        new PHPTokenId[]{PHPTokenId.PHP_FUNCTION, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE, PHPTokenId.PHP_TOKEN}
         );
 
     private static final List<PHPTokenId[]> CLASS_MEMBER_TOKENCHAINS = Arrays.asList(
@@ -399,7 +401,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 }
             }
 
-            if (typeName != null){                
+            if (typeName != null){
                 Collection<IndexedFunction> methods = includeInherited ?
                     request.index.getAllMethods(request.result, typeName, request.prefix, nameKind, attrMask) :
                     request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
@@ -775,7 +777,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                         int lastIndexOfDollar = prefix.lastIndexOf('$');//NOI18N
                         if (lastIndexOfDollar > 0) {
                             prefix = prefix.substring(lastIndexOfDollar);
-                        }                        
+                        }
                     } else {
                         if (lineOffset == line.length()) {
                             prefix = line.substring(start);
