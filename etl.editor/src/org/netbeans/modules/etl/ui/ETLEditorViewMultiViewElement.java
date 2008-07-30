@@ -148,6 +148,7 @@ public class ETLEditorViewMultiViewElement extends CloneableTopComponent
         });
         setActivatedNodes(new Node[]{getETLDataObject().getNodeDelegate()});
     }
+    PaletteController controller;
 
     private Lookup createAssociateLookup() throws IOException {
         //
