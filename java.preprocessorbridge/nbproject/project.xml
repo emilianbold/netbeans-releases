@@ -15,9 +15,11 @@
                 </dependency>
             </module-dependencies>
             <friend-packages>
+                <friend>org.netbeans.modules.groovy.editor</friend>
                 <friend>org.netbeans.modules.java.source</friend>
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.mobility.project</friend>
+                <friend>org.netbeans.modules.scala.editing</friend>
                 <friend>org.netbeans.modules.web.core.syntax</friend>
                 <package>org.netbeans.modules.java.preprocessorbridge.spi</package>
             </friend-packages>

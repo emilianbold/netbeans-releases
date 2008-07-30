@@ -46,6 +46,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.util.EventListener;
 import java.util.EventObject;
 import javax.swing.AbstractAction;
@@ -57,9 +58,11 @@ import javax.swing.JComponent;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.event.EventListenerList;
 import org.netbeans.api.visual.widget.Scene;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -623,6 +626,8 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(FitDiagramAction.class, "LBL_FitDiagramAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift F"));
         }
 
         public void actionPerformed(ActionEvent e)
@@ -741,6 +746,28 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(ZoomInAction.class, "LBL_ZoomInAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+            
+            KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,
+                                                         KeyEvent.ALT_MASK);
+            KeyStroke macStroke = KeyStroke.getKeyStroke(KeyEvent.VK_PLUS,
+                                                         KeyEvent.CTRL_MASK);
+            
+            KeyStroke[] additionalKeystrokes = 
+            {
+                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.ALT_MASK)
+            };
+            
+            KeyStroke[] additionalMacKeystrokes = 
+            {
+                 KeyStroke.getKeyStroke(KeyEvent.VK_EQUALS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_ADD, KeyEvent.CTRL_MASK)
+            };          
+
+            putValue(Action.ACCELERATOR_KEY, keystroke);
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, macStroke);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_ACCELERATORS, additionalKeystrokes);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_MAC_ACCELERATORS, additionalMacKeystrokes);
         }
 
         public void actionPerformed(ActionEvent e)
@@ -784,6 +811,28 @@ public class ZoomManager implements Scene.SceneListener
             String desc = NbBundle.getMessage(ZoomOutAction.class, "LBL_ZoomOutAction");
             putValue(Action.NAME, desc); // for accessibility
             putValue(Action.SHORT_DESCRIPTION, desc);
+                        
+            KeyStroke keystroke = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS,
+                                                         KeyEvent.ALT_MASK);
+            KeyStroke macStroke = KeyStroke.getKeyStroke(KeyEvent.VK_MINUS,
+                                                         KeyEvent.CTRL_MASK);
+            
+            KeyStroke[] additionalKeystrokes = 
+            {
+                 KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.ALT_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.ALT_MASK)
+            };
+            
+            KeyStroke[] additionalMacKeystrokes = 
+            {
+                KeyStroke.getKeyStroke(KeyEvent.VK_MINUS, KeyEvent.CTRL_MASK|KeyEvent.SHIFT_MASK),
+                 KeyStroke.getKeyStroke(KeyEvent.VK_SUBTRACT, KeyEvent.CTRL_MASK)
+            };
+            
+            putValue(Action.ACCELERATOR_KEY, keystroke);
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, macStroke);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_ACCELERATORS, additionalKeystrokes);
+            putValue(DiagramInputkeyMapper.ADDITIONAL_MAC_ACCELERATORS, additionalMacKeystrokes);
         }
 
         public void actionPerformed(ActionEvent e)

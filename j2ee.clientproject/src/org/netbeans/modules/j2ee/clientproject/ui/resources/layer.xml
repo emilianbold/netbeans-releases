@@ -111,6 +111,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceCreate" methodvalue="org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientCompositePanelProvider.createWebServicesCategory"/>
                     <attr name="position" intvalue="500"/>
                 </file>
+                <file name="Formatting.instance">
+                    <attr name="instanceClass" stringvalue="org.netbeans.modules.options.indentation.FormattingCustomizerPanel$Factory"/>
+                    <attr name="position" intvalue="1000"/>
+                </file>
             </folder>
 
             <folder name="Lookup"/>

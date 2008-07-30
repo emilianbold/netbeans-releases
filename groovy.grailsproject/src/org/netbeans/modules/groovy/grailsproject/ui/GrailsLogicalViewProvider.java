@@ -128,6 +128,8 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
 
             List<Action> actions = new ArrayList<Action>();
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
             actions.add(new ManagePluginsAction(project));

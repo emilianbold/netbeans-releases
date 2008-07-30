@@ -42,13 +42,18 @@
 package org.netbeans.modules.uml.drawingarea;
 
 import java.awt.Color;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import javax.swing.UIManager;
 import org.netbeans.api.visual.action.ActionFactory;
+import org.netbeans.api.visual.action.MoveProvider;
+import org.netbeans.api.visual.action.MoveStrategy;
 import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.border.Border;
 import org.netbeans.api.visual.border.BorderFactory;
@@ -56,11 +61,13 @@ import org.netbeans.api.visual.layout.LayoutFactory;
 import org.netbeans.api.visual.model.ObjectScene;
 import org.netbeans.api.visual.model.ObjectState;
 import org.netbeans.api.visual.widget.ConnectionWidget;
+import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.core.preferenceframework.PreferenceAccessor;
+import org.netbeans.modules.uml.drawingarea.engines.DiagramEngine;
 import org.netbeans.modules.uml.drawingarea.persistence.EdgeWriter;
 import org.netbeans.modules.uml.drawingarea.persistence.api.DiagramEdgeWriter;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
@@ -142,10 +149,12 @@ public abstract class AbstractLabelManager implements LabelManager
                 data = scene.findObject(label);  
                 scene.removeObject(data);
             }
-            
+            DesignerScene ds = (DesignerScene) scene;
+            EdgeLabelMoveSupport labelMoveSupport = new EdgeLabelMoveSupport(connector);
+
             WidgetAction.Chain chain = child.createActions(DesignerTools.SELECT);
             chain.addAction(scene.createSelectAction());
-            chain.addAction(ActionFactory.createMoveAction());
+            chain.addAction(ActionFactory.createMoveAction(labelMoveSupport, labelMoveSupport));
             chain.addAction(new WidgetAction.Adapter()
             {
                 public WidgetAction.State keyPressed(Widget widget,
@@ -535,4 +544,49 @@ public abstract class AbstractLabelManager implements LabelManager
 
         }
     }
+
+    private class EdgeLabelMoveSupport implements MoveStrategy, MoveProvider
+    {
+        private Widget edgeWidget;
+
+        public EdgeLabelMoveSupport(Widget edgeWidget)
+        {
+            this.edgeWidget = edgeWidget;
+        }
+
+        public void movementStarted(Widget widget)
+        {
+        }
+
+        public void movementFinished(Widget widget)
+        {
+            ((DesignerScene)edgeWidget.getScene()).getEngine().getTopComponent().setDiagramDirty(true);
+        }
+
+        public Point getOriginalLocation(Widget widget)
+        {
+            return widget.getPreferredLocation();
+        }
+
+        public void setNewLocation(Widget widget, Point location)
+        {
+            widget.setPreferredLocation(location);
+        }
+
+        public Point locationSuggested(Widget widget, Point originalLocation, Point suggestedLocation)
+        {
+            Point labelLocation = widget.getLocation();
+            Rectangle widgetBounds = widget.getBounds();
+            Rectangle labelBounds = widget.convertLocalToScene(widgetBounds);
+
+            Rectangle nodeBounds = edgeWidget.getBounds();
+            nodeBounds = edgeWidget.convertLocalToScene(nodeBounds);
+            nodeBounds.getCenterX();
+            labelBounds.translate(suggestedLocation.x - labelLocation.x, suggestedLocation.y - labelLocation.y);
+
+            return suggestedLocation;
+        }
+
+    }
+
 }

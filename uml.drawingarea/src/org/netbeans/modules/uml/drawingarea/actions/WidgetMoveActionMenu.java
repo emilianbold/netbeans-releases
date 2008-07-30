@@ -43,7 +43,11 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.event.ActionEvent;
 import java.util.List;
+import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.widget.Widget;
+import org.netbeans.modules.uml.drawingarea.keymap.DiagramInputkeyMapper;
+import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.drawingarea.view.LabelNode;
 import org.netbeans.modules.uml.drawingarea.view.UMLEdgeWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -59,14 +63,13 @@ public class WidgetMoveActionMenu
     public static final class MoveForward extends AbstractWidgetMoveAction
     {
 
-        public MoveForward()
+        public MoveForward(DesignerScene scene)
         {
-            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveForward"));
-        }
-
-        protected String iconResource()
-        {
-            return "org/netbeans/modules/uml/resources/images/move-forward.png";
+            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveForward"), 
+                  scene,
+                  "move-forward.png");
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl alt shift U"));
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, KeyStroke.getKeyStroke("meta ctrl shift U"));
         }
 
         public void actionPerformed(ActionEvent ev)
@@ -118,9 +121,13 @@ public class WidgetMoveActionMenu
     public static final class MoveBackward extends AbstractWidgetMoveAction
     {
 
-        public MoveBackward()
+        public MoveBackward(DesignerScene scene)
         {
-            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveBackward"));
+            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveBackward"), 
+                  scene,
+                  "move-backward.png");
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl alt shift D"));
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, KeyStroke.getKeyStroke("meta ctrl shift D"));
         }
 
         public void actionPerformed(ActionEvent ev)
@@ -167,20 +174,20 @@ public class WidgetMoveActionMenu
                 widget.getScene().validate();
             }
         }
-
-        protected String iconResource()
-        {
-            return "org/netbeans/modules/uml/resources/images/move-backward.png";
-        }
     }
 
     public static final class MoveToFront extends AbstractWidgetMoveAction
     {
 
-        public MoveToFront()
+        public MoveToFront(DesignerScene scene)
         {
-            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveFront"));
+            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveFront"), 
+                  scene,
+                  "move-front.png");
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl alt shift F"));
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, KeyStroke.getKeyStroke("meta ctrl shift F"));
         }
+
 
         public void actionPerformed(ActionEvent ev)
         {
@@ -193,20 +200,20 @@ public class WidgetMoveActionMenu
                 widget.getScene().validate();
             }
         }
-
-        protected String iconResource()
-        {
-            return "org/netbeans/modules/uml/resources/images/move-front.png";
-        }
     }
 
     public static final class MoveToBack extends AbstractWidgetMoveAction
     {
 
-        public MoveToBack()
+        public MoveToBack(DesignerScene scene)
         {
-            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveBack"));
-        }
+            super(NbBundle.getMessage(WidgetMoveActionMenu.class, "LBL_MoveBack"), 
+                  scene,
+                  "move-to-back.png");
+            
+            putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl alt shift B"));
+            putValue(DiagramInputkeyMapper.MAC_ACCELERATOR, KeyStroke.getKeyStroke("meta ctrl shift B"));
+         }
 
         public void actionPerformed(ActionEvent ev)
         {
@@ -218,11 +225,6 @@ public class WidgetMoveActionMenu
                 parent.addChild(0, widget);
                 widget.getScene().validate();
             }
-        }
-
-        protected String iconResource()
-        {
-            return "org/netbeans/modules/uml/resources/images/move-to-back.png";
         }
     }
 }

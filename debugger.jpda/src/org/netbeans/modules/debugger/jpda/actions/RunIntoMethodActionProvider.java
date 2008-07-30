@@ -152,7 +152,6 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
     public void doAction (Object action) {
         final String[] methodPtr = new String[1];
         final String[] urlPtr = new String[1];
-        final String[] classNamePtr = new String[1];
         final int[] linePtr = new int[1];
         final int[] offsetPtr = new int[1];
         try {

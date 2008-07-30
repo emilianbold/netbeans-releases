@@ -59,6 +59,7 @@ import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
+import org.netbeans.api.queries.VisibilityQuery;
 import org.netbeans.modules.php.project.connections.ui.PasswordPanel;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -657,7 +658,10 @@ public class RemoteClient implements Cancellable {
 
     private static boolean isVisible(File file) {
         assert file != null;
-        return !file.getName().equals(NB_METADATA_DIR);
+        if (file.getName().equals(NB_METADATA_DIR)) {
+            return false;
+        }
+        return VisibilityQuery.getDefault().isVisible(file);
     }
 
     // some FTP servers return ".." in directory listing (e.g. Cerberus FTP server) - so ignore them

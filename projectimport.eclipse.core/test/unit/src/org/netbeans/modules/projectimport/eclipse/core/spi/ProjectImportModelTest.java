@@ -69,7 +69,7 @@ public class ProjectImportModelTest extends ProjectImporterTestCase {
         assertEquals("1.6", model.getTargetLevel());
         assertTrue(model.isDebug());
         assertTrue(model.isDeprecation());
-        assertEquals(null, model.getEncoding());
+        assertEquals("UTF-8", model.getEncoding());
         assertEquals("-Xlint:fallthrough -Xlint:finally -Xlint:unchecked", model.getCompilerArgs().toString());
     }
 

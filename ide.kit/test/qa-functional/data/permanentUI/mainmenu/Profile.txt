@@ -1,0 +1,20 @@
+| Profile |                            P (mnemonics)
+===========
+Profile Project                        P   - Profile Project (project-name) - Profile Main Project
+Attach Profiler...                     A
+Profile Other                      >   O
+====================================
+Rerun Profiling Session                R
+Modify Profiling Session...            M
+Stop Profiling Session                 S
+====================================
+Reset Collected Results                e
+Run GC                                 G
+====================================
+Take Snapshot of Collected Results     T
+Take Heap Dump...                      H
+Load Snapshot...                       L
+Load Heap Dump...                      D
+Compare Memory Snapshots...            n
+====================================
+Advanced Commands                  >   C

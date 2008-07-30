@@ -44,6 +44,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.animator.AnimatorEvent;
 import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -71,7 +72,9 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("hierarchical-layout.png")); // NOI18N
         putValue(Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(HierarchicalLayoutAction.class, "LBL_HierarchicalLayoutAction")); // NOI18N
+        NbBundle.getMessage(HierarchicalLayoutAction.class, "LBL_HierarchicalLayoutAction")); // NOI18N
+        
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift K"));
     }
 
     public void actionPerformed(ActionEvent e) {

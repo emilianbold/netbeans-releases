@@ -1710,7 +1710,7 @@ public abstract class TreeView extends JScrollPane {
             } catch (NullPointerException ex) {
                 // #139696: Making this issue more acceptable by not showing a dialog
                 // still it deserves more investigation later
-                LOG.log(Level.INFO, "Problems while painting", ex);  // NOI18N
+               LOG.log(Level.INFO, "Problems while painting", ex);  // NOI18N
             }
         }
 

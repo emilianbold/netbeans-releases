@@ -21,6 +21,7 @@
             <folder name="x-vmd">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-vmd-io-javame-MEDesignDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.vmd.io.javame.resources.Bundle"/>
                         <attr name="position" intvalue="59999"/>
                     </file>
                 </folder>

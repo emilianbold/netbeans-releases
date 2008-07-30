@@ -43,17 +43,11 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JMenuItem;
-import javax.swing.MenuElement;
 
 /**
  *
@@ -151,8 +145,8 @@ public class Utilities {
             //starts "Toolbars                 > [x] Build                  B"
             String submenuName = scanner.nextLine();
             int to;
-            if ((to = submenuName.indexOf("> ")) != -1) {
-                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf("   > ")).trim());
+            if ((to = submenuName.indexOf(">")) != -1) {
+                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf(">")).trim());
             } else {
                  throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
             }

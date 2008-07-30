@@ -625,18 +625,7 @@ public final class GemManager {
                     Collections.sort(remote);
                 }
             } else {
-                // Produce the error list
-                boolean inErrors = false;
-                for (String line : gemRunner.getOutput()) {
-                    if (inErrors) {
-                        errors.add(line);
-                    } else if (line.startsWith("***") || line.startsWith(" ") || line.trim().length() == 0) { // NOI18N
-                        continue;
-                    } else if (!line.matches("[a-zA-Z\\-]+ \\(([0-9., ])+\\)\\s?")) { // NOI18N
-                        errors.add(line);
-                        inErrors = true;
-                    }
-                }
+                errors.addAll(gemRunner.getOutput());
             }
         } finally {
             runnerLock.unlock();

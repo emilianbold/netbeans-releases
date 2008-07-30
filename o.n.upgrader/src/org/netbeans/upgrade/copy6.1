@@ -48,19 +48,25 @@
 # Confirmed for 6.5
 
 include Preferences/.*
-exclude config/Preferences/org/netbeans/modules/welcome.properties!feedback.*
+exclude Preferences/org/netbeans/modules/welcome.properties!feedback.*
 include Editors/.*
 exclude Editors/.*/macros.xml
+exclude Editors/.*/Popup.*
+exclude Editors/.*/.*\.instance
+exclude Editors/.*/Settings\.settings
+include Services/IndentEngine/.*
+include Toolbars/.*
+exclude Toolbars/Progress/.*
+include Favorites/.*
+include Services/org-netbeans-modules-debugger-Settings.properties
+include Services/formsettings.settings
+include FormDesignerPalette/.*
 
 # Copied from copy6.0 (TBD remove or move above)
 
 include Services/org-netbeans-modules-debugger-Settings\.properties 
 include Templates/Classes/.*
 include WebServices/websvc_ref.xml
-exclude Editors/.*/Popup.*
-exclude Editors/.*/.*\.instance
-exclude Editors/.*/Settings\.settings
-include Services/IndentEngine/.*
 #does not import C/C++ indent settings
 exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CCIndentEngine\.settings
 exclude Services/IndentEngine/org-netbeans-modules-cnd-editor-cplusplus-CIndentEngine\.settings

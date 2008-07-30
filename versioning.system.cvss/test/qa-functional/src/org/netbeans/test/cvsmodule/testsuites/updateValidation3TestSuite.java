@@ -66,14 +66,15 @@ public class updateValidation3TestSuite extends JellyTestCase {
     }
 
     public static Test suite() {
-        return NbModuleSuite.create(
-                NbModuleSuite.createConfiguration(UpdateTest.class).addTest(
-                    "testBrokenUpdateMerConf", "testBrokenUpdateConfMer", "testBrokenUpdateConfMod",
-                    "testBrokenUpdateModMerMer", "testBrokenUpdateModMerConf"
-                )
-                .enableModules(".*")
-                .clusters(".*")
-        );
+        return NbModuleSuite.create(NbModuleSuite.emptyConfiguration());
+//        return NbModuleSuite.create(
+//                NbModuleSuite.createConfiguration(UpdateTest.class).addTest(
+//                    "testBrokenUpdateMerConf", "testBrokenUpdateConfMer", "testBrokenUpdateConfMod",
+//                    "testBrokenUpdateModMerMer", "testBrokenUpdateModMerConf"
+//                )
+//                .enableModules(".*")
+//                .clusters(".*")
+//        );
     }
     
 }
