@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
 
@@ -40,41 +40,30 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.1//EN" "http://www.netbeans.org/dtds/filesystem-1_1.dtd">
-<filesystem>
-    <folder name="Menu">
-        <folder name="Tools">
-            <file name="VariablesCustomizerAction.instance">
-                <attr name="instanceClass" stringvalue="org.netbeans.modules.project.ant.VariablesCustomizerAction"/>
-                <attr name="position" intvalue="475"/>
-            </file>
-        </folder>
-    </folder>
-    <folder name="Plugins">
-        <folder name="XML">
-            <folder name="UserCatalogs">
-                <file name="org-netbeans-modules-project-ant-ProjectXMLCatalogReader.instance">
-                    <attr name="instanceOf" stringvalue="org.netbeans.modules.xml.catalog.spi.CatalogReader"/>
-                </file>
-            </folder>
-        </folder>
-    </folder>
-    <folder name="ProjectXMLCatalog">
-        <folder name="ant-project-libraries">
-            <file name="1.xsd" url="../ant-project-libraries-1.xsd"/>
-        </folder>
-        <folder name="ant-project-references">
-            <file name="1.xsd" url="../ant-project-references.xsd"/>
-            <file name="2.xsd" url="../ant-project-references2.xsd"/>
-        </folder>
-        <folder name="project">
-            <file name="1.xsd" url="../project.xsd"/>
-        </folder>
-        <folder name="project-private">
-            <file name="1.xsd" url="../project-private.xsd"/>
-        </folder>
-        <folder name="ant-build-extender">
-            <file name="1.xsd" url="../extender1.xsd"/>
-        </folder>
-    </folder>
-</filesystem>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" 
+           targetNamespace="http://www.netbeans.org/ns/ant-build-extender/1" 
+           xmlns="http://www.netbeans.org/ns/ant-build-extender/1"
+           elementFormDefault="qualified">
+    <xs:element name="buildExtensions">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="extension" minOccurs="1" maxOccurs="unbounded"/>
+            </xs:sequence>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="extension">
+        <xs:complexType>
+            <xs:sequence>
+                <xs:element ref="dependency" minOccurs="0" maxOccurs="unbounded"/>
+            </xs:sequence>
+            <xs:attribute name="file" use="required" type="xs:string"/>
+            <xs:attribute name="id" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+    <xs:element name="dependency">
+        <xs:complexType>
+            <xs:attribute name="dependsOn" use="required" type="xs:string"/>
+            <xs:attribute name="target" use="required" type="xs:string"/>
+        </xs:complexType>
+    </xs:element>
+</xs:schema>
