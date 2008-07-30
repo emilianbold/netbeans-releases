@@ -820,7 +820,6 @@ public class MakeActionProvider implements ActionProvider {
         String hkey = conf.getDevelopmentHost().getName();
         ArrayList<String> errs = new ArrayList<String>();
         CompilerSet cs;
-        BuildToolsAction bt = null;
         String csname;
         File file;
         ServerList serverList = (ServerList) Lookup.getDefault().lookup(ServerList.class);
@@ -846,6 +845,7 @@ public class MakeActionProvider implements ActionProvider {
                 lastValidation = true;
                 return true;
             }
+            // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
         if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
@@ -875,25 +875,26 @@ public class MakeActionProvider implements ActionProvider {
             csconf.setValid();
         }
         
-        
+        Tool cTool = cs.getTool(Tool.CCompiler);
+        Tool cppTool = cs.getTool(Tool.CCCompiler);
+        Tool fTool = cs.getTool(Tool.FortranCompiler);
+        Tool makeTool = cs.getTool(Tool.MakeTool);
+
         // Check for a valid make program
         if (conf.getDevelopmentHost().isLocalhost()) {
-            file = new File(cs.getTool(Tool.MakeTool).getPath());
-            if ((!file.exists() && Path.findCommand(cs.getTool(Tool.MakeTool).getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
+            file = new File(makeTool.getPath());
+            if ((!file.exists() && Path.findCommand(makeTool.getPath()) == null) || !ToolsPanel.supportedMake(file.getPath())) {
                 runBTA = true;
             }
         } else {
             if(serverList != null) {
-                if (!serverList.isValidExecutable(hkey, cs.getTool(Tool.MakeTool).getPath())) {
+                if (!serverList.isValidExecutable(hkey, makeTool.getPath())) {
                     runBTA=true;
                 }
             }
         }
         
         // Check compilers
-        Tool cTool = cs.getTool(Tool.CCompiler);
-        Tool cppTool = cs.getTool(Tool.CCCompiler);
-        Tool fTool = cs.getTool(Tool.FortranCompiler);
 
         PlatformInfo pi = conf.getPlatformInfo();
         
@@ -910,42 +911,44 @@ public class MakeActionProvider implements ActionProvider {
             runBTA = true;
         }
         
-        if (runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
-            bt = SystemAction.get(BuildToolsAction.class);
-            bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
-        }
-        
-        if (bt != null) {
-            ToolsPanelModel model = new LocalToolsPanelModel();
-            model.setCompilerSetName(null); // means don't change
-            model.setSelectedCompilerSetName(csname);
-            model.setMakeRequired(true);
-            model.setGdbRequired(false);
-            model.setCRequired(cRequired);
-            model.setCppRequired(cppRequired);
-            model.setFortranRequired(fRequired);
-            model.setShowRequiredBuildTools(true);
-            model.setShowRequiredDebugTools(false);
-            model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
-            if (bt.initBuildTools(model, errs)) {
-                String name = model.getSelectedCompilerSetName();
-                CppSettings.getDefault().setCompilerSetName(name);
-                conf.getCRequired().setValue(model.isCRequired());
-                conf.getCppRequired().setValue(model.isCppRequired());
-                conf.getFortranRequired().setValue(model.isFortranRequired());
-                conf.getCompilerSet().setValue(name);
-                pd.setModified();
-                pd.save();
-                lastValidation = true;
-                return true;
+        if ( runBTA || Boolean.getBoolean("netbeans.cnd.always_show_bta")) { // NOI18N
+            if (conf.getDevelopmentHost().isLocalhost()) {
+                // User can't change anything in BTA for remote host yet,
+                // so showing this dialog will only confuse him
+                BuildToolsAction bt = SystemAction.get(BuildToolsAction.class);
+                bt.setTitle(NbBundle.getMessage(BuildToolsAction.class, "LBL_ResolveMissingTools_Title")); // NOI18N
+                ToolsPanelModel model = new LocalToolsPanelModel();
+                model.setCompilerSetName(null); // means don't change
+                model.setSelectedCompilerSetName(csname);
+                model.setMakeRequired(true);
+                model.setGdbRequired(false);
+                model.setCRequired(cRequired);
+                model.setCppRequired(cppRequired);
+                model.setFortranRequired(fRequired);
+                model.setShowRequiredBuildTools(true);
+                model.setShowRequiredDebugTools(false);
+                model.SetEnableRequiredCompilerCB(conf.isMakefileConfiguration());
+                if (bt.initBuildTools(model, errs)) {
+                    String name = model.getSelectedCompilerSetName();
+                    CppSettings.getDefault().setCompilerSetName(name);
+                    conf.getCRequired().setValue(model.isCRequired());
+                    conf.getCppRequired().setValue(model.isCppRequired());
+                    conf.getFortranRequired().setValue(model.isFortranRequired());
+                    conf.getCompilerSet().setValue(name);
+                    pd.setModified();
+                    pd.save();
+                    lastValidation = true;
+                } else {
+                    lastValidation = false;
+                }
             } else {
+                System.err.println("Validation for remote host failed");
                 lastValidation = false;
-                return false;
             }
         } else {
             lastValidation = true;
-            return true;
         }
+        return lastValidation;
     }
     
     private boolean validatePackaging(MakeConfiguration conf) {
