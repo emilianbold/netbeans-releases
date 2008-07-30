@@ -122,9 +122,6 @@ final class VisualizerChildren extends Object {
         VisualizerNode visNode = visNodes.get(pos);
         if (visNode == null) {
             Node node = snapshot.get(pos);
-            if (node == null || node.getClass().getName().endsWith("NonexistingNode")) { // NOI18N
-                return VisualizerNode.EMPTY;
-            }
             visNode = VisualizerNode.getVisualizer(this, node);
             visNode.indexOf = pos;
             visNodes.set(pos, visNode);
@@ -169,7 +166,7 @@ final class VisualizerChildren extends Object {
 
     final String dumpIndexes(VisualizerNode visNode) {
         StringBuilder sb = new StringBuilder();
-        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY));
+        sb.append("EMPTY: " + (visNode == VisualizerNode.EMPTY) + ", Lazy: " + snapshot.getClass().getName().endsWith("LazySnapshot"));
         sb.append("\nSeeking for: ").append(visNode.toId());
         sb.append("\nwith parent: ").append(((VisualizerNode)visNode.getParent()) != null
                 ? ((VisualizerNode)visNode.getParent()).toId() : "null");
@@ -191,6 +188,10 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void added(VisualizerEvent.Added ev) {
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
+        }        
         snapshot = ev.originalEvent.getSnapshot();
         ListIterator<VisualizerNode> it = visNodes.listIterator();
         boolean empty = !it.hasNext();
@@ -227,40 +228,26 @@ final class VisualizerChildren extends Object {
     /** Notification that children has been removed. Modifies the list of nodes
      * and fires info to all listeners.
      */
-    public void removed(VisualizerEvent.Removed ev) {
-        /*
-        List remList = Arrays.asList(ev.getRemovedNodes());
-        Iterator it = visNodes.iterator();
-        VisualizerNode vis;
-
-        int[] indx = new int[remList.size()];
-        int count = 0;
-        int remSize = 0;
-
-        while (it.hasNext()) {
-            // take visualizer node
-            vis = (VisualizerNode) it.next();
-
-            // check if it will removed
-            if (remList.contains(vis.node)) {
-                indx[remSize++] = count;
-                // remove this VisualizerNode from children
-                it.remove();
-                // bugfix #36389, add the removed node to VisualizerEvent
-                ev.removed.add(vis);
-            }
-            count++;
+   public void removed(VisualizerEvent.Removed ev) {
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
         }
-        ev.setRemovedIndicies(indx);*/
         snapshot = ev.originalEvent.getSnapshot();
         int[] idxs = ev.getArray();
         if (idxs.length == 0) {
             return;
         }
 
+        //NodeMemberEvent origEvent = (NodeMemberEvent) ev.originalEvent;
         for (int i = idxs.length - 1; i >= 0; i--) {
             VisualizerNode visNode = visNodes.remove(idxs[i]);
-            ev.removed.add(visNode == null ? VisualizerNode.EMPTY : visNode);
+            /*if (visNode == null) {
+                Node node = origEvent.getDelta()[i];
+                visNode = VisualizerNode.getVisualizer(this, node);
+            }
+            ev.removed.add(visNode);*/
+            ev.removed.add(visNode != null ? visNode : VisualizerNode.EMPTY);
         }
 
         // notify event about changed indexes
