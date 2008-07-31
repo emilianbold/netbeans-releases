@@ -128,6 +128,8 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
         private Action[] getAdditionalActions() {
 
             List<Action> actions = new ArrayList<Action>();
+            actions.add(CommonProjectActions.newFileAction());
+            actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(GrailsActionProvider.COMMAND_GRAILS_SHELL,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_ShellAction_Name"), null));
             actions.add(new ManagePluginsAction(project));
@@ -141,12 +143,12 @@ public class GrailsLogicalViewProvider implements LogicalViewProvider {
             actions.add(null);
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_RunAction_Name"), null));
-            
+
             if (WebClientToolsSessionStarterService.isAvailable()) {
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_DEBUG,
-                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_DebugAction_Name"), null));                
+                    NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_DebugAction_Name"), null));
             }
-            
+
             actions.add(ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_TEST,
                     NbBundle.getMessage(GrailsLogicalViewProvider.class, "LBL_TestAction_Name"), null));
             actions.add(null);

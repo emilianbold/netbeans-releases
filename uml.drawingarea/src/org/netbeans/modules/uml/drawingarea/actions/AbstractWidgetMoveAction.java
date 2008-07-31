@@ -41,25 +41,30 @@
 
 package org.netbeans.modules.uml.drawingarea.actions;
 
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.api.visual.widget.Widget;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElement;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
+import org.netbeans.modules.uml.resources.images.ImageUtil;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
-import org.openide.util.actions.SystemAction;
 import org.openide.windows.TopComponent;
 
 /**
  *
  * @author Sheryl Su
  */
-public abstract class AbstractWidgetMoveAction extends SystemAction
+public abstract class AbstractWidgetMoveAction extends AbstractAction
 {
-
-    public AbstractWidgetMoveAction(String tooltip)
+    private DesignerScene scene = null;
+    
+    public AbstractWidgetMoveAction(String tooltip, DesignerScene scene, String icon)
     {
         putValue(Action.SHORT_DESCRIPTION, tooltip);
+        putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon(icon));
+        
+        this.scene = scene;
     }
 
     public String getName()
@@ -69,18 +74,7 @@ public abstract class AbstractWidgetMoveAction extends SystemAction
     
     public boolean isEnabled() 
     {
-        boolean retVal = false;
-        
-        Widget widget = getWidget();
-        if(widget != null)
-        {
-            if (widget.getScene() instanceof DesignerScene)
-            {
-                DesignerScene scene = (DesignerScene) widget.getScene();
-                retVal = scene.isReadOnly() == false;
-            }
-        }
-        return retVal;
+        return scene.isReadOnly() == false;
     }
     
     protected Widget getWidget()

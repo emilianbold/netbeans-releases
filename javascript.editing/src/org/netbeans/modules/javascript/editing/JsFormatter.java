@@ -272,7 +272,8 @@ public class JsFormatter implements org.netbeans.modules.gsf.api.Formatter {
                  */
                 int delta = -1;
                 StackItem lastPop = stack.empty() ? null : stack.pop();
-                if (lastPop != null && Utilities.getLineOffset(doc, lastPop.range.getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
+                if (lastPop != null && lastPop.range.getStart() <= (doc.getLength() + 1) &&
+                        Utilities.getLineOffset(doc, lastPop.range.getStart()) != Utilities.getLineOffset(doc, ts.offset())) {
                     int blocks = 0;
                     while (!stack.empty() && stack.pop().braceless) {
                         blocks++;

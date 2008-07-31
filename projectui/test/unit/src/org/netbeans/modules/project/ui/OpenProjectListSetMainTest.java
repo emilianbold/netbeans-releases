@@ -54,6 +54,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.junit.MockServices;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.project.ui.actions.TestSupport;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.filesystems.FileObject;
@@ -108,6 +109,7 @@ public class OpenProjectListSetMainTest extends NbTestCase {
         OpenProjectListSettings.getInstance().setOpenProjectsIcons(icons);
     }
 
+    @RandomlyFails // NB-Core-Build #1058
     public void testBehaviourOfProjectsLogicNode() throws Exception {
         Node logicalView = new ProjectsRootNode(ProjectsRootNode.LOGICAL_VIEW);
         L listener = new L();

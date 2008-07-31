@@ -129,6 +129,7 @@ made subject to such option by the copyright holder.
             <folder name="xslt+xml">
                 <folder name="Factories">
                     <file name="org-netbeans-modules-xsl-XSLDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xsl.resources.Bundle"/>
                         <attr name="position" intvalue="900"/>
                     </file>
                 </folder>

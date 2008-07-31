@@ -225,15 +225,13 @@ public final class NbJSDebugger {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String pref = evt.getKey();
-            if( NbJSPreferences.PROP_HTTP_MONITOR.equals(pref)){
+            if( NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref) ||
+                    NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)){
                 setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
-                return;
             }
         }
 
     }
-
-//    private class PreferencesStateListeners implements
 
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;
@@ -408,7 +406,7 @@ public final class NbJSDebugger {
         NbJSPreferences preferences = NbJSPreferences.getInstance();
         if ( debugger != null){
             if ( Feature.Name.HTTP_MONITOR.equals(feature)){
-                debugger.setBooleanFeature(feature, preferences.getHttpMonitor());
+                debugger.setBooleanFeature(feature, preferences.getHttpMonitorEnabled());
             } else {
                 throw new UnsupportedOperationException("Setting features for Feature: " + feature + " has yet to be implmented");
             }
@@ -430,13 +428,13 @@ public final class NbJSDebugger {
             debugger.setBooleanFeature(Feature.Name.SUSPEND_ON_DEBUGGERKEYWORD, preferences.getSuspendOnDebuggerKeyword());
 
             //We probably need to figure out the best place to specify the Http Monitor being on or off by default.  
-            debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitor());
+            debugger.setBooleanFeature(Feature.Name.HTTP_MONITOR, preferences.getHttpMonitorEnabled());
 
             setBreakPoints();
         }
         if (state == JSDebuggerState.STARTING_READY) {
             if (console != null) {
-                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_STARTED")); // NOI18N
+                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_JSDEBUGGER_STARTED") + getURI()); // NOI18N
             }
         }
         if (state.getState() == JSDebuggerState.State.SUSPENDED) {
@@ -454,6 +452,7 @@ public final class NbJSDebugger {
         fireJSDebuggerEvent(resourcedDebuggerEvent);
         if (state.getState() == JSDebuggerState.State.DISCONNECTED) {
             if (console != null) {
+                console.getOut().println(NbBundle.getMessage(NbJSDebugger.class, "MSG_CONSOLE_CLOSE_JAVASCRIPT_DEBUGGER"));
                 console.closeInputOutput();
                 console = null;
             }

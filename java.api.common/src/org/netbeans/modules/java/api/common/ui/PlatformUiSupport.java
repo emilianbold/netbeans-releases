@@ -184,6 +184,9 @@ public final class PlatformUiSupport {
                     Node insertBeforeMe = null;
                     for (int i=0; i<nodes.getLength(); i++) {
                         Node n = nodes.item(i);
+                        if (n.getNodeType() != Node.ELEMENT_NODE) {
+                            continue; // ignore TEXT nodes etc.
+                        }
                         if (!n.getNodeName().equals("name") &&  // NOI18N
                             !n.getNodeName().equals("minimum-ant-version")) { // NOI18N
                             insertBeforeMe = n;

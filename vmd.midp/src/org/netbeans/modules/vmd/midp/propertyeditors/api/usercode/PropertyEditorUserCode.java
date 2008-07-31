@@ -207,6 +207,7 @@ public abstract class PropertyEditorUserCode extends DesignPropertyEditor implem
     @Override
     public void customEditorOKButtonPressed() {
         if (userCodeRadioButton.isSelected()) {
+            customEditor.setNewValue();
             PropertyEditorUserCode.super.setValue(PropertyValue.createUserCode(userCode));
         }
     }

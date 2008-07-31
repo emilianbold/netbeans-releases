@@ -403,6 +403,12 @@ public class Util {
         return null;
     }
 
+    public static boolean isEqual(Object a, Object b) {
+        if ((a == null) && (b == null)) return true;
+        if ((a != null) && (b != null)) return a.equals(b);
+        return false;
+    }
+    
     public static String getStoreLocation(Project project, boolean trust, boolean client) {
         String storeLocation = null;
         if (project == null) {

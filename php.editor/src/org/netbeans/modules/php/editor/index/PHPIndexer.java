@@ -46,13 +46,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.netbeans.modules.gsf.api.Indexer;
 import org.netbeans.modules.gsf.api.ParserFile;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.IndexDocument;
 import org.netbeans.modules.gsf.api.IndexDocumentFactory;
 import org.netbeans.modules.php.editor.CodeUtils;
+import org.netbeans.modules.php.editor.PHPLanguage;
 import org.netbeans.modules.php.editor.PredefinedSymbols;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
@@ -80,6 +83,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
+import org.openide.filesystems.FileSystem;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 
 /**
@@ -100,7 +105,8 @@ import org.openide.util.Exceptions;
  */
 public class PHPIndexer implements Indexer {
     static final boolean PREINDEXING = Boolean.getBoolean("gsf.preindexing");
-    
+    private static final FileSystem MEM_FS = FileUtil.createMemoryFileSystem();
+    private static final Map<String,FileObject> EXT2FO = new HashMap<String,FileObject>();
     // a workaround for issue #132388
     private static final Collection<String>INDEXABLE_EXTENSIONS = Arrays.asList(
             "php", "php3", "php4", "php5", "phtml", "inc"); //NOI18N
@@ -149,7 +155,27 @@ public class PHPIndexer implements Indexer {
             return true;
         }
         
-        return false;
+        return isPhpFile(file);
+    }
+
+    private boolean isPhpFile(ParserFile file) {
+        FileObject fo = null;
+        String ext = file.getExtension();
+        synchronized (EXT2FO) {
+            fo = (ext != null) ? EXT2FO.get(ext) : null;
+            if (fo == null) {
+                try {
+                    fo = FileUtil.createData(MEM_FS.getRoot(), file.getNameExt());
+                    if (ext != null && fo != null) {
+                        EXT2FO.put(ext, fo);
+                    }
+                } catch (IOException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+        assert fo != null;
+        return PHPLanguage.PHP_MIME_TYPE.equals(fo.getMIMEType());
     }
 
     public String getPersistentUrl(File file) {

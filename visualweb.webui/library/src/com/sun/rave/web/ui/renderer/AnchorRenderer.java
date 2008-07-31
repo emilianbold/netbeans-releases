@@ -98,7 +98,7 @@ public class AnchorRenderer extends AbstractRenderer {
           // Render core and pass through attributes as necessary
           // NOTE - id is being rendered "as is" instead of the normal convention
           // that we render the client id.
-          writer.writeAttribute("id", id, "id"); //NOI8N
+          writer.writeAttribute("id", id, "id"); //NOI18N
           String style = anchor.getStyle();
           String styleClass = anchor.getStyleClass();
           if (styleClass != null) {

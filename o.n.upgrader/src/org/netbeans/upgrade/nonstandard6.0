@@ -50,3 +50,4 @@ include complibs/.*
 include jdbc-drivers/.*\.jar
 include context\.xml
 include .uml
+include var/filehistory/.*

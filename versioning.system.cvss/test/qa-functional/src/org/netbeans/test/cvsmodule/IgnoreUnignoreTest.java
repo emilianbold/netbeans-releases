@@ -311,7 +311,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         CVSroot = cvss.getCvsRoot();
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         assertEquals("File should not be listed in table", 0, table.getRowCount());
         cvss.stop();
         
@@ -331,7 +331,7 @@ public class IgnoreUnignoreTest extends JellyTestCase {
         System.setProperty("netbeans.t9y.cvs.connection.CVSROOT", CVSroot);
         nodeFrame.performPopupAction("CVS|Show Changes");
         oto.waitText("Refreshing CVS Status finished");
-        Thread.sleep(1000);
+        Thread.sleep(3000);
         assertEquals("File should not be listed in table", 2, table.getRowCount());
         cvss.stop();
         

@@ -52,6 +52,7 @@ import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 class CustomComponentVisualPanel extends JPanel implements DocumentListener {
@@ -129,6 +130,10 @@ class CustomComponentVisualPanel extends JPanel implements DocumentListener {
         this.projectNameTextField.selectAll();
     }
 
+    protected HelpCtx getHelp() {
+        return new HelpCtx(CustomComponentVisualPanel.class);
+    }
+    
     private boolean isProjectNameValid(){
         if (getProjectNameValue().trim().length() == 0) {
             setError(getMessage(MSG_NAME_CANNOT_BE_EMPTY));

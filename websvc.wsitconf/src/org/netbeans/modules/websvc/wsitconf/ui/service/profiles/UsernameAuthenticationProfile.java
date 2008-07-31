@@ -131,15 +131,10 @@ public class UsernameAuthenticationProfile extends ProfileBase
         String storeAlias = ProprietarySecurityPolicyModelHelper.getStoreAlias(component, false);
         String storeLoc = ProprietarySecurityPolicyModelHelper.getStoreLocation(component, false);
         String storePasswd = ProprietarySecurityPolicyModelHelper.getStorePassword(component, false);
-        if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(storeAlias)) {
-            String defPassword = Util.getDefaultPassword(p);
-            String defLocation = Util.getStoreLocation(p, false, false);
-            if ((defPassword != null) && (defLocation != null)) {
-                if ((defPassword.equals(storePasswd)) && 
-                    (defLocation.equals(storeLoc))) {
-                        return true;
-                }
-            }
+        if ((Util.isEqual(Util.getDefaultPassword(p), storePasswd)) &&
+            (Util.isEqual(Util.getStoreLocation(p, false, false), storeLoc)) &&
+            (Util.isEqual(ProfilesModelHelper.XWS_SECURITY_SERVER, storeAlias))) { 
+            return true;
         }
         return false;
     }
@@ -190,15 +185,11 @@ public class UsernameAuthenticationProfile extends ProfileBase
         if (ProfilesModelHelper.XWS_SECURITY_SERVER.equals(trustAlias)) {
             String user = ProprietarySecurityPolicyModelHelper.getDefaultUsername((Binding)component);
             String passwd = ProprietarySecurityPolicyModelHelper.getDefaultPassword((Binding)component);
-            if ((DEFAULT_PASSWORD.equals(passwd)) && (DEFAULT_USERNAME.equals(user))) {
-                String defPassword = Util.getDefaultPassword(p);
-                String defLocation = Util.getStoreLocation(p, true, true);
-                if ((defPassword != null) && (defLocation != null)) {
-                    if ((defPassword.equals(trustPasswd)) && 
-                        (defLocation.equals(trustLoc))) {
-                            return true;
-                    }
-                }
+            if ((Util.isEqual(DEFAULT_PASSWORD, passwd)) &&
+                (Util.isEqual(DEFAULT_USERNAME, user)) && 
+                (Util.isEqual(Util.getDefaultPassword(p), trustPasswd)) && 
+                (Util.isEqual(Util.getStoreLocation(p, true, true), trustLoc))) {
+                return true;
             }
         }
         return false;

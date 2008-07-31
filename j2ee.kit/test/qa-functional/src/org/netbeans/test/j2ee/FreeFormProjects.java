@@ -103,7 +103,7 @@ public class FreeFormProjects extends J2eeTestCase {
     
 //    private void createNewFreeFormEjbProject(String location, String name, String beans[], String files[]) {
 //        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-//        npwo.selectCategory("Enterprise");
+//        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
 //        npwo.selectProject("EJB Module with Existing Ant Script");
 //        npwo.next();
 //        NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
@@ -148,7 +148,7 @@ public class FreeFormProjects extends J2eeTestCase {
     
     private void createNewEjbProjectFromExistingSources(String location, String name, String folder, String beans[], String files[]) {
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Enterprise");
+        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
         npwo.selectProject("EJB Module with Existing Sources");
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();
@@ -185,7 +185,7 @@ public class FreeFormProjects extends J2eeTestCase {
     
     private void createNewEarProjectFromExistingSources(String location, String name, String folder) {
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        npwo.selectCategory("Enterprise");
+        npwo.selectCategory("Java EE"); // XXX use Bundle.getString instead
         npwo.selectProject("Enterprise Application with Existing Sources");
         npwo.next();
         NewProjectNameLocationStepOperator npnlso = new NewProjectNameLocationStepOperator();

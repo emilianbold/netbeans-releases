@@ -78,4 +78,67 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test136744_4() throws Exception {
         checkCompletion("testfiles/completion/lib/issue136744.php", "print $test4^", false);
     }
+    // #142024 Code completion + references
+    public void test142024() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142024.php", "$t->^", false);
+    }    
+    // #142051 CC doesn't work when an object is a refence
+    public void test142051() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name1: \".$user1->^", false);
+    }
+
+    public void test142051_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142051.php", "echo \"Name2: \".$user2->^", false);
+    }
+
+    // #136092 Code completion doesn't show reference parameters
+    public void test136092_withoutReference() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136092.php", "$source1 = $reques^", false);
+    }
+    public void test136092_withReference() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136092.php", "$source2 = $reques^", false);
+    }
+    // #132294 [cc] cc for variables in strings not working if there are non-ws chars preceding the variablle
+    public void test132294() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello $ts^", false);
+    }
+    public void test132294_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue132294.php", "echo \"Hello$ts^", false);
+    }
+    // #142234 $t->| shouldn't propose __construct()
+    public void test142234() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142234.php", "$t->^", false);
+    }
+    // #135618 [CC] Missing static members from parent classes after "self::"
+    public void test135618() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue135618.php", "self::^", false);
+    }
+    public void test135618_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue135618.php", "B135618::^", false);
+    }
+    public void test135618_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue135618.php", "A135618::^", false);
+    }
+    public void test142091() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142091.php", "function f142091 (^", false);
+    }
+    // #136188 [cc] issues related to class name case-sensitivity
+    public void test136188() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v1->^", false);
+    }
+    public void test136188_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v2->^", false);
+    }
+    public void test136188_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v3->^", false);
+    }
+    public void test136188_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v1 = new Cls136188^", false);
+    }
+    public void test136188_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v2 = new cls136188^", false);
+    }
+    public void test136188_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
+    }
 }

@@ -175,7 +175,7 @@ public abstract class AbstractModeContainer implements ModeContainer {
                         // the DefautlkeyboardFocusmanager doen't do it's job then and locks the keyboard.
                         // hack it by make it believe the focus changed.
                         try {
-                            Field fld = KeyboardFocusManager.class.getDeclaredField("focusOwner");//NOI8N
+                            Field fld = KeyboardFocusManager.class.getDeclaredField("focusOwner");//NOI18N
                             fld.setAccessible(true);
                             fld.set(KeyboardFocusManager.getCurrentKeyboardFocusManager(), null);
                         } catch (IllegalArgumentException ex) {

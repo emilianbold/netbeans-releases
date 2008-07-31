@@ -25,26 +25,40 @@
  * 
  * Portions Copyrighted 2007 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.groovy.grailsproject;
 
 /**
  *
  * @author schmidtm
+ * @author Martin Adamek
  */
-public enum SourceCategory {    NONE,
-                                CONFIGURATION,
-                                CONTROLLERS,
-                                DOMAIN,
-                                MESSAGES,
-                                SERVICES,
-                                TAGLIB,
-                                UTIL,
-                                VIEWS,
-                                TESTS,
-                                SCRIPTS,
-                                SRC,
-                                WEBAPP,
-                                LIB;
+public enum SourceCategory {
+
+    NONE(null),
+    CONFIGURATION(null),
+    CONTROLLERS("create-controller"),
+    DOMAIN("create-domain-class"),
+    MESSAGES(null),
+    SERVICES("create-service"),
+    TAGLIB("create-tag-lib"),
+    UTIL(null),
+    VIEWS("generate-views"),
+    INTEGRATION_TESTS("create-integration-test"),
+    UNIT_TESTS("create-unit-test"),
+    SCRIPTS("create-script"),
+    SRC_JAVA(null),
+    SRC_GROOVY(null),
+    WEBAPP(null),
+    LIB(null);
+
+    private final String cmd;
+
+    SourceCategory(String command) {
+        this.cmd = command;
+    }
+
+    public String command() {
+        return cmd;
+    }
 
 }

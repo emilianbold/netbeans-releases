@@ -108,6 +108,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -334,45 +335,50 @@ class J2SEActionProvider implements ActionProvider {
                 if (targetNames == null) {
                     return;
                 }
-                if (    (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command))
-                     && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
-                    bypassAntBuildScript(command, context, p);
+                if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
+                    Properties execProperties = new Properties();
 
-                    return ;
-                }
-                if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
-                    FileObject[] files;
-                    if (  isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)
-                            && ((files = findTestSources(context, false)) != null)) {
+                    copyValue(J2SEProjectProperties.RUN_JVM_ARGS, execProperties);
+                    copyValue(J2SEProjectProperties.RUN_WORK_DIR, execProperties);
+                    
+                    if (targetNames.length == 1 && ("run-applet".equals(targetNames[0]) || "debug-applet".equals(targetNames[0]))) {
                         try {
-                            String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
-                            if (prop != null) {
-                                p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
+                            FileObject file = findSources(context)[0];
+                            String url = p.getProperty("applet.url");
+                            execProperties.setProperty("applet.url", url);
+                            ProjectRunner.execute(targetNames[0], execProperties, file);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                        return ;
+                    }
+                    if (COMMAND_RUN.equals(command) || COMMAND_DEBUG.equals(command)) {
+                        bypassAntBuildScript(command, context, execProperties);
+
+                        return ;
+                    }
+                    if (COMMAND_RUN_SINGLE.equals(command) || COMMAND_DEBUG_SINGLE.equals(command)) {
+                        FileObject[] files;
+                        if ((files = findTestSources(context, false)) != null) {
+                            try {
+                                ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
+                            } catch (IOException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
-                            ProjectRunner.execute(command.equals(COMMAND_RUN_SINGLE) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, p, files[0]);
+                            return;
+                        }
+                        bypassAntBuildScript(command, context, p);
+                        return;
+                    }
+                    if (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command)) {
+                        FileObject[] files = findSources(context);
+                        try {
+                            ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, execProperties, files[0]);
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }
                         return;
                     }
-                    if (isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
-                        bypassAntBuildScript(command, context, p);
-                        return;
-                    }
-                }
-                if (    (COMMAND_TEST_SINGLE.equals(command) || COMMAND_DEBUG_TEST_SINGLE.equals(command))
-                     && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
-                    FileObject[] files = findSources(context);
-                    try {
-                        String prop = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
-                        if (prop != null) {
-                            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, prop);
-                        }
-                        ProjectRunner.execute(COMMAND_TEST_SINGLE.equals(command) ? ProjectRunner.QUICK_TEST : ProjectRunner.QUICK_TEST_DEBUG, p, files[0]);
-                    } catch (IOException ex) {
-                        Exceptions.printStackTrace(ex);
-                    }
-                    return;
                 }
                 if (targetNames.length == 0) {
                     targetNames = null;
@@ -744,7 +750,7 @@ class J2SEActionProvider implements ActionProvider {
     private boolean isCompileOnSaveEnabled(String propertyName) {
         String compileOnSaveProperty = project.evaluator().getProperty(propertyName);
 
-        return compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty);
+        return (compileOnSaveProperty == null || !Boolean.valueOf(compileOnSaveProperty)) && J2SEProjectUtil.isCompileOnSaveSupported(project);
     }
 
     public boolean isActionEnabled( String command, Lookup context ) {
@@ -753,7 +759,7 @@ class J2SEActionProvider implements ActionProvider {
             return false;
         }
         if (   Arrays.asList(actionsDisabledForQuickRun).contains(command)
-            && !Boolean.valueOf(project.evaluator().getProperty(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE))) {
+            && isCompileOnSaveEnabled(J2SEProjectProperties.DISABLE_COMPILE_ON_SAVE)) {
             return false;
         }
         if ( command.equals( COMMAND_COMPILE_SINGLE ) ) {
@@ -985,22 +991,22 @@ class J2SEActionProvider implements ActionProvider {
             toRun = files[0];
         }
         boolean debug = COMMAND_DEBUG.equals(command) || COMMAND_DEBUG_SINGLE.equals(command);
-        String val = evaluator.getProperty(J2SEProjectProperties.RUN_JVM_ARGS);
-        if (val != null) {
-            p.setProperty(J2SEProjectProperties.RUN_JVM_ARGS, val);
-        }
         try {
             if (run) {
-                val = evaluator.getProperty(J2SEProjectProperties.APPLICATION_ARGS);
-                if (val != null) {
-                    p.setProperty(J2SEProjectProperties.APPLICATION_ARGS, val);
-                }
+                copyValue(J2SEProjectProperties.APPLICATION_ARGS, p);
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_DEBUG : ProjectRunner.QUICK_RUN, p, toRun);
             } else {
                 ProjectRunner.execute(debug ? ProjectRunner.QUICK_TEST_DEBUG : ProjectRunner.QUICK_TEST, p, toRun);
             }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private void copyValue(String propertyName, Properties properties) {
+        String val = evaluator.getProperty(propertyName);
+        if (val != null) {
+            properties.setProperty(propertyName, val);
         }
     }
 

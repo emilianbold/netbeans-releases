@@ -343,6 +343,7 @@ public class TSDiagramConverter
                     }
                 }
                 scene.validate();
+                scene.getDiagram().setDirty(true);
                 try {
                     scene.getDiagram().save();
                 } catch (IOException ex) {

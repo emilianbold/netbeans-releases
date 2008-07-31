@@ -44,7 +44,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.swing.AbstractCellEditor;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
@@ -83,7 +85,13 @@ public final class AddLibraryPanel extends JPanel {
     public AddLibraryPanel(Project project, LibraryChooser.Filter filter, JButton okButton) {
         this.project = project;
         this.projectFld = FileUtil.toFile(project.getProjectDirectory());
-        this.baseDir = new File(JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+        File base;
+        try {
+            base = new File(JSLibraryProjectUtils.getJSLibrarySourcePath(project)).getCanonicalFile();
+        } catch (IOException ex) {
+            base = new File(JSLibraryProjectUtils.getJSLibrarySourcePath(project));
+        }
+        this.baseDir = base;
         this.okButton = okButton;
         
         initComponents();
@@ -285,15 +293,9 @@ public final class AddLibraryPanel extends JPanel {
                 continue;
             }
             
-            String webRoot = baseDir.getAbsolutePath();
-            String projectDir = projectFld.getAbsolutePath();
-            
-            String fullPath = FileUtil.normalizeFile(folder).getAbsolutePath();
-            fullPath = fullPath.endsWith(File.separator) ? fullPath : fullPath + File.separator;
-            webRoot = webRoot.endsWith(File.separator) ? webRoot : webRoot + File.separator;
-            projectDir = projectDir.endsWith(File.separator) ? projectDir : projectDir + File.separator;
+            folder = FileUtil.normalizeFile(folder);
 
-            if (!fullPath.startsWith(webRoot) && !fullPath.startsWith(projectDir)) {
+            if (!isParentFolder(baseDir, folder) && !isParentFolder(projectFld, folder)) {
                 if (!hasErrors) {
                     hasErrors = true;
                     newErrorMsg = NbBundle.getMessage(AddLibraryPanel.class, "AddLibraryPanel_OutOfRangeError");
@@ -316,6 +318,23 @@ public final class AddLibraryPanel extends JPanel {
             errorMessage.setVisible(true);
             okButton.setEnabled(false);
         }
+    }
+    
+    private static boolean isParentFolder(File parent, File child) {
+        if (!parent.isDirectory()) {
+            return false;
+        }
+        
+        Set<File> visitedParents = new HashSet<File>();
+        for (File nextParent = child; nextParent != null && !visitedParents.contains(nextParent);
+                nextParent = nextParent.getParentFile()) {
+            visitedParents.add(nextParent);
+            if (nextParent.equals(parent)) {
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     private class ButtonColumnCellEditor extends AbstractCellEditor implements TableCellEditor {

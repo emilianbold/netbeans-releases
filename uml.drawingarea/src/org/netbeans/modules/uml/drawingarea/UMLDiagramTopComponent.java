@@ -251,27 +251,25 @@ public class UMLDiagramTopComponent extends TopComponent
         
         //Jyothi: We are loading the file
         File file = new File(filename);
-       
-        if (file.length() > 0) 
+
+        PersistenceManager pMgr = new PersistenceManager();
+        scene = pMgr.loadDiagram(filename, this, isEdgesGrouped());
+        assert scene != null;
+
+        FileObject fobj = FileUtil.toFileObject(file);
+        diagramDO = (UMLDiagramDataObject) DataObject.find(fobj);
+
+        if (fobj.canWrite() == false)
         {
-            PersistenceManager pMgr = new PersistenceManager();
-            scene = pMgr.loadDiagram(filename, this, isEdgesGrouped());           
-            System.out.println(" Scene re-created from the file!!!  ");
-            
-            FileObject fobj = FileUtil.toFileObject(file);
-            diagramDO = (UMLDiagramDataObject) DataObject.find(fobj);
-            
-            if(fobj.canWrite() == false)
-            {
-                scene.setActiveTool(DesignerTools.READ_ONLY);
-            }
+            scene.setActiveTool(DesignerTools.READ_ONLY);
         }
 
         // After reading in the data from the file, we should have both the
         // scene and the diagram initialized.
-        
+
         UIDiagram uiDiagram = (UIDiagram) scene.getDiagram();
-        if ( uiDiagram != null) {
+        if (uiDiagram != null)
+        {
             uiDiagram.setDataObject(diagramDO);
         }
         initInAWTThread();
@@ -489,6 +487,7 @@ public class UMLDiagramTopComponent extends TopComponent
         DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
         keyActionMapper.setComponent(this);
         keyActionMapper.unRegisterKeyMap();
+        keyActionMapper.unRegisterToolbarActions(editorToolbar);
     }
 
     @Override
@@ -513,6 +512,7 @@ public class UMLDiagramTopComponent extends TopComponent
         DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
         keyActionMapper.setComponent(this);
         keyActionMapper.registerKeyMap();
+        keyActionMapper.registerToolbarActions(editorToolbar);
         
         if(getDiagram()!=null && getDiagram().getView()!=null)getDiagram().getView().requestFocusInWindow();
     }
@@ -891,6 +891,8 @@ public class UMLDiagramTopComponent extends TopComponent
             } else {
                 diagramView = scene.getView();
             }
+            diagramView.putClientProperty("print.printable", Boolean.TRUE); // NOI18N
+            
             view.add(diagramView, new Integer(1));
             
             InputMap input = new InputMap();

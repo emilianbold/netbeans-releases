@@ -258,43 +258,45 @@ public final class JsfForm implements ActiveEditorDrop {
     }
     
     public static void createForm(CompilationController controller, TypeElement bean, int formType, String variable, StringBuffer stringBuffer, String entityClass, JpaControllerUtil.EmbeddedPkSupport embeddedPkSupport, String controllerClass, String jsfUtilClass) {
-        ExecutableElement methods [] = JpaControllerUtil.getEntityMethods(bean);
-        boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
-        for (ExecutableElement method : methods) {
-            String methodName = method.getSimpleName().toString();
-            if (methodName.startsWith("get")) {
-                List<ExecutableElement> pkMethods = null;
-                boolean isId = isId(controller, method, fieldAccess);
-                boolean isGenerated = false;
-                if (isId) {
-                    isGenerated = JpaControllerUtil.isGenerated(controller, method, fieldAccess);
-                    TypeMirror t = method.getReturnType();
-                    TypeMirror tstripped = JpaControllerUtil.stripCollection(t, controller.getTypes());
-                    if (TypeKind.DECLARED == tstripped.getKind()) {
-                        DeclaredType declaredType = (DeclaredType)tstripped;
-                        TypeElement idClass = (TypeElement) declaredType.asElement();
-                        boolean embeddable = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
-                        if (embeddable) {
-                            pkMethods = new ArrayList<ExecutableElement>();
-                            TypeElement entityType = controller.getElements().getTypeElement(entityClass);
-                            if (embeddedPkSupport == null) {
-                                embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
-                            }
-                            for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, entityType)) {
-                                if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, entityType, pkMethod)) {
-                                    pkMethods.add(pkMethod);
+        if (bean != null) {
+            ExecutableElement methods [] = JpaControllerUtil.getEntityMethods(bean);
+            boolean fieldAccess = JpaControllerUtil.isFieldAccess(bean);
+            for (ExecutableElement method : methods) {
+                String methodName = method.getSimpleName().toString();
+                if (methodName.startsWith("get")) {
+                    List<ExecutableElement> pkMethods = null;
+                    boolean isId = isId(controller, method, fieldAccess);
+                    boolean isGenerated = false;
+                    if (isId) {
+                        isGenerated = JpaControllerUtil.isGenerated(controller, method, fieldAccess);
+                        TypeMirror t = method.getReturnType();
+                        TypeMirror tstripped = JpaControllerUtil.stripCollection(t, controller.getTypes());
+                        if (TypeKind.DECLARED == tstripped.getKind()) {
+                            DeclaredType declaredType = (DeclaredType)tstripped;
+                            TypeElement idClass = (TypeElement) declaredType.asElement();
+                            boolean embeddable = idClass != null && JpaControllerUtil.isEmbeddableClass(idClass);
+                            if (embeddable) {
+                                pkMethods = new ArrayList<ExecutableElement>();
+                                TypeElement entityType = controller.getElements().getTypeElement(entityClass);
+                                if (embeddedPkSupport == null) {
+                                    embeddedPkSupport = new JpaControllerUtil.EmbeddedPkSupport();
+                                }
+                                for (ExecutableElement pkMethod : embeddedPkSupport.getPkAccessorMethods(controller, entityType)) {
+                                    if (!embeddedPkSupport.isRedundantWithRelationshipField(controller, entityType, pkMethod)) {
+                                        pkMethods.add(pkMethod);
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (pkMethods == null) {
-                    createFormInternal(method, bean, isId, isGenerated, false, fieldAccess, controller, formType, variable, stringBuffer, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
-                }
-                else {
-                    for (ExecutableElement pkMethod : pkMethods) {
-                        String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
-                        createFormInternal(pkMethod, bean, false, false, true, fieldAccess, controller, formType, variable + "." + propName, stringBuffer, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
+                    if (pkMethods == null) {
+                        createFormInternal(method, bean, isId, isGenerated, false, fieldAccess, controller, formType, variable, stringBuffer, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
+                    }
+                    else {
+                        for (ExecutableElement pkMethod : pkMethods) {
+                            String propName = JpaControllerUtil.getPropNameFromMethod(methodName);
+                            createFormInternal(pkMethod, bean, false, false, true, fieldAccess, controller, formType, variable + "." + propName, stringBuffer, entityClass, embeddedPkSupport, controllerClass, jsfUtilClass);
+                        }
                     }
                 }
             }
@@ -391,7 +393,10 @@ public final class JsfForm implements ActiveEditorDrop {
             //editable
             String temporal = controller.getTypes().isSameType(dateTypeMirror, method.getReturnType()) ? getTemporal(controller, method, fieldAccess) : null;
             String template = temporal == null ? "<h:outputText value=\"{0}:\"/>\n" : "<h:outputText value=\"{0} ({4}):\"/>\n";
-            template += "<h:inputText id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
+            Element fieldElement = fieldAccess ? JpaControllerUtil.guessField(controller, method) : method;
+            boolean isLob = JpaControllerUtil.isAnnotatedWith(fieldElement, "javax.persistence.Lob");
+            template += isLob ? "<h:inputTextarea rows=\"4\" cols=\"30\"" : "<h:inputText";
+            template += " id=\"{2}\" value=\"#'{'{1}.{2}'}'\" title=\"{0}\" ";
             template += requiredMessage == null ? "" : "required=\"true\" requiredMessage=\"{5}\" ";
             template += temporal == null ? "/>\n" : ">\n<f:convertDateTime type=\"{3}\" pattern=\"{4}\" />\n</h:inputText>\n";
             Object[] args = temporal == null ? new Object [] {name, variable, propName, null, null, requiredMessage} : new Object [] {name, variable, propName, temporal, getDateTimeFormat(temporal), requiredMessage};

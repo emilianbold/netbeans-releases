@@ -82,6 +82,17 @@ CLASS T<bool b> (T ) [49:1/1304-50:3/1334] lcurly=1330 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
 TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
+FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE parse_dot<class>(ScannerT&)
+    UNIQUE NAME f:parse_dot<class>(ScannerT&)
+    DECLARATION: parse_dot  [54:1/1361-58:2/1508]
+    PARAMETERS:
+        scan [56:11/1455-56:25/1469]  TYPE: &parse_dot::ScannerT TEXT=ScannerT&  [56:11/1455-56:20/1464]  INIT: null  SCOPE: parse_dot 
+    RETURNS $unresolved$::parser_result::type TEXT=parser_result<chlit,ScannerT>::type  [55:1/1390-55:55/1444]
+    STATEMENT COMPOUND  [56:27/1471-58:2/1508] SCOPE: parse_dot 
+        STATEMENT RETURN  [57:5/1477-57:34/1506] SCOPE: Stmt  [56:27/1471-58:2/1508] text: 'return ch_p('.').parse(scan);'
+TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result TEXT=MakeTypelist::Result  [60:9/1518-60:31/1540] SCOPE: $Global$ 
+TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
 
 ========== Dumping model of PROJECT DummyProject
 CLASS OrderedStatic<L,T,Loki::NullType> (OrderedStatic<L,T,Loki::NullType> ) [1:1/0-19:7/626] lcurly=148 SCOPE: $Global$ 
@@ -153,4 +164,15 @@ CLASS T<bool b> (T ) [49:1/1304-50:3/1334] lcurly=1330 SCOPE: $Global$
     BASE CLASSES:
     MEMBERS:
 TYPEDEF Z  [52:1/1336-52:24/1359] TYPE: T TEXT=T  [52:9/1344-52:21/1356] SCOPE: $Global$ 
+FUNCTION DEFINITION parse_dot  [54:1/1361-58:2/1508] FunctionDDImpl SCOPE: $Global$ 
+    SIGNATURE parse_dot<class>(ScannerT&)
+    UNIQUE NAME f:parse_dot<class>(ScannerT&)
+    DECLARATION: parse_dot  [54:1/1361-58:2/1508]
+    PARAMETERS:
+        scan [56:11/1455-56:25/1469]  TYPE: &parse_dot::ScannerT TEXT=ScannerT&  [56:11/1455-56:20/1464]  INIT: null  SCOPE: parse_dot 
+    RETURNS $unresolved$::parser_result::type TEXT=parser_result<chlit,ScannerT>::type  [55:1/1390-55:55/1444]
+    STATEMENT COMPOUND  [56:27/1471-58:2/1508] SCOPE: parse_dot 
+        STATEMENT RETURN  [57:5/1477-57:34/1506] SCOPE: Stmt  [56:27/1471-58:2/1508] text: 'return ch_p('.').parse(scan);'
+TYPEDEF null_tl  [60:1/1510-60:40/1549] TYPE: $unresolved$::MakeTypelist::Result TEXT=MakeTypelist::Result  [60:9/1518-60:31/1540] SCOPE: $Global$ 
+TYPEDEF ClassList  [62:1/1551-66:19/1612] TYPE: $unresolved$::Loki::Seq::Type TEXT=Loki::Seq::Type  [62:9/1559-66:8/1601] SCOPE: $Global$ 
 

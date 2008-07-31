@@ -72,7 +72,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-wsdl+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-WSDLDataLoader.instance"/>
+                    <file name="org-netbeans-modules-xml-wsdl-ui-netbeans-module-WSDLDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.xml.wsdl.ui.netbeans.module.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-EditAction.instance_hidden"/>

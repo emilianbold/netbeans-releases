@@ -62,7 +62,7 @@ import org.openide.util.datatransfer.ExTransferable;
 public class PaletteSupport {
 
     public static final String MASHUP_DATA_FLAVOR = DataFlavor.javaJVMLocalObjectMimeType;
-    private static PaletteController controller;
+    private PaletteController controller;
     private static IGraphView graphView;
 
     public PaletteSupport() {
@@ -72,7 +72,7 @@ public class PaletteSupport {
      *
      * @return
      */
-    public static PaletteController createPalette(final ETLCollaborationTopPanel etlPanel) throws IOException {
+    public PaletteController createPalette(final ETLCollaborationTopPanel etlPanel) throws IOException {
         controller = PaletteFactory.createPalette("ETLOperators", new ETLAction(), null, new ETLDnDHandler());
         controller.addPropertyChangeListener(new PropertyChangeListener() {
 

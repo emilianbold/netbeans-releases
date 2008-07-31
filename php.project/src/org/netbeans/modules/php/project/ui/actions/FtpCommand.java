@@ -94,7 +94,7 @@ public abstract class FtpCommand extends Command {
 
     @Override
     public final boolean isActionEnabled(Lookup context) throws IllegalArgumentException {
-        return isRemoteConfigSelected() && TASK.isFinished();
+        return isRemoteConfigSelected() && getRemoteConfiguration() != null && TASK.isFinished();
     }
 
     protected abstract Runnable getContextRunnable(Lookup context);
@@ -123,10 +123,7 @@ public abstract class FtpCommand extends Command {
         String configName = getRemoteConfigurationName();
         assert configName != null && configName.length() > 0 : "Remote configuration name must be selected";
 
-        RemoteConfiguration remoteConfiguration = RemoteConnections.get().remoteConfigurationForName(configName);
-        assert remoteConfiguration != null : "Remote configuration must exist";
-
-        return remoteConfiguration;
+        return RemoteConnections.get().remoteConfigurationForName(configName);
     }
 
     protected void processRemoteException(RemoteException remoteException) {
