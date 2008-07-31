@@ -472,6 +472,15 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // no change in sources
             return;
         }
+        if (originalSources != null) {
+            String sourcesFolder = new File(originalSources).getName();
+            String projectName = configureProjectPanelVisual.getProjectName();
+            if (!sourcesFolder.equals(projectName)) {
+                // already "disconnected" but remember the actual sources
+                originalSources = sources;
+                return;
+            }
+        }
         originalSources = sources;
         String newProjectName = new File(sources).getName();
         // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
