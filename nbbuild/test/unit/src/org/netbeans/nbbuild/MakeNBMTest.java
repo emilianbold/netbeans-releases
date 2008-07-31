@@ -40,26 +40,21 @@
  */
 
 package org.netbeans.nbbuild;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Enumeration;
-import java.util.HashSet;
 import java.util.Properties;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.nbbuild.PublicPackagesInProjectizedXMLTest.ExecutionError;
 
-
-/** Is generation of Jnlp files correct?
- *
+/**
  * @author Jaroslav Tulach
  */
 public class MakeNBMTest extends NbTestCase {
@@ -71,7 +66,6 @@ public class MakeNBMTest extends NbTestCase {
         clearWorkDir();
     }
     
-    
     public void testGenerateNBMForSimpleModule() throws Exception {
         Manifest m;
         
@@ -81,7 +75,7 @@ public class MakeNBMTest extends NbTestCase {
 
         File parent = simpleJar.getParentFile ();
         File output = new File(parent, "output");
-        File ks = genereteKeystore("nbm", "netbeans-test");
+        File ks = generateKeystore("nbm", "netbeans-test");
         if (ks == null) {
             return;
         }
@@ -208,7 +202,7 @@ public class MakeNBMTest extends NbTestCase {
         return f;
     }
     
-    private final File genereteKeystore(String alias, String password) throws Exception {
+    private final File generateKeystore(String alias, String password) throws Exception {
         File where = new File(getWorkDir(), "key.ks");
         
         String script = 

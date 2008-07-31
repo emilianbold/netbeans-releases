@@ -297,7 +297,7 @@ public class NbClassLoader extends URLClassLoader {
             URL url = urls[i];
             URL au = FileUtil.getArchiveFile(url);
             if (au != null) {
-                if (!url.toExternalForm().endsWith("!/")) { //NOI8N
+                if (!url.toExternalForm().endsWith("!/")) { //NOI18N
                     //Nested path - not supported fast mode 
                     return false;
                 }

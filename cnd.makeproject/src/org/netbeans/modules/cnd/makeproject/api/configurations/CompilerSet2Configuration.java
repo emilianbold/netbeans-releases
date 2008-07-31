@@ -178,13 +178,13 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
 
     public String getDisplayName(boolean displayIfNotFound) {
         CompilerSet compilerSet = getCompilerSetManager().getCompilerSet(getCompilerSetName().getValue());
-        String dn = null;
+        String displayName = null;
 
         if (compilerSet != null) {
-            dn = compilerSet.getName();
+            displayName = compilerSet.getName();
         }
-        if (dn != null) {
-            return dn;
+        if (displayName != null) {
+            return displayName;
         } else {
             if (displayIfNotFound)
                 return createNotFoundName(getCompilerSetName().getValue());
@@ -194,7 +194,7 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public String createNotFoundName(String name) {
-        return name + " - " + getString("NOT_FOUND"); // NOI18N
+        return name.equals(CompilerSet.None) ? name : name + " - " + getString("NOT_FOUND"); // NOI18N
     }
 
     // Clone and assign
@@ -274,20 +274,19 @@ public class CompilerSet2Configuration implements PropertyChangeListener {
     }
 
     public void propertyChange(final PropertyChangeEvent evt) {
-        final CompilerSet2Configuration csconf = this;
         final String key = evt.getNewValue().toString();
-
         if (key.equals(CompilerSetManager.LOCALHOST)) {
             setValue(getCompilerSetManager().getCompilerSet(0).getName());
         } else {
+            setValue(CompilerSetManager.getDefault(key).getCompilerSet(0).getName());
             RequestProcessor.getDefault().post(new Runnable() {
                 public void run() {
                     ServerList server = (ServerList) Lookup.getDefault().lookup(ServerList.class);
                     if (server != null) {
                         ServerRecord record = server.get(key);
                         if (record != null) {
-                            CompilerSetManager csm = CompilerSetManager.getDefault(evt.getNewValue().toString());
-                            csconf.setValue(csm.getCompilerSet(0).getName());
+                            CompilerSetManager csm = CompilerSetManager.getDefault(key);
+                            setValue(csm.getCompilerSet(0).getName());
                             if (compilerSetNodeProp != null) {
                                 compilerSetNodeProp.repaint();
                             }

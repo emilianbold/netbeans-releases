@@ -43,6 +43,7 @@ package org.netbeans.modules.debugger.jpda.actions;
 import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.ReferenceType;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.LocatableEvent;
@@ -50,20 +51,25 @@ import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.StepRequest;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.ActionsManager;
+import org.netbeans.api.debugger.Session;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.SmartSteppingFilter;
+import org.netbeans.modules.debugger.jpda.EditorContextBridge;
 import org.netbeans.modules.debugger.jpda.SourcePath;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 //import org.netbeans.modules.debugger.jpda.JPDAStepImpl.SingleThreadedStepWatch;
 import org.netbeans.modules.debugger.jpda.models.JPDAThreadImpl;
 import org.netbeans.modules.debugger.jpda.util.Executor;
+import org.netbeans.spi.debugger.jpda.EditorContext;
 import org.netbeans.spi.debugger.jpda.SourcePathProvider;
 import org.openide.ErrorManager;
 import org.openide.util.NbBundle;
@@ -80,15 +86,16 @@ public class StepIntoActionProvider extends JPDADebuggerActionProvider
 implements Executor, PropertyChangeListener {
     
     public static final String SS_STEP_OUT = "SS_ACTION_STEPOUT";
+    public static final String ACTION_SMART_STEP_INTO = "smartStepInto";
     
     private static final Logger smartLogger = Logger.getLogger("org.netbeans.modules.debugger.jpda.smartstepping"); // NOI18N
     private static final Logger logger = Logger.getLogger("org.netbeans.modules.debugger.jpda.jdievents"); // NOI18N
-        
     private StepRequest stepRequest;
     private String position;
     private int depth;
     private ContextProvider contextProvider;
     private boolean smartSteppingStepOut;
+    private Session session;
     //private SingleThreadedStepWatch stepWatch;
 
     public StepIntoActionProvider (ContextProvider contextProvider) {
@@ -96,6 +103,7 @@ implements Executor, PropertyChangeListener {
             (JPDADebuggerImpl) contextProvider.lookupFirst 
                 (null, JPDADebugger.class)
         );
+        session = contextProvider.lookupFirst(null, Session.class);
         this.contextProvider = contextProvider;
         getSmartSteppingFilterImpl ().addPropertyChangeListener (this);
         SourcePath ec = contextProvider.lookupFirst(null, SourcePath.class);
@@ -116,14 +124,14 @@ implements Executor, PropertyChangeListener {
     }
     
     public void doAction (Object action) {
-        runAction();
+        runAction(action);
     }
     
-    public void postAction(Object action, final Runnable actionPerformedNotifier) {
+    public void postAction(final Object action, final Runnable actionPerformedNotifier) {
         doLazyAction(new Runnable() {
             public void run() {
                 try {
-                    runAction();
+                    runAction(action);
                 } finally {
                     actionPerformedNotifier.run();
                 }
@@ -131,7 +139,10 @@ implements Executor, PropertyChangeListener {
         });
     }
     
-    public void runAction() {
+    public void runAction(Object action) {
+        if (ActionsManager.ACTION_STEP_INTO.equals(action) && doMethodSelection()) {
+            return; // action performed
+        }
         synchronized (getDebuggerImpl ().LOCK) {
             smartLogger.finer("STEP INTO.");
             JPDAThread t = getDebuggerImpl ().getCurrentThread ();
@@ -318,6 +329,44 @@ implements Executor, PropertyChangeListener {
     }
 
     // other methods ...........................................................
+    
+    public boolean doMethodSelection () {
+        final String[] methodPtr = new String[1];
+        final String[] urlPtr = new String[1];
+        final int[] linePtr = new int[1];
+        final int[] offsetPtr = new int[1];
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                public void run() {
+                    EditorContext context = EditorContextBridge.getContext();
+                    methodPtr[0] = context.getSelectedMethodName ();
+                    linePtr[0] = context.getCurrentLineNumber();
+                    offsetPtr[0] = EditorContextBridge.getCurrentOffset();
+                    urlPtr[0] = context.getCurrentURL();
+                }
+            });
+        } catch (InvocationTargetException ex) {
+            return false;
+        } catch (InterruptedException ex) {
+            return false;
+        }
+        final int methodLine = linePtr[0];
+        final int methodOffset = offsetPtr[0];
+        final String url = urlPtr[0];
+        if (methodLine < 0 || url == null || !url.endsWith (".java")) {
+            return false;
+        }
+        String className = debugger.getCurrentThread().getClassName();
+        VirtualMachine vm = debugger.getVirtualMachine();
+        if (vm == null) return false;
+        final List<ReferenceType> classes = vm.classesByName(className);
+        if (!classes.isEmpty()) {
+            MethodChooser chooser = new MethodChooser(debugger, session, url, classes.get(0), methodLine, methodOffset);
+            return chooser.run();
+        } else {
+            return false;
+        }
+    }
     
     protected void removeStepRequests (ThreadReference tr) {
         super.removeStepRequests (tr);

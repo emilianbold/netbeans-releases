@@ -173,9 +173,13 @@ public final class AntBasedProjectFactorySingleton implements ProjectFactory {
             ProjectXMLCatalogReader.validate(projectEl);
         } catch (SAXException e) {
             IOException ioe = (IOException) new IOException(projectDiskFile + ": " + e.toString()).initCause(e);
+            String msg = e.getMessage().
+                    // org/apache/xerces/impl/msg/XMLSchemaMessages.properties validation (3.X.4)
+                    replaceFirst("^cvc-[^:]+: ", ""). // NOI18N
+                    replaceAll("http://www.netbeans.org/ns/", ".../"); // NOI18N
             Exceptions.attachLocalizedMessage(ioe, NbBundle.getMessage(AntBasedProjectFactorySingleton.class,
                                                                         "AntBasedProjectFactorySingleton.parseError",
-                                                                        projectDiskFile.getAbsolutePath(), e.getMessage()));
+                                                                        projectDiskFile.getName(), msg));
             throw ioe;
         }
         Element typeEl = Util.findElement(projectEl, "type", PROJECT_NS); // NOI18N
