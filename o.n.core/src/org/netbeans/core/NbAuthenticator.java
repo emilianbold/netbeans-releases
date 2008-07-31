@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2007 Sun Microsystems, Inc. All rights reserved.
+ * Copyright 1997-2008 Sun Microsystems, Inc. All rights reserved.
  *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
@@ -38,35 +38,54 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.core;
 
+import java.net.PasswordAuthentication;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 
 /** Global password protected sites Authenticator for IDE
  *
  * @author Jiri Rechtacek
  */
+final class NbAuthenticator extends java.net.Authenticator {
 
-class NbAuthenticator extends java.net.Authenticator {
-    NbAuthenticator () {
-        Preferences proxySettingsNode = NbPreferences.root ().node ("/org/netbeans/core");
+    private static final long TIMEOUT = 3000;
+    private static long lastTry = 0;
+
+    NbAuthenticator() {
+        Preferences proxySettingsNode = NbPreferences.root().node("/org/netbeans/core"); //NOI18N
         assert proxySettingsNode != null;
     }
 
-    protected java.net.PasswordAuthentication getPasswordAuthentication() {
-        Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.FINER, "Authenticator.getPasswordAuthentication() with prompt " + this.getRequestingPrompt());
-        
-        if (ProxySettings.useAuthentication ()) {
-            Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.FINER, "Username set to " + ProxySettings.getAuthenticationUsername () + " while request " + this.getRequestingURL ());
-            return new java.net.PasswordAuthentication (ProxySettings.getAuthenticationUsername (), ProxySettings.getAuthenticationPassword ());
+    @Override
+    protected PasswordAuthentication getPasswordAuthentication() {
+        Logger.getLogger(NbAuthenticator.class.getName()).log(Level.FINER, "Authenticator.getPasswordAuthentication() with prompt " + this.getRequestingPrompt()); //NOI18N
+
+        if (RequestorType.PROXY == getRequestorType() && ProxySettings.useAuthentication()) {
+            Logger.getLogger(NbAuthenticator.class.getName()).log(Level.FINER, "Username set to " + ProxySettings.getAuthenticationUsername() + " while request " + this.getRequestingURL()); //NOI18N
+            return new java.net.PasswordAuthentication(ProxySettings.getAuthenticationUsername(), ProxySettings.getAuthenticationPassword());
         } else {
-            Logger.getLogger (NbAuthenticator.class.getName ()).log (Level.WARNING, "No authentication set while requesting " + this.getRequestingURL ());
-            return null;
+            if (System.currentTimeMillis() - lastTry > TIMEOUT) {
+                NbAuthenticatorPanel ui = new NbAuthenticatorPanel(getRequestingPrompt());
+                Object result = DialogDisplayer.getDefault().notify(
+                        new DialogDescriptor(ui, NbBundle.getMessage(NbAuthenticator.class, "CTL_Authentication"))); //NOI18N
+                if (DialogDescriptor.OK_OPTION == result) {
+                    lastTry = 0;
+                    return new PasswordAuthentication(ui.getUserName(), ui.getPassword());
+                } else {
+                    lastTry = System.currentTimeMillis();
+                }
+            }
         }
-        
+
+        Logger.getLogger(NbAuthenticator.class.getName()).log(Level.WARNING, "No authentication set while requesting " + this.getRequestingURL()); //NOI18N
+        return null;
     }
+
 }
