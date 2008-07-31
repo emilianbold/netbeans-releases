@@ -67,6 +67,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.Utilities;
@@ -84,7 +85,7 @@ public final class RakeRunner {
     private File pwd;
     private boolean test;
     private String displayName;
-    private String[] parameters;
+    private final List<String> parameters = new ArrayList<String>();
     /**
      * The RP for running tasks.
      */
@@ -149,21 +150,37 @@ public final class RakeRunner {
         this.test = test;
     }
 
+    /**
+     * Sets the task parameters for <strong>all</strong> the tasks that will
+     * be run. These will be added after the task name but before any parameters
+     * that are set to <code>RakeTask</code>s that are being run.
+     *
+     * @param parameters the parameters to set; must not be null.
+     */
     public void setParameters(final String... parameters) {
-        this.parameters = parameters;
+        Parameters.notNull("parameters", parameters);
+        for (String each : parameters) {
+            this.parameters.add(each);
+        }
+
     }
 
-    public void run(final String... tasksNames) {
+    /**
+     * Runs the tasks specifed by the given <code>taskNames</code>.
+     *
+     * @param taskNames the names of the tasks to run.
+     */
+    public void run(final String... taskNames) {
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
             return;
         }
 
-        RakeTask[] rakeTasks = new RakeTask[tasksNames.length];
-        for (int i = 0; i < tasksNames.length; i++) {
-            RakeTask rakeTask = RakeSupport.getRakeTask(project, tasksNames[i]);
+        RakeTask[] rakeTasks = new RakeTask[taskNames.length];
+        for (int i = 0; i < taskNames.length; i++) {
+            RakeTask rakeTask = RakeSupport.getRakeTask(project, taskNames[i]);
             if (rakeTask == null) {
                 if (showWarnings) {
-                    Util.notifyLocalized(RakeRunner.class, "RakeRunner.task.does.not.exist", tasksNames[i]); // NOI18N
+                    Util.notifyLocalized(RakeRunner.class, "RakeRunner.task.does.not.exist", taskNames[i]); // NOI18N
                 }
                 return; // run only when all tasks are available
             }
@@ -239,12 +256,12 @@ public final class RakeRunner {
     }
 
     /**
-     * Builds ExecutionDescriptors for the given tasks.
-     *
-     * @param tasks
+     * Builds <code>ExecutionDescriptor</code>s for the given tasks.
+     * <i>package private for tests</i>
+     * @param tasks the tasks to build <code>ExecutionDescriptor</code>s for.
      * @return
      */
-    private List<ExecutionDescriptor> getExecutionDescriptors(List<RakeTask> tasks) {
+    List<ExecutionDescriptor> getExecutionDescriptors(List<RakeTask> tasks) {
 
         RubyPlatform platform = RubyPlatform.platformFor(project);
         GemManager gemManager = platform.getGemManager();
@@ -271,8 +288,15 @@ public final class RakeRunner {
                 }
             }
             desc.initialArgs(resultingInitialArgs);
-            List<String> additionalArgs = new ArrayList<String>(Arrays.asList(desc.getAdditionalArgs()));
+            List<String> additionalArgs = new ArrayList<String>();
+            String[] existingAdditionalArgs = desc.getAdditionalArgs();
+            if (existingAdditionalArgs != null && existingAdditionalArgs.length > 0) {
+                additionalArgs.addAll(Arrays.asList(existingAdditionalArgs));
+            }
             additionalArgs.add(task.getTask());
+            for (String param : parameters) {
+                additionalArgs.add(param);
+            }
             additionalArgs.addAll(task.getTaskParameters());
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
             result.add(desc);
@@ -314,9 +338,6 @@ public final class RakeRunner {
             additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
         }
 
-        for (String param : parameters) {
-            additionalArgs.add(param);
-        }
         if (!additionalArgs.isEmpty()) {
             desc.additionalArgs(additionalArgs.toArray(new String[additionalArgs.size()]));
         }

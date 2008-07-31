@@ -258,6 +258,12 @@ public final class DBMetaDataFactory {
             int displaySize = rsMeta.getColumnDisplaySize(i);
             boolean autoIncrement = rsMeta.isAutoIncrement(i);
 
+            //Oracle DATE type needs to be retrieved as full date and time
+            if (sqlTypeCode == java.sql.Types.DATE && dbType == ORACLE) {
+                sqlTypeCode = java.sql.Types.TIMESTAMP;
+                displaySize = 22;
+            }
+
             // create a table column and add it to the vector
             DBColumn col = new DBColumn(table, colName, sqlTypeCode, scale, precision, isNullable, autoIncrement);
             col.setOrdinalPosition(position);
