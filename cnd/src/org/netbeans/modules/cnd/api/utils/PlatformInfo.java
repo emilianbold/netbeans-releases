@@ -143,6 +143,10 @@ public final class PlatformInfo {
         return buf.substring(0, buf.length() - 1); // remove the trailing pathSeparator...
     }
 
+    public String getPathAsStringWith(String newDir) {
+        return getPathName() + '=' + getPathAsString() + pathSeparator() + newDir;
+    }
+
     /**
      * Add a directory to the path.
      *

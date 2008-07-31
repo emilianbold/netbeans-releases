@@ -119,7 +119,7 @@ public abstract class RemoteTestBase extends BaseTestCase {
             }
 
             @Override
-            protected CompilerDescriptor getCompilerDescription() {
+            public CompilerDescriptor getDescriptor() {
                 return null;
             }
         }
