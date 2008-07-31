@@ -10,6 +10,7 @@ CLASS      ArrayObject                                null
 CLASS      B135618                                    issue135618.php
 CLASS      BadFunctionCallException                   null
 CLASS      BadMethodCallException                     null
+CLASS      Basic142234                                issue142234.php
 CLASS      CachingIterator                            null
 CLASS      DOMAttr                                    null
 CLASS      DOMCdataSection                            null

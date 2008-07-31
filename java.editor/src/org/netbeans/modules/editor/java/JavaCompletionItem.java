@@ -383,6 +383,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     if (textToReplace.contentEquals(text)) {
                         if (semiPos > -1)
                             doc.insertString(semiPos, ";", null); //NOI18N
+                        else
+                            c.setCaretPosition(offset + length);
                         return;
                     }
                     Position position = doc.createPosition(offset);

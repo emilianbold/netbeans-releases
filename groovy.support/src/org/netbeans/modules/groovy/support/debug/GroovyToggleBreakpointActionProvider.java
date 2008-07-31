@@ -64,6 +64,7 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
     
     public GroovyToggleBreakpointActionProvider () {
         Context.addPropertyChangeListener (this);
+        setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
     }
     
     public GroovyToggleBreakpointActionProvider (ContextProvider contextProvider) {
@@ -71,6 +72,7 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
                 (null, JPDADebugger.class);
         debugger.addPropertyChangeListener (JPDADebugger.PROP_STATE, this);
         Context.addPropertyChangeListener (this);
+        setEnabled (ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
     }
     
     private void destroy () {
@@ -80,8 +82,10 @@ public class GroovyToggleBreakpointActionProvider extends ActionsProviderSupport
     
     public void propertyChange (PropertyChangeEvent evt) {
         FileObject fo = Context.getCurrentFile();
+        boolean isGroovyFile = fo != null && 
+                "text/x-groovy".equals(fo.getMIMEType()); // NOI18N [TODO]
         
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, true);
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isGroovyFile);
         if ( debugger != null && 
              debugger.getState () == JPDADebugger.STATE_DISCONNECTED
         ) 

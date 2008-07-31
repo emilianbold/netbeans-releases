@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda;
 import com.sun.jdi.AbsentInformationException;
 import com.sun.jdi.Bootstrap;
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.InternalException;
 import com.sun.jdi.InvalidStackFrameException;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Method;
@@ -818,9 +819,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 iee.initCause (e);
                 throw iee;
             } catch (IncompatibleThreadStateException itsex) {
-                ErrorManager.getDefault().notify(itsex);
                 IllegalStateException isex = new IllegalStateException(itsex.getLocalizedMessage());
                 isex.initCause(itsex);
+                throw isex;
+            } catch (InternalException e) {
+                IllegalStateException isex = new IllegalStateException(e.getLocalizedMessage());
+                isex.initCause(e);
                 throw isex;
             } catch (RuntimeException rex) {
                 Throwable cause = rex.getCause();
@@ -888,14 +892,18 @@ public class JPDADebuggerImpl extends JPDADebugger {
                     throw new InvalidExpressionException (pvex.getMessage());
                 }
                 l = disableAllBreakpoints ();
-                return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
-                    invokeVirtual (
-                        reference,
-                        method,
-                        tr,
-                        Arrays.asList (arguments),
-                        this
-                    );
+                try {
+                    return org.netbeans.modules.debugger.jpda.expr.TreeEvaluator.
+                        invokeVirtual (
+                            reference,
+                            method,
+                            tr,
+                            Arrays.asList (arguments),
+                            this
+                        );
+                } catch (InternalException e) {
+                    throw new InvalidExpressionException (e.getLocalizedMessage());
+                }
             } catch (InvalidExpressionException ieex) {
                 if (ieex.getTargetException() instanceof UnsupportedOperationException) {
                     methodCallsUnsupportedExc = ieex;

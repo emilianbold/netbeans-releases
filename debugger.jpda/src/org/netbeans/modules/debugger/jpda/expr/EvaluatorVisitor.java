@@ -1449,6 +1449,9 @@ public class EvaluatorVisitor extends TreePathScanner<Mirror, EvaluationContext>
             Assert2.error(arg0, "arrayIsNull", arg0.getExpression());
         }
         Mirror index = arg0.getIndex().accept(this, evaluationContext);
+        if (!(array instanceof ArrayReference)) {
+            Assert2.error(arg0, "notArrayType", arg0.getExpression());
+        }
         if (!(index instanceof PrimitiveValue)) {
             Assert2.error(arg0, "arraySizeBadType", index);
         }

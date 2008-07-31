@@ -41,12 +41,15 @@
 
 package org.netbeans.modules.db.explorer.dlg;
 
+
 import java.awt.*;
 import java.awt.event.*;
 import java.util.*;
 import javax.swing.*;
 import org.openide.util.NbBundle;
 import javax.swing.border.EmptyBorder;
+import org.jdesktop.layout.GroupLayout;
+import org.jdesktop.layout.LayoutStyle;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.netbeans.modules.db.explorer.*;
@@ -73,47 +76,26 @@ public class LabeledTextFieldDialog {
         try {
             JPanel pane = new JPanel();
             pane.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
-            GridBagLayout layout = new GridBagLayout();
-            GridBagConstraints con = new GridBagConstraints ();
-            pane.setLayout (layout);
+            GroupLayout layout = new GroupLayout(pane);
+            pane.setLayout(layout);
 
             // Title
 
             label = new JLabel();
             Mnemonics.setLocalizedText(label, lab);
             label.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableNewNameA11yDesc"));  // NOI18N
-            con.anchor = GridBagConstraints.WEST;
-            con.insets = new java.awt.Insets (2, 2, 2, 2);
-            con.gridx = 0;
-            con.gridy = 0;
-            layout.setConstraints(label, con);
-            pane.add(label);
 
             // Textfield
 
-            con.fill = GridBagConstraints.HORIZONTAL;
-            con.weightx = 1.0;
-            con.gridx = 1;
-            con.gridy = 0;
-            con.insets = new java.awt.Insets (2, 2, 2, 2);
             field = new JTextField(35);
             field.getAccessibleContext().setAccessibleName(bundle.getString("ACS_RecreateTableNewNameTextFieldA11yName"));  // NOI18N
             field.setToolTipText(bundle.getString("ACS_RecreateTableNewNameTextFieldA11yDesc"));  // NOI18N
-            label.setLabelFor(field);
-            layout.setConstraints(field, con);
-            pane.add(field);
 
             // Descr.
 
             JLabel desc = new JLabel();
             Mnemonics.setLocalizedText(desc, bundle.getString("RecreateTableRenameNotes"));
             desc.getAccessibleContext().setAccessibleDescription(bundle.getString("ACS_RecreateTableRenameNotesA11yDesc"));  // NOI18N
-            con.anchor = GridBagConstraints.WEST;
-            con.gridx = 0;
-            con.gridy = 2;
-            con.weighty = 2.0;
-            layout.setConstraints(desc, con);
-            pane.add(desc);
 
             // Notes
 
@@ -127,30 +109,46 @@ public class LabeledTextFieldDialog {
             notesarea.setDisabledTextColor(javax.swing.UIManager.getColor("Label.foreground"));
             notesarea.getAccessibleContext().setAccessibleName(bundle.getString("ACS_RecreateTableTableScriptTextAreaA11yName"));  // NOI18N
             notesarea.setToolTipText(bundle.getString("ACS_RecreateTableTableScriptTextAreaA11yDesc"));  // NOI18N
-            desc.setLabelFor(notesarea);
-            con.weightx = 1.0;
-            con.weighty = 1.0;
-            con.gridwidth = 2;
-            con.fill = GridBagConstraints.BOTH;
-            con.insets = new java.awt.Insets (10, 0, 0, 0);
-            con.gridx = 0;
-            con.gridy = 3;
             notesarea.setBorder(new EmptyBorder(new Insets(5,5,5,5)));
             JScrollPane spane = new JScrollPane(notesarea);
-            layout.setConstraints(spane, con);
-            pane.add(spane);
             
             // edit button
+
             edButton = new JButton();
             Mnemonics.setLocalizedText(edButton, bundle.getString("EditCommand")); // NOI18N
             edButton.setToolTipText(bundle.getString("ACS_EditCommandA11yDesc"));  // NOI18N
-            con.fill = GridBagConstraints.WEST;
-            con.weighty = 0.0;
-            con.weightx = 0.0;
-            con.gridx = 0;
-            con.gridy = 5;
-            layout.setConstraints(edButton, con);
-            pane.add(edButton);
+
+            // setup the layout
+             
+            layout.setHorizontalGroup(
+                layout.createParallelGroup(GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(layout.createParallelGroup(GroupLayout.LEADING)
+                        .add(spane, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
+                        .add(layout.createSequentialGroup()
+                            .add(label)
+                            .add(18, 18, 18)
+                        .add(field, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE))
+                    .add(GroupLayout.LEADING, desc)
+                    .add(GroupLayout.LEADING, edButton, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addContainerGap())
+            );
+            layout.setVerticalGroup(
+                layout.createParallelGroup(GroupLayout.LEADING)
+                .add(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .add(layout.createParallelGroup(GroupLayout.BASELINE)
+                        .add(label)
+                        .add(field, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                    .addPreferredGap(LayoutStyle.RELATED)
+                    .add(desc)
+                    .addPreferredGap(LayoutStyle.RELATED)
+                    .add(spane, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.UNRELATED)
+                .add(edButton)
+                .addContainerGap())
+            );
 
             edButton.addActionListener(new ActionListener() {
                 private boolean noedit = true;

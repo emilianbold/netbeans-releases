@@ -78,8 +78,7 @@ public class CopyActionTest extends JellyTestCase {
         suite.addTest(new CopyActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(CopyActionTest.class, "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(CopyActionTest.class);
     }
     
     /** Use for internal test execution inside IDE
