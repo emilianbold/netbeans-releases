@@ -163,7 +163,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
-    private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     static final String GOING_TO_RECOMPILE = "Going to recompile: {0}"; //NOI18N
     static final String CONTAINS_TASKLIST_DATA = "containsTasklistData"; //NOI18N
     static final String CONTAINS_TASKLIST_DEPENDENCY_DATA = "containsTasklistDependencyData"; //NOI18N
@@ -2800,9 +2799,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         collectFiles(child, javaFiles, virtualJavaFiles);
                     }
                     else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION)) { //NOI18N
-                        if (!PACKAGE_INFO.equals(name) && child.length()>0) {
-                            javaFiles.add(child);
-                        }
+                        javaFiles.add(child);
                     }
                     else if (VirtualSourceProviderQuery.hasVirtualSource(child)) {
                         virtualJavaFiles.add(child);
