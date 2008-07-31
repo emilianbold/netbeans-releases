@@ -167,7 +167,7 @@ public final class RakeRunner {
 
     /**
      * Runs the tasks specifed by the given <code>taskNames</code>.
-     * 
+     *
      * @param taskNames the names of the tasks to run; must not be null.
      */
     public void run(final String... taskNames) {
@@ -337,9 +337,6 @@ public final class RakeRunner {
         if (rakeFile != null) {
             additionalArgs.add("-f"); // NOI18N
             additionalArgs.add(FileUtil.toFile(rakeFile).getAbsolutePath());
-        }
-
-            }
         }
 
         if (!additionalArgs.isEmpty()) {
