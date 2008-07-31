@@ -109,7 +109,9 @@ public class SubversionVCS extends VersioningSystem implements VersioningListene
                 done.clear();
             } else {
                 Subversion.LOG.log(Level.FINE, " found unversioned {0}", new Object[] { file });
-                done.add(file);
+                if(file.exists()) { // could be created later ...
+                    done.add(file);
+                }
             }
         }
         if(done.size() > 0) {
