@@ -50,7 +50,7 @@ import org.netbeans.modules.cnd.debugger.gdb.utils.GdbUtils;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
-//import org.openide.util.Utilities;
+import org.openide.util.Utilities;
 
 /**
  * Top component which displays something.
@@ -59,7 +59,7 @@ final class MemoryViewTopComponent extends TopComponent {
 
     private static MemoryViewTopComponent instance;
     /** path to the icon used by the component and its open action */
-//    static final String ICON_PATH = "SET/PATH/TO/ICON/HERE";
+    static final String ICON_PATH = "org/netbeans/modules/cnd/debugger/gdb/resources/memory.png"; // NOI18N
 
     private static final String PREFERRED_ID = "MemoryViewTopComponent";
 
@@ -67,8 +67,7 @@ final class MemoryViewTopComponent extends TopComponent {
         initComponents();
         setName(NbBundle.getMessage(MemoryViewTopComponent.class, "CTL_MemoryViewTopComponent"));
         setToolTipText(NbBundle.getMessage(MemoryViewTopComponent.class, "HINT_MemoryViewTopComponent"));
-//        setIcon(Utilities.loadImage(ICON_PATH, true));
-        
+        setIcon(Utilities.loadImage(ICON_PATH, true));
     }
 
     /** This method is called from within the constructor to
