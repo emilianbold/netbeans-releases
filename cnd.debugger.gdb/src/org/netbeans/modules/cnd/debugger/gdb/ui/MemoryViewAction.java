@@ -52,7 +52,7 @@ public class MemoryViewAction extends AbstractAction {
 
     public MemoryViewAction() {
         super(NbBundle.getMessage(MemoryViewAction.class, "CTL_MemoryViewAction"));
-//        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(MemoryViewTopComponent.ICON_PATH, true)));
+        putValue(SMALL_ICON, new ImageIcon(Utilities.loadImage(MemoryViewTopComponent.ICON_PATH, true)));
     }
 
     public void actionPerformed(ActionEvent evt) {
