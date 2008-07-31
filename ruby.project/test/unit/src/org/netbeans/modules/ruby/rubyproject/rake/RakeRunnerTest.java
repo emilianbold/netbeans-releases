@@ -43,12 +43,23 @@ import java.util.Arrays;
 import java.util.List;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.ruby.platform.execution.ExecutionDescriptor;
+import org.netbeans.modules.ruby.rubyproject.RubyProject;
 import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 
 public class RakeRunnerTest extends RubyProjectTestBase {
 
     public RakeRunnerTest(String testName) {
         super(testName);
+    }
+
+    public void testDoStandardConfiguration() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
+
+        RakeRunner runner = new RakeRunner(project);
+        runner.setPWD(getWorkDir());
+        runner.showWarnings(true);
+        runner.run("clean");
     }
 
     public void testBuildExecutionDescriptorsNoParams() throws Exception {
