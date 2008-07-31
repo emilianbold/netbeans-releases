@@ -115,7 +115,7 @@ public class AddExistingFolderItemsAction extends NodeAction {
         JTextArea instructionsTextArea = new JTextArea();
         instructionsTextArea.setEditable(false);
         instructionsTextArea.setLineWrap(true);
-        instructionsTextArea.setText(getString("AddExistingFolderItemsTxt")); // NOI8N
+        instructionsTextArea.setText(getString("AddExistingFolderItemsTxt")); // NOI18N
         instructionsTextArea.setWrapStyleWord(true);
         instructionsTextArea.setBackground(panel.getBackground());
         gridBagConstraints = new java.awt.GridBagConstraints();

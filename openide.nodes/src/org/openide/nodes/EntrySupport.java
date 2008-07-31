@@ -993,8 +993,6 @@ abstract class EntrySupport {
 
         private static final int prefetchCount = Math.max(Integer.getInteger("org.openide.explorer.VisualizerChildren.prefetchCount", 50), 0);  // NOI18N
 
-        static final Node NONEXISTING_NODE = new NonexistingNode();
-
         public Lazy(Children ch) {
             super(ch);
         }
@@ -1095,12 +1093,12 @@ abstract class EntrySupport {
             if (!checkInit()) {
                 return null;
             }
+            Node node = null;
             while (true) {
-                Node node;
                 try {
                     Children.PR.enterReadAccess();
                     if (index >= visibleEntries.size()) {
-                        return NONEXISTING_NODE;
+                        return node;
                     }
                     Entry entry = visibleEntries.get(index);
                     EntryInfo info = entryToInfo.get(entry);
@@ -1356,6 +1354,7 @@ abstract class EntrySupport {
                         if (createNodes) {
                             Node n = info.getNode();
                             if (isDummyNode(n)) {
+                                // mark as hidden
                                 info.setIndex(-2);
                                 continue;
                             }
@@ -1541,10 +1540,8 @@ abstract class EntrySupport {
                     refNode = new NodeRef(node, this);
 
                     // assign node to the new children
-                    if (node != NONEXISTING_NODE) {
-                        node.assignTo(children, -1);
-                        node.fireParentNodeChange(null, children.parent);
-                    }
+                    node.assignTo(children, -1);
+                    node.fireParentNodeChange(null, children.parent);
                     return node;
                 }
             }
@@ -1583,19 +1580,12 @@ abstract class EntrySupport {
             }
         }
 
-        /** Dummy node for nonexisting Node */
-        private static final class NonexistingNode extends AbstractNode {
-
-            public NonexistingNode() {
-                super(Children.LEAF);
-                setName("Nonexisting node"); // NOI18N
-            }
-        }
-        
-        private static class DummyNode extends AbstractNode {
+        /** Dummy node class for entries without any node */
+        static class DummyNode extends AbstractNode {
 
             public DummyNode() {
                 super(Children.LEAF);
+                //setName("---"); // NOI18N
             }
         }     
 
@@ -1686,14 +1676,8 @@ abstract class EntrySupport {
             }
 
             public Node get(int index) {
-                if (index >= entries.size()) {
-                    return NONEXISTING_NODE;
-                }
                 Entry entry = entries.get(index);
                 EntryInfo info = entryToInfo.get(entry);
-                if (info == null) {
-                    return NONEXISTING_NODE;
-                }
                 Node node = info.getNode();
                 if (isDummyNode(node)) {
                     // force new snapshot

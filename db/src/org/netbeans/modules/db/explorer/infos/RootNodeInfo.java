@@ -223,6 +223,9 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         ninfo.setSchema(dbconn.getSchema());
         ninfo.setName(dbconn.getName());
         ninfo.setDatabaseConnection(dbconn);
+        if (dbconn.getConnection() != null) {
+            ninfo.connect(dbconn);
+        }
         return ninfo;
     }
         

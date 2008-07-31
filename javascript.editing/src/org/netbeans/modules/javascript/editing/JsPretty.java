@@ -472,7 +472,7 @@ public class JsPretty {
                             positionedTs.moveNext();
                             org.netbeans.api.lexer.Token<? extends JsTokenId> next = LexUtilities.findNextNonWsNonComment(positionedTs);
                             String indentString = null;
-                            if (indent > 0 && next.id() == JsTokenId.LBRACE) {
+                            if (indent > 0 && next.id() == JsTokenId.LBRACE && !diffs.isEmpty()) {
                                 lbraceOnNewLine = true;
                                 // dirty trick - take indent from previous line if LBRACE is on new line
                                 indentString = diffs.getFirst().text;

@@ -104,7 +104,7 @@ public class RestConstants {
     
     public static final String HTTP_RESPONSE = RestConstants.REST_API_CORE_PACKAGE + "Response"; //NOI18N
     
-    public static final String RESPONSE_BUILDER = RestConstants.REST_API_CORE_PACKAGE + "Response.Builder";       //NOI8N
+    public static final String RESPONSE_BUILDER = RestConstants.REST_API_CORE_PACKAGE + "Response.Builder";       //NOI18N
     
     public static final String ENTITY_TYPE = RestConstants.REST_API_PACKAGE + "Entity";
     

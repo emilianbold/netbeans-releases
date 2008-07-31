@@ -318,6 +318,7 @@ class RemoteConnectionsPanel extends JPanel {
 
         connectionTextField.setEnabled(false);
 
+        typeLabel.setLabelFor(typeComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(typeLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Type")); // NOI18N
 
         hostLabel.setLabelFor(hostTextField);
@@ -325,6 +326,8 @@ class RemoteConnectionsPanel extends JPanel {
 
         portLabel.setLabelFor(portTextField);
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Port")); // NOI18N
+
+        portTextField.setMinimumSize(new java.awt.Dimension(20, 19));
 
         userLabel.setLabelFor(userTextField);
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_UserName")); // NOI18N
@@ -339,6 +342,8 @@ class RemoteConnectionsPanel extends JPanel {
 
         timeoutLabel.setLabelFor(timeoutTextField);
         org.openide.awt.Mnemonics.setLocalizedText(timeoutLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Timeout")); // NOI18N
+
+        timeoutTextField.setMinimumSize(new java.awt.Dimension(20, 19));
 
         org.openide.awt.Mnemonics.setLocalizedText(passiveModeCheckBox, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_PassiveMode")); // NOI18N
 
@@ -369,21 +374,21 @@ class RemoteConnectionsPanel extends JPanel {
                             .add(connectionTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                             .add(org.jdesktop.layout.GroupLayout.TRAILING, detailsPanelLayout.createSequentialGroup()
                                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE)
-                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 158, Short.MAX_VALUE))
+                                    .add(userTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                                    .add(hostTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                                    .add(passwordTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE)
+                                    .add(initialDirectoryTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 73, Short.MAX_VALUE))
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                                 .add(detailsPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.TRAILING, false)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
-                                        .add(portLabel, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 28, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                                        .add(portLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                                        .add(portTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 99, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
+                                        .add(portTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 99, Short.MAX_VALUE))
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, anonymousCheckBox)
                                     .add(org.jdesktop.layout.GroupLayout.LEADING, detailsPanelLayout.createSequentialGroup()
                                         .add(timeoutLabel)
                                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.UNRELATED)
-                                        .add(timeoutTextField))))
+                                        .add(timeoutTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                             .add(detailsPanelLayout.createSequentialGroup()
                                 .add(passwordLabelInfo)
                                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED))))

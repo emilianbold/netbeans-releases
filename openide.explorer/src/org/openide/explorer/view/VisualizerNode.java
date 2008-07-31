@@ -44,17 +44,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openide.nodes.*;
 import org.openide.util.Mutex;
-import org.openide.util.Utilities;
-
 import java.awt.Image;
-
 import java.beans.BeanInfo;
-
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
-
 import java.util.*;
-
 import java.util.logging.LogRecord;
 import javax.swing.Icon;
 import javax.swing.SwingUtilities;

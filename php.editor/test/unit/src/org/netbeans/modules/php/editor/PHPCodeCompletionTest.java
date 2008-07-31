@@ -119,4 +119,7 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test135618_2() throws Exception {
         checkCompletion("testfiles/completion/lib/issue135618.php", "A135618::^", false);
     }
+    public void test142091() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue142091.php", "function f142091 (^", false);
+    }
 }
