@@ -1,5 +1,5 @@
 <g id="%%COMPONENT_ID%%" transform="translate(%%COORDINATE_X%%,%%COORDINATE_Y%%)">
-   <text display="none">type=%%COMPONENT_ID%%</text>
+   <text display="none">type=label</text>
    <g>
    <text id="%%COMPONENT_ID%%_text" x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
        Label
