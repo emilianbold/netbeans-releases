@@ -710,6 +710,21 @@ public class UMLClassWidget  extends SwitchableWidget
     }
     
 
+    /**
+     * If the preferred size of the paramter widget is smaller than half of the 
+     * perferred bounds of the classifier, then the template parameter should 
+     * start from the center of the classifeir bounds and extend the 
+     * TEMPLATE_EXTENDS past the classifier bounds.
+     *
+     * However if the preferred size is bigger than half of the classifier size 
+     * then the parameter widget should X location should be adjusted to 
+     * accommodate the size of the parameter widget.  However X position of the
+     * template parameter widget must not be smaller than TEMPLATE_EXTENDS.
+     * 
+     * If the template parameter is to big, than the template paramter X point
+     * will be at TEMPLATE_EXTENDS and the size of the classifeir widget will 
+     * be the preferred size of the template parameter minus TEMPLATE_EXTENDS.
+     */
     public class TemplateWidgetLayout implements Layout
     {
         private static final int TEMPLATE_EXTENDS = 10;
@@ -732,12 +747,29 @@ public class UMLClassWidget  extends SwitchableWidget
                     Rectangle paramBounds = parameterWidget.getPreferredBounds();
                     viewY = paramBounds.height / 2;
 
+                    int paramX = bounds.width / 2;
                     if(paramBounds.width < (viewHalf + TEMPLATE_EXTENDS))
                     {
                         paramBounds.width = viewHalf + TEMPLATE_EXTENDS;
                     }
+                    else if(paramBounds.width > viewHalf)
+                    {
+                        paramBounds.width += TEMPLATE_EXTENDS;
 
-                    parameterWidget.resolveBounds(new Point(bounds.width / 2, -paramBounds.y), paramBounds);
+                        if(paramBounds.width > bounds.width)
+                        {
+                            // I have got to update the size of the class to 
+                            // take into account the size of the parameter.
+                            bounds.width = paramBounds.width - bounds.width + TEMPLATE_EXTENDS;
+                            paramX = TEMPLATE_EXTENDS;
+                        }
+                        else
+                        {
+                            paramX = bounds.width - (paramBounds.width - TEMPLATE_EXTENDS);
+                        }
+                    }
+
+                    parameterWidget.resolveBounds(new Point(paramX, -paramBounds.y), paramBounds);
 
                     Point bodyLocation = new Point(0, paramBounds.height - (paramBounds.height / 3));
                     classView.resolveBounds(bodyLocation, new Rectangle(new Point(0, 0), bounds.getSize()));
@@ -761,12 +793,26 @@ public class UMLClassWidget  extends SwitchableWidget
                 int bodyHalf = bodyWidth / 2;
 
                 Rectangle paramBounds = parameterWidget.getPreferredBounds();
-                Dimension paramSize = new Dimension(clientArea.width - bodyHalf, paramBounds.height );
+                
+                int paramWidth = clientArea.width - bodyHalf;
+                int paramX = bodyHalf;
+                if(paramBounds.width > bodyHalf)
+                {
+                    paramX = clientArea.width - paramBounds.width;
+                    if(paramX < TEMPLATE_EXTENDS)
+                    {
+                        paramX = TEMPLATE_EXTENDS;
+                    }
+                    
+                    paramWidth = clientArea.width - paramX;
+                }
+                
+                Dimension paramSize = new Dimension(paramWidth, paramBounds.height );
 
                 int bodyY = paramSize.height - (paramSize.height / 3);
                 Dimension bodySize = new Dimension(bodyWidth, clientArea.height - bodyY);
 
-                Point paramLocation = new Point(bodyHalf, -paramBounds.y);
+                Point paramLocation = new Point(paramX, -paramBounds.y);
                 Point bodyLocation = new Point(0, bodyY);
 
                 parameterWidget.resolveBounds(paramLocation, new Rectangle(paramBounds.getLocation(), paramSize));
