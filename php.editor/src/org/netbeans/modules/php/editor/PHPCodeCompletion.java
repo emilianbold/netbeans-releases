@@ -110,7 +110,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final List<PHPTokenId[]> NONE_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_CLASS},
         new PHPTokenId[]{PHPTokenId.PHP_CLASS, PHPTokenId.WHITESPACE},
-        new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING},
         new PHPTokenId[]{PHPTokenId.PHP_EXTENDS, PHPTokenId.WHITESPACE, PHPTokenId.PHP_STRING, PHPTokenId.WHITESPACE},
         //TODO: no completion until #142019 is fixed
         new PHPTokenId[]{PHPTokenId.PHP_IMPLEMENTS},
