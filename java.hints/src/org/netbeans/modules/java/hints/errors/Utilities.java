@@ -100,7 +100,8 @@ public class Utilities {
         if (name == null) {
             if(et instanceof LiteralTree) {
                 String guess = (String) ((LiteralTree) et).getValue();
-                return guessLiteralName(guess);
+                if (guess != null)
+                    return guessLiteralName(guess);
             } else
                 return "name";
         }

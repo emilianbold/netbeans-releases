@@ -51,6 +51,7 @@ import org.netbeans.modules.j2ee.deployment.impl.ui.RegistryNodeProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
+import org.netbeans.tests.j2eeserver.plugin.ManagerWrapperFactory;
 /**
  *
  * @author nn136682
@@ -126,6 +127,19 @@ public class ServerRegistryTest extends ServerRegistryTestBase {
         names = testPlugin.getDeploymentPlanFiles(ModuleType.EJB);
         assertEquals(1, names.length);
         assertEquals("META-INF/test-ejb.xml", names[0]);
+    }
+
+    public void testServerPluginInitialization() {
+        ServerRegistry registry = ServerRegistry.getInstance();
+        Server testPlugin = registry.getServer("Test");
+
+        assertNotNull("Registry does not contain test plugin", testPlugin);
+
+        ManagerWrapperFactory optionalFactory = (ManagerWrapperFactory) testPlugin.getOptionalFactory();
+        assertTrue(optionalFactory.isInitialized());
+
+        testPlugin = registry.getServer("TestFailingInitialization");
+        assertNull("Registry contain plugin while its initialization failed", testPlugin);
     }
     
 }

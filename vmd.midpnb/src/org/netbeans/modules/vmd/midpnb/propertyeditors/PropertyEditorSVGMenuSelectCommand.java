@@ -101,6 +101,11 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
         Mnemonics.setLocalizedText(radioButton, mnemonic);
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
@@ -294,6 +299,13 @@ public class PropertyEditorSVGMenuSelectCommand extends PropertyEditorUserCode i
         private void initComponents() {
             setLayout(new BorderLayout());
             combobox = new JComboBox();
+            
+            combobox.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+            combobox.getAccessibleContext().setAccessibleDescription(
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+                    
+            
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);

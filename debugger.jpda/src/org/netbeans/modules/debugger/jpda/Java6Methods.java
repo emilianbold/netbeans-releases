@@ -49,7 +49,8 @@ import com.sun.jdi.ThreadReference;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.request.EventRequest;
 import com.sun.jdi.request.EventRequestManager;
-import org.openide.ErrorManager;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openide.util.Lookup;
 
 /**
@@ -75,7 +76,7 @@ public class Java6Methods {
             Object instanceCounts = method.invoke(vm, new Object[] { refTypes });
             return (long[]) instanceCounts;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
         return new long[refTypes.size()];
     }
@@ -86,7 +87,7 @@ public class Java6Methods {
             Object instances = method.invoke(refType, new Object[] { maxInstances });
             return (List<ObjectReference>) instances;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
         return new ArrayList<ObjectReference>();
     }
@@ -98,7 +99,7 @@ public class Java6Methods {
             Object referringObjects = method.invoke(ref, new Object[] { maxReferrers });
             return (List<ObjectReference>) referringObjects;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
         return new ArrayList<ObjectReference>();
     }
@@ -109,7 +110,7 @@ public class Java6Methods {
             Boolean can = (Boolean) method.invoke(vm, new Object[] {});
             return can;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
             return false;
         }
     }
@@ -120,7 +121,7 @@ public class Java6Methods {
             EventRequest request = (EventRequest) method.invoke(erm, new Object[] {});
             return request;
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
             return null;
         }
     }
@@ -131,7 +132,7 @@ public class Java6Methods {
             java.lang.reflect.Method method = monitorContendedEnteredRequestClass.getMethod("addThreadFilter", ThreadReference.class);
             method.invoke(monitorContendedEnteredRequest, thread);
         } catch (Exception ex) {
-            ErrorManager.getDefault().notify(ex);
+            Logger.getLogger(Java6Methods.class.getName()).log(Level.INFO, "", ex);
         }
     }
     

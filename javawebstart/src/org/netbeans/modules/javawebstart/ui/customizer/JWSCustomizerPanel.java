@@ -108,8 +108,6 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         setEnabledAllComponents(enableSelected);
         setEnabledRunComponent(enableSelected);
         
-        setEnabledAppletControls(appletDescRadioButton.getModel().isSelected());
-        
         extResColumnNames = new String[] {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"),

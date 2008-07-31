@@ -1211,9 +1211,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
     }
 
     public String updateVariable(String name, String value) {
-        CommandBuffer cb = new CommandBuffer(gdb);
+        return evaluate(name + '=' + value);
+        /*CommandBuffer cb = new CommandBuffer(gdb);
         gdb.data_evaluate_expression(cb, name + '=' + value);
-        return cb.waitForCompletion();
+        return cb.waitForCompletion();*/
     }
 
     public void variableChanged(Object var) {
@@ -1434,9 +1435,9 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
         setState(STATE_EXITED);
     }
 
-    public Boolean evaluateIn(Expression expression, final Object frame) {
+    /*public Boolean evaluateIn(Expression expression, final Object frame) {
         return Boolean.FALSE;
-    }
+    }*/
 
     /**
      * Helper method that fires JPDABreakpointEvent on JPDABreakpoints.
@@ -2049,11 +2050,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      * updates so functions called don't stop.
      */
     private void suspendBreakpointsAndSignals() {
-        for (BreakpointImpl impl : getBreakpointList().values()) {
-            if (impl.getBreakpoint().isEnabled()) {
-                impl.enable(false);
-            }
-        }
+        gdb.break_disable();
         gdb.set_unwindonsignal("on"); // NOI18N
     }
 
@@ -2063,11 +2060,13 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      */
     private void restoreBreakpointsAndSignals() {
         gdb.set_unwindonsignal("off"); // NOI18N
-        for (BreakpointImpl impl : getBreakpointList().values()) {
-            if (impl.getBreakpoint().isEnabled()) {
-                impl.enable(true);
+        ArrayList<Integer> ids = new ArrayList<Integer>();
+        for (Map.Entry<Integer,BreakpointImpl> entry : getBreakpointList().entrySet()) {
+            if (entry.getValue().getBreakpoint().isEnabled()) {
+                ids.add(entry.getKey());
             }
         }
+        gdb.break_enable(ids.toArray(new Integer[ids.size()]));
     }
 
     /**
