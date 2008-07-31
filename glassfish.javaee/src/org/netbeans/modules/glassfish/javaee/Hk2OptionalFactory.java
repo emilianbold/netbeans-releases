@@ -56,11 +56,13 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.IncrementalDeployment;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.JDBCDriverDeployer;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.OptionalDeploymentManagerFactory;
+import org.netbeans.modules.j2ee.deployment.plugins.spi.ServerInitializationException;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.StartServer;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.InstantiatingIterator;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.util.Lookup;
+import org.openide.util.NbPreferences;
 
 
 /**
@@ -211,5 +213,19 @@ public class Hk2OptionalFactory extends OptionalDeploymentManagerFactory {
             delegate.initialize(wizard);
         }
         
+    }
+
+
+    @Override
+    public void finishServerInitialization() throws ServerInitializationException {
+        try {
+            final boolean needToRegisterDefaultServer =
+                    !NbPreferences.forModule(this.getClass()).getBoolean(ServerUtilities.PROP_FIRST_RUN, false);
+            if (needToRegisterDefaultServer) {
+                ServerUtilities.getServerProvider();
+            }
+        } catch (Exception ex) {
+            throw new ServerInitializationException("failed to init default instance", ex);
+        }
     }
 }

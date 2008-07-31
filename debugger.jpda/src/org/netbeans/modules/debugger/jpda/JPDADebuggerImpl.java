@@ -1115,8 +1115,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by KillActionProvider.
      */
     public void finish () {
-        //Workaround for #56233
-        //synchronized (LOCK) { 
+        try {
             synchronized (this) {
                 if (finishing) {
                     // Can easily be called twice - from the operator termination
@@ -1125,8 +1124,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 finishing = true;
             }
             logger.fine("StartActionProvider.finish ()");
-            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
+            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             Operator o = getOperator();
             if (o != null) o.stop();
             synchronized (this) {
@@ -1185,7 +1184,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 LOCK2.notifyAll ();
             }
             EditorContextBridge.getContext().disposeTimeStamp(this);
-        //}
+        } finally {
+            finishing = false; // for safety reasons
+        }
     }
 
     /**
