@@ -114,7 +114,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsRemoteWeb runAsRemoteWeb = null;
     private RunAsScript runAsScript = null;
     private String defaultLocalUrl = null;
-    private boolean copyToFolderValid = false;
 
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
@@ -333,87 +332,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return false;
     }
 
-    private void adjustUrl() {
-        if (getRunAsType() != RunAsType.LOCAL) {
-            // only local url is adjusted
-            return;
-        }
-        String currentUrl = runAsLocalWeb.getUrl();
-        if (defaultLocalUrl == null) {
-            defaultLocalUrl = currentUrl;
-        }
-        if (!defaultLocalUrl.equals(currentUrl)) {
-            return;
-        }
-        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
-        assert sources != null;
-        String url = null;
-        if (runAsLocalWeb.isCopyFiles()) {
-            if (!copyToFolderValid) {
-                // error exactly in the copy-to-folder field => do nothing
-                return;
-            }
-            LocalServer ls = runAsLocalWeb.getLocalServer();
-            String documentRoot = ls.getDocumentRoot();
-            assert documentRoot != null;
-            String srcRoot = ls.getSrcRoot();
-            String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
-            if (urlSuffix == null) {
-                // user changed path to a different place => use the name of the directory
-                urlSuffix = new File(srcRoot).getName();
-            }
-            String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
-            url = urlPrefix + urlSuffix;
-        } else {
-            // /var/www or similar => check source folder name and url
-            String srcRoot = sources.getSrcRoot();
-            switch (wizardType) {
-                case NEW:
-                    // we can check doucment roots only for new wizard; for existing sources we don't have any source roots
-                    @SuppressWarnings("unchecked")
-                    List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
-                    assert srcRoots != null;
-                    for (DocumentRoot root : srcRoots) {
-                        String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
-                        if (urlSuffix != null) {
-                            url = root.getUrl() + urlSuffix;
-                            break;
-                        }
-                    }
-                    break;
-            }
-            if (url == null) {
-                // not found => get the name of the sources
-                url = "http://localhost/" + new File(srcRoot).getName(); // NOI18N
-            }
-        }
-        // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]
-        if (url != null && !url.endsWith("/")) { // NOI18N
-            url += "/"; // NOI18N
-        }
-        if (url != null && !defaultLocalUrl.equals(url)) {
-            defaultLocalUrl = url;
-            runAsLocalWeb.setUrl(url);
-        }
-    }
-
-    private String getUrlSuffix(String documentRoot, String srcRoot) {
-        if (!documentRoot.endsWith(File.separator)) {
-            documentRoot += File.separator;
-        }
-        if (!srcRoot.startsWith(documentRoot)) {
-            return null;
-        }
-        // handle situations like: /var/www///// or c:\\apache\htdocs\aaa\bbb
-        srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
-        return srcRoot.substring(documentRoot.length());
-    }
-
-    public void stateChanged(ChangeEvent e) {
-        fireChangeEvent();
-        adjustUrl();
-    }
-
     final void fireChangeEvent() {
         changeSupport.fireChange();
     }
@@ -488,7 +406,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     private String validateServerLocation() {
-        copyToFolderValid = false;
         if (!runAsLocalWeb.isCopyFiles()) {
             return null;
         }
@@ -513,7 +430,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         String url = runAsLocalWeb.getUrl();
         String warning = NbBundle.getMessage(RunConfigurationPanel.class, "MSG_TargetFolderVisible", url);
         descriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, warning); // NOI18N
-        copyToFolderValid = true;
         return null;
     }
 
@@ -558,6 +474,83 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
             return;
         }
+    }
+
+    private void adjustUrl() {
+        String currentUrl = runAsLocalWeb.getUrl();
+        if (defaultLocalUrl == null) {
+            defaultLocalUrl = currentUrl;
+        }
+        if (!defaultLocalUrl.equals(currentUrl)) {
+            return;
+        }
+        LocalServer sources = (LocalServer) descriptor.getProperty(ConfigureProjectPanel.SOURCES_FOLDER);
+        assert sources != null;
+        String url = null;
+        if (runAsLocalWeb.isCopyFiles()) {
+            LocalServer ls = runAsLocalWeb.getLocalServer();
+            String documentRoot = ls.getDocumentRoot();
+            assert documentRoot != null;
+            String srcRoot = ls.getSrcRoot();
+            String urlSuffix = getUrlSuffix(documentRoot, srcRoot);
+            if (urlSuffix == null) {
+                // user changed path to a different place => use the name of the directory
+                urlSuffix = new File(srcRoot).getName();
+            }
+            String urlPrefix = ls.getUrl() != null ? ls.getUrl() : "http://localhost/"; // NOI18N
+            url = urlPrefix + urlSuffix;
+        } else {
+            // /var/www or similar => check source folder name and url
+            String srcRoot = sources.getSrcRoot();
+            switch (wizardType) {
+                case NEW:
+                    // we can check doucment roots only for new wizard; for existing sources we don't have any source roots
+                    @SuppressWarnings("unchecked")
+                    List<DocumentRoot> srcRoots = (List<DocumentRoot>) descriptor.getProperty(ConfigureProjectPanel.ROOTS);
+                    assert srcRoots != null;
+                    for (DocumentRoot root : srcRoots) {
+                        String urlSuffix = getUrlSuffix(root.getDocumentRoot(), srcRoot);
+                        if (urlSuffix != null) {
+                            url = root.getUrl() + urlSuffix;
+                            break;
+                        }
+                    }
+                    break;
+            }
+            if (url == null) {
+                // not found => get the name of the sources
+                url = "http://localhost/" + new File(srcRoot).getName(); // NOI18N
+            }
+        }
+        // we have to do it here because we need correct url BEFORE the following comparison [!defaultLocalUrl.equals(url)]
+        if (url != null && !url.endsWith("/")) { // NOI18N
+            url += "/"; // NOI18N
+        }
+        if (url != null && !defaultLocalUrl.equals(url)) {
+            defaultLocalUrl = url;
+            runAsLocalWeb.setUrl(url);
+        }
+    }
+
+    private String getUrlSuffix(String documentRoot, String srcRoot) {
+        if (!documentRoot.endsWith(File.separator)) {
+            documentRoot += File.separator;
+        }
+        if (!srcRoot.startsWith(documentRoot)) {
+            return null;
+        }
+        // handle situations like: /var/www///// or c:\\apache\htdocs\aaa\bbb
+        srcRoot = srcRoot.replaceAll(Pattern.quote(File.separator) + "+", "/");
+        return srcRoot.substring(documentRoot.length());
+    }
+
+    public void stateChanged(ChangeEvent e) {
+        switch (getRunAsType()) {
+            case LOCAL:
+                adjustUrl();
+                break;
+        }
+        fireChangeEvent();
     }
 
     private class WizardConfigProvider implements ConfigManager.ConfigProvider {
