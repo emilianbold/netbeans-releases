@@ -335,7 +335,7 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
 //out("  mySoughtName: " + mySoughtName);
 
           if (mySoughtName.equals(ref)) {
-            myFound.add(sc);
+            addElement(sc);
             return;
           }
         }
@@ -345,13 +345,13 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
                 //
                 // Compare namespace as well if it is specified
                 if (mySoughtNamespace == null || mySoughtNamespace.length() == 0) {
-                    myFound.add(sc);
+                    addElement(sc);
                 } else {
                     Set<String> namespacesSet = XPathSchemaContext.Utilities.
                             getEffectiveNamespaces(sc, mParentContext);
                     //
                     if (namespacesSet.contains(mySoughtNamespace)) {
-                        myFound.add(sc);
+                        addElement(sc);
                     }
                 }
             } 
@@ -363,7 +363,40 @@ public class FindChildrenSchemaVisitor extends AbstractSchemaSearchVisitor {
             mHasAnyAttribute = true;
         }
     }
+    
+    private void addElement(SchemaComponent element) {
+        if (!(element instanceof Named)) {
+            myFound.add(element);
+            return;
+        }
 
+        boolean flag = true;
+
+        for (SchemaComponent el : myFound) {
+            if (el instanceof Named) {
+                String name1 = ((Named) el).getName();
+                String name2 = ((Named) element).getName();
+//                String nameSp1 = SchemaModelsStack.getEffectiveNamespace(el,
+//                        new SchemaModelsStack());
+//                String nameSp2 = SchemaModelsStack.getEffectiveNamespace(element,
+//                        new SchemaModelsStack());
+//                Set<String> set = XPathSchemaContext.Utilities.getEffectiveNamespaces(el, mParentContext);
+//                nameSp1 = set.iterator().next();
+//                set = XPathSchemaContext.Utilities.getEffectiveNamespaces(element, mParentContext);
+//                nameSp2 = set.iterator().next();
+                if (name1 != null && name1.equals(name2)) {
+      //              myFound.remove(el);
+                    flag = false;
+                    break;
+                }
+            }
+        }
+
+        if (flag) {
+            myFound.add(element);
+        }
+    }
+    
     private boolean ENABLE;
 
     private void out() {
