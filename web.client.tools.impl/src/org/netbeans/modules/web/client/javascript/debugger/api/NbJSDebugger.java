@@ -225,14 +225,13 @@ public final class NbJSDebugger {
 
         public void preferenceChange(PreferenceChangeEvent evt) {
             String pref = evt.getKey();
-            if( NbJSPreferences.PROP_HTTP_MONITOR_ENABLED.equals(pref) || NbJSPreferences.PROP_HTTP_MONITOR_OPENED.equals(pref)){
+            if( NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_ENABLED.equals(pref) ||
+                    NbJSPreferences.PROPERTIES.PROP_HTTP_MONITOR_OPENED.equals(pref)){
                 setBooleanFeatures(Feature.Name.HTTP_MONITOR, Boolean.parseBoolean(evt.getNewValue()));
             }
         }
 
     }
-
-//    private class PreferencesStateListeners implements
 
     private JSDebuggerEventListener debuggerListener;
     private JSDebuggerConsoleEventListener debuggerConsoleEventListener;

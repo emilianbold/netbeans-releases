@@ -421,7 +421,15 @@ public class CompilerSetManager {
                         }
                         add(cs);
                     }
-                    provider.loadCompilerSetData(sets);
+                    List<CompilerSet> setsCopy;
+                    if (sets instanceof ArrayList) {
+                        setsCopy = (List<CompilerSet>)((ArrayList<CompilerSet>)sets).clone();
+                    } else {
+                        // this will never be called in current impl but interface allows any List so:
+                        setsCopy = new ArrayList<CompilerSet>();
+                        setsCopy.addAll(sets);
+                    }
+                    provider.loadCompilerSetData(setsCopy);
                     // TODO: this should be upgraded to error reporting
                     // about absence of tool chain on remote host
                     // also compilersetmanager without compiler sets
@@ -464,7 +472,7 @@ public class CompilerSetManager {
             if (compiler != null) {
                 initCompiler(Tool.FortranCompiler, path, cs, compiler.getNames());
             }
-            initCompiler(Tool.MakeTool, path, cs, d.getMakeNames());
+            initCompiler(Tool.MakeTool, path, cs, d.getMake().getNames());
             initCompiler(Tool.DebuggerTool, path, cs, d.getDebuggerNames());
         }
     }
@@ -881,49 +889,4 @@ public class CompilerSetManager {
         return NbBundle.getMessage(CompilerSetManager.class, s);
     }
 
-    private boolean isWindows() {
-        return getPlatform() == PlatformTypes.PLATFORM_WINDOWS;
-    }
-
-
-    public static boolean useFakeRemoteCompilerSet = Boolean.getBoolean("cnd.remote.fakeCompilerSet");
-    public static CompilerSet fakeRemoteCS = new FakeRemoteCompilerSet(PlatformTypes.getDefaultPlatform());
-
-    private static class FakeRemoteCompilerSet extends CompilerSet {
-
-        public FakeRemoteCompilerSet(int platform){
-            super(platform);
-            fakeMake = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.MakeTool, "", "fakeMake", "/usr/sfw/bin/gmake");
-            fakeC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCompiler, "", "fakeGcc", "/usr/sfw/bin/gcc");
-            fakeCC = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.CCCompiler, "", "fakeG++", "/usr/sfw/bin/g++");
-            fakeFortran = new Tool("fake", CompilerFlavor.getUnknown(platform), Tool.FortranCompiler, "", "veryFakeFortran", "/usr/sfw/bin/g++");
-        }
-
-        @Override
-        public String getName() {
-            return "fakeRemote";
-        }
-
-        @Override
-        public Tool getTool(int kind) {
-            switch (kind) {
-                case Tool.MakeTool: return fakeMake;
-                case Tool.CCompiler: return fakeC;
-                case Tool.CCCompiler: return fakeCC;
-                case Tool.FortranCompiler: return fakeFortran;
-            }
-            return null;
-        }
-
-        @Override
-        public Tool getTool(String name) {
-            throw new UnsupportedOperationException();
-        }
-
-        private Tool fakeMake;
-        private Tool fakeC;
-        private Tool fakeCC;
-        private Tool fakeFortran;
-
-    }
 }

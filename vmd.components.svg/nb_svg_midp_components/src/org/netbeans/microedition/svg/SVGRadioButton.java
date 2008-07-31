@@ -37,11 +37,12 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;g>
  *           &lt;text display="none">type=dot&lt;/text>
  *           &lt;circle cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
- *       &lt;text id="radio_male_text" x="24" y="17" stroke="gray" font-size="15">
+ *       &lt;g    
+ *          &lt;text id="radio_male_text" x="24" y="17" stroke="gray" font-size="15">
+ *          Male&lt;/text>
  *          &lt;!-- Metadata information. Please don't edit. -->
  *          &lt;text display="none">type=text&lt;/text>
- *          Male
- *       &lt;/text>
+ *       &lt;/g>
  *
  *       &lt;g id="radio_female" transform="translate(7,33)">
  *       &lt;!-- Metadata information. Please don't edit. -->
@@ -57,11 +58,12 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;text display="none">type=dot&lt;/text>
  *
  *       &lt;circle id="radio_female_dot" cx="11" cy="12" r="4" fill="black" visibility="hidden"/>
- *       &lt;text x="24" y="17" stroke="gray" font-size="15">
+ *       &lt;g>
+ *          &lt;text x="24" y="17" stroke="gray" font-size="15">
+ *          Female&lt;/text>
  *          &lt;!-- Metadata information. Please don't edit. -->
  *          &lt;text display="none">type=text&lt;/text>
- *          Female
- *       &lt;/text>
+ *       &lt/g>
  *   &lt;/g>
  * </pre>
  *

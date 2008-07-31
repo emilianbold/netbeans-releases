@@ -11,11 +11,6 @@
  * Microsystems, Inc. All Rights Reserved.
  */ 
 
-/*
- * SVGTextField.java
- * 
- * Created on Oct 2, 2007, 4:27:06 PM
- */
 package org.netbeans.microedition.svg;
 
 import org.netbeans.microedition.svg.input.InputHandler;
@@ -30,16 +25,20 @@ import org.w3c.dom.svg.SVGRect;
  * &lt;g id="textfield_name" transform="translate(20,40)">
  *       &lt;!-- Metadata information. Please don't edit. -->
  *   &lt;text display="none">type=textfield&lt;/text>
- *       &lt;text display="none">readOnly="false" enabled="true"&lt;/text>
+ *       &lt;text display="none">editable=true&lt;/text>
+ *       &lt;text display="none">enabled=true&lt;/text>
  *
  *       &lt;rect x="0" y="0" rx="5" ry="5" width="200" height="30" fill="none" stroke="black" stroke-width="2">
  *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusin" dur="0.25s" fill="freeze" to="rgb(255,165,0)"/>
  *           &lt;animate attributeName="stroke" attributeType="XML" begin="textfield_name.focusout" dur="0.25s" fill="freeze" to="black"/>
  *       &lt;/rect>
- *       &lt;text  id="textfield_name_text" x="10" y="23" stroke="black" font-size="20" font-family="SunSansSemiBold">John Hilsworths
- *       &lt;!-- Metadata information. Please don't edit. -->
- *       &lt;text display="none">type=text&lt;/text>
- *       &lt;/text>
+ *       &lt;g>
+ *             &lt;text  id="textfield_name_text" x="10" y="23" stroke="black" font-size="20" 
+ *                 font-family="SunSansSemiBold">textField&lt;/text>
+ *             &lt;!-- Metadata information. Please don't edit. -->
+ *             &lt;text display="none">type=text&lt;/text>
+ *       &lt;/g>
+ *                 
  *   &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=caret&lt;/text>
@@ -207,12 +206,13 @@ public class SVGTextField extends SVGComponent {
         }
         
         if ( myTextElement == null ){ 
-            myTextElement  = (SVGLocatableElement) getElementByMeta(getElement(), 
-                TYPE , TEXT );
+            myTextElement  = (SVGLocatableElement) getNestedElementByMeta(
+                    getElement(), TYPE , TEXT );
         }
         
         if ( myCaretElement == null ){
-            myCaretElement = (SVGLocatableElement) getNestedElementByMeta(getElement(), 
+            myCaretElement = (SVGLocatableElement) getNestedElementByMeta(
+                    getElement(), 
                 TYPE , CARETELEM );
         }
     }
