@@ -46,7 +46,6 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -122,9 +121,12 @@ public class RemoteServerRecord implements ServerRecord {
      * Start the initialization process. This should <b>never</b> be done from the AWT Evet
      * thread. Parts of the initialization use this thread and will block.
      */
-    public void init(PropertyChangeSupport pcs) {
+    public synchronized void init(PropertyChangeSupport pcs) {
         assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
+        if (state != STATE_UNINITIALIZED) {
+            return;
+        }
         state = STATE_INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(name);
         if (rss.needsSetupOrUpdate()) {
