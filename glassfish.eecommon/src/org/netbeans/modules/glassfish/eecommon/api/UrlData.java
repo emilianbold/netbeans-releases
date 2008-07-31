@@ -247,13 +247,16 @@ public class UrlData {
             if(dbname == null) {
                 dbname = props.get("databaseName");
                 if(dbname == null) {
-                    dbname = props.get("SID");
+                    dbname = props.get("databasename");
                     if(dbname == null) {
-                        dbname = props.get("database name");
+                        dbname = props.get("SID");
+                        if(dbname == null) {
+                            dbname = props.get("database name");
+                        }
                     }
                 }
             }
-        }
+        }    
         return dbname;
     }
     
