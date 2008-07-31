@@ -78,7 +78,6 @@ import org.netbeans.modules.cnd.debugger.gdb.breakpoints.GdbBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.breakpoints.LineBreakpoint;
 import org.netbeans.modules.cnd.debugger.gdb.disassembly.Disassembly;
 import org.netbeans.modules.cnd.debugger.gdb.event.GdbBreakpointEvent;
-import org.netbeans.modules.cnd.debugger.gdb.expr.Expression;
 import org.netbeans.modules.cnd.debugger.gdb.profiles.GdbProfile;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbMiDefinitions;
 import org.netbeans.modules.cnd.debugger.gdb.proxy.GdbProxy;
@@ -416,6 +415,10 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
 
     public InputOutput getIO() {
         return iotab;
+    }
+
+    public PathMap getPathMap() {
+        return pathMap;
     }
     
     public static GdbDebugger getGdbDebugger() {
@@ -2198,6 +2201,7 @@ public class GdbDebugger implements PropertyChangeListener, GdbMiDefinitions {
      *  @return The possibly modified path
      */
     public String getBestPath(String path) {
+        path = pathMap.getRemotePath(path);
         if (path.indexOf(' ') == -1 && platform == PlatformTypes.PLATFORM_MACOSX) {
             return path;
         } else if (path.startsWith(runDirectory)) {
