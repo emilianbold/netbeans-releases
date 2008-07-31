@@ -46,8 +46,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.jpda.JPDABreakpoint;
 import org.netbeans.api.debugger.jpda.LineBreakpoint;
 import org.netbeans.modules.debugger.jpda.ui.EditorContextBridge;
@@ -101,7 +99,7 @@ public class BreakpointsTreeModelFilter implements TreeModelFilter {
         int         to
     ) throws UnknownTypeException {
         if (to - from <= 0) return new Object[0]; 
-        Object[] ch = original.getChildren (parent, 0, 0);
+        Object[] ch = original.getChildren (parent, from, to);
         List l = new ArrayList ();
         int i, k = ch.length, n = to - from;
         Map maxLines = new HashMap();

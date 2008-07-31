@@ -161,6 +161,14 @@
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
+<!--begin Groovy section-->
+
+<mapID target="groovy_intro" url="groovy/groovy_intro.html" />
+<mapID target="groovy_enable" url="groovy/groovy_enable.html" />
+<mapID target="groovy_edit" url="groovy/groovy_edit.html" />
+
+
+
 <!--begin Spring Framework section-->
 
 <mapID target="spring.framework.about" url="spring/about.html" />
@@ -471,6 +479,8 @@
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="persistence/csh/persist_new_entityclass_db1.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="persistence/csh/persist_new_entityclass_db2.html" />
     <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="persistence/csh/db_persist_addentityclass.html" />
+    <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller" url="persistence/general/persist_jpa_fromentity.html" />
+
    
    
        <!-- Persistence Unit Visual Editor CSH -->

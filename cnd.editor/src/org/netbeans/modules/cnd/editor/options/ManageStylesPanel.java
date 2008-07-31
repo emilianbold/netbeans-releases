@@ -266,22 +266,15 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
     }
 
     private boolean checkUniqueStyleName(String styleName) {
-        try {
-            Preferences prefs = NbPreferences.forModule(ManageStylesPanel.class).node("CodeStyle"); // NOI18N
-            for (String key : prefs.keys()) {
-                if (key.startsWith("Style_") && key.endsWith("_Style_Name")) { // NOI18N
-                    String name = prefs.get(key, ""); // NOI18N
-                    if (name.equals(styleName)) {
-                        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
-                                NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", styleName), // NOI18N
-                                NotifyDescriptor.WARNING_MESSAGE);
-                        DialogDisplayer.getDefault().notify(descriptor);
-                        return false;
-                    }
-                }
+        for (String key : allPreferences.get(currentLanguage).keySet()) {
+            String name = EditorOptions.getStyleDisplayName(currentLanguage, key);
+            if (name.equals(styleName)) {
+                NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                        NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", styleName), // NOI18N
+                        NotifyDescriptor.WARNING_MESSAGE);
+                DialogDisplayer.getDefault().notify(descriptor);
+                return false;
             }
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
         }
         return true;
     }

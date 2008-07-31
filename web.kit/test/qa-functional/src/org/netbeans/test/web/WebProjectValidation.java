@@ -137,7 +137,7 @@ public class WebProjectValidation extends J2eeTestCase {
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testCleanAndBuildProject", "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
                /*"testJSPNavigator", "testHTMLNavigator" */);
@@ -236,17 +236,31 @@ public class WebProjectValidation extends J2eeTestCase {
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-        EditorWindowOperator.getEditor("index.jsp");//NOI18N
-        ProjectSupport.waitScanFinished();
-        // XXX HACK
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"META-INF|context.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("META-INF|context.xml");
     }
     
+    protected void verifyProjectNode(String nodePath) {
+        Node prjNode = ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME);
+        Node node = new Node(prjNode,nodePath);//NOI18N
+        assertTrue(node.isPresent());
+        node.select();
+    }
+
+    protected void verifySourcePackageNode(String nodePath){
+        SourcePackagesNode sourceNode = new SourcePackagesNode(PROJECT_NAME);
+        Node node = new Node(sourceNode, nodePath);
+        assertTrue(node.isPresent());
+        node.select();
+    }
+    
+    protected void verifyWebPagesNode(String nodePath) {
+        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
+        Node node = new Node(webPages,nodePath);//NOI18N
+        assertTrue(node.isPresent());
+        node.select();
+    }
     /** Test new JSP wizard.
      * - open New File wizard from main menu (File|New File)
      * - select sample project as target

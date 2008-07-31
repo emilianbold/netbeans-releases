@@ -123,7 +123,7 @@ public abstract class SunCCCCompiler extends CCCCompiler {
     }
     
     protected String getDefaultPath() {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getNames().length > 0){
             return compiler.getNames()[0];
         }

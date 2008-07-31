@@ -56,6 +56,10 @@ import org.netbeans.junit.NbTestSuite;
  */
 public class AttachWindowActionTest extends JellyTestCase {
 
+    public static final String[] tests = new String[] {
+        "testPerformAPI"
+    };
+
     /** constructor required by JUnit
      * @param testName method name to be used as testcase
      */
@@ -71,7 +75,7 @@ public class AttachWindowActionTest extends JellyTestCase {
         suite.addTest(new AttachWindowActionTest("testPerformAPI"));
         return suite;
          */
-        return createModuleTest(AttachWindowActionTest.class, "testPerformAPI");
+        return createModuleTest(AttachWindowActionTest.class, tests);
     }
     
     /** Use for internal test execution inside IDE
