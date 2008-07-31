@@ -357,7 +357,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
 
             String varName = tokenSequence.token().text().toString();
             String typeName = null;
-
+            List<String> invalidProposalsForClsMembers = INVALID_PROPOSALS_FOR_CLS_MEMBERS;
             if (varName.equals("self")) { //NOI18N
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
                 if (classDecl != null) {
@@ -367,6 +367,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     attrMask |= (Modifier.PROTECTED | Modifier.PRIVATE);
                 }
             } else if (varName.equals("parent")) { //NOI18N
+                invalidProposalsForClsMembers = Collections.emptyList();
                 ClassDeclaration classDecl = findEnclosingClass(request.info, request.anchor);
                 if (classDecl != null) {
                     Identifier superIdentifier = classDecl.getSuperClass();
@@ -411,7 +412,7 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                 for (IndexedFunction method : methods){
                     if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {                        
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
-                            if (!INVALID_PROPOSALS_FOR_CLS_MEMBERS.contains(method.getName())) {
+                            if (!invalidProposalsForClsMembers.contains(method.getName())) {
                                 proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
                             }
                         }
