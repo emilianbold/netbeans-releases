@@ -56,6 +56,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.RemoteProject;
 import org.netbeans.modules.cnd.api.utils.IpeUtils;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifactProvider;
@@ -191,7 +192,8 @@ public final class MakeProject implements Project, AntProjectListener {
             new MakeProjectOperations(this),
             new FolderSearchInfo(projectDescriptorProvider),
             new MakeProjectType(),
-            new MakeProjectEncodingQueryImpl(projectDescriptorProvider)
+            new MakeProjectEncodingQueryImpl(projectDescriptorProvider),
+            new RemoteProjectImpl()
         });
     }
 
@@ -602,4 +604,14 @@ public final class MakeProject implements Project, AntProjectListener {
             return rootFolder.getAllItemsAsDataObjectSet(false, "text/").iterator(); // NOI18N
         }
     }
+
+    class RemoteProjectImpl implements RemoteProject {
+
+        public String getDevelopmentHost() {
+            MakeConfigurationDescriptor projectDescriptor = (MakeConfigurationDescriptor) projectDescriptorProvider.getConfigurationDescriptor();
+            MakeConfiguration conf = (MakeConfiguration)projectDescriptor.getConfs().getActive();
+            return conf.getDevelopmentHost().getName();
+        }
+
     }
+}

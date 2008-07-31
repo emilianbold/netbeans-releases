@@ -280,7 +280,7 @@ private:
     DbgpConnection *m_pDbgpConnection;
     void getTopStackFrame(IRemoteDebugApplicationThread *pDebugAppThread, StackFrame *pStackFrame);
     void getTopStackFrame(StackFrame *pStackFrame);
-    void getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, StackFrame *pStackFrame);
+    BOOL getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, StackFrame *pStackFrame);
     void resume(BREAKRESUMEACTION resumeAction);
     State state;
     map<State, tstring> statesMap;

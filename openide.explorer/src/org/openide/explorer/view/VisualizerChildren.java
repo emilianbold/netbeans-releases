@@ -291,6 +291,10 @@ final class VisualizerChildren extends Object {
      * and fires info to all listeners.
      */
     public void reordered(VisualizerEvent.Reordered ev) {
+        if (this != parent.getChildren()) {
+            // children were replaced (e.g. VisualizerNode.naturalOrder()), quit processing event
+            return;
+        }        
         if (ev.originalEvent != null) {
             snapshot = ev.originalEvent.getSnapshot();
         }
