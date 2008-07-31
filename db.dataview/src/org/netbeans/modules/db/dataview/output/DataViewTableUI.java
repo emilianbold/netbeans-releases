@@ -104,7 +104,7 @@ class DataViewTableUI extends JTable {
 
         setDefaultRenderer(Object.class, new ResultSetCellRenderer());
         setDefaultRenderer(Number.class, new ResultSetCellRenderer());
-        setDefaultRenderer(Date.class, new ResultSetCellRenderer());
+        setDefaultRenderer(java.util.Date.class, new ResultSetCellRenderer());
 
         setDefaultEditor(Object.class, new ResultSetTableCellEditor(new JTextField()));
         setDefaultEditor(Number.class, new NumberEditor(new JTextField()));
