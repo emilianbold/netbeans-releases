@@ -227,7 +227,7 @@ public final class ToolchainManager {
                 return false;
             }
         }
-       String flag = c.getVersionFlag();
+       String flag = c.getVersionFlags();
         if (flag == null) {
             return true;
         }
@@ -444,15 +444,18 @@ public final class ToolchainManager {
         ScannerDescriptor getScanner();
         LinkerDescriptor getLinker();
         MakeDescriptor getMake();
-        String[] getDebuggerNames();
+        DebuggerDescriptor getDebugger();
     }
-        
-    public interface CompilerDescriptor {
+
+    public interface ToolDescriptor {
         String[] getNames();
+        String getVersionFlags();
+        String getVersionPattern();
+    }
+
+    public interface CompilerDescriptor extends ToolDescriptor {
         String getPathPattern();
         String getExistFolder();
-        String getVersionFlag();
-        String getVersionPattern();
         String getIncludeFlags();
         String getUserIncludeFlag();
         String getIncludeParser();
@@ -470,6 +473,13 @@ public final class ToolchainManager {
         String[] getLanguageExtensionFlags();
         String[] getLibraryFlags();
         String getDependencyGenerationFlags();
+    }
+
+    public interface MakeDescriptor extends ToolDescriptor {
+        String getDependencySupportCode();
+    }
+
+    public interface DebuggerDescriptor extends ToolDescriptor {
     }
 
     public interface LinkerDescriptor {
@@ -490,11 +500,6 @@ public final class ToolchainManager {
         String getLeaveDirectoryPattern();
         String getStackHeaderPattern();
         String getStackNextPattern();
-    }
-
-    public interface MakeDescriptor {
-        String[] getNames();
-        String getDependencySupportCode();
     }
 
     public interface ScannerPattern {
@@ -523,7 +528,7 @@ public final class ToolchainManager {
         private Scanner scanner = new Scanner();
         private Linker linker = new Linker();
         private Make make = new Make();
-        private String debuggerNames;
+        private Debugger debugger = new Debugger();
 
         public boolean isValid(){
             return toolChainName != null && toolChainName.length() > 0 &&
@@ -540,7 +545,7 @@ public final class ToolchainManager {
                        "] Suffix ["+baseFolderSuffix+"] Path Pattern["+baseFolderPattern+"] \n"); // NOI18N
             buf.append("\tCommand Folder Key ["+commandFolderKey+"] Pattern ["+commandFolderPattern+
                        "] Suffix ["+commandFolderSuffix+"] Path Pattern["+commandFolderPattern+"] \n"); // NOI18N
-            buf.append("C compiler ["+c.compiler+"] Recognize path ["+c.pathPattern+
+            buf.append("C compiler ["+c.name+"] Recognize path ["+c.pathPattern+
                        "] Version ["+c.versionFlags+";"+c.versionPattern+"]\n"); // NOI18N
             buf.append("\tInclude flags ["+c.includeFlags+"] parser ["+c.includeOutputParser+
                        "] remove from path["+c.removeIncludePathPrefix+"] remove from output ["+c.removeIncludeOutputPrefix+"]\n"); // NOI18N
@@ -553,7 +558,7 @@ public final class ToolchainManager {
             if (c.standard.isValid()) buf.append("\tStandard ["+c.standard+"]\n"); // NOI18N
             if (c.languageExtension.isValid()) buf.append("\tLanguage ["+c.languageExtension+"]\n"); // NOI18N
             if (c.library.isValid()) buf.append("\tLibrary ["+c.library+"]\n"); // NOI18N
-            buf.append("C++ compiler ["+cpp.compiler+"] Recognize path ["+cpp.pathPattern+
+            buf.append("C++ compiler ["+cpp.name+"] Recognize path ["+cpp.pathPattern+
                        "] Version ["+cpp.versionFlags+";"+cpp.versionPattern+"]\n"); // NOI18N
             buf.append("\tInclude flags ["+cpp.includeFlags+"] parser ["+cpp.includeOutputParser+
                        "] remove from path["+cpp.removeIncludePathPrefix+"] remove from output ["+cpp.removeIncludeOutputPrefix+"]\n"); // NOI18N
@@ -568,7 +573,7 @@ public final class ToolchainManager {
             if (cpp.languageExtension.isValid()) buf.append("\tLanguage "+cpp.languageExtension+"\n"); // NOI18N
             if (cpp.library.isValid()) buf.append("\tLibrary "+cpp.library+"\n"); // NOI18N
             if (fortran.isValid()) {
-            buf.append("Fortran compiler ["+fortran.compiler+"] Recognize path ["+fortran.pathPattern+
+            buf.append("Fortran compiler ["+fortran.name+"] Recognize path ["+fortran.pathPattern+
                        "] Version ["+fortran.versionFlags+";"+fortran.versionPattern+"]\n"); // NOI18N
             buf.append("\tDevelopment mode "+fortran.developmentMode+"\n"); // NOI18N
             buf.append("\tWarning Level "+fortran.warningLevel+"\n"); // NOI18N
@@ -593,20 +598,22 @@ public final class ToolchainManager {
             buf.append("\tStatic library ["+linker.staticLibraryFlag+"]\n"); // NOI18N
             buf.append("\tDynamic library ["+linker.dynamicLibraryFlag+"]\n"); // NOI18N
             buf.append("\tDynamic library basic ["+linker.dynamicLibraryBasicFlag+"]\n"); // NOI18N
-            buf.append("Make\n");  // NOI18N
-            buf.append("\tNames [" +make.names + "]\n"); // NOI18N
-            buf.append("\tDependency support code [" +make.dependencySupportCode + "]\n"); // NOI18N
-            buf.append("Debugger ["+debuggerNames+"]\n"); // NOI18N
+            buf.append("Make [" + make.name + "] Version [" + make.versionFlags + "; " + make.versionPattern + "]\n");  // NOI18N
+            buf.append("\tDependency support code [" + make.dependencySupportCode + "]\n"); // NOI18N
+            buf.append("Debugger [" + debugger.name + "] Version [" + debugger.versionFlags + "; " + debugger.versionPattern + "]\n"); // NOI18N
             return buf.toString();
         }
     }
-    
-    private static final class Compiler {
-        private String compiler;
+
+    private static class Tool {
+        protected String name;
+        protected String versionFlags;
+        protected String versionPattern;
+    }
+
+    private static final class Compiler extends Tool {
         private String pathPattern;
         private String existFolder;
-        private String versionFlags;
-        private String versionPattern;
         private String includeFlags;
         private String includeOutputParser;
         private String removeIncludePathPrefix;
@@ -626,7 +633,7 @@ public final class ToolchainManager {
         private Library library = new Library();
         
         public boolean isValid(){
-            return compiler != null && compiler.length() > 0; 
+            return name != null && name.length() > 0;
         }
     }
     
@@ -646,7 +653,7 @@ public final class ToolchainManager {
         private String language;
     }
             
-    private static final class Linker{
+    private static final class Linker {
         private String library_prefix;
         private String librarySearchFlag;
         private String dynamicLibrarySearchFlag;
@@ -657,9 +664,11 @@ public final class ToolchainManager {
         private String dynamicLibraryBasicFlag;
     }
     
-    private static final class Make {
-        private String names;
+    private static final class Make extends Tool {
         private String dependencySupportCode;
+    }
+
+    private static final class Debugger extends Tool {
     }
 
     private static final class DevelopmentMode {
@@ -906,9 +915,6 @@ public final class ToolchainManager {
                 v.commandFolderSuffix = attributes.getValue("suffix"); // NOI18N
                 v.commandFolderPathPattern = attributes.getValue("path_patern"); // NOI18N
                 return;
-            } else if (path.endsWith(".debugger.tool")) { // NOI18N
-                v.debuggerNames = attributes.getValue("name"); // NOI18N
-                return;
             }
             if (path.indexOf(".linker.")>0) { // NOI18N
                 Linker l = v.linker;
@@ -942,9 +948,21 @@ public final class ToolchainManager {
             if (path.indexOf(".make.") > 0) { // NOI18N
                 Make m = v.make;
                 if (path.endsWith(".tool")) { // NOI18N
-                    m.names = attributes.getValue("name"); // NOI18N
+                    m.name = attributes.getValue("name"); // NOI18N
+                } else if (path.endsWith(".version")) { // NOI18N
+                    m.versionFlags = attributes.getValue("flags"); // NOI18N
+                    m.versionPattern = attributes.getValue("pattern"); // NOI18N
                 } else if (path.endsWith(".dependency_support")) { // NOI18N
                     m.dependencySupportCode = attributes.getValue("code").replace("\\n", "\n"); // NOI18N
+                }
+            }
+            if (path.indexOf(".debugger.") > 0) { // NOI18N
+                Debugger d = v.debugger;
+                if (path.endsWith(".tool")) { // NOI18N
+                    d.name = attributes.getValue("name"); // NOI18N
+                } else if (path.endsWith(".version")) { // NOI18N
+                    d.versionFlags = attributes.getValue("flags"); // NOI18N
+                    d.versionPattern = attributes.getValue("pattern"); // NOI18N
                 }
             }
             if (path.indexOf(".scanner.")>0) { // NOI18N
@@ -988,7 +1006,7 @@ public final class ToolchainManager {
                 return;
             }
             if (path.endsWith(".compiler")) { // NOI18N
-                c.compiler = attributes.getValue("name"); // NOI18N
+                c.name = attributes.getValue("name"); // NOI18N
                 return;
             } else if (path.endsWith(".recognizer")) { // NOI18N
                 c.pathPattern = attributes.getValue("pattern"); // NOI18N
@@ -1143,6 +1161,7 @@ public final class ToolchainManager {
         private LinkerDescriptor linker;
         private ScannerDescriptor scanner;
         private MakeDescriptor make;
+        private DebuggerDescriptor debugger;
         private ToolchainDescriptorImpl(CompilerVendor v){
             this.v = v;
         }
@@ -1205,51 +1224,59 @@ public final class ToolchainManager {
             }
             return make;
         }
-        public String[] getDebuggerNames() {
-            if (v.debuggerNames != null && v.debuggerNames.length() > 0) {
-                return v.debuggerNames.split(","); // NOI18N
+        public DebuggerDescriptor getDebugger() {
+            if (debugger == null) {
+                debugger = new DebuggerDescriptorImpl(v.debugger);
             }
-            return new String[]{};
+            return debugger;
         }
-
         @Override
         public String toString() {
             return v.toolChainName+"/"+v.family+"/"+v.platforms;
         }
     }
-    
-    private static final class CompilerDescriptorImpl implements CompilerDescriptor {
-        private Compiler c;
-        private CompilerDescriptorImpl(Compiler c){
-            this.c = c;
+
+    private static class ToolDescriptorImpl<T extends Tool> implements ToolDescriptor {
+        protected T tool;
+        public ToolDescriptorImpl(T tool) {
+            this.tool = tool;
         }
         public String[] getNames() {
-            if (c.compiler != null && c.compiler.length() > 0) {
-                return c.compiler.split(","); // NOI18N
+            if (tool.name != null && tool.name.length() > 0) {
+                return tool.name.split(","); // NOI18N
             }
             return new String[]{};
-        } 
-        public String getPathPattern() { return c.pathPattern; }
-        public String getExistFolder() {return c.existFolder; }
-        public String getVersionFlag() { return c.versionFlags; }
-        public String getVersionPattern() { return c.versionPattern; }
-        public String getIncludeFlags() { return c.includeFlags; }
-        public String getIncludeParser() { return c.includeOutputParser; }
-        public String getRemoveIncludePathPrefix() { return c.removeIncludePathPrefix; }
-        public String getRemoveIncludeOutputPrefix() { return c.removeIncludeOutputPrefix; }
-        public String getUserIncludeFlag() { return c.userIncludeFlag; }
-        public String getMacroFlags() { return c.macrosFlags; }
-        public String getMacroParser() { return c.macrosFlags; }
-        public String getUserMacroFlag() { return c.userMacroFlag; }
-        public String[] getDevelopmentModeFlags() { return c.developmentMode.values(); }
-        public String[] getWarningLevelFlags() { return c.warningLevel.values(); }
-        public String[] getArchitectureFlags() { return c.architecture.values(); }
-        public String getStripFlag() { return c.strip; }
-        public String[] getMultithreadingFlags() { return c.multithreading.values(); }
-        public String[] getStandardFlags() { return c.standard.values(); }
-        public String[] getLanguageExtensionFlags() { return c.languageExtension.values(); }
-        public String[] getLibraryFlags() { return c.library.values(); }
-        public String getDependencyGenerationFlags() { return c.dependencyGenerationFlags; }
+        }
+        public String getVersionFlags() {
+            return tool.versionFlags;
+        }
+        public String getVersionPattern() {
+            return tool.versionPattern;
+        }
+    }
+
+    private static final class CompilerDescriptorImpl
+            extends ToolDescriptorImpl<Compiler> implements CompilerDescriptor {
+        private CompilerDescriptorImpl(Compiler compiler) { super(compiler); }
+        public String getPathPattern() { return tool.pathPattern; }
+        public String getExistFolder() {return tool.existFolder; }
+        public String getIncludeFlags() { return tool.includeFlags; }
+        public String getIncludeParser() { return tool.includeOutputParser; }
+        public String getRemoveIncludePathPrefix() { return tool.removeIncludePathPrefix; }
+        public String getRemoveIncludeOutputPrefix() { return tool.removeIncludeOutputPrefix; }
+        public String getUserIncludeFlag() { return tool.userIncludeFlag; }
+        public String getMacroFlags() { return tool.macrosFlags; }
+        public String getMacroParser() { return tool.macrosFlags; }
+        public String getUserMacroFlag() { return tool.userMacroFlag; }
+        public String[] getDevelopmentModeFlags() { return tool.developmentMode.values(); }
+        public String[] getWarningLevelFlags() { return tool.warningLevel.values(); }
+        public String[] getArchitectureFlags() { return tool.architecture.values(); }
+        public String getStripFlag() { return tool.strip; }
+        public String[] getMultithreadingFlags() { return tool.multithreading.values(); }
+        public String[] getStandardFlags() { return tool.standard.values(); }
+        public String[] getLanguageExtensionFlags() { return tool.languageExtension.values(); }
+        public String[] getLibraryFlags() { return tool.library.values(); }
+        public String getDependencyGenerationFlags() { return tool.dependencyGenerationFlags; }
     }
 
     private static final class ScannerDescriptorImpl  implements ScannerDescriptor {
@@ -1299,19 +1326,20 @@ public final class ToolchainManager {
         public String getDynamicLibraryBasicFlag() { return l.dynamicLibraryBasicFlag; }
     }
 
-    private static final class MakeDescriptorImpl implements MakeDescriptor {
-        private Make m;
-        private MakeDescriptorImpl(Make m) {
-            this.m = m;
-        }
-        public String[] getNames() {
-            if (m.names != null && m.names.length() > 0) {
-                return m.names.split(","); // NOI18N
-            }
-            return new String[]{};
+    private static final class MakeDescriptorImpl
+            extends ToolDescriptorImpl<Make> implements MakeDescriptor {
+        private MakeDescriptorImpl(Make make) {
+            super(make);
         }
         public String getDependencySupportCode() {
-            return m.dependencySupportCode;
+            return tool.dependencySupportCode;
+        }
+    }
+
+    private static final class DebuggerDescriptorImpl
+            extends ToolDescriptorImpl<Debugger> implements DebuggerDescriptor {
+        public DebuggerDescriptorImpl(Debugger debugger) {
+            super(debugger);
         }
     }
 

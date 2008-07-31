@@ -65,7 +65,7 @@ public class SunCCCompiler extends SunCCCCompiler {
     }
     
     @Override
-    protected CompilerDescriptor getCompilerDescription() {
+    public CompilerDescriptor getDescriptor() {
         return getFlavor().getToolchainDescriptor().getC();
     }
     

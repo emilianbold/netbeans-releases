@@ -5,13 +5,12 @@ New File...                N
 ========================
 Open Project...            e
 Open Recent Project    >   j
-Close Project              C
+Close Project              C   - Close Project (project-name)
 Open File...               O
 Open Recent File       >   F
 ========================
 Project Group          >   u
-Set Main Project       >   M
-Project Properties         t
+Project Properties         t   - Project Properties (project-name)
 ========================
 Import Project         >   I
 ========================
@@ -21,7 +20,6 @@ Save All                   A
 ========================
 Page Setup...              g
 Print...                   P
-Print Preview...           r
 Print to HTML...           H
 ========================
 Exit                       x
