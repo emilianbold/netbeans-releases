@@ -1508,8 +1508,14 @@ public abstract class TreeView extends JScrollPane {
             
             if (nodes.length > 0) {
                 Action a = nodes[0].getPreferredAction();
+                if (a == null) {
+                    return;
+                }
                 for (int i=1; i<nodes.length; i++) {
-                    if (! nodes[i].getPreferredAction().equals(a)) return;
+                    Action ai = nodes[i].getPreferredAction();
+                    if (ai == null || !ai.equals(a)) {
+                        return;
+                    }
                 }
                 
                 // switch to replacement action if there is some
