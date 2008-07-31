@@ -111,8 +111,9 @@ public class TestUnitHandlerFactory {
             session.addTestCase(testcase);
             manager.displayOutput(session, failureMsg(session.incrementFailuresCount()), false);
             manager.displayOutput(session, testcase.name + "(" + testcase.className + "):", false); //NOI18N
-            manager.displayOutput(session, message, false);
-            manager.displayOutput(session, location, false);
+            for (String line : testcase.trouble.stackTrace) {
+                manager.displayOutput(session, line, false);
+            }
             manager.displayOutput(session, "", false);
         }
 
