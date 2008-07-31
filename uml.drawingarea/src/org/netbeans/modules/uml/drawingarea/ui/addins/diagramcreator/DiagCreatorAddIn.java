@@ -69,6 +69,8 @@ import org.netbeans.modules.uml.core.metamodel.dynamics.IInteraction;
 import org.netbeans.modules.uml.core.metamodel.dynamics.IMessage;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IAttribute;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IBehavioralFeature;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IOperation;
 import org.netbeans.modules.uml.core.metamodel.structure.IProject;
 import org.netbeans.modules.uml.core.reverseengineering.reintegration.IUMLParsingIntegrator;
@@ -855,7 +857,9 @@ catch (IOException ex) {
       }
       
       ETList < INamedElement > ownedElements = getOwnedElements(pOwnerElement);
-      if (ownedElements != null)
+      if ((ownedElements != null) && 
+          !(pOwnerElement instanceof IClassifier) && 
+          !(pOwnerElement instanceof IBehavioralFeature))
       {
          ETArrayList<IElement> elements = new ETArrayList<IElement>(ownedElements.size());
          elements.addAll(ownedElements);

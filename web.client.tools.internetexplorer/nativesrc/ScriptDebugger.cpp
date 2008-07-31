@@ -229,7 +229,7 @@ void ScriptDebugger::getTopStackFrame(StackFrame *pStackFrame) {
     }
 }
 
-void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
+BOOL ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, 
                                            StackFrame *pStackFrame) {
     CComPtr<IDebugCodeContext> spDebugCodeCtxt; 
     HRESULT hr = pFrameDescriptor->pdsf->GetCodeContext(&spDebugCodeCtxt);
@@ -263,8 +263,10 @@ void ScriptDebugger::getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor,
             if(description != NULL) {
                 pStackFrame->location = (TCHAR *)(description);
             }
+            return TRUE;
         }
     }
+    return FALSE;
 }
 
 list<StackFrame *> ScriptDebugger::getStackFrames() {
@@ -281,8 +283,9 @@ list<StackFrame *> ScriptDebugger::getStackFrames() {
             hr = spDebugStackFrames->Next(1, &frameDescriptor, &frameCount);
             if(hr == S_OK) {
                 StackFrame *pInfo = new StackFrame();
-                getStackFrame(&frameDescriptor, pInfo);
-                frames.push_back(pInfo);
+                if(getStackFrame(&frameDescriptor, pInfo)) {
+                    frames.push_back(pInfo);
+                }
             }
         }
     }
