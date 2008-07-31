@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
@@ -189,7 +190,7 @@ private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIR
     String resourceId = id+"_Style_Name"; // NOI18N
     String displayName = getString("Custom_Name"); // NOI18N
     displayName = getDisplayName(displayName);
-    if (displayName != null) {
+    if (displayName != null && checkUniqueStyleName(displayName)) {
         NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
         PreviewPreferences np = new PreviewPreferences(pp, currentLanguage, id);
         np.makeAllKeys(pp);
@@ -207,7 +208,7 @@ private void duplicateButtonActionPerformed(java.awt.event.ActionEvent evt) {//G
         String resourceId = id+"_Style_Name"; // NOI18N
         String displayName = NbBundle.getMessage(ManageStylesPanel.class, "CopyOfStyle", item.name); // NOI18N
         displayName = getDisplayName(displayName);
-        if (displayName != null) {
+        if (displayName != null && checkUniqueStyleName(displayName)) {
             NbPreferences.forModule(CodeStyle.class).node("CodeStyle").put(resourceId, displayName); // NOI18N
             PreviewPreferences np = new PreviewPreferences(pp, currentLanguage, id);
             np.makeAllKeys(pp);
@@ -262,6 +263,27 @@ private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
             Exceptions.printStackTrace(ex);
         }
         return "Style_" + maxId; // NOI18N
+    }
+
+    private boolean checkUniqueStyleName(String styleName) {
+        try {
+            Preferences prefs = NbPreferences.forModule(ManageStylesPanel.class).node("CodeStyle"); // NOI18N
+            for (String key : prefs.keys()) {
+                if (key.startsWith("Style_") && key.endsWith("_Style_Name")) { // NOI18N
+                    String name = prefs.get(key, ""); // NOI18N
+                    if (name.equals(styleName)) {
+                        NotifyDescriptor descriptor = new NotifyDescriptor.Message(
+                                NbBundle.getMessage(ManageStylesPanel.class, "Duplicate_Style_Warning", styleName), // NOI18N
+                                NotifyDescriptor.WARNING_MESSAGE);
+                        DialogDisplayer.getDefault().notify(descriptor);
+                        return false;
+                    }
+                }
+            }
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return true;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

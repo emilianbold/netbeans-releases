@@ -147,7 +147,7 @@ public class EnterpriseSamples extends JellyTestCase {
      */
     public void testNewCustomerCMPSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Customer CMP");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -158,7 +158,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewAnnotationOverrideInterceptorSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Annotation Override Interceptor");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -169,7 +169,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewInterceptorStatelessSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Interceptor Stateless");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -180,7 +180,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewJSFJPASample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("JSF JPA");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -191,7 +191,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewJSFJPACrudSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("JSF JPA CRUD");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -202,7 +202,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewLotteryAnnotationSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Lottery Annotation");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -213,7 +213,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewServletStatelessSample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Servlet Stateless");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();
@@ -224,7 +224,7 @@ public class EnterpriseSamples extends JellyTestCase {
 
     public void testNewWebJPASample() throws IOException {
         NewProjectWizardOperator projectWizard = NewProjectWizardOperator.invoke();
-        projectWizard.selectCategory("Samples|Enterprise");
+        projectWizard.selectCategory("Samples|Java EE"); // XXX use Bundle.getString instead
         projectWizard.selectProject("Web JPA");
         projectWizard.next();
         NewWebProjectNameLocationStepOperator step = new NewWebProjectNameLocationStepOperator();

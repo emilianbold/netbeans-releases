@@ -489,6 +489,7 @@ public class UMLDiagramTopComponent extends TopComponent
         DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
         keyActionMapper.setComponent(this);
         keyActionMapper.unRegisterKeyMap();
+        keyActionMapper.unRegisterToolbarActions(editorToolbar);
     }
 
     @Override
@@ -513,6 +514,7 @@ public class UMLDiagramTopComponent extends TopComponent
         DiagramInputkeyMapper keyActionMapper = DiagramInputkeyMapper.getInstance();
         keyActionMapper.setComponent(this);
         keyActionMapper.registerKeyMap();
+        keyActionMapper.registerToolbarActions(editorToolbar);
         
         if(getDiagram()!=null && getDiagram().getView()!=null)getDiagram().getView().requestFocusInWindow();
     }

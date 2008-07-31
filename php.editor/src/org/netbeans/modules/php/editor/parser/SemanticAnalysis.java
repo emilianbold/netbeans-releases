@@ -224,7 +224,9 @@ public class SemanticAnalysis implements SemanticAnalyzer {
             if (!Modifier.isAbstract(md.getModifier())) {
                 // don't scan the body now. It should be scanned after all declarations
                 // are known
-                needToScan.add(md.getFunction().getBody());
+                if (md.getFunction().getBody() != null) {
+                    needToScan.add(md.getFunction().getBody());
+                }
             }
         }
 

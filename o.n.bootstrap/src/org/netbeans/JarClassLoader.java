@@ -116,7 +116,7 @@ public class JarClassLoader extends ProxyClassLoader {
     
     private static final Logger LOGGER = Logger.getLogger(JarClassLoader.class.getName());
 
-    private Source[] sources = new Source[0];
+    private final Source[] sources;
     private Module module;
     
     /** Creates new JarClassLoader.
@@ -136,22 +136,15 @@ public class JarClassLoader extends ProxyClassLoader {
     public JarClassLoader(List<File> files, ClassLoader[] parents, boolean transitive, Module mod) {
         super(parents, transitive);
         this.module = mod;
-        addSources(files);
-    }
-    
-    /** Boot classloader needs to add entries for netbeans.user later.
-     */
-    final void addSources (List<File> newSources) {
-        ArrayList<Source> l = new ArrayList<Source> (sources.length + newSources.size ());
-        l.addAll (Arrays.asList (sources));
+        List<Source> l = new ArrayList<Source>(files.size());
         try {
-            for (File file : newSources) {
+            for (File file : files) {
                 l.add(Source.create(file, this));
             }
         } catch (IOException exc) {
             throw new IllegalArgumentException(exc.getMessage());
         }
-        sources = l.toArray (sources);
+        sources = l.toArray(new Source[l.size()]);
         // overlaps with old packages doesn't matter,PCL uses sets.
         addCoveredPackages(getCoveredPackages(module, sources));
     }

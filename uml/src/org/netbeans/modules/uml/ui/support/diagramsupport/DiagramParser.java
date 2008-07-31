@@ -198,7 +198,6 @@ public class DiagramParser implements IDiagramParser
     {
         try
         {
-            DiagramInfo info = new DiagramInfo();
             String meid;
             String peid = reader.getAttributeValue(null, "xmi.id");
 
@@ -212,9 +211,22 @@ public class DiagramParser implements IDiagramParser
                         reader.nextTag();
                         //get the  xmi.idref
                         meid = reader.getAttributeValue(null, "xmi.idref");
-                        info.setPeid(peid);
-                        //populate the map with meid and peid
-                        map.put(meid, info);
+                        
+                        DiagramInfo info = map.get(meid);
+                        if(info != null)
+                        {
+                            info.addPeid(peid);
+                        }
+                        else
+                        {
+                            info = new DiagramInfo();
+                            info.addPeid(peid);
+                            map.put(meid, info);
+                            
+                            //populate the map with meid and peid
+                            map.put(meid, info);
+                        
+                        }
                         return;
                     }
                 }

@@ -43,14 +43,13 @@ package org.netbeans.modules.debugger.jpda.models;
 
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
-import java.util.Iterator;
 
+import com.sun.jdi.VMDisconnectedException;
 import java.util.List;
 
 import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.api.debugger.jpda.JPDAThreadGroup;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
-import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 
 /**
@@ -72,7 +71,11 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     * @return parent thread group.
     */
     public JPDAThreadGroup getParentThreadGroup () {
-        ThreadGroupReference ptgr = tgr.parent ();
+        ThreadGroupReference ptgr = null;
+        try {
+            ptgr = tgr.parent();
+        } catch (VMDisconnectedException e) {
+        }
         if (ptgr == null) return null;
         return debugger.getThreadGroup(ptgr);
     }
@@ -106,7 +109,11 @@ public class JPDAThreadGroupImpl implements JPDAThreadGroup {
     }
     
     public String getName () {
-        return tgr.name ();
+        try {
+            return tgr.name ();
+        } catch (VMDisconnectedException e) {
+            return "";
+        }
     }
     
     // XXX Add some synchronization so that the threads can not be resumed at any time
