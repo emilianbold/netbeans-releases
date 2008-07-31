@@ -52,7 +52,7 @@ import org.openide.util.Exceptions;
 public class OptionsOperatorTest extends JellyTestCase {
 
     // "IDE Configuration"
-    private static String ideConfLabel;
+    //private static String ideConfLabel;
     // "IDE Configuration|System|File Types|HTML and XHTML files"
     //private static String path1;
     // "IDE Configuration|System|Print Settings"
@@ -128,8 +128,8 @@ public class OptionsOperatorTest extends JellyTestCase {
             props=new Properties();
             props.load(OptionsOperatorTest.class.getClassLoader().getResourceAsStream("org/netbeans/jellytools/Bundle.properties"));
         System.out.println("### "+getName()+" ###");
-    ideConfLabel =
-        Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration");
+    //ideConfLabel =
+    //    Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration");
     //path1 = ideConfLabel+"|"+
         //Bundle.getString("org.netbeans.core.ui.resources.Bundle", "UI/Services/IDEConfiguration/System")+"|"+
     //    props.getProperty("UI/Services/IDEConfiguration/System")+"|"+

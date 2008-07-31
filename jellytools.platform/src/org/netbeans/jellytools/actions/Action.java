@@ -46,12 +46,14 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
+import javax.swing.text.Keymap;
 import javax.swing.tree.TreePath;
-import org.netbeans.core.NbKeymap;
+//import org.netbeans.core.NbKeymap;
 
 import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jellytools.MainWindowOperator;
 import org.netbeans.jellytools.nodes.Node;
+import org.netbeans.jemmy.ClassReference;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.JemmyException;
 import org.netbeans.jemmy.JemmyProperties;
@@ -733,15 +735,26 @@ public class Action {
      */
     public KeyStroke[] getKeyStrokes() {
         if (this.keystrokes == null && systemActionClass != null) {
-            NbKeymap keymap = (NbKeymap) Lookup.getDefault().lookup(NbKeymap.class);
+            try {
+            //ClassReference keymapRef = new ClassReference(getClass().getClassLoader(), "org.netbeans.core.NbKeymap");
+            Lookup lu = Lookup.getDefault();
+            //ClassReference keymapRef = new ClassReference()
+            ClassReference keymapRef = new ClassReference(lu.lookup(Keymap.class));
+            //NbKeymap keymap = (NbKeymap) Lookup.getDefault().lookup(NbKeymap.class);
             javax.swing.Action myAction = null;
-            javax.swing.Action[] actions = keymap.getBoundActions();
+            javax.swing.Action[] actions = (javax.swing.Action[]) keymapRef.invokeMethod("getBoundActions", new Object[0], new Class[0]);
+            //javax.swing.Action[] actions = keymap.getBoundActions();
             for (int i = 0; i < actions.length; i++) {
                 if(actions[i].getClass().equals(systemActionClass)) {
                     // Returns just first keystroke. For actions like copy can 
                     // can exists more than one (Ctrl+C, Ctrl+Insert, Copy key).
-                    return new KeyStroke[] {keymap.getKeyStrokesForAction(actions[i])[0]};
+                    KeyStroke[] strokes = (KeyStroke[]) keymapRef.invokeMethod("getKeyStrokesForAction", new Object[] {actions[i]}, new Class[] {javax.swing.Action.class});
+                    return new KeyStroke[] {strokes[0]};
+                    //return new KeyStroke[] {keymap.getKeyStrokesForAction(actions[i])[0]};
                 }
+            }
+            } catch (Exception e) {
+                throw new JemmyException("Exception while gettting keystrokes", e);
             }
         }
         return this.keystrokes;

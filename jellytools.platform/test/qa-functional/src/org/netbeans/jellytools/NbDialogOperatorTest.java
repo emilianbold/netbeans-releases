@@ -99,7 +99,8 @@ public class NbDialogOperatorTest extends JellyTestCase {
         new NbDialogOperator(TEST_DIALOG_TITLE).closeByButton();
         assertTrue("Close not pushed.", getResult().equals(DialogDescriptor.CLOSED_OPTION));
     }
-    
+
+
     /** Test Help button getter. */
     public void testBtHelp() {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
@@ -108,7 +109,6 @@ public class NbDialogOperatorTest extends JellyTestCase {
         new HelpOperator().close();
         dialog.close();
     }
-    
     /** Test Help button. */
     public void testHelp() {
         NbDialogOperator dialog = new NbDialogOperator(TEST_DIALOG_TITLE);
@@ -117,7 +117,6 @@ public class NbDialogOperatorTest extends JellyTestCase {
         new HelpOperator().close();
         dialog.close();
     }
-    
     /** Test OK button getter. */
     public void testBtOK() {
         new NbDialogOperator(TEST_DIALOG_TITLE).btOK().push();
