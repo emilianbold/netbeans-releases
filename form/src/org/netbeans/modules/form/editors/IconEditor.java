@@ -389,7 +389,10 @@ public class IconEditor extends PropertyEditorSupport
     }
 
     private NbImageIcon iconFromResourceName(String resName) {
-        FileObject srcFile = getSourceFile();
+        return iconFromResourceName(resName, getSourceFile());
+    }
+
+    private static NbImageIcon iconFromResourceName(String resName, FileObject srcFile) {
         ClassPath cp = ClassPath.getClassPath(srcFile, ClassPath.SOURCE);
         FileObject fo = cp.findResource(resName);
         if (fo == null) {
@@ -497,7 +500,16 @@ public class IconEditor extends PropertyEditorSupport
         // FormDesignValue implementation
         @Override
         public FormDesignValue copy(FormProperty formProperty) {
-            return new IconEditor.NbImageIcon(type, name, icon);   
+            if (type == TYPE_CLASSPATH) {
+                // Issue 142337 - can copy into another project
+                // => try to reload the icon from this project
+                FormModel targetModel = formProperty.getPropertyContext().getFormModel();
+                if (targetModel != null) {
+                    FileObject sourceFile = FormEditor.getFormDataObject(targetModel).getPrimaryFile();
+                    return iconFromResourceName(name, sourceFile);
+                }
+            }
+            return new IconEditor.NbImageIcon(type, name, icon);
         }
     }
 

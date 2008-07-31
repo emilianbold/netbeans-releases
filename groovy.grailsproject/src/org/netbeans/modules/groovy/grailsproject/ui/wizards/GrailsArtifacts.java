@@ -51,6 +51,22 @@ import org.openide.util.NbBundle;
  */
 public class GrailsArtifacts {
 
+    private static final String CONFIGURATION = "grails-app/conf";
+    private static final String CONTROLLERS = "grails-app/controllers";
+    private static final String DOMAIN = "grails-app/domain";
+    private static final String MESSAGES = "grails-app/i18n";
+    private static final String SERVICES = "grails-app/services";
+    private static final String TAGLIB = "grails-app/taglib";
+    private static final String UTIL = "grails-app/utils";
+    private static final String VIEWS = "grails-app/views";
+    private static final String INTEGRATION_TESTS = "test/integration";
+    private static final String UNIT_TESTS = "test/unit";
+    private static final String SCRIPTS = "scripts";
+    private static final String SRC_JAVA = "src/java";
+    private static final String SRC_GROOVY = "src/groovy";
+    private static final String WEBAPP = "web-app";
+    private static final String LIB = "lib";
+
     public static String getWizardTitle(SourceCategory sourceCategory) {
         switch (sourceCategory) {
             case CONTROLLERS: return NbBundle.getMessage(NewArtifactWizardIterator.class,"WIZARD_TITLE_CONTROLLERS");
@@ -71,35 +87,35 @@ public class GrailsArtifacts {
         if (dirName == null) {
             return SourceCategory.NONE;
         }
-        if (SourceCategory.CONFIGURATION.dir().equals(dirName)) {
+        if (CONFIGURATION.equals(dirName)) {
             return SourceCategory.CONFIGURATION;
-        } else if (SourceCategory.CONTROLLERS.dir().equals(dirName)) {
+        } else if (CONTROLLERS.equals(dirName)) {
             return SourceCategory.CONTROLLERS;
-        } else if (SourceCategory.DOMAIN.dir().equals(dirName)) {
+        } else if (DOMAIN.equals(dirName)) {
             return SourceCategory.DOMAIN;
-        } else if (SourceCategory.INTEGRATION_TESTS.dir().equals(dirName)) {
+        } else if (INTEGRATION_TESTS.equals(dirName)) {
             return SourceCategory.INTEGRATION_TESTS;
-        } else if (SourceCategory.LIB.dir().equals(dirName)) {
+        } else if (LIB.equals(dirName)) {
             return SourceCategory.LIB;
-        } else if (SourceCategory.MESSAGES.dir().equals(dirName)) {
+        } else if (MESSAGES.equals(dirName)) {
             return SourceCategory.MESSAGES;
-        } else if (SourceCategory.SCRIPTS.dir().equals(dirName)) {
+        } else if (SCRIPTS.equals(dirName)) {
             return SourceCategory.SCRIPTS;
-        } else if (SourceCategory.SERVICES.dir().equals(dirName)) {
+        } else if (SERVICES.equals(dirName)) {
             return SourceCategory.SERVICES;
-        } else if (SourceCategory.SRC_GROOVY.dir().equals(dirName)) {
+        } else if (SRC_GROOVY.equals(dirName)) {
             return SourceCategory.SRC_GROOVY;
-        } else if (SourceCategory.SRC_JAVA.dir().equals(dirName)) {
+        } else if (SRC_JAVA.equals(dirName)) {
             return SourceCategory.SRC_JAVA;
-        } else if (SourceCategory.TAGLIB.dir().equals(dirName)) {
+        } else if (TAGLIB.equals(dirName)) {
             return SourceCategory.TAGLIB;
-        } else if (SourceCategory.UNIT_TESTS.dir().equals(dirName)) {
+        } else if (UNIT_TESTS.equals(dirName)) {
             return SourceCategory.UNIT_TESTS;
-        } else if (SourceCategory.UTIL.dir().equals(dirName)) {
+        } else if (UTIL.equals(dirName)) {
             return SourceCategory.UTIL;
-        } else if (SourceCategory.VIEWS.dir().equals(dirName)) {
+        } else if (VIEWS.equals(dirName)) {
             return SourceCategory.VIEWS;
-        } else if (SourceCategory.WEBAPP.dir().equals(dirName)) {
+        } else if (WEBAPP.equals(dirName)) {
             return SourceCategory.WEBAPP;
         } else {
             return SourceCategory.NONE;

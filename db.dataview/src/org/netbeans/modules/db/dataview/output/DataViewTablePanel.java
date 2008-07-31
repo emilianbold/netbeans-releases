@@ -75,7 +75,7 @@ class DataViewTablePanel extends JPanel {
     private final SQLStatementGenerator stmtGenerator;
     private boolean isEditable = true;
     private boolean isDirty = false;
-    private int MAX_COLUMN_WIDTH = 50;
+    private int MAX_COLUMN_WIDTH = 40;
     private TableModel model;
     private final List<Integer> columnWidthList;
     private static Logger mLogger = Logger.getLogger(DataViewTablePanel.class.getName());

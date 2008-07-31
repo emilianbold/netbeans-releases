@@ -144,7 +144,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Dependency Checking
     public boolean getDepencyChecking() {
-        return getPreferences().getBoolean(DEPENDENCY_CHECKING, false);
+        return getPreferences().getBoolean(DEPENDENCY_CHECKING, true);
     }
     public void setDepencyChecking(boolean dependencyChecking) {
         boolean oldValue = getDepencyChecking();

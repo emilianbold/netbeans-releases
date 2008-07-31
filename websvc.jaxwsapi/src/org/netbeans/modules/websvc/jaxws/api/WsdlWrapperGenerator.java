@@ -88,7 +88,7 @@ public class WsdlWrapperGenerator {
         return handler;
     }
     
-    private static final String TEMPLATE_BASE="/org/netbeans/modules/websvc/jaxws/resources/"; //NOI8N
+    private static final String TEMPLATE_BASE="/org/netbeans/modules/websvc/jaxws/resources/"; //NOI18N
     
     private static Transformer getTransformer() throws TransformerConfigurationException {
         InputStream is = new BufferedInputStream(WsdlWrapperGenerator.class.getResourceAsStream(TEMPLATE_BASE+"WsdlServiceGenerator.xsl")); //NOI18N

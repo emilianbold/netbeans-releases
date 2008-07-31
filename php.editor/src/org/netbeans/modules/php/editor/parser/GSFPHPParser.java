@@ -40,6 +40,7 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.List;
 import java.util.logging.Logger;
 import org.netbeans.modules.gsf.api.*;
@@ -221,7 +222,9 @@ public class GSFPHPParser implements Parser {
             case SYNTAX_ERROR_PREVIOUS:
                 return parseBuffer(context, Sanitize.SYNTAX_ERROR_PREVIOUS_LINE, errorHandler);
             default:
-                return new PHPParseResult(this, context.getFile(), null);
+                int end = context.getSource().length();
+                Program emptyProgram = new Program(0, end, Collections.EMPTY_LIST, Collections.EMPTY_LIST);
+                return new PHPParseResult(this, context.getFile(), emptyProgram);
         }
         
     }

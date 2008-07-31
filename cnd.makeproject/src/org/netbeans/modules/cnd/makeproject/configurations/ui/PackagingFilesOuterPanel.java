@@ -42,8 +42,8 @@ public class PackagingFilesOuterPanel extends javax.swing.JPanel {
             groupTextField.setEnabled(false);
             ownerLabel.setEnabled(false);
             ownerTextField.setEnabled(false);
-            groupTextField.setText(""); // NOI18N
-            ownerTextField.setText(""); // NOI18N
+//            groupTextField.setText(""); // NOI18N
+//            ownerTextField.setText(""); // NOI18N
         }
         else if (conf.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
             defaultsPanel.setVisible(false);

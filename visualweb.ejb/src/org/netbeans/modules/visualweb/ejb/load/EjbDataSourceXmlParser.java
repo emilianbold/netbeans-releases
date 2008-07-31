@@ -196,7 +196,7 @@ public class EjbDataSourceXmlParser extends DefaultHandler
                 if( curMethodInfo.getParameters() != null )
                     numParams = curMethodInfo.getParameters().size() - 1;
                 
-                paramName = "arg" + numParams; // NOI8N
+                paramName = "arg" + numParams; // NOI18N
             }
             
             curMethodParam.setName( paramName );
