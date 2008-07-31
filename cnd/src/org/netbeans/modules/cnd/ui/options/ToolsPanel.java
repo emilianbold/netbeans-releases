@@ -458,11 +458,15 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
         dataValid();
         initialized = true;
     }
-    
+
+    private boolean isRemoteHostSelected() {
+        return serverList.get((String)cbDevHost.getSelectedItem()).isRemote();
+    }
+
     private void changeCompilerSet(CompilerSet cs) {
         if (cs != null) {
             tfBaseDirectory.setText(cs.getDirectory());
-            btBaseDirectory.setEnabled(true);
+            btBaseDirectory.setEnabled(!isRemoteHostSelected());
             cbFamily.removeAllItems();
             List<CompilerFlavor> list = CompilerFlavor.getFlavors(csm.getPlatform());
             for (CompilerFlavor cf : list)
@@ -668,7 +672,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 validate();
                 repaint();
             }
-            if (new File(tfBaseDirectory.getText()).exists()) {
+            if (!isRemoteHostSelected() && new File(tfBaseDirectory.getText()).exists()) {
                 btCBrowse.setEnabled(true);
                 btCppBrowse.setEnabled(true);
                 btFortranBrowse.setEnabled(true);
@@ -688,7 +692,7 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                 tfMakePath.setEnabled(false);
                 tfGdbPath.setEnabled(false);
             }
-            
+
             return valid;
         }
     }
@@ -897,8 +901,9 @@ public class ToolsPanel extends JPanel implements ActionListener, DocumentListen
                     cbRemoveEnabled = csm.getCompilerSets().size() > 1 && lstDirlist.getSelectedIndex() >= 0;
                 }
                 changeCompilerSet((CompilerSet)lstDirlist.getSelectedValue());
-                btRemove.setEnabled(cbRemoveEnabled);
-                btDuplicate.setEnabled(lstDirlist.getSelectedIndex() >= 0);
+                btAdd.setEnabled(!isRemoteHostSelected());
+                btRemove.setEnabled(cbRemoveEnabled && !isRemoteHostSelected());
+                btDuplicate.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !isRemoteHostSelected());
                 btDefault.setEnabled(lstDirlist.getSelectedIndex() >= 0 && !((CompilerSet)lstDirlist.getSelectedValue()).isDefault());
             }
         }
