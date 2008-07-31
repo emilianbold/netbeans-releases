@@ -885,20 +885,22 @@ public abstract class TreeView extends JScrollPane {
     * The default implementation does nothing.
     */
     final void synchronizeSelectedNodes() {
-        // #40152: if there is any scheduled change to view, perform it now
-        VisualizerNode.runQueue();
+        VisualizerNode.runSafe(new Runnable() {
 
-        Node[] arr = manager.getSelectedNodes();
-        TreePath[] paths = new TreePath[arr.length];
+            public void run() {
+                Node[] arr = manager.getSelectedNodes();
+                TreePath[] paths = new TreePath[arr.length];
 
-        for (int i = 0; i < arr.length; i++) {
-            TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, arr[i])));
-            paths[i] = treePath;
-        }
+                for (int i = 0; i < arr.length; i++) {
+                    TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, arr[i])));
+                    paths[i] = treePath;
+                }
 
-        tree.getSelectionModel().removeTreeSelectionListener(managerListener);
-        showSelection(paths);
-        tree.getSelectionModel().addTreeSelectionListener(managerListener);
+                tree.getSelectionModel().removeTreeSelectionListener(managerListener);
+                showSelection(paths);
+                tree.getSelectionModel().addTreeSelectionListener(managerListener);
+            }
+        });
     }
 
     void scrollTreeToVisible(TreePath path, TreeNode child) {
