@@ -46,6 +46,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
@@ -127,19 +128,26 @@ public class FFExtensionManager {
     };
 
     public static boolean installFirefoxExtensions(HtmlBrowser.Factory browser) {
+        File defaultProfile = getDefaultProfile();
+        if (defaultProfile == null) {
+            Log.getLogger().severe("Could not find Firefox default profile.  Firefox debugging not available.");
+            return false;
+        }
+        
+        // Check supported firefox versions first
         StringBuffer ffVersion = new StringBuffer();
-        if (!isSupportedFirefox(browser, ffVersion)) {
+        if (!isSupportedFirefox(browser, defaultProfile, ffVersion)) {
             final JButton ok = new JButton();
             Mnemonics.setLocalizedText(ok, NbBundle.getMessage(FFExtensionManager.class, "OK_BUTTON"));
-            
+
             NotifyDescriptor nd = new NotifyDescriptor(
                     NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_VERSION_MSG"),
                     NbBundle.getMessage(FFExtensionManager.class, "FIREFOX_VERSION_TITLE"),
                     NotifyDescriptor.DEFAULT_OPTION,
                     NotifyDescriptor.ERROR_MESSAGE,
-                    new Object[] { ok },
+                    new Object[]{ok},
                     ok);
-            
+
             DialogDisplayer.getDefault().notify(nd);
             return false;
         }
@@ -159,12 +167,6 @@ public class FFExtensionManager {
             Log.getLogger().severe("Could not find firebug extension in installation directory");
             return false;
         }
-
-        File defaultProfile = getDefaultProfile();
-        if (defaultProfile == null) {
-            Log.getLogger().severe("Could not find Firefox default profile");
-            return false;
-        }
         
         boolean nbExtInstall = extensionRequiresInstall(browser, FIREFOX_EXTENSION_ID, 
                 null, nbExtensionFile, defaultProfile, true);
@@ -172,11 +174,24 @@ public class FFExtensionManager {
                 FIREBUG_MIN_VERSION, firebugExtensionFile, defaultProfile, false);
         
         boolean installSuccess = true;
-        
-        if ((nbExtInstall || firebugInstall) && isFirefoxRunning(defaultProfile)) {
-            boolean cancelled = !displayFirefoxRunningDialog(defaultProfile);
-            if (cancelled) {
+
+        if (nbExtInstall || firebugInstall) {
+            // Ask the user if they want to install the extensions
+            NotifyDescriptor installDesc = new NotifyDescriptor.Confirmation(
+                    NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_MSG"),
+                    NbBundle.getMessage(FFExtensionManager.class, "INSTALL_EXTENSIONS_TITLE"),
+                    NotifyDescriptor.OK_CANCEL_OPTION,
+                    NotifyDescriptor.QUESTION_MESSAGE);
+            Object result = DialogDisplayer.getDefault().notify(installDesc);
+            if (result != NotifyDescriptor.OK_OPTION) {
                 return false;
+            }
+            
+            if (isFirefoxRunning(defaultProfile)) {
+                boolean cancelled = !displayFirefoxRunningDialog(defaultProfile);
+                if (cancelled) {
+                    return false;
+                }
             }
         }
         
@@ -373,9 +388,23 @@ public class FFExtensionManager {
     }
     
     private static boolean isFirefoxRunning(File profileDir) {
-        String lockFileName = Utilities.isWindows() ? PROFILE_LOCK_WINDOWS : PROFILE_LOCK;
-        File lockFile = new File(profileDir, lockFileName);
-        return lockFile.exists();
+        if (Utilities.isWindows()) {
+            return new File(profileDir, PROFILE_LOCK_WINDOWS).exists();
+        } else if (Utilities.isMac()) {
+            // XXX TODO Figure out how to detect if FF is running on MacOS
+            return false;
+        } else {
+            String[] fileNames = profileDir.list();
+            if (fileNames != null) {
+                for (String fileName : fileNames) {
+                    if (fileName.equals(PROFILE_LOCK)) {
+                        return true;
+                    }
+                }
+            }
+            
+            return false;
+        }
     }
     
     private static boolean extensionUpdateRequired(String extVersion, String minVersion) {
@@ -759,17 +788,26 @@ public class FFExtensionManager {
 
     }
 
-    private static boolean isSupportedFirefox(HtmlBrowser.Factory browser, StringBuffer actualVersion) {
+    /**
+     * Checks $firefox_install_dir/defaults/pref/firefox.js for version string from
+     * <code>prefs("general.useragent.extra.firefox", "Firefox/*****");</code>, or 
+     * $profile_dir/compatibility.ini if the firefox installation directory cannot be
+     * found.
+     * 
+     * @param browser
+     * @param defaultProfile
+     * @param actualVersion
+     * @return true if Firefox version is 2.*.*
+     */
+    private static boolean isSupportedFirefox(HtmlBrowser.Factory browser, File defaultProfile, StringBuffer actualVersion) {
         String browserExecutable = getBrowserExecutable(browser);
         if (browserExecutable == null) {
-            Log.getLogger().severe("Could not get Firefox executable path");
-            return false;
+            return isCompatibleFirefox(defaultProfile);
         }
         
         File firefox_js = new File(new File(browserExecutable).getParentFile(), "defaults/pref/firefox.js"); // NOI18N
         if (!firefox_js.exists()) {
-            Log.getLogger().severe("Could not detect Firefox version");
-            return false;
+            return isCompatibleFirefox(defaultProfile);
         }
         
         Pattern lineMatch = Pattern.compile("\\s*pref\\s*\\(\\s*\"general\\.useragent\\.extra\\.firefox\""); // NOI18N
@@ -793,8 +831,8 @@ public class FFExtensionManager {
             
             return majorVersion == 2;
         } catch (IOException ex) {
-            Log.getLogger().log(Level.SEVERE, "Error reading Firefox version", ex);
-            return false;
+            Log.getLogger().log(Level.INFO, "Error reading Firefox version.", ex);
+            return isCompatibleFirefox(defaultProfile);
         } finally {
             if (br != null) {
                 try {
@@ -805,6 +843,41 @@ public class FFExtensionManager {
             }
         }
     }
+    
+
+    /**
+     * Check if the Firefox version is compatible by reading the compatibility.ini file in the
+     * Firefox profile and then reading the value of key <code>LastVersion</code>.  This check is
+     * only used if the Firefox installation directory is not available (installed on /usr/dist/exe,
+     * for example)
+     *
+     * @param defaultProfile
+     * @return true if the Firefox version is compatible
+     */
+    private static boolean isCompatibleFirefox(File defaultProfile) {
+        assert defaultProfile != null;
+        File compatibilityDotIni = new File(defaultProfile, "compatibility.ini"); // NOI18N
+
+        if (compatibilityDotIni.exists() && compatibilityDotIni.isFile() && compatibilityDotIni.canRead()) {
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(compatibilityDotIni));
+                String aLine;
+                while ((aLine = bufferedReader.readLine()) != null) {
+                    if (aLine.startsWith("LastVersion=")) { // NOI18N
+
+                        aLine = aLine.substring(12);
+                        return aLine.startsWith("2.0.0");
+                    }
+                }
+            } catch (FileNotFoundException ex) {
+                Log.getLogger().log(Level.INFO, "File not found: " + compatibilityDotIni.getAbsolutePath());
+            } catch (IOException ex) {
+                Log.getLogger().log(Level.INFO, "Error reading " + compatibilityDotIni.getAbsolutePath());
+            }
+        }
+        return false;
+    }
+
     
     private static boolean isHttpURLValid(URL url) {
         try {
