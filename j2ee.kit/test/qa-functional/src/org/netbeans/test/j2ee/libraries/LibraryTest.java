@@ -76,7 +76,7 @@ import org.netbeans.test.j2ee.wizard.WizardUtils;
 public class LibraryTest extends J2eeTestCase {
     
     private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("org.netbeans.test.j2ee.libraries.golden");
-    private static final String CATEGORY_ENTERPRISE = "Enterprise";
+    private static final String CATEGORY_JAVA_EE = "Java EE";
     //private static boolean CREATE_GOLDEN_FILES = true;
     
     protected String appName = "LibsInclusionTestApp";
@@ -104,7 +104,7 @@ public class LibraryTest extends J2eeTestCase {
                 new String[] {getDataDir().getAbsolutePath() + File.separator + "libs" + File.separator + "math.zip"},
                 null);
         //create empty j2ee project
-        WizardUtils.createNewProject(CATEGORY_ENTERPRISE,"Enterprise Application");
+        WizardUtils.createNewProject(CATEGORY_JAVA_EE,"Enterprise Application");
         NewProjectNameLocationStepOperator npnlso =
                 WizardUtils.setProjectNameLocation(appName, getWorkDirPath());
         WizardUtils.setJ2eeSpecVersion(npnlso, WizardUtils.MODULE_EAR, "1.4");
