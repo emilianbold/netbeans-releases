@@ -168,10 +168,9 @@ public final class RakeRunner {
     /**
      * Runs the tasks specifed by the given <code>taskNames</code>.
      *
-     * @param taskNames the names of the tasks to run; must not be null.
+     * @param taskNames the names of the tasks to run.
      */
     public void run(final String... taskNames) {
-        Parameters.notNull("taskNames", taskNames);
         if (!RubyPlatform.hasValidRake(project, showWarnings)) {
             return;
         }
