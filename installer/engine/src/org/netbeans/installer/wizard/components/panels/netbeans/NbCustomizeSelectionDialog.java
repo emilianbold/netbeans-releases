@@ -872,7 +872,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             "NCSD.dialog.height";
     public static final String LIST_INSTALLED_PRODUCT_TEXT =
             ResourceUtils.getString(NbCustomizeSelectionDialog.class,
-            "NCSD.list.product.installed");//NOI8N
+            "NCSD.list.product.installed");//NOI18N
     private static final String CANCEL_ACTION_NAME =
             "evaluate.cancel"; // NOI18N
     private static final String NB_IDE_GROUP_UID = 

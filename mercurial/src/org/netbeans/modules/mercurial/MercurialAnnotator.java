@@ -77,6 +77,7 @@ import org.netbeans.modules.mercurial.ui.update.ResolveConflictsAction;
 import org.netbeans.modules.mercurial.ui.update.UpdateAction;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.openide.util.ImageUtilities;
+import org.openide.util.WeakSet;
 
 /**
  * Responsible for coloring file labels and file icons in the IDE and providing IDE with menu items.
@@ -146,6 +147,7 @@ public class MercurialAnnotator extends VCSAnnotator {
     private static String toolTipConflict = "<img src=\"" + MercurialAnnotator.class.getClassLoader().getResource(badgeConflicts) + "\">&nbsp;"
             + NbBundle.getMessage(MercurialAnnotator.class, "MSG_Contains_Conflicts");
 
+    private WeakSet<Map<File, FileInformation>> allModifiedFiles = new WeakSet<Map<File, FileInformation>>(1);
 
     public MercurialAnnotator() {
         cache = Mercurial.getInstance().getFileStatusCache();
@@ -380,8 +382,15 @@ public class MercurialAnnotator extends VCSAnnotator {
     }
 
     private synchronized Map<File, FileInformation> getLocallyChangedFiles() {
-        if(modifiedFiles == null || cache.modifiedFilesChanged()) {
-            Map<File, FileInformation> map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> map = cache.getAllModifiedFiles();
+        Map<File, FileInformation> m = null;
+        for (Map<File, FileInformation> sm : allModifiedFiles) {
+            m = sm;
+            break;
+        }
+        if(modifiedFiles == null || map != m) {
+            allModifiedFiles.clear();
+            allModifiedFiles.add(map);
             modifiedFiles = new HashMap<File, FileInformation>();
             for (Iterator i = map.keySet().iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -390,7 +399,7 @@ public class MercurialAnnotator extends VCSAnnotator {
                     modifiedFiles.put(file, info);
                 }
             }
-        }
+        } 
         return modifiedFiles;
     }
 

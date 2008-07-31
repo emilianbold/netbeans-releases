@@ -71,6 +71,8 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.apache.tools.ant.Project;
+import org.apache.tools.ant.types.Path;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
@@ -159,6 +161,12 @@ public class MakeUpdateDesc extends MatchingTask {
     */
     public void setDistBase(String dbase) {
         dist_base = dbase;
+    }
+
+    private Path updaterJar;
+    /** Fileset for platform/modules/ext/updater.jar, to be used in DTD validation. */
+    public Path createUpdaterJar() {
+        return updaterJar = new Path(getProject());
     }
     
     // Similar to org.openide.xml.XMLUtil methods.
@@ -378,6 +386,16 @@ public class MakeUpdateDesc extends MatchingTask {
 	    desc.delete ();
 	    throw new BuildException("Cannot create update description", ioe, getLocation());
 	}
+        if (updaterJar != null && updaterJar.size() > 0) {
+            try {
+                MakeNBM.validateAgainstAUDTDs(new InputSource(desc.toURI().toString()), updaterJar, this);
+            } catch (Exception x) {
+                desc.delete();
+                throw new BuildException("Could not validate " + desc + " after writing: " + x, x, getLocation());
+            }
+        } else {
+            log("No updater.jar specified, cannot validate " + desc + " against DTD", Project.MSG_WARN);
+        }
     }
 
     private static class Module {

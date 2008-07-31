@@ -1,11 +1,11 @@
-<?xml version="1.0" encoding="ISO-8859-1"?>
+<?xml version="1.0" encoding="__FILE_ENCODING__"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html>
     <head>
         <title>TTL_RestClient_Stubs - MSG_Readme</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
         <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
         <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
     </head>
