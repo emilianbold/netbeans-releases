@@ -111,7 +111,11 @@ public class PackagingFilesPanel extends ListEditorPanel {
 
     class AddButtonAction implements java.awt.event.ActionListener {
         public void actionPerformed(java.awt.event.ActionEvent evt) {
-            addObjectAction(new FileElement(FileType.UNKNOWN, "", "")); // FIXUP
+            String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
+            if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
+                topFolder += "/"; // NOI18N
+            }
+            addObjectAction(new FileElement(FileType.UNKNOWN, "", topFolder)); // FIXUP
         }
     }
 

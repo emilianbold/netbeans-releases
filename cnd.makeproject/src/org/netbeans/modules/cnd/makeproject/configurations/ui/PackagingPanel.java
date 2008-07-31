@@ -9,11 +9,12 @@ package org.netbeans.modules.cnd.makeproject.configurations.ui;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyEditorSupport;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.Vector;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
@@ -62,6 +63,7 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             headerList.add(new InfoElement("CATEGORY", "application", true)); // NOI18N
             headerList.add(new InfoElement("VERSION", "1.0", true)); // NOI18N
             headerList.add(new InfoElement("BASEDIR", "/opt", false)); // NOI18N
+            headerList.add(new InfoElement("PSTAMP", new SimpleDateFormat("yyyyMMddHHmmss").format(new Date()), false)); // NOI18N
             headerList.add(new InfoElement("CLASSES", "none", false)); // NOI18N
 
             packagingConfiguration.getHeader().setDirty(true);

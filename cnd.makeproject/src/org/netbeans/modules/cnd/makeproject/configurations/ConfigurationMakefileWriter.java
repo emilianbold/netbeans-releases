@@ -749,10 +749,10 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -rf $TMPDIR\n"); // NOI18N
     }
     
-    private String findPackageName(PackagingConfiguration packagingConfiguration) {
+    private String findInfoValueName(PackagingConfiguration packagingConfiguration, String name) {
         List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
         for (InfoElement elem : infoList) {
-            if (elem.getName().equals("PKG")) {
+            if (elem.getName().equals(name)) {
                 return elem.getValue();
             }
         }
@@ -761,7 +761,7 @@ public class ConfigurationMakefileWriter {
     
     private void writePackagingScriptBodySVR4(BufferedWriter bw, MakeConfiguration conf) throws IOException {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
-        String packageName = findPackageName(packagingConfiguration); // FIXUP: what is null????
+        String packageName = findInfoValueName(packagingConfiguration, "PKG"); // NOI18N // FIXUP: what is null????
         
         bw.write("# Create pkginfo and prototype files\n"); // NOI18N
         bw.write("PKGINFOFILE=$TMPDIR/pkginfo\n"); // NOI18N
@@ -778,27 +778,29 @@ public class ConfigurationMakefileWriter {
         bw.write("echo \"i pkginfo=pkginfo\" >> $PROTOTYPEFILE\n"); // NOI18N
         List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
         for (FileElement elem : fileList) {
-            bw.write("echo \"");
+            bw.write("echo \"");// NOI18N
             if (elem.getType() == FileElement.FileType.DIRECTORY) {
-                bw.write("d");
+                bw.write("d");// NOI18N
             }
             else if (elem.getType() == FileElement.FileType.FILE) {
-                bw.write("f");
+                bw.write("f");// NOI18N
             }
             else if (elem.getType() == FileElement.FileType.SOFTLINK) {
-                bw.write("f");
+                bw.write("s");// NOI18N
             }
             else {
                 assert false;
             }
-            bw.write(" none");
-            bw.write(" " + elem.getTo());
+            bw.write(" none"); // Classes // NOI18N
+            bw.write(" " + elem.getTo());// NOI18N
             if (elem.getFrom().length() > 0) {
-                bw.write("=" + elem.getFrom());
+                bw.write("=" + elem.getFrom());// NOI18N
             }
-            bw.write(" " + elem.getPermission());
-            bw.write(" " + elem.getOwner());
-            bw.write(" " + elem.getGroup());
+            if (elem.getType() != FileElement.FileType.SOFTLINK) {
+                bw.write(" " + elem.getPermission());// NOI18N
+                bw.write(" " + elem.getOwner());// NOI18N
+                bw.write(" " + elem.getGroup());// NOI18N
+            }
             bw.write("\"");
             bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
         }
