@@ -84,8 +84,8 @@ public class RevertModifications implements PropertyChangeListener {
         } else {
             dialogDescriptor = new DialogDescriptor(panel, org.openide.util.NbBundle.getMessage(RevertModifications.class, "CTL_MultiRevertDialog")); // NOI18N 
         }
-        dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
-        
+        dialogDescriptor.setOptions(new Object[] {cancelButton, okButton});
+
         dialogDescriptor.setModal(true);
         dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
         dialogDescriptor.setValid(false);

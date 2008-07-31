@@ -27,7 +27,6 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
-import com.sun.tools.example.debug.gui.GUI;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;

@@ -62,6 +62,7 @@ import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectHelper;
 import org.netbeans.modules.ruby.spi.project.support.rake.RakeProjectListener;
 import org.netbeans.modules.ruby.spi.project.support.rake.ReferenceHelper;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
+import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileChangeAdapter;
@@ -102,13 +103,13 @@ public abstract class RubyBaseProject implements Project, RakeProjectListener {
         genFilesHelper = new GeneratedFilesHelper(helper);
         updateHelper = new UpdateHelper(this, this.helper, aux, this.genFilesHelper,
                 UpdateHelper.createDefaultNotifier(), projectConfigurationNamespace);
-        lookup = createLookup(aux, new Info(), new ProjectOpenedHookImpl());
+        lookup = createLookup(aux, helper.createAuxiliaryProperties(), new Info(), new ProjectOpenedHookImpl());
         helper.addRakeProjectListener(this);
     }
 
     protected abstract Icon getIcon();
 
-    protected abstract Lookup createLookup(AuxiliaryConfiguration aux,
+    protected abstract Lookup createLookup(AuxiliaryConfiguration aux, AuxiliaryProperties auxProperties,
             ProjectInformation info, ProjectOpenedHook projectOpenedHook);
     
     protected abstract void registerClassPath();

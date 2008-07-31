@@ -47,6 +47,7 @@ import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.IRelationship;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.IRelationFactory;
+import org.netbeans.modules.uml.core.metamodel.infrastructure.ICollaboration;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IClassifier;
 import org.netbeans.modules.uml.core.metamodel.infrastructure.coreinfrastructure.IGeneralization;
 
@@ -67,7 +68,8 @@ public class GeneralizationFactory extends AbstractRelationshipFactory
         
         IRelationship retVal = null;
         
-        if((source instanceof IClassifier) && (target instanceof IClassifier))
+        if((source instanceof IClassifier) && (target instanceof IClassifier)
+           && !(target instanceof ICollaboration)) 
         {
             // link to self is not allowed 
             if ( source == target || source.isSame(target))

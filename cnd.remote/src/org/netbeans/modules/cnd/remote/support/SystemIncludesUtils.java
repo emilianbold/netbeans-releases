@@ -176,6 +176,7 @@ public class SystemIncludesUtils {
             handle.progress(getMessage("SIU_Preparing") + " " + path, workunit++); // NOI18N
             unzip(storageFolder, zipLocalPath);
         }
+        copySupport.disconnect();
         return true;
     }
 

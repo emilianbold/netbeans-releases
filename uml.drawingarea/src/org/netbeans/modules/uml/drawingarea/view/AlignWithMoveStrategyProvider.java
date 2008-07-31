@@ -43,10 +43,6 @@ package org.netbeans.modules.uml.drawingarea.view;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.datatransfer.DataFlavor;
-import java.awt.datatransfer.Transferable;
-import java.awt.datatransfer.UnsupportedFlavorException;
-import java.io.IOException;
 import java.util.List;
 import java.util.Collections;
 import java.util.Comparator;
@@ -56,11 +52,11 @@ import org.netbeans.api.visual.action.WidgetAction;
 import org.netbeans.api.visual.widget.LayerWidget;
 import org.netbeans.api.visual.widget.Widget;
 
-import java.awt.dnd.DropTarget;
-import java.awt.dnd.DropTargetDropEvent;
 import java.util.ArrayList;
+import org.netbeans.api.visual.anchor.Anchor;
 import org.netbeans.api.visual.graph.GraphScene;
 import org.netbeans.api.visual.model.ObjectScene;
+import org.netbeans.api.visual.widget.ConnectionWidget;
 import org.netbeans.api.visual.widget.Scene;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamedElement;
 import org.netbeans.modules.uml.core.metamodel.core.foundation.INamespace;
@@ -68,6 +64,7 @@ import org.netbeans.modules.uml.core.metamodel.core.foundation.IPresentationElem
 import org.netbeans.modules.uml.core.metamodel.diagrams.IDiagram;
 import org.netbeans.modules.uml.drawingarea.UMLDiagramTopComponent;
 import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManager;
+import org.netbeans.modules.uml.drawingarea.util.Util;
 import org.netbeans.modules.uml.drawingarea.widgets.ContainerWidget;
 import org.openide.util.Lookup;
 import org.openide.windows.TopComponent;
@@ -237,12 +234,41 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
                     //in case if this class is used only as provider and strategy isn't used
                     initializeMovingWidgets(widget.getScene(), widget);
                 }
-                //
+                
                 for(MovingWidgetDetails details : movingWidgets)
                 {
                     Point point = details.getOriginalLocation();
                     Point newPt = new Point(point.x + dx, point.y + dy);
-                    details.getWidget().setPreferredLocation(newPt);
+                    if (details.getWidget() instanceof ConnectionWidget)
+                    {
+                        ConnectionWidget connection = (ConnectionWidget) details.getWidget();
+                        List<Point> list = new ArrayList<Point>();
+
+                        ArrayList<Point> oldList = new ArrayList<Point>(connection.getControlPoints());
+                        oldList.remove(connection.getFirstControlPoint());
+                        oldList.remove(connection.getLastControlPoint());
+                        Anchor sourceAnchor = connection.getSourceAnchor();
+                        Anchor targetAnchor = connection.getTargetAnchor();
+                        if (sourceAnchor == null || targetAnchor == null)
+                        {
+                            continue;
+                        }
+                        Point sourceP = sourceAnchor.compute(connection.getSourceAnchorEntry()).getAnchorSceneLocation();
+                        list.add(sourceP);
+
+                        for (Point p : oldList)
+                        {
+                            int ddx = p.x - connection.getFirstControlPoint().x;
+                            int ddy = p.y - connection.getFirstControlPoint().y;
+                            Point np = new Point(details.getOriginalLocation().x + dx + ddx, details.getOriginalLocation().y + dy + ddy);
+                            list.add(np);
+                        }
+                        list.add(targetAnchor.compute(connection.getTargetAnchorEntry()).getAnchorSceneLocation());
+
+                        connection.setControlPoints(list, true);
+                    }
+                    else
+                        details.getWidget().setPreferredLocation(newPt);
                 }
             }
         }
@@ -381,6 +407,12 @@ public class AlignWithMoveStrategyProvider extends AlignWithSupport implements M
 
                             MovingWidgetDetails details = new MovingWidgetDetails(w, owner, pt);
                             movingWidgets.add(details);
+                            
+                            for (ConnectionWidget c: Util.getAllContainedEdges(w))
+                            {
+                                movingWidgets.add(new MovingWidgetDetails(c, 
+                                        c.getParentWidget(), c.getParentWidget().convertLocalToScene(c.getFirstControlPoint())));
+                            }
 
                             if (details.getOwner() != null)
                             {

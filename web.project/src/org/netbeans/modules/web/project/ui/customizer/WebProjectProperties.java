@@ -164,6 +164,7 @@ public class WebProjectProperties {
     public static final String BUILD_WEB_EXCLUDES = "build.web.excludes"; //NOI18N
     public static final String DIST_JAVADOC_DIR = "dist.javadoc.dir"; //NOI18N
     public static final String NO_DEPENDENCIES="no.dependencies"; //NOI18N
+    public static final String RUNMAIN_JVM_ARGS = "runmain.jvmargs"; //NOI18N
 
     public static final String BUILD_TEST_RESULTS_DIR = "build.test.results.dir"; // NOI18N
     public static final String DEBUG_TEST_CLASSPATH = "debug.test.classpath"; // NOI18N
@@ -256,6 +257,7 @@ public class WebProjectProperties {
     ButtonModel DISPLAY_BROWSER_MODEL;
     ButtonModel DEPLOY_ON_SAVE_MODEL; 
     ComboBoxModel J2EE_SERVER_INSTANCE_MODEL; 
+    Document RUNMAIN_JVM_MODEL;
     
     // for ui logging added frameworks
     private List<String> addedFrameworkNames;
@@ -392,6 +394,7 @@ public class WebProjectProperties {
                 privateProperties.getProperty( J2EE_SERVER_INSTANCE ),
                 projectProperties.getProperty(J2EE_PLATFORM),
                 J2eeModule.WAR);
+        RUNMAIN_JVM_MODEL = projectGroup.createStringDocument(evaluator, RUNMAIN_JVM_ARGS);
         try {
             CONTEXT_PATH_MODEL = new PlainDocument();
             CONTEXT_PATH_MODEL.remove(0, CONTEXT_PATH_MODEL.getLength());

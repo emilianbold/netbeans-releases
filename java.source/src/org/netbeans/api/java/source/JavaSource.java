@@ -2122,6 +2122,11 @@ out:            for (Iterator<Collection<Request>> it = finishedRequests.values(
             return currentPhase.compareTo(phase)<0 ? null : new CompilationInfo(info);
         }
 
+        public CompilationController createCompilationController (final JavaSource js) throws IOException {
+            CompilationInfoImpl info = createCurrentInfo(js, js.binding, js.createJavacTask(null, null));
+            return new CompilationController(info);
+        }
+
         @Override
         public void revalidate(JavaSource js) {
             js.revalidate();

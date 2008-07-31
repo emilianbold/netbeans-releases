@@ -43,7 +43,8 @@ import java.util.Map;
 import org.netbeans.modules.cnd.api.remote.CommandProvider;
 
 /**
- *
+ * Run a non-interactive command. Output from the command will be available via the toString() method.
+ * 
  * @author gordonp
  */
 public class RemoteCommandProvider implements CommandProvider {
@@ -59,5 +60,4 @@ public class RemoteCommandProvider implements CommandProvider {
     public String toString() {
         return support.toString();
     }
-
 }

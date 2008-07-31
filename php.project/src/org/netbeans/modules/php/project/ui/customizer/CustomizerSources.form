@@ -24,25 +24,25 @@
                           <Component id="sourceFolderLabel" min="-2" max="-2" attributes="0"/>
                           <Component id="webRootLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace max="-2" attributes="0"/>
+                      <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="projectFolderTextField" alignment="0" pref="268" max="32767" attributes="0"/>
+                          <Component id="projectFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
                           <Group type="102" alignment="1" attributes="0">
-                              <Component id="webRootTextField" pref="173" max="32767" attributes="0"/>
+                              <Component id="webRootTextField" pref="185" max="32767" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Component id="webRootButton" min="-2" max="-2" attributes="0"/>
                           </Group>
-                          <Component id="sourceFolderTextField" alignment="0" pref="268" max="32767" attributes="0"/>
+                          <Component id="sourceFolderTextField" alignment="0" pref="280" max="32767" attributes="0"/>
                       </Group>
                   </Group>
-                  <Component id="copyFilesPanel" alignment="1" pref="368" max="32767" attributes="0"/>
+                  <Component id="copyFilesPanel" alignment="1" pref="380" max="32767" attributes="0"/>
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="encodingLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" pref="40" max="-2" attributes="0"/>
-                      <Component id="encodingComboBox" pref="268" max="32767" attributes="0"/>
+                      <Component id="encodingComboBox" pref="280" max="32767" attributes="0"/>
                   </Group>
               </Group>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="-2" pref="0" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

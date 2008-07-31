@@ -48,25 +48,25 @@ public final class CreateViewAction extends NodeAction {
         NewArtifactWizardIterator it = new NewArtifactWizardIterator(project, SourceCategory.VIEWS, artifactName);
 
         wiz = new WizardDescriptor(it);
-        
+
         assert wiz != null;
-        
+
         wiz.putProperty(WizardDescriptor.PROP_AUTO_WIZARD_STYLE, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_DISPLAYED, Boolean.TRUE); // NOI18N
         wiz.putProperty(WizardDescriptor.PROP_CONTENT_NUMBERED, Boolean.TRUE); // NOI18N
 
         wiz.setTitleFormat(new java.text.MessageFormat("{0}")); // NOI18N
-        
+
         Dialog dlg = DialogDisplayer.getDefault().createDialog(wiz);
-        
+
         try {
-                dlg.setVisible(true);
-                if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
-                    Set result = wiz.getInstantiatedObjects();
-                }
-            } finally {
-                dlg.dispose();
+            dlg.setVisible(true);
+            if (wiz.getValue() == WizardDescriptor.FINISH_OPTION) {
+                Set result = wiz.getInstantiatedObjects();
             }
+        } finally {
+            dlg.dispose();
+        }
     }
 
     public String getName() {

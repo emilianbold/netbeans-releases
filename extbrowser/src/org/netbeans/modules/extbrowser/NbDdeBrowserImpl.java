@@ -102,7 +102,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
             if (org.openide.util.Utilities.isWindows()) {
 
                 // should be 32 or 64 bit, but it may not be present on some jdks
-                String sunDataModel = System.getProperty("sun.arch.data.model"); //NOI8N
+                String sunDataModel = System.getProperty("sun.arch.data.model"); //NOI18N
                 if (sunDataModel != null) {
                     if ("64".equals(sunDataModel)) { //NOI18N
                         System.loadLibrary(EXTBROWSER_DLL_64BIT);
@@ -110,7 +110,7 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
                         System.loadLibrary(EXTBROWSER_DLL);
                     }
                 } else {
-                    String javaVMName = System.getProperty("java.vm.name"); //NOI8N
+                    String javaVMName = System.getProperty("java.vm.name"); //NOI18N
                     if ((javaVMName != null) && (javaVMName.indexOf("64") > -1)) { //NOI18N
                         System.loadLibrary(EXTBROWSER_DLL_64BIT);
                     } else {

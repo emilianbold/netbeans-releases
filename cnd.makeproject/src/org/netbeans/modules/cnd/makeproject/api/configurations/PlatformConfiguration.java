@@ -44,6 +44,7 @@ package org.netbeans.modules.cnd.makeproject.api.configurations;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.modules.cnd.makeproject.configurations.ui.PlatformNodeProp;
 
 public class PlatformConfiguration extends IntConfiguration implements PropertyChangeListener {
@@ -60,7 +61,13 @@ public class PlatformConfiguration extends IntConfiguration implements PropertyC
     }
 
     public void propertyChange(PropertyChangeEvent evt) {
-        setValue(CompilerSetManager.getDefault(evt.getNewValue().toString()).getPlatform());
+        String hkey = evt.getNewValue().toString();
+        int platform = CompilerSetManager.getDefault(hkey).getPlatform();
+        if (platform == -1) {
+            // TODO: CompilerSet is not reliable about platform; it must be.
+            platform = PlatformTypes.PLATFORM_NONE;
+        }
+        setValue(platform);
     }
 
     @Override

@@ -145,11 +145,4 @@ final class TestMethodNodeChildren extends Children.Array {
         
         add(children);
     }
-    
-    /**
-     */
-    protected void removeNotify() {
-        remove(getNodes());
-    }
-    
 }

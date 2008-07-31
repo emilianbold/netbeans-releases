@@ -27,6 +27,23 @@ public class PackagingNewEntryPanel extends javax.swing.JPanel {
         entryComboBox.addItem("INTONLY"); // NOI18N
         entryComboBox.addItem("ISTATES"); // NOI18N
         entryComboBox.addItem("MAXINST"); // NOI18N
+        entryComboBox.addItem("ORDER"); // NOI18N
+        entryComboBox.addItem("PSTAMP"); // NOI18N
+        entryComboBox.addItem("RSTATES"); // NOI18N
+        entryComboBox.addItem("SUNW_ISA"); // NOI18N
+        entryComboBox.addItem("SUNW_LOC"); // NOI18N
+        entryComboBox.addItem("SUNW_PKG_DIR"); // NOI18N
+        entryComboBox.addItem("SUNW_PKG_ALLZONES"); // NOI18N
+        entryComboBox.addItem("SUNW_PKG_HOLLOW"); // NOI18N
+        entryComboBox.addItem("SUNW_PKG_THISZONE"); // NOI18N
+        entryComboBox.addItem("SUNW_PKGLIST"); // NOI18N
+        entryComboBox.addItem("SUNW_PKGTYPE"); // NOI18N
+        entryComboBox.addItem("SUNW_PKGVERS"); // NOI18N
+        entryComboBox.addItem("SUNW_PRODNAME"); // NOI18N
+        entryComboBox.addItem("SUNW_PRODVERS"); // NOI18N
+        entryComboBox.addItem("ULIMIT"); // NOI18N
+        entryComboBox.addItem("VENDOR"); // NOI18N
+        entryComboBox.addItem("VSTOCK"); // NOI18N
     }
 
     /** This method is called from within the constructor to
@@ -129,6 +146,57 @@ private void entryComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN
         }
         else if (elemName.equals("MAXINST")) {
             docArea.setText(getString("PACKAGING_MAXINST_DOC"));
+        }
+        else if (elemName.equals("ORDER")) {
+            docArea.setText(getString("PACKAGING_ORDER_DOC"));
+        }
+        else if (elemName.equals("PSTAMP")) {
+            docArea.setText(getString("PACKAGING_PSTAMP_DOC"));
+        }
+        else if (elemName.equals("RSTATES")) {
+            docArea.setText(getString("PACKAGING_RSTATES_DOC"));
+        }
+        else if (elemName.equals("SUNW_ISA")) {
+            docArea.setText(getString("PACKAGING_SUNW_ISA_DOC"));
+        }
+        else if (elemName.equals("SUNW_LOC")) {
+            docArea.setText(getString("PACKAGING_SUNW_LOC_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKG_DIR")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_DIR_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKG_ALLZONES")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_ALLZONES_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKG_HOLLOW")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_HOLLOW_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKG_THISZONE")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKG_THISZONE_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKGLIST")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKGLIST_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKGTYPE")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKGTYPE_DOC"));
+        }
+        else if (elemName.equals("SUNW_PKGVERS")) {
+            docArea.setText(getString("PACKAGING_SUNW_PKGVERS_DOC"));
+        }
+        else if (elemName.equals("SUNW_PRODNAME")) {
+            docArea.setText(getString("PACKAGING_SUNW_PRODNAME_DOC"));
+        }
+        else if (elemName.equals("SUNW_PRODVERS")) {
+            docArea.setText(getString("PACKAGING_SUNW_PRODVERS_DOC"));
+        }
+        else if (elemName.equals("ULIMIT")) {
+            docArea.setText(getString("PACKAGING_ULIMIT_DOC"));
+        }
+        else if (elemName.equals("VENDOR")) {
+            docArea.setText(getString("PACKAGING_VENDOR_DOC"));
+        }
+        else if (elemName.equals("VSTOCK")) {
+            docArea.setText(getString("PACKAGING_VSTOCK_DOC"));
         }
 }//GEN-LAST:event_entryComboBoxActionPerformed
 

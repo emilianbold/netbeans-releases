@@ -166,7 +166,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public HelpCtx getHelp() {
-        return new HelpCtx(RunConfigurationPanel.class.getName());
+        return new HelpCtx(RunConfigurationPanel.class);
     }
 
     public void readSettings(WizardDescriptor settings) {
@@ -314,6 +314,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
                 }
                 break;
         }
+
+        validateAsciiTexts();
 
         descriptor.putProperty(VALID, true);
         return true;
@@ -523,6 +525,39 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         File normalized = FileUtil.normalizeFile(new File(runAsLocalWeb.getLocalServer().getSrcRoot()));
         String copyTarget = normalized.getAbsolutePath();
         return Utils.validateSourcesAndCopyTarget(sourcesSrcRoot, copyTarget);
+    }
+
+    // #127088
+    private void validateAsciiTexts() {
+        String url = null;
+        String indexFile = null;
+        switch (getRunAsType()) {
+            case LOCAL:
+                url = runAsLocalWeb.getUrl();
+                indexFile = runAsLocalWeb.getIndexFile();
+                break;
+            case REMOTE:
+                url = runAsRemoteWeb.getUrl();
+                indexFile = runAsRemoteWeb.getIndexFile();
+                break;
+            case SCRIPT:
+                // do not validate anything
+                return;
+                //break;
+        }
+        assert url != null;
+        assert indexFile != null;
+
+        String warning = Utils.validateAsciiText(url, NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_ProjectUrlPure"));
+        if (warning != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
+            return;
+        }
+        warning = Utils.validateAsciiText(indexFile, NbBundle.getMessage(ConfigureProjectPanel.class, "LBL_IndexFilePure"));
+        if (warning != null) {
+            descriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE, warning);
+            return;
+        }
     }
 
     private class WizardConfigProvider implements ConfigManager.ConfigProvider {

@@ -165,7 +165,6 @@ public class SourceUtils {
      * @throws IllegalArgumentException if the provided element is a package element
      */
     public static TypeElement getEnclosingTypeElement( Element element ) throws IllegalArgumentException {
-	Element param = element;
         
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();

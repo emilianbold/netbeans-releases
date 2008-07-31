@@ -318,9 +318,6 @@ made subject to such option by the copyright holder.
         <file name="DA-DOWN.shadow">
             <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-MakeCallerCurrentAction.instance"/>
         </file>
-        <file name="S-F7.shadow">
-            <attr name="originalFile" stringvalue="Actions/Debug/org-netbeans-modules-debugger-ui-actions-RunIntoMethodAction.instance"/>
-        </file>
     </folder>
     
     <folder name="Toolbars">

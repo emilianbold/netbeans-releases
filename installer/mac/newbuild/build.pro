@@ -29,8 +29,8 @@
     <property name="glassfish_location_ml" value="file:${user.home}/releng/hudson/glassfish-image-v2ur2-b04-ml.jar"/>
 
     <!-- GlassFish V3 properties   -->   
-    <property name="glassfish.v3.build.type"      value="express"/>
-    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted/${glassfish.v3.build.type}"/>
+    <property name="glassfish.v3.build.type"      value="prelude"/>
+    <property name="glassfish.v3.location.prefix" value="${gf_builds_host}/java/re/glassfish/10.0/promoted"/>
 
     <loadresource property="glassfish.v3.build.number">
           <url url="${glassfish.v3.location.prefix}/m1-latest/bundles/"/>
@@ -44,7 +44,7 @@
 
     <property name="glassfish.v3.version"      value="b${glassfish.v3.build.number}"/>
     <property name="glassfish.v3.install.dir"  value="${install.dir}/glassfish-v3-${glassfish.v3.version}"/>    
-    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.version}/bundles/multiplatform.zip"/>
+    <property name="glassfish_v3_location"     value="${glassfish.v3.location.prefix}/${glassfish.v3.build.type}/${glassfish.v3.version}/bundles/multiplatform.zip"/>
     <!--<property name="glassfish_v3_location" value="file:${user.home}/releng/hudson/glassfish-v3-preview2-b10d.zip"/>-->
     <property name="glassfish_v3_location_ml"  value="${glassfish_v3_location}"/>
     <property name="glassfish.v3.subdir"       value="glassfishv3-beta"/>
@@ -60,8 +60,8 @@
     <property name="mpkg.name_nb_mysql" value="NetBeans IDE with MySQL"/> 
     <property name="mysql_10.5.pkg.name" value="mysql-5.0.51a-osx10.5-x86"/>
     <property name="mysql_10.4.pkg.name" value="mysql-5.0.51a-osx10.4-i686"/>
-    <property name="mysql_10.5.dmg.name" value="netbeans-6.1-mysql-macosx10.5-x86"/>
-    <property name="mysql_10.4.dmg.name" value="netbeans-6.1-mysql-macosx10.4-x86"/>
+    <property name="mysql_10.5.dmg.name" value="netbeans-6.5-mysql-macosx10.5-x86"/>
+    <property name="mysql_10.4.dmg.name" value="netbeans-6.5-mysql-macosx10.4-x86"/>
     <property name="mysql_startup.pkg.name" value="MySQLStartupItem"/>
     <property name="mysql_prefPane.name" value="MySQL.prefPane"/>
     <property name="mysql_connector.name" value="mysql-connector-java-5.1.6-bin"/>

@@ -52,6 +52,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.action.AcceptProvider;
 import org.netbeans.api.visual.action.ActionFactory;
 import org.netbeans.api.visual.action.PopupMenuProvider;
@@ -298,7 +299,9 @@ abstract public class DiagramEngine {
                 new DiagramSelectToolAction(getScene(), DesignerTools.SELECT, 
                     ImageUtil.instance().getIcon("selection-arrow.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_SelectToolAction"),
-                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR)));
+                    Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR),
+                    KeyStroke.getKeyStroke("ctrl shift S"),
+                    null));
         selectToolButton.setName(DesignerTools.SELECT);  // need a name to later identify the button
         
         JToggleButton handToolButton = new JToggleButton(
@@ -306,33 +309,37 @@ abstract public class DiagramEngine {
                     DesignerTools.PAN, ImageUtil.instance().getIcon("pan.png"),
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_HandToolAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand")));
+                    Utilities.icon2Image(ImageUtil.instance().getIcon("pan-open-hand.gif")), "PanOpenedHand"),
+                    KeyStroke.getKeyStroke("ctrl alt shift P"),
+                    KeyStroke.getKeyStroke("meta ctrl shift P")));
         
         JToggleButton marqueeZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.MARQUEE_ZOOM, ImageUtil.instance().getIcon("magnify.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_MarqueeZoomAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom")));
+                    Utilities.icon2Image(ImageUtil.instance().getIcon("marquee-zoom.gif")), "MarqueeZoom"),
+                    KeyStroke.getKeyStroke("ctrl alt shift Z"),
+                     KeyStroke.getKeyStroke("meta ctrl shift Z")));
         
         JToggleButton interactiveZoomButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.INTERACTIVE_ZOOM, ImageUtil.instance().getIcon("interactive-zoom.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_InteractiveZoomAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("interactive-zoom.gif")), "InteractiveZoom")));
+                    Utilities.icon2Image(ImageUtil.instance().getIcon("interactive-zoom.gif")), "InteractiveZoom"),
+                    KeyStroke.getKeyStroke("ctrl alt shift I"),
+                    KeyStroke.getKeyStroke("meta ctrl shift I")));
+
         
         JToggleButton navigateLinkButton = new JToggleButton(
                 new DiagramSelectToolAction(getScene(),
                     DesignerTools.NAVIGATE_LINK, ImageUtil.instance().getIcon("navigate-link.png"),  
                     NbBundle.getMessage(DiagramSelectToolAction.class, "LBL_NavigateLinkAction"),
                     Utilities.createCustomCursor(scene.getView(), 
-                        Utilities.icon2Image(ImageUtil.instance().getIcon("link-navigation.gif")), "NavigateLink")));
-        
-        JButton moveForward = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveForward.class));
-        JButton moveBackward = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveBackward.class));
-        JButton moveToFront = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveToFront.class));
-        JButton moveToBack = new JButton(SystemAction.get(WidgetMoveActionMenu.MoveToBack.class));
+                    Utilities.icon2Image(ImageUtil.instance().getIcon("link-navigation.gif")), "NavigateLink"),
+                    KeyStroke.getKeyStroke("ctrl alt shift L"),
+                    KeyStroke.getKeyStroke("meta ctrl shift L")));
         
         selectToolBtnGroup.add(selectToolButton);
         selectToolBtnGroup.add(handToolButton);
@@ -348,7 +355,6 @@ abstract public class DiagramEngine {
         //Kris - out until layout is better
         //JButton orthogonalLayoutButton = new JButton (new OrthogonalLayoutAction(getScene()));
         
-        bar.add(new JToolBar.Separator());
         bar.add(selectToolButton);
         bar.add(handToolButton);
         bar.add(marqueeZoomButton);
@@ -366,10 +372,11 @@ abstract public class DiagramEngine {
         manager.addToolbarActions(bar);
         
         bar.add(new JToolBar.Separator());
-        bar.add(moveForward);
-        bar.add(moveBackward);
-        bar.add(moveToFront);
-        bar.add(moveToBack);
+        bar.add(new WidgetMoveActionMenu.MoveForward(getScene()));
+        bar.add(new WidgetMoveActionMenu.MoveBackward(getScene()));
+        bar.add(new WidgetMoveActionMenu.MoveToFront(getScene()));
+        bar.add(new WidgetMoveActionMenu.MoveToBack(getScene()));
+
         bar.add(new JToolBar.Separator());
         
         bar.add(hierarchicalLayoutButton) ;

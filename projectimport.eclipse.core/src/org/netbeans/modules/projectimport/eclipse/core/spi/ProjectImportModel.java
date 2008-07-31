@@ -235,7 +235,7 @@ public final class ProjectImportModel {
         return platform;
     }
     
-    public String getEclipseVersion() {
+    /*public*/ String getEclipseVersion() {
         // TODO: could be useful for client to fork their import of needed
         return null;
     }
@@ -266,7 +266,7 @@ public final class ProjectImportModel {
      */
     public String getSourceLevel() {
         Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
-        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.4"); // NOI18N
+        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.5"); // NOI18N
         return p.getProperty("org.eclipse.jdt.core.compiler.source", compliance); // NOI18N
     }
 
@@ -276,7 +276,7 @@ public final class ProjectImportModel {
      */
     public String getTargetLevel() {
         Properties p = getPreferences("org.eclipse.jdt.core"); // NOI18N
-        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.4"); // NOI18N
+        String compliance = p.getProperty("org.eclipse.jdt.core.compiler.compliance", "1.5"); // NOI18N
         return p.getProperty("org.eclipse.jdt.core.compiler.codegen.targetPlatform", compliance); // NOI18N
     }
 

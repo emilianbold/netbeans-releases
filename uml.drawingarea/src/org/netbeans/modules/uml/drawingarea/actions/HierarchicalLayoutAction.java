@@ -42,8 +42,10 @@ package org.netbeans.modules.uml.drawingarea.actions;
 
 import java.awt.Point;
 import java.awt.event.ActionEvent;
+import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.KeyStroke;
 import org.netbeans.api.visual.animator.AnimatorEvent;
 import org.netbeans.api.visual.animator.AnimatorListener;
 import org.netbeans.api.visual.graph.GraphScene;
@@ -55,7 +57,16 @@ import org.netbeans.modules.uml.drawingarea.palette.context.ContextPaletteManage
 import org.netbeans.modules.uml.drawingarea.support.ContainerAgnosticLayout;
 import org.netbeans.modules.uml.drawingarea.view.DesignerScene;
 import org.netbeans.modules.uml.resources.images.ImageUtil;
+import org.netbeans.modules.uml.ui.support.SimpleQuestionDialogResultKind;
+import org.netbeans.modules.uml.ui.support.QuestionResponse;
+import org.netbeans.modules.uml.ui.support.commondialogs.IQuestionDialog;
+import org.netbeans.modules.uml.ui.support.commondialogs.MessageDialogKindEnum;
+import org.netbeans.modules.uml.ui.support.commondialogs.MessageIconKindEnum;
+import org.netbeans.modules.uml.ui.support.commondialogs.MessageResultKindEnum;
+import org.netbeans.modules.uml.ui.swing.commondialogs.SwingQuestionDialogImpl;
+import org.netbeans.modules.uml.util.DummyCorePreference;
 import org.openide.util.NbBundle;
+import org.openide.util.NbPreferences;
 
 /**
  *
@@ -71,7 +82,9 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
         this.scene = scene;
         putValue(Action.SMALL_ICON, ImageUtil.instance().getIcon("hierarchical-layout.png")); // NOI18N
         putValue(Action.SHORT_DESCRIPTION,
-                NbBundle.getMessage(HierarchicalLayoutAction.class, "LBL_HierarchicalLayoutAction")); // NOI18N
+        NbBundle.getMessage(HierarchicalLayoutAction.class, "LBL_HierarchicalLayoutAction")); // NOI18N
+        
+        putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke("ctrl shift K"));
     }
 
     public void actionPerformed(ActionEvent e) {
@@ -79,6 +92,11 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
         ContextPaletteManager man = scene.getLookup().lookup(ContextPaletteManager.class);
         if (man != null) {
             man.cancelPalette();
+        }
+
+        if ( ! (scene.getNodes().size() > 0 && askOkToLayoutDiagram())) 
+        {
+            return;
         }
 
         animated = scene.getNodes().size() < MAX_NODES_TO_ANIMATE ? true : false;
@@ -138,4 +156,39 @@ public class HierarchicalLayoutAction extends AbstractAction implements GraphLay
     {
         return scene.isReadOnly() == false;
     }
+
+
+    private boolean askOkToLayoutDiagram()
+    {
+        int resultKind = SimpleQuestionDialogResultKind.SQDRK_RESULT_NO;
+        Preferences prefs = NbPreferences.forModule(DummyCorePreference.class);
+
+        if (prefs.getBoolean("UML_Ask_Before_Layout", true))
+        {
+            IQuestionDialog dialog = new SwingQuestionDialogImpl();
+            
+            String title = NbBundle.getMessage(HierarchicalLayoutAction.class, "TITLE_LAYOUTQUESTION");
+            String message = NbBundle.getMessage(HierarchicalLayoutAction.class, "LBL_CHANGELAYOUT");
+            String checkbox = NbBundle.getMessage(HierarchicalLayoutAction.class, "LBL_DONTASKAGAIN");
+
+            QuestionResponse result = 
+                dialog.displaySimpleQuestionDialogWithCheckbox(
+                    MessageDialogKindEnum.SQDK_YESNO,
+                    MessageIconKindEnum.EDIK_ICONWARNING, 
+                    message, checkbox, title,
+                    MessageResultKindEnum.SQDRK_RESULT_YES, false);
+
+            if (result.isChecked() == true)
+            {
+                prefs.putBoolean("UML_Ask_Before_Layout", false);
+            }
+            resultKind = result.getResult();
+        } 
+        else
+        {
+            resultKind = SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
+        }
+        return resultKind == SimpleQuestionDialogResultKind.SQDRK_RESULT_YES;
+    }
+
 }

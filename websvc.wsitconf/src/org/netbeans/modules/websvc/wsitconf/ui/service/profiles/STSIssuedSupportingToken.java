@@ -51,6 +51,7 @@ import org.netbeans.modules.websvc.wsitmodelext.policy.Policy;
 import org.netbeans.modules.websvc.wsitmodelext.security.BootstrapPolicy;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.ProtectionToken;
 import org.netbeans.modules.websvc.wsitmodelext.security.tokens.SecureConversationToken;
+import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 /**
@@ -58,6 +59,8 @@ import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
  * @author  Martin Grebac
  */
 public class STSIssuedSupportingToken extends ProfileBaseForm {
+
+    private int suppTokenTypeUsed = SecurityTokensModelHelper.SIGNED_ENCRYPTED;
 
     /**
      * Creates new form STSIssuedSupporting
@@ -82,6 +85,10 @@ public class STSIssuedSupportingToken extends ProfileBaseForm {
         fillKeySize(keySizeCombo);
         fillAlgoSuiteCombo(algoSuiteCombo);
         inSync = false;
+
+        if (ConfigVersion.CONFIG_1_0 == cfgVersion) {
+            suppTokenTypeUsed = SecurityTokensModelHelper.SIGNED_SUPPORTING;
+        }
         
         sync();
     }
@@ -122,9 +129,9 @@ public class STSIssuedSupportingToken extends ProfileBaseForm {
         setCombo(layoutCombo, SecurityPolicyModelHelper.getMessageLayout(secBinding));
 
         if (secConv) {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), suppTokenTypeUsed);
         } else {
-            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, SecurityTokensModelHelper.SIGNED_SUPPORTING);
+            tokenKind = SecurityTokensModelHelper.getSupportingToken(comp, suppTokenTypeUsed);
         }
         token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
         
@@ -211,7 +218,7 @@ public class STSIssuedSupportingToken extends ProfileBaseForm {
             return;
         }
 
-        tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), SecurityTokensModelHelper.SIGNED_SUPPORTING);
+        tokenKind = SecurityTokensModelHelper.getSupportingToken(secBinding.getParent(), suppTokenTypeUsed);
         token = SecurityTokensModelHelper.getTokenTypeElement(tokenKind);
 
         if (source.equals(reqDerivedKeysIssued)) {
