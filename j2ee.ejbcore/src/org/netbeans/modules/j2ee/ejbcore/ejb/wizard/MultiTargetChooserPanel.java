@@ -50,8 +50,10 @@ import java.util.List;
 import java.util.StringTokenizer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
@@ -98,6 +100,11 @@ public final class MultiTargetChooserPanel implements WizardDescriptor.Panel, Ch
     public MultiTargetChooserPanel( Project project, SourceGroup folders[], WizardDescriptor.Panel bottomPanel, boolean isValidPackageRequired ) {
         this.project = project;
         this.folders = folders;
+        // the folders array is invalid... I quess we should try to recover here.
+        if (0 == folders.length) {
+            this.folders = ProjectUtils.getSources(project).getSourceGroups(
+                    JavaProjectConstants.SOURCES_TYPE_JAVA);            
+        }
         this.bottomPanel = bottomPanel;
         this.type = TYPE_FILE; // in JavaTargetChooserPanel it is passed in constructor, but we want to create only files
         if ( bottomPanel != null ) {
