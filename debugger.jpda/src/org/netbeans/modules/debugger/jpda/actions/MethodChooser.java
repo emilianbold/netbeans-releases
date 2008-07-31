@@ -163,7 +163,7 @@ public class MethodChooser implements KeyListener, MouseListener,
         
         // hack - disable org.netbeans.modules.debugger.jpda.projects.ToolTipAnnotation
         System.setProperty("org.netbeans.modules.debugger.jpda.doNotShowTooltips", "true"); // NOI18N
-        debugger.addPropertyChangeListener(JPDADebugger.PROP_STATE, this);
+        debugger.addPropertyChangeListener(this);
         debugger.getThreadsCollector().addPropertyChangeListener(this);
         editorPane.putClientProperty(MethodChooser.class, this);
         editorPane.addKeyListener(this);
@@ -677,7 +677,8 @@ public class MethodChooser implements KeyListener, MouseListener,
     // **************************************************************************
     
     public void propertyChange(PropertyChangeEvent evt) {
-        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED || !currentThread.isSuspended()) {
+        if (debugger.getState() == JPDADebugger.STATE_DISCONNECTED ||
+                currentThread != debugger.getCurrentThread() || !currentThread.isSuspended()) {
             release();
         }
     }
