@@ -813,7 +813,7 @@ public final class SVGFileModel {
                             }
                         }
                         doc.insertString(insertPosition, str, null);
-                        doc.getFormatter().reformat(doc, insertPosition, insertPosition + str.length());
+                        doc.getFormatter().reformat(doc, insertPosition, insertPosition + str.length()+1);
                     } else {
                         String docText = doc.getText(0, doc.getLength());
                         int startOff = svgRoot.getStartOffset();
@@ -826,12 +826,14 @@ public final class SVGFileModel {
                         if (c == '/') {
                             if (docText.charAt(insertPosition) == '<') {
                                 doc.insertString(insertPosition, insertString, null);
+                                doc.getFormatter().reformat(doc, insertPosition, insertPosition + insertString.length()+1);
                             } else {
                                 StringBuilder sb = new StringBuilder(docText.substring(startOff, insertPosition + 1));
                                 sb.append(">\n"); //NOI18N
                                 sb.append(insertString);
                                 sb.append("\n</svg>"); //NOI18N
                                 doc.replace(startOff, svgRoot.getEndOffset() - startOff + 1, sb.toString(), null);
+                                doc.getFormatter().reformat(doc, insertPosition, doc.getLength());
                             }
                         } else {
                             //TODO report invalid svg doc
