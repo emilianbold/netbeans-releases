@@ -271,7 +271,8 @@ public final class VariableScopeVisitor extends ClassCodeVisitorSupport {
             occurrences.add(property);
         } else if (leaf instanceof ConstantExpression && leafParent instanceof PropertyExpression) {
             PropertyExpression propertyUnderCursor = (PropertyExpression) leafParent;
-            if (node.getPropertyAsString().equals(propertyUnderCursor.getPropertyAsString())) {
+            String nodeAsString = node.getPropertyAsString();
+            if (nodeAsString != null && nodeAsString.equals(propertyUnderCursor.getPropertyAsString())) {
                 occurrences.add(property);
             }
         }
