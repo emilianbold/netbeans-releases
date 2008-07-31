@@ -90,6 +90,14 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUT_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleName(
+                NbBundle.getMessage(PropertyEditorTimeout.class, "ACSN_TIMEOUT_STR")); // NOI18N
+        
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                NbBundle.getMessage(PropertyEditorTimeout.class, "ACSD_TIMEOUT_STR")); // NOI18N
+
+        
         customEditor = new CustomEditor();
     }
 
@@ -200,11 +208,27 @@ public final class PropertyEditorTimeout extends PropertyEditorUserCode implemen
             foreverCheckBox.addFocusListener(this);
             Mnemonics.setLocalizedText(foreverCheckBox, NbBundle.getMessage(PropertyEditorTimeout.class, "LBL_TIMEOUTPE_FOREVER")); // NOI18N
             add(foreverCheckBox, BorderLayout.NORTH);
+            
+            foreverCheckBox.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorTimeout.class, 
+                    "ACSN_TIMEOUTPE_FOREVER")); // NOI18N
+            
+            foreverCheckBox.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorTimeout.class, 
+                    "ACSD_TIMEOUTPE_FOREVER")); // NOI18N
+                    
 
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
             add(textField, BorderLayout.SOUTH);
+            
+            textField.getAccessibleContext().setAccessibleName(
+                    NbBundle.getMessage(PropertyEditorTimeout.class, 
+                    "ACSN_TIMEOUTPE_VALUE")); // NOI18N
+            textField.getAccessibleContext().setAccessibleDescription(
+                    NbBundle.getMessage(PropertyEditorTimeout.class, 
+                    "ACSD_TIMEOUTPE_VALUE")); // NOI18N
         }
 
         public void setText(String text) {

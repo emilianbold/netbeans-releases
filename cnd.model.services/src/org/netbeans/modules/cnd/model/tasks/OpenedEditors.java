@@ -54,7 +54,6 @@ import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.Document;
-import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.openide.cookies.EditorCookie;
@@ -62,12 +61,12 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.Parameters;
 
 /**
- *
  * @author Jan Lahoda
+ * @author Sergey Grinev
+ * @author Vladimir Kvashin
  */
 class OpenedEditors implements PropertyChangeListener {
 
@@ -142,7 +141,7 @@ class OpenedEditors implements PropertyChangeListener {
 
             if (editor instanceof JEditorPane && fo != null && isSupported(fo)) {
                 // FIXUP for #139980 EditorRegistry.componentList() returns editors that are already closed
-                boolean valid = isValid((JEditorPane) editor, fo);
+                boolean valid = isOpen((JEditorPane) editor, fo);
                 if (TRACE_FILES) System.err.printf("\tfile: %s valid: %b\n", fo == null ? "null" : fo.toString(), valid);
                 if (valid) {
                     visibleEditors.add(editor);
@@ -158,7 +157,7 @@ class OpenedEditors implements PropertyChangeListener {
         fireChangeEvent();
     }
 
-    private boolean isValid(JEditorPane editor, FileObject fo) {
+    private boolean isOpen(JEditorPane editor, FileObject fo) {
         try {
             DataObject dao = DataObject.find(fo);
             if (dao != null) {
@@ -169,7 +168,8 @@ class OpenedEditors implements PropertyChangeListener {
                 }
             }
         } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
+            // we don't need to report this exception;
+            // probably the file is just removed by user
         }
         return false;
     }

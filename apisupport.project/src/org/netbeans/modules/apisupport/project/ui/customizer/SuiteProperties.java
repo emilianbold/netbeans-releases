@@ -115,7 +115,10 @@ public final class SuiteProperties extends ModuleProperties {
                 clusters.add(module.getClusterDirectory().getName());
             }
             clusters.removeAll(Arrays.asList(getArrayProperty(evaluator, DISABLED_CLUSTERS_PROPERTY)));
-            enabledClusters = clusters.toArray(new String[clusters.size()]);
+            enabledClusters = new String[clusters.size()];
+            int i = 0; for (String cluster : clusters) {
+                enabledClusters[i++] = SingleModuleProperties.clusterBaseName(cluster);
+            }
         }
         brandingModel = new BasicBrandingModel(this);
     }
@@ -198,7 +201,8 @@ public final class SuiteProperties extends ModuleProperties {
     }
     
     public void storeProperties() throws IOException {
-        ModuleProperties.storePlatform(getHelper(), getActivePlatform());
+        NbPlatform plaf = getActivePlatform();
+        ModuleProperties.storePlatform(getHelper(), plaf);
         ModuleProperties.storeJavaPlatform(getHelper(), getEvaluator(), getActiveJavaPlatform(), false);
         getBrandingModel().store();
         
@@ -220,30 +224,42 @@ public final class SuiteProperties extends ModuleProperties {
                 setProperty(DISABLED_MODULES_PROPERTY, (String) null);
             }
             if (changedEnabledClusters) {
-                String[] separated = enabledClusters.clone();
-                for (int i = 0; i < enabledClusters.length - 1; i++) {
-                    separated[i] = enabledClusters[i] + ',';
+                String[] separated = new String[enabledClusters.length];
+                for (int i = 0; i < enabledClusters.length; i++) {
+                    separated[i] = representationOfCluster(enabledClusters[i], plaf);
+                    if (i < enabledClusters.length - 1) {
+                        separated[i] = separated[i] + ',';
+                    }
                 }
                 ep.setProperty(ENABLED_CLUSTERS_PROPERTY, separated);
                 setProperty(ENABLED_CLUSTERS_PROPERTY, (String) null);
-                // Compatibility.
-                SortedSet<String> disabledClusters = new TreeSet<String>();
-                ModuleEntry[] modules = activePlatform.getModules();
-                for (int i = 0; i < modules.length; i++) {
-                    disabledClusters.add(modules[i].getClusterDirectory().getName());
+                if (plaf == null || plaf.getHarnessVersion() < NbPlatform.HARNESS_VERSION_50u1) {
+                    // Compatibility.
+                    SortedSet<String> disabledClusters = new TreeSet<String>();
+                    ModuleEntry[] modules = activePlatform.getModules();
+                    for (int i = 0; i < modules.length; i++) {
+                        disabledClusters.add(modules[i].getClusterDirectory().getName());
+                    }
+                    disabledClusters.removeAll(Arrays.asList(enabledClusters));
+                    separated = disabledClusters.toArray(new String[disabledClusters.size()]);
+                    for (int i = 0; i < separated.length - 1; i++) {
+                        separated[i] = separated[i] + ',';
+                    }
+                    ep.setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
+                    ep.setComment(DISABLED_CLUSTERS_PROPERTY, new String[] {"# Deprecated since 5.0u1; for compatibility with 5.0:"}, false); // NOI18N
                 }
-                disabledClusters.removeAll(Arrays.asList(enabledClusters));
-                separated = disabledClusters.toArray(new String[disabledClusters.size()]);
-                for (int i = 0; i < separated.length - 1; i++) {
-                    separated[i] = separated[i] + ',';
-                }
-                ep.setProperty(DISABLED_CLUSTERS_PROPERTY, separated);
-                ep.setComment(DISABLED_CLUSTERS_PROPERTY, new String[] {"# Deprecated since 5.0u1; for compatibility with 5.0:"}, false); // NOI18N
             }
             getHelper().putProperties("nbproject/platform.properties", ep); // NOI18N
         }
         
         super.storeProperties();
+    }
+    private static String representationOfCluster(String physicalName, NbPlatform platform) { // #73706
+        if (platform != null && platform.getHarnessVersion() >= NbPlatform.HARNESS_VERSION_65) {
+            return SingleModuleProperties.clusterBaseName(physicalName);
+        } else {
+            return physicalName;
+        }
     }
     
     Set<NbModuleProject> getSubModules() {

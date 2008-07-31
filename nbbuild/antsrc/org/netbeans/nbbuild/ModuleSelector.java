@@ -43,6 +43,7 @@ package org.netbeans.nbbuild;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -119,7 +120,7 @@ public final class ModuleSelector extends BaseExtendSelector {
             if (new File(p, "update_tracking").isDirectory()) { // else includeClusters does not work
                 String cluster = p.getName();
                 
-                if (!includeClusters.isEmpty() && !includeClusters.contains(cluster)) {
+                if (!includeClusters.isEmpty() && !clusterMatch(includeClusters, cluster)) {
                     log("Not included cluster: " + cluster + " for " + file, Project.MSG_VERBOSE);
                     return null;
                 }
@@ -157,6 +158,19 @@ public final class ModuleSelector extends BaseExtendSelector {
 
         log("Accepted file: " + file, Project.MSG_VERBOSE);
         return Boolean.TRUE;
+    }
+    // Copied from apisupport.project.ui.customizer.SingleModuleProperties:
+    private static boolean clusterMatch(Collection<String> enabledClusters, String clusterName) { // #73706
+        String baseName = clusterBaseName(clusterName);
+        for (String c : enabledClusters) {
+            if (clusterBaseName(c).equals(baseName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    private static String clusterBaseName(String clusterName) {
+        return clusterName.replaceFirst("[0-9.]+$", ""); // NOI18N
     }
 
     public void verifySettings() {

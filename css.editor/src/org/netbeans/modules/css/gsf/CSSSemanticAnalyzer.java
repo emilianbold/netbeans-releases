@@ -98,8 +98,11 @@ public class CSSSemanticAnalyzer implements SemanticAnalyzer {
             public void visit(SimpleNode node) {
                 if (node.kind() == CSSParserTreeConstants.JJTELEMENTNAME || node.kind() == CSSParserTreeConstants.JJT_CLASS || node.kind() == CSSParserTreeConstants.JJTPSEUDO || node.kind() == CSSParserTreeConstants.JJTHASH || node.kind() == CSSParserTreeConstants.JJTATTRIB) {
                     OffsetRange range = getOffsetRange(node.startOffset(), node.endOffset(), source);
-                    //filter virtual nodes
-                    if (!range.isEmpty()) {
+                    int dso = AstUtils.documentPosition(node.startOffset(), source);
+                    int deo = AstUtils.documentPosition(node.endOffset(), source);
+                    //filter out generated and inlined style definitions - they have just virtual selector which
+                    //is mapped to empty string
+                    if (!range.isEmpty() && deo > dso) {
                         highlights.put(range, ColoringAttributes.METHOD_SET);
                     }
                 } else if (node.kind() == CSSParserTreeConstants.JJTPROPERTY) {

@@ -131,18 +131,19 @@ public final class ElementUtilities {
 	if( element.getKind() == ElementKind.PACKAGE ) {
 	    throw new IllegalArgumentException();
 	}
+
+        element = element.getEnclosingElement();
 	
-        if (element.getEnclosingElement().getKind() == ElementKind.PACKAGE) {
+        if (element.getKind() == ElementKind.PACKAGE) {
             //element is a top level class, returning null according to the contract:
             return null;
         }
         
-	while( !(element.getEnclosingElement().getKind().isClass() || 
-	       element.getEnclosingElement().getKind().isInterface()) ) {
+	while(element != null && !(element.getKind().isClass() || element.getKind().isInterface())) {
 	    element = element.getEnclosingElement();
 	}
 	
-	return (TypeElement)element.getEnclosingElement(); // Wrong
+	return (TypeElement)element;
     }
     
     /**

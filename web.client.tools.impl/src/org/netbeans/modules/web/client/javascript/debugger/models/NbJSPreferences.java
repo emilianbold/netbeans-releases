@@ -56,7 +56,8 @@ public final class NbJSPreferences {
     private static final boolean SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT = true;
     private static final boolean SHOW_FUNCTIONS_DEFAULT = false;
     private static final boolean SHOW_CONSTANTS_DEFAULT = true;
-    private static final boolean HTTP_MONITOR_DEFAULT = false;
+    private static final boolean HTTP_MONITOR_ENABLED_DEFAULT = false;
+    private static final boolean HTTP_MONITOR_OPENED_DEFAULT = false;
 
     // property names
     public static final String PROP_SUSPEND_ON_FIRST_LINE = "firstLineSuspend"; // NOI18N
@@ -65,7 +66,8 @@ public final class NbJSPreferences {
     public static final String PROP_SUSPEND_ON_DEBUGGER_KEYWORD = "debuggerKeywordSuspend"; // NOI18N
     public static final String PROP_SHOW_FUNCTIONS = "functionsShow"; // NOI18N
     public static final String PROP_SHOW_CONSTANTS = "constantsShow"; // NOI18N
-    public static final String PROP_HTTP_MONITOR = "http_monitor";
+    public static final String PROP_HTTP_MONITOR_ENABLED = "http_monitor";
+    public static final String PROP_HTTP_MONITOR_OPENED = "http_monitor_opened";
 
     public static NbJSPreferences getInstance() {
         if (INSTANCE == null) {
@@ -73,6 +75,26 @@ public final class NbJSPreferences {
         }
 
         return INSTANCE;
+    }
+
+    /**
+     * @return  This preference is really used similar to HttpMonitorEnabled to be
+     * a mechanism in which the extension determines if it should be recording
+     * events.  In the future, we should consider monitor Showing/Hiding and
+     * Queue up the events.
+     */
+    public boolean getHttpMonitorOpened() {
+        return getPreferences().getBoolean(PROP_HTTP_MONITOR_OPENED, HTTP_MONITOR_OPENED_DEFAULT);
+    }
+
+    /**
+     * @param This preference is really used similar to HttpMonitorEnabled to be
+     * a mechanism in which the extension determines if it should be recording
+     * events.  In the future, we should consider monitor Showing/Hiding and
+     * Queue up the events.
+     */
+    public void setHttpMonitorOpened(boolean b) {
+        getPreferences().putBoolean(PROP_HTTP_MONITOR_OPENED, b);
     }
 
     public boolean getShowFunctions() {
@@ -107,8 +129,8 @@ public final class NbJSPreferences {
         return getPreferences().getBoolean(PROP_SUSPEND_ON_EXCEPTIONS, SUSPEND_ON_EXCEPTIONS_DEFAULT);
     }
 
-    public void setHttpMonitor(boolean b) {
-        getPreferences().putBoolean(PROP_HTTP_MONITOR, b);
+    public void setHttpMonitorEnabled(boolean b) {
+        getPreferences().putBoolean(PROP_HTTP_MONITOR_ENABLED, b);
     }
 
     public void setSuspendOnErrors(boolean b) {
@@ -127,11 +149,11 @@ public final class NbJSPreferences {
         return getPreferences().getBoolean(PROP_SUSPEND_ON_DEBUGGER_KEYWORD, SUSPEND_ON_DEBUGGER_KEYWORD_DEFAULT);
     }
 
-    public boolean getHttpMonitor() {
-        return getPreferences().getBoolean(PROP_HTTP_MONITOR, HTTP_MONITOR_DEFAULT);
+    public boolean getHttpMonitorEnabled() {
+        return getPreferences().getBoolean(PROP_HTTP_MONITOR_ENABLED, HTTP_MONITOR_ENABLED_DEFAULT);
     }
-    public void seHttpMonitor(boolean b) {
-        getPreferences().putBoolean(PROP_HTTP_MONITOR, b);
+    public void seHttpMonitorEnabled(boolean b) {
+        getPreferences().putBoolean(PROP_HTTP_MONITOR_ENABLED, b);
     }
 
     public void addPreferencesChangeListener(PreferenceChangeListener listener) {

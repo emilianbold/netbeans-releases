@@ -79,6 +79,7 @@ public abstract class GdbBreakpoint extends Breakpoint {
     private int                         lineNumber;
     private boolean                     enabled = true;
     private boolean                     hidden = false;
+    private boolean                     temporary = false;
     private int                         suspend = SUSPEND_ALL;
     private String                      threadID = "1"; // NOI18N
     private String                      printText;
@@ -295,7 +296,15 @@ public abstract class GdbBreakpoint extends Breakpoint {
         hidden = h;
         firePropertyChange(PROP_HIDDEN, Boolean.valueOf(old), Boolean.valueOf(h));
     }
-    
+
+    public boolean isTemporary() {
+        return temporary;
+    }
+
+    public void setTemporary() {
+        this.temporary = true;
+    }
+
     /**
      * Gets value of print text property.
      *

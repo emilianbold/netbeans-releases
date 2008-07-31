@@ -49,7 +49,7 @@ made subject to such option by the copyright holder.
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
                     <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/category.html"/>
                     <!-- StockQuoteClient Sample -->
-                    <attr name="position" intvalue="600"/>
+                    <attr name="position" intvalue="690"/>
                     <file name="StockQuoteClientSampleProject" url="StockQuoteClient.zip">
                         <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/identity/samples/resources/projectIcon.gif"/>
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.identity.samples.resources.Bundle"/>
