@@ -196,6 +196,10 @@ public class AbstractVariable implements LocalVariable, Customizer, PropertyChan
      * @param value string representation of value of this variable.
      */
     public void setValue(String value) {
+        // no need to update to the same value
+        if (value.equals(this.value)) {
+            return;
+        }
         String msg = null;
         String rt = getTypeInfo().getResolvedType(this);
         int pos;

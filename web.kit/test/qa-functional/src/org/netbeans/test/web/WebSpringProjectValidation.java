@@ -176,17 +176,12 @@ public class WebSpringProjectValidation extends WebProjectValidationEE5 {
             // ignore when progress dialog was closed before we started to wait for it
         }
         ProjectSupport.waitScanFinished();
-    // Check project contains all needed files.
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "redirect.jsp");
-        new Node(webPages,"WEB-INF|jsp|index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|applicationContext.xml");//NOI18N
-        new Node(webPages,"WEB-INF|hhhhh-servlet.xml");//NOI18N
-        new Node(webPages,"WEB-INF|sun-web.xml");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-//        ProjectSupport.closeProject(PROJECT_NAME);
+        verifyWebPagesNode("redirect.jsp");
+        verifyWebPagesNode("WEB-INF|jsp|index.jsp");//NOI18N
+        verifyWebPagesNode("WEB-INF|applicationContext.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|hhhhh-servlet.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|sun-web.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|web.xml");//NOI18N
     }
 
 }

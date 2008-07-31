@@ -64,7 +64,6 @@ import java.lang.reflect.Method;
 import java.util.Vector;
 import javax.swing.JDialog;
 
-import org.netbeans.jellytools.modules.j2ee.nodes.GlassFishV2ServerNode;
 import org.netbeans.junit.*;
 
 import org.netbeans.jemmy.*;
@@ -414,9 +413,11 @@ public class JellyTestCase extends NbTestCase {
     private static final DistributingHierarchyListener 
                 distributingHierarchyListener = new DistributingHierarchyListener();
 
+    /*
     public GlassFishV2ServerNode getGlassFishV2Node() {
         return GlassFishV2ServerNode.getGlassFishV2Node(System.getProperty("com.sun.aas.installRoot"));
     }
+     */
     
     private static class DistributingHierarchyListener implements AWTEventListener {
         

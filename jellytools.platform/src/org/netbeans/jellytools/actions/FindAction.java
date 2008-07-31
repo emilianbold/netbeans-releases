@@ -43,7 +43,7 @@ package org.netbeans.jellytools.actions;
 import java.awt.event.KeyEvent;
 import javax.swing.KeyStroke;
 import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.ProjectsTabOperator;
+//import org.netbeans.jellytools.ProjectsTabOperator;
 
 /** Used to call "Find" popup menu item, "Edit|Find" main menu item,
  * "org.openide.actions.FindAction" or Ctrl+F shortcut.
@@ -67,14 +67,14 @@ public class FindAction extends ActionNoBlock {
     /** Performs action through API. It selects projects node first.
      * @throws UnsupportedOperationException when action does not support API mode */    
     public void performAPI() {
-        new ProjectsTabOperator().tree().selectRow(0);
+        //new ProjectsTabOperator().tree().selectRow(0);
         super.performAPI();
     }
     
     /** Performs action through shortcut. It selects projects node first.
      * @throws UnsupportedOperationException if no shortcut is defined */
     public void performShortcut() {
-        new ProjectsTabOperator().tree().selectRow(0);
+        //new ProjectsTabOperator().tree().selectRow(0);
         super.performShortcut();
     }
 
