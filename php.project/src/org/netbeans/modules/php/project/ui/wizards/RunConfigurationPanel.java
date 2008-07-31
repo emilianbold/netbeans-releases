@@ -114,6 +114,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsRemoteWeb runAsRemoteWeb = null;
     private RunAsScript runAsScript = null;
     private String defaultLocalUrl = null;
+    private String originalUploadDirectory = null;
 
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
@@ -189,7 +190,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
         // register back to receive events
         addListeners();
-        fireChangeEvent();
+        stateChanged(null);
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -544,10 +545,38 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return srcRoot.substring(documentRoot.length());
     }
 
+    private void adjustUploadDirectory() {
+        if (originalUploadDirectory == null) {
+            originalUploadDirectory = getUploadDirectory();
+            runAsRemoteWeb.setUploadDirectory(originalUploadDirectory);
+            return;
+        }
+        String defaultUploadDirectory = getUploadDirectory();
+        if (defaultUploadDirectory.equals(originalUploadDirectory)) {
+            // no change in project name
+            return;
+        }
+        String uploadDirectory = runAsRemoteWeb.getUploadDirectory();
+        if (!uploadDirectory.equals(originalUploadDirectory)) {
+            // already disconnected
+            originalUploadDirectory = defaultUploadDirectory;
+            return;
+        }
+        originalUploadDirectory = defaultUploadDirectory;
+        runAsRemoteWeb.setUploadDirectory(defaultUploadDirectory);
+    }
+
+    private String getUploadDirectory() {
+        return "/" + (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME); // NOI18N
+    }
+
     public void stateChanged(ChangeEvent e) {
         switch (getRunAsType()) {
             case LOCAL:
                 adjustUrl();
+                break;
+            case REMOTE:
+                adjustUploadDirectory();
                 break;
         }
         fireChangeEvent();
