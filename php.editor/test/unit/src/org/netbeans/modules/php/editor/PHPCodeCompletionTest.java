@@ -122,4 +122,23 @@ public class PHPCodeCompletionTest extends PHPTestBase {
     public void test142091() throws Exception {
         checkCompletion("testfiles/completion/lib/issue142091.php", "function f142091 (^", false);
     }
+    // #136188 [cc] issues related to class name case-sensitivity
+    public void test136188() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v1->^", false);
+    }
+    public void test136188_1() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v2->^", false);
+    }
+    public void test136188_2() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v3->^", false);
+    }
+    public void test136188_3() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v1 = new Cls136188^", false);
+    }
+    public void test136188_4() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v2 = new cls136188^", false);
+    }
+    public void test136188_5() throws Exception {
+        checkCompletion("testfiles/completion/lib/issue136188.php", "$v3 = new CLS136188^", false);
+    }
 }
