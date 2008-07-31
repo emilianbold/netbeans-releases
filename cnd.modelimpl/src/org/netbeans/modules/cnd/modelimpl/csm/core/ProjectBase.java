@@ -1096,7 +1096,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
 	// if getPreprocState(file) isn't null, the file alreasy exists, so we may not pass nativeFile
         return findFile(file, FileImpl.UNDEFINED_FILE, preprocHandler, true, null, null);
     }
-    
+
     protected FileImpl findFile(File file, int fileType, APTPreprocHandler preprocHandler,
             boolean scheduleParseIfNeed, APTPreprocHandler.State initial, NativeFileItem nativeFileItem) {
         
@@ -1896,9 +1896,9 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     private Cancellable initializationTask;
     
     /** The lock under which the initializationTask is set */
-    private Object initializationTaskLock = new Object();
+    private final Object initializationTaskLock = new Object();
     
-    private Object waitParseLock = new Object();
+    private final Object waitParseLock = new Object();
     
     private ModelImpl model;
     private Unresolved unresolved;
@@ -1946,7 +1946,7 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     // collection of sharable system macros and system includes
     private APTSystemStorage sysAPTData = APTSystemStorage.getDefault();
     
-    private Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
+    private final Object namespaceLock = new String("namespaceLock in Projectbase "+hashCode()); // NOI18N
     
     private final Key declarationsSorageKey;
     private final Key fileContainerKey;
