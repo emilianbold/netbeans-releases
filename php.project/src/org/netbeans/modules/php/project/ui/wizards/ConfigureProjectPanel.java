@@ -149,7 +149,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         configureProjectPanelVisual.setEncoding(getEncoding());
 
         configureProjectPanelVisual.addConfigureProjectListener(this);
-        fireChangeEvent();
+        stateChanged(null);
     }
 
     public void storeSettings(WizardDescriptor settings) {
@@ -433,7 +433,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     // we will do this only if the name equals to the project directory and not vice versa
-    private void adjustProjectNameAndLocation() {
+    private void projectNameChanged() {
         assert originalProjectName != null;
         String projectName = configureProjectPanelVisual.getProjectName();
         if (projectName.length() == 0) {
@@ -444,6 +444,14 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // no change in project name
             return;
         }
+
+        adjustProjectFolder(originalProjectName, projectName);
+        adjustSources(originalProjectName, projectName);
+
+        originalProjectName = projectName;
+    }
+
+    private void adjustProjectFolder(String originalProjectName, String projectName) {
         File projectFolderFile = getProjectFolderFile();
         if (projectFolderFile == null) {
             // invalid folder given, just ignore it
@@ -454,15 +462,29 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             // already "disconnected"
             return;
         }
-        originalProjectName = projectName;
+
         File newProjecFolder = new File(projectFolderFile.getParentFile(), projectName);
-        // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
-        //configureProjectPanelVisual.removeConfigureProjectListener(this);
         configureProjectPanelVisual.setProjectFolder(newProjecFolder.getAbsolutePath());
-        //configureProjectPanelVisual.addConfigureProjectListener(this);
     }
 
-    private void adjustSourcesAndProjectName() {
+    private void adjustSources(String originalProjectName, String projectName) {
+        LocalServer.ComboBoxModel model = (LocalServer.ComboBoxModel) configureProjectPanelVisual.getLocalServerModel();
+        boolean fire = false;
+        for (int i = 0; i < model.getSize(); ++i) {
+            LocalServer ls = model.getElementAt(i);
+            File src = new File(ls.getSrcRoot());
+            if (originalProjectName.equals(src.getName())) {
+                File newSrc = new File(src.getParentFile(), projectName);
+                ls.setSrcRoot(newSrc.getAbsolutePath());
+                fire = true;
+            }
+        }
+        if (fire) {
+            model.fireContentsChanged();
+        }
+    }
+
+    private void sourceFolderchanged() {
         String sources = configureProjectPanelVisual.getSourcesLocation().getSrcRoot();
         if (sources.length() == 0) {
             // invalid situation, do not change anything
@@ -490,17 +512,20 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
     }
 
     public void stateChanged(ChangeEvent e) {
+        // because JTextField.setText() calls document.remove() and then document.insert() (= 2 events!), just remove and readd the listener
+        configureProjectPanelVisual.removeConfigureProjectListener(this);
         switch (wizardType) {
             case NEW:
-                adjustProjectNameAndLocation();
+                projectNameChanged();
                 break;
             case EXISTING:
-                adjustSourcesAndProjectName();
+                sourceFolderchanged();
                 break;
             default:
                 assert false : "Unknown wizard type: " + wizardType;
                 break;
         }
+        configureProjectPanelVisual.addConfigureProjectListener(this);
         fireChangeEvent();
     }
 }

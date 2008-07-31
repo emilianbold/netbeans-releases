@@ -114,7 +114,7 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
     private RunAsRemoteWeb runAsRemoteWeb = null;
     private RunAsScript runAsScript = null;
     private String defaultLocalUrl = null;
-    private String originalUploadDirectory = null;
+    private String originalProjectName = null;
 
     public RunConfigurationPanel(String[] steps, SourcesFolderProvider sourcesFolderProvider, NewPhpProjectWizardIterator.WizardType wizardType) {
         this.sourcesFolderProvider = sourcesFolderProvider;
@@ -176,8 +176,6 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         // we don't want to get events now
         removeListeners();
 
-        adjustUrl();
-
         //  must be done every time because user can go back, select another sources and return back
         switch (wizardType) {
             case EXISTING:
@@ -187,6 +185,8 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
 
         runAsLocalWeb.setLocalServerModel(getLocalServerModel());
         runAsLocalWeb.setCopyFiles(getCopyFiles());
+
+        runAsRemoteWeb.setUploadDirectory(getUploadDirectory());
 
         // register back to receive events
         addListeners();
@@ -246,6 +246,14 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
             return copyFiles;
         }
         return false;
+    }
+
+    private String getUploadDirectory() {
+        String uploadDirectory = (String) descriptor.getProperty(REMOTE_DIRECTORY);
+        if (uploadDirectory != null) {
+            return uploadDirectory;
+        }
+        return "/" + getProjectName(); // NOI18N
     }
 
     private void findIndexFile() {
@@ -545,38 +553,61 @@ public class RunConfigurationPanel implements WizardDescriptor.Panel<WizardDescr
         return srcRoot.substring(documentRoot.length());
     }
 
-    private void adjustUploadDirectory() {
-        if (originalUploadDirectory == null) {
-            originalUploadDirectory = getUploadDirectory();
-            runAsRemoteWeb.setUploadDirectory(originalUploadDirectory);
+    private void adjustUploadDirectoryAndCopyFiles() {
+        if (originalProjectName == null) {
+            originalProjectName = getProjectName();
             return;
         }
-        String defaultUploadDirectory = getUploadDirectory();
-        if (defaultUploadDirectory.equals(originalUploadDirectory)) {
+        String newProjectName = getProjectName();
+        if (newProjectName.equals(originalProjectName)) {
             // no change in project name
             return;
         }
-        String uploadDirectory = runAsRemoteWeb.getUploadDirectory();
-        if (!uploadDirectory.equals(originalUploadDirectory)) {
-            // already disconnected
-            originalUploadDirectory = defaultUploadDirectory;
-            return;
-        }
-        originalUploadDirectory = defaultUploadDirectory;
-        runAsRemoteWeb.setUploadDirectory(defaultUploadDirectory);
+
+        adjustUploadDirectory(originalProjectName, newProjectName);
+        adjustCopyFiles(originalProjectName, newProjectName);
+
+        originalProjectName = newProjectName;
     }
 
-    private String getUploadDirectory() {
-        return "/" + (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME); // NOI18N
+    private String getProjectName() {
+        return (String) descriptor.getProperty(ConfigureProjectPanel.PROJECT_NAME);
+    }
+
+    private void adjustUploadDirectory(String originalProjectName, String newProjectName) {
+        String uploadDirectory = runAsRemoteWeb.getUploadDirectory();
+        if (!uploadDirectory.equals("/" + originalProjectName)) { // NOI18N
+            // already disconnected
+            return;
+        }
+        runAsRemoteWeb.setUploadDirectory("/" + newProjectName); // NOI18N
+    }
+
+    private void adjustCopyFiles(String originalProjectName, String projectName) {
+        LocalServer.ComboBoxModel model = (LocalServer.ComboBoxModel) runAsLocalWeb.getLocalServerModel();
+        boolean fire = false;
+        for (int i = 0; i < model.getSize(); ++i) {
+            LocalServer ls = model.getElementAt(i);
+            File src = new File(ls.getSrcRoot());
+            if (originalProjectName.equals(src.getName())) {
+                File newSrc = new File(src.getParentFile(), projectName);
+                ls.setSrcRoot(newSrc.getAbsolutePath());
+                fire = true;
+            }
+        }
+        if (fire) {
+            model.fireContentsChanged();
+        }
     }
 
     public void stateChanged(ChangeEvent e) {
         switch (getRunAsType()) {
             case LOCAL:
                 adjustUrl();
+                adjustUploadDirectoryAndCopyFiles();
                 break;
             case REMOTE:
-                adjustUploadDirectory();
+                adjustUploadDirectoryAndCopyFiles();
                 break;
         }
         fireChangeEvent();
