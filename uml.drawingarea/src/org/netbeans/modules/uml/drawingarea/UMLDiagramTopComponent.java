@@ -686,6 +686,9 @@ public class UMLDiagramTopComponent extends TopComponent
 
         setDisplayName(diagram.getNameWithAlias());
         setName(diagram.getName());
+        
+        INamespace space = diagram.getNamespace();
+        setToolTipText(space.getFullyQualifiedName(true) + "::" + diagram.getNameWithAlias()); // NOI18N
     }
 
     /**
@@ -1787,8 +1790,7 @@ public class UMLDiagramTopComponent extends TopComponent
                     String newName = diagram.getName();
                     if (newName != null && newName.trim().length() > 0 )
                     {
-                        setName(newName);
-                        setDiagramDisplayName(newName);
+                        setName();
                         setDiagramDirty(true);
                     }
                 }
