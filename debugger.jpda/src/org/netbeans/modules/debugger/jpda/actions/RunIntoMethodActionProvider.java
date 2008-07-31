@@ -172,24 +172,23 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             return;
         }
         final String method = methodPtr[0];
-//        if (method.length () < 1) {
-//            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
-//                NbBundle.getMessage(RunIntoMethodActionProvider.class,
-//                                    "MSG_Put_cursor_on_some_method_call")
-//            );
-//            DialogDisplayer.getDefault ().notify (descriptor);
-//            return;
-//        }
+        if (method.length () < 1) {
+            NotifyDescriptor.Message descriptor = new NotifyDescriptor.Message(
+                NbBundle.getMessage(RunIntoMethodActionProvider.class,
+                                    "MSG_Put_cursor_on_some_method_call")
+            );
+            DialogDisplayer.getDefault ().notify (descriptor);
+            return;
+        }
         final int methodLine = linePtr[0];
         final int methodOffset = offsetPtr[0];
         final String url = urlPtr[0];
-        String className = debugger.getCurrentThread().getClassName(); // [TODO]
+        String className = debugger.getCurrentThread().getClassName();
         VirtualMachine vm = debugger.getVirtualMachine();
         if (vm == null) return ;
         final List<ReferenceType> classes = vm.classesByName(className);
         if (!classes.isEmpty()) {
-            MethodChooser chooser = new MethodChooser(debugger, session, url, classes.get(0), methodLine, methodOffset);
-            chooser.run();
+            doAction(url, classes.get(0), methodLine, methodOffset, method);
         } else {
             final ClassLoadUnloadBreakpoint cbrkp = ClassLoadUnloadBreakpoint.create(className, false, ClassLoadUnloadBreakpoint.TYPE_CLASS_LOADED);
             cbrkp.setHidden(true);
@@ -197,9 +196,7 @@ public class RunIntoMethodActionProvider extends ActionsProviderSupport
             cbrkp.addJPDABreakpointListener(new JPDABreakpointListener() {
                 public void breakpointReached(JPDABreakpointEvent event) {
                     DebuggerManager.getDebuggerManager().removeBreakpoint(cbrkp);
-                    MethodChooser chooser = new MethodChooser(debugger, session, url, classes.get(0), methodLine, methodOffset);
-                    chooser.run();
-                    //doAction(url, event.getReferenceType(), methodLine, methodOffset, method);
+                    doAction(url, event.getReferenceType(), methodLine, methodOffset, method);
                 }
             });
             DebuggerManager.getDebuggerManager().addBreakpoint(cbrkp);

@@ -3,7 +3,7 @@
 <html>
     <head>
         <title>TTL_RestClient_Stubs - MSG_TestPage</title>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
         <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
         <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
         <!-- JS_DECLARE_START - DO NOT REMOVE-->

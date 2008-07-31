@@ -75,7 +75,7 @@ import java.io.File;
 import org.netbeans.modules.groovy.grailsproject.GrailsProject;
 
 /**
- * 
+ *
  * @author Martin Adamek
  */
 public final class TreeRootNode extends FilterNode implements PropertyChangeListener {
@@ -90,18 +90,18 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
         String pathName = g.getName();
         setShortDescription(pathName.substring(project.getProjectDirectory().getPath().length() + 1));
     }
-    
+
     static String getDirName(SourceGroup g){
         // Source Groups always use a slash as file-separator, no matter
         // whether we are dealing with unix or windows:
-        
+
         String pathName = g.getName();
         int lastSlash = pathName.lastIndexOf("/");
         String dirName = pathName.substring(lastSlash + 1);
         return dirName;
     }
-    
-    
+
+
     private TreeRootNode(DataFolder folder, SourceGroup g, GrailsProject project) {
         this(new FilterNode(folder.getNodeDelegate(), folder.createNodeChildren(new VisibilityQueryDataFilter(g))), g, project);
     }
@@ -115,7 +115,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
                                 // number of displayed templates with the NewFile action.
                                 // see # 122942
                                 new TemplatesImpl(project, g)
-                                ) 
+                                )
                 ));
         this.g = g;
         g.addPropertyChangeListener(WeakListeners.propertyChange(this, g));
@@ -125,7 +125,7 @@ public final class TreeRootNode extends FilterNode implements PropertyChangeList
     public PasteType getDropType(Transferable t, int action, int index) {
         return null;
     }
-    
+
     /** Copied from PackageRootNode with modifications. */
     private Image computeIcon(boolean opened, int type) {
         Icon icon = g.getIcon(opened);

@@ -261,6 +261,12 @@ public class DebuggerAction extends AbstractAction {
         return action;
     }
     
+    public static DebuggerAction createStepIntoNextMethodAction () {
+        DebuggerAction action = new DebuggerAction("stepIntoNextMethod"); // NOI18N [TODO] add constant
+        action.putValue (Action.NAME, "CTL_Step_into_next_method_action_name");
+        return action;
+    }
+    
     public static DebuggerAction createStepOutAction () {
         DebuggerAction action = new DebuggerAction(ActionsManager.ACTION_STEP_OUT);
         action.putValue (Action.NAME, "CTL_Step_out_action_name");

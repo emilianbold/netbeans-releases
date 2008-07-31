@@ -53,7 +53,7 @@ public enum SupportedRuleTypes {
     }
     
     SupportedRuleTypes(Class<? extends Instruction> instrInterf) {
-        assert instrInterf.isInterface() : "The interface should be specified"; // NOI8N
+        assert instrInterf.isInterface() : "The interface should be specified"; // NOI18N
         myInterface = instrInterf;
         //
         registerType(instrInterf, this);

@@ -115,7 +115,8 @@ public final class EjbJarSourceRootsUi {
                                              JButton addFolderButton,
                                              JButton removeButton,
                                              JButton upButton,
-                                             JButton downButton) {
+                                             JButton downButton,
+                                             boolean emptyTableIsValid) {
         
         EditMediator em = new EditMediator( master,
                                             sourceRoots,
@@ -123,7 +124,8 @@ public final class EjbJarSourceRootsUi {
                                             addFolderButton,
                                             removeButton,
                                             upButton,
-                                            downButton);
+                                            downButton,
+                                            emptyTableIsValid);
         
         // Register the listeners        
         // On all buttons
@@ -196,13 +198,18 @@ public final class EjbJarSourceRootsUi {
         private EditMediator relatedEditMediator;
         private File lastUsedDir; //Last used current folder in JFileChooser
         
+        private boolean emptyTableIsValid;
+        
         public EditMediator( EjbJarProject master,
                              SourceRoots sourceRoots,
                              JTable rootsList,
                              JButton addFolderButton,
                              JButton removeButton,
                              JButton upButton,
-                             JButton downButton) {
+                             JButton downButton,
+                             boolean emptyTableIsValid) {
+            
+            this.emptyTableIsValid = emptyTableIsValid;
 
             if ( !( rootsList.getModel() instanceof DefaultTableModel ) ) {
                 throw new IllegalArgumentException( "Jtable's model has to be of class DefaultTableModel" ); // NOI18N
@@ -305,6 +312,9 @@ public final class EjbJarSourceRootsUi {
 
             // remove enabled only if selection is not empty
             boolean remove = si != null && si.length > 0;
+            if (si != null && !emptyTableIsValid && remove) {
+                remove = si.length < rootsList.getRowCount();
+            }
             // and when the selection does not contain unremovable item
 
             // up button enabled if selection is not empty

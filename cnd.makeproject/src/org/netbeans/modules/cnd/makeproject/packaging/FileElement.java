@@ -53,9 +53,9 @@ public class FileElement {
         this.type = type;
         this.from = from;
         this.to = to;
-        this.permission = "0644"; // NOI18N
-        this.owner = "root"; // NOI18N
-        this.group = "sys"; // NOI18N
+        this.permission = ""; // NOI18N
+        this.owner = ""; // NOI18N
+        this.group = ""; // NOI18N
     }
     
     public FileElement(FileType type, String from, String to, String permission, String owner, String group) {

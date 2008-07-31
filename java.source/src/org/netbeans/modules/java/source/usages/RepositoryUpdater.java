@@ -61,6 +61,7 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -74,6 +75,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -234,7 +237,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     public Map<URL,List<URL>> getDependencies () {
         return new HashMap<URL,List<URL>> (this.deps);
     }
-    
+
     private synchronized void open () throws IllegalStateException {
         if (notInitialized) {
             try {
@@ -1752,7 +1755,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         final URL rootURL = it.previous();
                         it.remove();                                                                                
                         if (!oldRoots.remove(rootURL) && !RepositoryUpdater.this.scannedRoots.contains(rootURL)) {
-                            long startT = System.currentTimeMillis();                        
+                            long startT = System.currentTimeMillis();
                             updateFolder (rootURL,rootURL, true, false, handle);
                             long time = System.currentTimeMillis() - startT;                        
                             if (PERF_TEST) {
@@ -2168,12 +2171,18 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                 }
                 final File classCache = Index.getClassFolder(rootFile);
                 final Map<URI, List<String>> misplacedSource2FQNs = new HashMap<URI, List<String>>();
-                Map <String,List<File>> resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile,folderFile),true);
+                Map<String, List<File>> resources = Collections.<String, List<File>>emptyMap();
                 final FileList children = new FileList(folderFile);
                 Set<File> compiledFiles = new HashSet<File>();
-                parseFiles(root, classCache, isInitialCompilation,
-                        children.getJavaFiles(), children.getVirtualJavaFiles(),
-                        clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs, false, true);
+                children.getJavaFiles();
+                if (children.digestChanged()) {
+                    resources = getAllClassFiles(classCache, FileObjects.getRelativePath(rootFile, folderFile), true);
+                    parseFiles(root, classCache, isInitialCompilation,
+                            children.getJavaFiles(), children.getVirtualJavaFiles(),
+                            clean, handle, filter, resources, compiledFiles, null, misplacedSource2FQNs, false, true);
+                } else {
+                    ClassIndexManager.getDefault().createUsagesQuery(root, true);
+                }
                 
                 if (!misplacedSource2FQNs.isEmpty()) {
                     if (LOGGER.isLoggable(Level.FINE)) {
@@ -2712,6 +2721,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private final List<File> javaFiles = new LinkedList<File>();
         private final List<File> virtualJavaFiles = new LinkedList<File>();
         private boolean initialized;
+        private boolean digestChanged = true;
 
         public FileList (final File root) {
             assert root != null;
@@ -2732,8 +2742,52 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
         private synchronized void init () {
             if (!initialized) {                
                 collectFiles (root, javaFiles, virtualJavaFiles);
+                computeDigest(root, javaFiles);
                 initialized = true;
             }
+        }
+
+        private boolean digestChanged() {
+            return digestChanged;
+        }
+
+        private void computeDigest(File root, final List<File> javaFiles) {
+            StringBuilder sb = new StringBuilder(200);
+            sb.append(SourceLevelQuery.getSourceLevel(FileUtil.toFileObject(root)));
+            for (File f : javaFiles) {
+                sb.append(f.getPath()).append(f.lastModified());
+            }
+            try {
+                MessageDigest md5 = MessageDigest.getInstance("MD5");
+                byte[] b = sb.toString().getBytes();
+                byte[] digest = md5.digest(b);
+                URL rootUrl = root.toURI().toURL();
+                Properties prop = loadProperties(rootUrl);
+                String data = prop.getProperty("digest");
+                if (data != null) {
+                    String newDigest = printDigest(digest);
+                    if (data.equals(newDigest) == true) {
+                        digestChanged = false;
+                    }
+                }
+                prop.put("digest", printDigest(digest));
+                storeProperties(rootUrl, prop);
+            } catch (IOException e) {
+            } catch (NoSuchAlgorithmException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        private String printDigest(byte[] digest) {
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < digest.length; i++) {
+                String hex = Integer.toHexString(0xFF & digest[i]);
+                if (hex.length() == 1) {
+                    sb.append('0');
+                }
+                sb.append(hex);
+            }
+            return sb.toString();
         }
         
         private static void collectFiles (final File root, final List<? super File> javaFiles,
