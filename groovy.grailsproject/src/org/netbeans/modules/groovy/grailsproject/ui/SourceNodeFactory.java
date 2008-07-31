@@ -63,24 +63,24 @@ import org.openide.util.ChangeSupport;
  * @author Martin Adamek
  */
 public class SourceNodeFactory implements NodeFactory {
-    
+
     public SourceNodeFactory() {
     }
 
     public NodeList<?> createNodes(Project p) {
-        
+
         GrailsProject project = p.getLookup().lookup(GrailsProject.class);
         assert project != null;
         return new SourcesNodeList(project);
-        
+
     }
-    
+
     private static class SourcesNodeList implements NodeList<SourceGroupKey>, ChangeListener {
 
         private GrailsProject project;
-        
+
         private final ChangeSupport changeSupport = new ChangeSupport(this);
-        
+
         public SourcesNodeList(GrailsProject proj) {
             this.project = proj;
         }
@@ -91,7 +91,7 @@ public class SourceNodeFactory implements NodeFactory {
                 return Collections.<SourceGroupKey>emptyList();
             }
             Sources sources = getSources();
-            
+
             List<SourceGroupKey> result =  new ArrayList<SourceGroupKey>();
 
             for (FileObject fileObject : projectDir.getChildren()) {
@@ -133,27 +133,27 @@ public class SourceNodeFactory implements NodeFactory {
 //            java.util.Collections.sort(result);
             return result;
         }
-        
+
         public void addChangeListener(ChangeListener l) {
             changeSupport.addChangeListener(l);
         }
-        
+
         public void removeChangeListener(ChangeListener l) {
             changeSupport.removeChangeListener(l);
         }
-        
+
         public Node node(SourceGroupKey key) {
             return new TreeRootNode(key.group, project);
         }
-        
+
         public void addNotify() {
             getSources().addChangeListener(this);
         }
-        
+
         public void removeNotify() {
             getSources().removeChangeListener(this);
         }
-        
+
         public void stateChanged(ChangeEvent e) {
             // setKeys(getKeys());
             // The caller holds ProjectManager.mutex() read lock
@@ -163,35 +163,35 @@ public class SourceNodeFactory implements NodeFactory {
                 }
             });
         }
-        
+
         private Sources getSources() {
             return ProjectUtils.getSources(project);
         }
-        
+
     }
 
     private static class SourceGroupKey implements Comparable<SourceGroupKey> {
-        
+
         public final SourceGroup group;
         public final FileObject fileObject;
-        
+
         SourceGroupKey(SourceGroup group) {
             this.group = group;
             this.fileObject = group.getRootFolder();
         }
-        
+
         public int hashCode() {
             return fileObject.hashCode();
         }
-        
-        
+
+
         public int compareTo(SourceGroupKey o) {
             return group.getDisplayName().compareTo(o.group.getDisplayName());
-            
+
         }
-        
+
         public boolean equals(Object obj) {
-            
+
             if (!(obj instanceof SourceGroupKey)) {
                 return false;
             } else {
@@ -202,14 +202,14 @@ public class SourceNodeFactory implements NodeFactory {
                 return fileObject.equals(otherKey.fileObject) &&
                         thisDisplayName == null ? otherDisplayName == null : thisDisplayName.equals(otherDisplayName);
             }
-            
+
         }
 
         @Override
         public String toString() {
             return group.toString();
         }
-        
+
     }
 
 }
