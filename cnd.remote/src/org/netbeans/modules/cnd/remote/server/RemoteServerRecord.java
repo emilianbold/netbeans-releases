@@ -46,7 +46,9 @@ import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.cnd.api.compilers.CompilerSetManager;
 import org.netbeans.modules.cnd.api.remote.ServerRecord;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * The definition of a remote server and login. 
@@ -97,7 +99,7 @@ public class RemoteServerRecord implements ServerRecord {
     public void validate() {
         if (!isOnline()) {
             if (SwingUtilities.isEventDispatchThread()) {
-                SwingUtilities.invokeLater(new Runnable() {
+                RequestProcessor.getDefault().post(new Runnable() {
                     public void run() {
                         validate2();
                     }
@@ -112,7 +114,7 @@ public class RemoteServerRecord implements ServerRecord {
         log.fine("RSR.validate2: Validating " + name);
         ProgressHandle ph = ProgressHandleFactory.createHandle(NbBundle.getMessage(RemoteServerRecord.class, "PBAR_ConnectingTo", name));
         ph.start();
-        init();
+        init(null);
         ph.finish();
     }
     
@@ -121,6 +123,7 @@ public class RemoteServerRecord implements ServerRecord {
      * thread. Parts of the initialization use this thread and will block.
      */
     public void init(PropertyChangeSupport pcs) {
+        assert !SwingUtilities.isEventDispatchThread() : "RemoteServer initialization must be done out of EDT"; // NOI18N
         Object ostate = state;
         state = STATE_INITIALIZING;
         RemoteServerSetup rss = new RemoteServerSetup(name);
@@ -142,9 +145,6 @@ public class RemoteServerRecord implements ServerRecord {
         if (pcs != null) {
             pcs.firePropertyChange(RemoteServerRecord.PROP_STATE_CHANGED, ostate, state);
         }
-    }
-    public void init() {
-        init(null);
     }
     
     public Object getState() {
