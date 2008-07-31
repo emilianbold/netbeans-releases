@@ -1049,13 +1049,13 @@ public class ConfigurationLogic extends ProductConfigurationLogic {
     public static final String NBGFMYSQL_THIRDPARTY_README =
             "NB_GF_MySQL_Bundle_Thirdparty_license_readme.txt";
     public static final String MYSQL_START_COMMAND_PROPERTY =
-            "com.sun.mysql.startcommand";
+            "-Dcom.sun.mysql.startcommand";
     public static final String MYSQL_START_ARGS_PROPERTY =
-            "com.sun.mysql.startargs";
+            "-Dcom.sun.mysql.startargs";
     public static final String MYSQL_STOP_COMMAND_PROPERTY =
-            "com.sun.mysql.stopcommand";
+            "-Dcom.sun.mysql.stopcommand";
     public static final String MYSQL_STOP_ARGS_PROPERTY =
-            "com.sun.mysql.stopargs";
+            "-Dcom.sun.mysql.stopargs";
     public static final String MYSQL_SERVER_DAEMON_FILE_UNIX =
             "support-files/mysql.server";
     public static final String[] POSSIBLE_GKSU_LOCATIONS = {
