@@ -337,7 +337,7 @@ public class OutputTabOperator extends JComponentOperator {
     protected static final class OutputTabSubchooser implements ComponentChooser {
         
         /** Name of OutputTab to search for. */
-        private String tabName;
+        private String tabName = null;
         
         public OutputTabSubchooser() {
         }
@@ -355,7 +355,8 @@ public class OutputTabOperator extends JComponentOperator {
         }
         
         public String getDescription() {
-            return "org.netbeans.core.output2.OutputTab";  // NOI18N
+            return "org.netbeans.core.output2.OutputTab" + // NOI18N
+                    ((tabName != null) ? " with \"" + tabName + "\" name" : "");  // NOI18N
         }
     }
     
