@@ -149,6 +149,9 @@ made subject to such option by the copyright holder.
             <fileset dir="${build.updates.dir}">
                 <include name="*.nbm"/>
             </fileset>
+            <updaterjar>
+                <fileset dir="${netbeans.dest.dir}" includes="platform*/modules/ext/updater.jar"/>
+            </updaterjar>
         </makeupdatedesc>
     </target>
     

@@ -103,6 +103,8 @@ import org.openide.util.Exceptions;
  */
 public class PHPCodeCompletion implements CodeCompletionHandler {
     private static final Logger LOGGER = Logger.getLogger(PHPCodeCompletion.class.getName());
+    private static final List<String> INVALID_PROPOSALS_FOR_CLS_MEMBERS =
+            Arrays.asList(new String[] {"__construct","__destruct"});//NOI18N
     private static final List<PHPTokenId[]> CLASS_NAME_TOKENCHAINS = Arrays.asList(
         new PHPTokenId[]{PHPTokenId.PHP_NEW},
         new PHPTokenId[]{PHPTokenId.PHP_NEW, PHPTokenId.WHITESPACE},
@@ -407,10 +409,9 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                     request.index.getMethods(request.result, typeName, request.prefix, nameKind, attrMask);
 
                 for (IndexedFunction method : methods){
-                    if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {
-                        List<String> notValidProposals = Arrays.asList(new String[] {"__construct","__destruct  "});//NOI18N
+                    if (staticContext && method.isStatic() || instanceContext && !method.isStatic()) {                        
                         for (int i = 0; i <= method.getOptionalArgs().length; i ++){
-                            if (!notValidProposals.contains(method.getName())) {
+                            if (!INVALID_PROPOSALS_FOR_CLS_MEMBERS.contains(method.getName())) {
                                 proposals.add(new PHPCompletionItem.FunctionItem(method, request, i));
                             }
                         }

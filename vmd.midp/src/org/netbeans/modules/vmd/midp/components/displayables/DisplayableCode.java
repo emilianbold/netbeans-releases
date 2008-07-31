@@ -117,7 +117,7 @@ public class DisplayableCode {
         }
 
         public boolean isRequiredToBeSet (DesignComponent component) {
-            return ! component.isDefaultValue (DisplayableCD.PROP_COMMANDS);
+            return component.readProperty(DisplayableCD.PROP_COMMANDS).getArray().size () > 0;
         }
 
         public int getCount (DesignComponent component) {

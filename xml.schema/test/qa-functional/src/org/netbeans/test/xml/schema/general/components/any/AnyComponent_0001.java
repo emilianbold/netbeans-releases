@@ -129,8 +129,6 @@ public class AnyComponent_0001 extends AnyComponent {
       CheckingProperty( "ID", asCorrectIDValues, true );
       CheckingProperty( "ID", asIncorrectIDValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -140,8 +138,6 @@ public class AnyComponent_0001 extends AnyComponent {
 
       CheckingProperty( "Max Occurs", asCorrectMxOValues, true );
       CheckingProperty( "Max Occurs", asIncorrectMxOValues, false );
-
-      // TODO : Undo, Redo
 
       endTest( );
     }
@@ -153,8 +149,6 @@ public class AnyComponent_0001 extends AnyComponent {
       CheckingProperty( "Min Occurs", asCorrectMnOValues, true );
       CheckingProperty( "Min Occurs", asIncorrectMnOValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -165,8 +159,6 @@ public class AnyComponent_0001 extends AnyComponent {
       CheckingProperty( "Process Contents", asCorrectProcessValues, true );
       //CheckingProperty( "Process Contents", asIncorrectProcessValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -176,8 +168,6 @@ public class AnyComponent_0001 extends AnyComponent {
 
       CheckingProperty( "Namespace", asCorrectNamespaceValues, true );
       //CheckingProperty( "Process Contents", asIncorrectProcessValues, false );
-
-      // TODO : Undo, Redo
 
       endTest( );
     }

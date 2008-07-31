@@ -700,10 +700,6 @@ public class FileStatusCache {
     Map<File, FileInformation>  getAllModifiedFiles() {
         return cacheProvider.getAllModifiedValues();
     }
-    
-    boolean modifiedFilesChanged() {
-        return cacheProvider.modifiedFilesChanged();
-    }
 
     /**
      * Refreshes given directory and all subdirectories.

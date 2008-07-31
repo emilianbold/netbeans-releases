@@ -87,7 +87,7 @@ public class WindowsStandalone50Installation implements Installation {
     }
 
     public String getDefaultPort() {
-        return "3306"; // NOI8N
+        return "3306"; // NOI18N
     }
 
     public Installation getInstallation(String command, Command cmdType) {

@@ -59,8 +59,8 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.tree.TreeNode;
 import junit.framework.AssertionFailedError;
-import junit.framework.Test;
 import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Utilities;
@@ -1285,7 +1285,7 @@ public class ChildrenKeysTest extends NbTestCase {
         lch.assertLazyCount("Counter shouldstill be 3", 3);
         if (lazy()) {
             assertEquals("Size is 5", 5, ta.getChildren().getNodesCount());
-            assertEquals("Child is empty", EntrySupport.Lazy.NONEXISTING_NODE, ta.getChildren().getNodeAt(4));
+            assertTrue("Child is empty", ta.getChildren().getNodeAt(4) instanceof EntrySupport.Lazy.DummyNode);
             assertEquals("We have just four children", 4, ta.getChildren().getNodesCount());
             assertEquals("Three nodes created, still", 3, lch.cnt);
             l.assertRemoveEvent("Removal of 4th node", new int[] { 4 });

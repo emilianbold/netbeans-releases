@@ -49,10 +49,11 @@ import org.w3c.dom.svg.SVGLocatableElement;
  * <pre>
  *  &lt;g id="label" transform="translate(130,200)">
  *   &lt;text display="none">type=label&lt;/text>
- *   &lt;text id="label_text" x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *   &lt;g>
+ *        &lt;text id="label_text" x="5" y="5" stroke="black" font-size="15"  font-family="SunSansSemiBold">
+ *       Label&lt;/text>
  *       &lt;text display="none">type=text&lt;/text>
- *       Label
- *   &lt;/text>
+ *   &lt;/g>
  *   &lt;/g>
  * </pre>
  * @author ads
@@ -69,7 +70,7 @@ public class SVGLabel extends SVGComponent {
                 getElement().getId() + TEXT_SUFFIX);
 
         if (myText == null) {
-            myText = (SVGLocatableElement) getElementByMeta(getElement(), TYPE,
+            myText = (SVGLocatableElement) getNestedElementByMeta(getElement(), TYPE,
                     SVGTextField.TEXT);
         }
         

@@ -129,8 +129,8 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                     break;
                 case JAVADOC:
                     key = "TXT_JDKJavadoc";         //NOI18N
-                    mneKey = "MNE_JDKJavadoc";      //NOI8N
-                    ad = "AD_JDKJavadoc";      //NOI8N
+                    mneKey = "MNE_JDKJavadoc";      //NOI18N
+                    ad = "AD_JDKJavadoc";      //NOI18N
                     break;
                 default:
                     assert false : "Illegal type of panel";     //NOI18N

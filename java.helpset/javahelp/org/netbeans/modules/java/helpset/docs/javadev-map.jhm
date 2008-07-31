@@ -161,6 +161,13 @@
 <mapID target="gui.testing" url="gui/gui_previewing.html" />
 <mapID target="gui.deploying" url="gui/gui_deploying.html" />
 
+<!--begin Groovy section-->
+
+<mapID target="groovy_intro" url="groovy/groovy_intro.html" />
+<mapID target="groovy_enable" url="groovy/groovy_enable.html" />
+
+
+
 <!--begin Spring Framework section-->
 
 <mapID target="spring.framework.about" url="spring/about.html" />

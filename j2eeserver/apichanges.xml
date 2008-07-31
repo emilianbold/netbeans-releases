@@ -113,6 +113,27 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
+        <change id="finishServerInitialization">
+	    <api name="plugins"/>
+	    <summary>
+                Provide a way for a plugin to perform post initialization action.
+	    </summary>
+	    <version major="1" minor="51"/>
+	    <date day="31" month="7" year="2008"/>
+	    <author login="vkraemer"/>
+	    <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+	    <description>
+                <p>
+                    OptionalDeploymentManagerFactory gets a new stub, that plugin
+                    implementations would override.  The Plugin author can assume
+                    that the ServerRegistry is initialized to the point where it
+                    can support the creation on instances.
+                </p>
+	    </description>
+	    <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="OptionalDeploymentManagerFactory"/>
+            <class package="org.netbeans.modules.j2ee.deployment.plugins.spi" name="ServerInitializationException"/>
+            <issue number="141427"/>
+	 </change>
          <change id="lookupProvider">
  	    <api name="plugins"/>
  	    <summary>

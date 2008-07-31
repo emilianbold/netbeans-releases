@@ -183,7 +183,7 @@ final class WorkspaceParser {
             }
         };
         
-        Set<String> projectsDirs = new HashSet<String>();
+        Set<File> projectsDirs = new HashSet<File>();
         // let's find internal projects
         File[] innerDirs = workspace.getDirectory().listFiles(dirFilter);
         for (int i = 0; i < innerDirs.length; i++) {
@@ -193,7 +193,7 @@ final class WorkspaceParser {
                 // information of all projects in the workspace
                 logger.finest("Found a regular Eclipse Project in: " // NOI18N
                         + prjDir.getAbsolutePath());
-                if (!projectsDirs.contains(prjDir.getName())) {
+                if (!projectsDirs.contains(prjDir)) {
                     addLightProject(projectsDirs, prjDir, true);
                 } else {
                     logger.finest("Trying to add the same project twice: " // NOI18N
@@ -211,7 +211,7 @@ final class WorkspaceParser {
                 if (EclipseUtils.isRegularProject(location)) {
                     logger.finest("Found a regular Eclipse Project in: " // NOI18N
                             + location.getAbsolutePath());
-                    if (!projectsDirs.contains(location.getName())) {
+                    if (!projectsDirs.contains(location)) {
                         addLightProject(projectsDirs, location, false);
                     } else {
                         logger.finest("Trying to add the same project twice: " // NOI18N
@@ -237,13 +237,13 @@ final class WorkspaceParser {
         }
     }
     
-    private void addLightProject(Set<String> projectsDirs, File prjDir, boolean internal) {
+    private void addLightProject(Set<File> projectsDirs, File prjDir, boolean internal) {
         EclipseProject project = EclipseProject.createProject(prjDir);
         if (project != null) {
             project.setName(prjDir.getName());
             project.setInternal(internal);
             workspace.addProject(project);
-            projectsDirs.add(prjDir.getName());
+            projectsDirs.add(prjDir);
         }
     }
     

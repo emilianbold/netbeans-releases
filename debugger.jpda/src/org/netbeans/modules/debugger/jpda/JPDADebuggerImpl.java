@@ -645,25 +645,32 @@ public class JPDADebuggerImpl extends JPDADebugger {
     throws InvalidExpressionException {
         synchronized (LOCK) {
             
-            CallStackFrameImpl csf = (CallStackFrameImpl) 
-                getCurrentCallStackFrame ();
+            CallStackFrameImpl csf = (CallStackFrameImpl)getCurrentCallStackFrame ();
             if (csf != null) {
                 JPDAThread frameThread = csf.getThread();
                 try {
-                    Value value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth());
+                    Value value = null;
+                    boolean passed = false;
                     try {
-                        csf.getThread();
-                    } catch (InvalidStackFrameException isfex) {
-                        // The frame is invalidated, set the new current...
-                        int depth = csf.getFrameDepth();
-                        try {
-                            CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
-                            setCurrentCallStackFrameNoFire(csf2);
-                        } catch (AbsentInformationException aiex) {
-                            setCurrentCallStackFrame(null);
-                        }
+                        value = evaluateIn (expression, csf.getStackFrame (), csf.getFrameDepth());
+                        passed = true;
+                    } catch (InvalidStackFrameException e) {
                     }
-                    return value;
+                    if (passed) {
+                        try {
+                            csf.getThread();
+                        } catch (InvalidStackFrameException isfex) {
+                            // The frame is invalidated, set the new current...
+                            int depth = csf.getFrameDepth();
+                            try {
+                                CallStackFrame csf2 = frameThread.getCallStack(depth, depth + 1)[0];
+                                setCurrentCallStackFrameNoFire(csf2);
+                            } catch (AbsentInformationException aiex) {
+                                setCurrentCallStackFrame(null);
+                            }
+                        }
+                        return value;
+                    }
                 } catch (com.sun.jdi.VMDisconnectedException e) {
                     // Causes kill action when something is being evaluated. 
                     return null;
@@ -1020,9 +1027,12 @@ public class JPDADebuggerImpl extends JPDADebugger {
             vm = virtualMachine; // re-take the VM, it can be nulled by finish()
         }
         if (vm != null) {
-            notifyToBeResumedAll();
-            synchronized (LOCK) {
-                vm.resume();
+            try {
+                notifyToBeResumedAll();
+                synchronized (LOCK) {
+                    vm.resume();
+                }
+            } catch (VMDisconnectedException e) {
             }
         }
         
@@ -1115,8 +1125,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
      * Used by KillActionProvider.
      */
     public void finish () {
-        //Workaround for #56233
-        //synchronized (LOCK) { 
+        try {
             synchronized (this) {
                 if (finishing) {
                     // Can easily be called twice - from the operator termination
@@ -1125,8 +1134,8 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 finishing = true;
             }
             logger.fine("StartActionProvider.finish ()");
-            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             if (getState () == STATE_DISCONNECTED) return;
+            AbstractDICookie di = lookupProvider.lookupFirst(null, AbstractDICookie.class);
             Operator o = getOperator();
             if (o != null) o.stop();
             synchronized (this) {
@@ -1185,7 +1194,9 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 LOCK2.notifyAll ();
             }
             EditorContextBridge.getContext().disposeTimeStamp(this);
-        //}
+        } finally {
+            finishing = false; // for safety reasons
+        }
     }
 
     /**
@@ -1428,19 +1439,22 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 vm = virtualMachine;
             }
             if (vm == null) return ;
-            java.util.regex.Matcher m = jvmVersionPattern.matcher(vm.version ());
-            if (m.matches ()) {
-                int minor = Integer.parseInt (m.group (2));
-                if (minor >= 5) {
-                    try {
-                        tcGenericSignatureMethod = TypeComponent.class.
-                            getMethod ("genericSignature", new Class [0]);
-                        lvGenericSignatureMethod = LocalVariable.class.
-                            getMethod ("genericSignature", new Class [0]);
-                    } catch (NoSuchMethodException e) {
-                        // the method is not available, ignore generics
+            try {
+                java.util.regex.Matcher m = jvmVersionPattern.matcher(vm.version ());
+                if (m.matches ()) {
+                    int minor = Integer.parseInt (m.group (2));
+                    if (minor >= 5) {
+                        try {
+                            tcGenericSignatureMethod = TypeComponent.class.
+                                getMethod ("genericSignature", new Class [0]);
+                            lvGenericSignatureMethod = LocalVariable.class.
+                                getMethod ("genericSignature", new Class [0]);
+                        } catch (NoSuchMethodException e) {
+                            // the method is not available, ignore generics
+                        }
                     }
                 }
+            } catch (VMDisconnectedException e) {
             }
         }
     }
@@ -1665,7 +1679,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
-                classes = virtualMachine.allClasses();
+                try {
+                    classes = virtualMachine.allClasses();
+                } catch (VMDisconnectedException e) {
+                    classes = Collections.emptyList();
+                }
             }
         }
         return new ClassTypeList(this, classes);
@@ -1677,7 +1695,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
             if (virtualMachine == null) {
                 classes = Collections.emptyList();
             } else {
-                classes = virtualMachine.classesByName(name);
+                try {
+                    classes = virtualMachine.classesByName(name);
+                } catch (VMDisconnectedException e) {
+                    classes = Collections.emptyList();
+                }
             }
         }
         return new ClassTypeList(this, classes);
@@ -1690,6 +1712,11 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 vm = virtualMachine;
             }
             if (vm == null) {
+                return new long[classTypes.size()];
+            }
+            try {
+                vm.version(); // check whether we are still connected to VM
+            } catch (VMDisconnectedException e) {
                 return new long[classTypes.size()];
             }
             if (classTypes instanceof ClassTypeList) {
@@ -1720,7 +1747,7 @@ public class JPDADebuggerImpl extends JPDADebugger {
                 Object canGetInstanceInfo = canGetInstanceInfoMethod.invoke(vm, new Object[] {});
                 return Boolean.TRUE.equals(canGetInstanceInfo);
             } catch (Exception ex) {
-                ErrorManager.getDefault().notify(ex);
+                Logger.getLogger(JPDADebuggerImpl.class.getName()).log(Level.INFO, "", ex);
             }
         }
         return false;
