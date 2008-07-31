@@ -187,6 +187,7 @@ public final class RootWizard implements ActionListener, DocumentListener {
             sb.append(s);            
             sb.append(":"); // NOI18N
             String portS = rootPanel.portTextField.getText();
+            if (!method.equals("pserver")) portS = "";
             if ("".equals(portS.trim()) == false) {  // NOI18N
                 int portp = Integer.parseInt(portS);  // raise NFE
                 if (portp > 0) {
