@@ -47,22 +47,24 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         env.addPropertyChangeListener(this);
         
         // Init default values
-        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            if (!packagingConfiguration.getHeader().getModified()) {
-                String defArch = "Architecture..."; // FIXUP
-                if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
-                    defArch = "i386"; // NOI18N
-                }
-                else if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
-                    defArch = "sparc"; // NOI18N
-                }
-                List<InfoElement> headerList = packagingConfiguration.getHeader().getValue();
-                headerList.add(new InfoElement("PKG", "PackageName", true)); // NOI18N
-                headerList.add(new InfoElement("NAME", "Package description ...", true)); // NOI18N
-                headerList.add(new InfoElement("ARCH", defArch, true)); // NOI18N
-                headerList.add(new InfoElement("CATEGORY", "application", true)); // NOI18N
-                headerList.add(new InfoElement("VERSION", "1.0", true)); // NOI18N
+        if (!packagingConfiguration.getHeader().getModified()) {
+            String defArch = "Architecture..."; // FIXUP
+            if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_INTEL) {
+                defArch = "i386"; // NOI18N
             }
+            else if (conf.getPlatform().getValue() == Platform.PLATFORM_SOLARIS_SPARC) {
+                defArch = "sparc"; // NOI18N
+            }
+            List<InfoElement> headerList = packagingConfiguration.getHeader().getValue();
+            headerList.add(new InfoElement("PKG", "MyPackage", true)); // NOI18N
+            headerList.add(new InfoElement("NAME", "Package description ...", true)); // NOI18N
+            headerList.add(new InfoElement("ARCH", defArch, true)); // NOI18N
+            headerList.add(new InfoElement("CATEGORY", "application", true)); // NOI18N
+            headerList.add(new InfoElement("VERSION", "1.0", true)); // NOI18N
+            headerList.add(new InfoElement("BASEDIR", "/opt", false)); // NOI18N
+            headerList.add(new InfoElement("CLASSES", "none", false)); // NOI18N
+
+            packagingConfiguration.getHeader().setDirty(true);
         }
         
         // Add tabs

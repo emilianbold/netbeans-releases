@@ -144,11 +144,15 @@ public class PackagingFilesPanel extends ListEditorPanel {
                 }
                 itemPath = FilePathAdaptor.mapToRemote(itemPath);
                 itemPath = FilePathAdaptor.normalize(itemPath);
+                String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
+                if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
+                    topFolder += "/"; // NOI18N
+                }
                 if (files[i].isDirectory()) {
                     addObjectAction(new FileElement(
                             FileType.DIRECTORY,
                             "", // NOI18N
-                            files[i].getName(),
+                            topFolder + files[i].getName(),
                             packagingFilesOuterPanel.getDirPermTextField().getText(),
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
@@ -166,7 +170,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     addObjectAction(new FileElement(
                             FileType.FILE,
                             itemPath,
-                            files[i].getName(),
+                            topFolder + files[i].getName(),
                             perm,
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()
@@ -245,6 +249,10 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     String toFile = IpeUtils.toRelativePath(origDir.getParentFile().getAbsolutePath(), files[i].getPath());
                     toFile = FilePathAdaptor.mapToRemote(toFile);
                     toFile = FilePathAdaptor.normalize(toFile);
+                    String topFolder = packagingFilesOuterPanel.getTopDirectoryTextField().getText();
+                    if (topFolder.length() > 0 && !topFolder.endsWith("/")) { // NOI18N
+                        topFolder += "/"; // NOI18N
+                    }
                     String perm;
                     if (files[i].getName().endsWith(".exe") || files[i].isDirectory() || isExecutable(files[i])) {
                         perm = packagingFilesOuterPanel.getDirPermTextField().getText();
@@ -255,7 +263,7 @@ public class PackagingFilesPanel extends ListEditorPanel {
                     addObjectAction(new FileElement(
                             FileType.FILE,
                             path,
-                            toFile,
+                            topFolder + toFile,
                             perm,
                             packagingFilesOuterPanel.getOwnerTextField().getText(),
                             packagingFilesOuterPanel.getGroupTextField().getText()

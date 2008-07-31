@@ -75,6 +75,7 @@ import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
 import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
+import org.netbeans.modules.cnd.makeproject.packaging.InfoElement;
 
 public class ConfigurationMakefileWriter {
     private MakeConfigurationDescriptor projectDescriptor;
@@ -614,21 +615,20 @@ public class ConfigurationMakefileWriter {
     }
         
     private void writePackagingScriptBody(BufferedWriter bw, MakeConfiguration conf) throws IOException {
-        if (conf.getPackagingConfiguration().getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
-            return; // FIXUP
-        }
         String tmpdir = getObjectDir(conf) + "/tmp-packaging"; // NOI18N
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String output = packagingConfiguration.getOutputValue();
         String outputDir = IpeUtils.getDirName(output);
-        String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
-        List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
         
         bw.write("#!/bin/bash"); // NOI18N
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
             bw.write(" -x");
         }
         bw.write("\n"); // NOI18N
+        bw.write("\n"); // NOI18N
+        bw.write("#\n");
+        bw.write("# Generated - do not edit!\n");
+        bw.write("#\n");
         bw.write("\n"); // NOI18N
         
         bw.write("# Macros\n"); // NOI18N
@@ -676,6 +676,23 @@ public class ConfigurationMakefileWriter {
         bw.write("rm -rf $TMPDIR\n"); // NOI18N
         bw.write("mkdir -p $TMPDIR\n"); // NOI18N
         bw.write("\n"); // NOI18N
+        
+        if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP) {
+            writePackagingScriptBodyTarZip(bw, conf);
+        }
+        else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_SVR4_PACKAGE) {
+            writePackagingScriptBodySVR4(bw, conf);
+        }
+        else {
+            assert false;
+        }
+    }
+    
+    private void writePackagingScriptBodyTarZip(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+        List<FileElement> fileList = (List<FileElement>)packagingConfiguration.getFiles().getValue();
+        String output = packagingConfiguration.getOutputValue();
+        String outputRelToTmp = IpeUtils.isPathAbsolute(output) ? output : "../../../../" + output; // NOI18N
         
         bw.write("# Copy files and create sirectories and links\n"); // NOI18N
         for (FileElement elem : fileList) {
@@ -725,6 +742,75 @@ public class ConfigurationMakefileWriter {
         else {
             assert false;
         }
+        bw.write("\n"); // NOI18N
+        
+        bw.write("# Cleanup\n"); // NOI18N
+        bw.write("cd $TOP\n"); // NOI18N
+        bw.write("rm -rf $TMPDIR\n"); // NOI18N
+    }
+    
+    private String findPackageName(PackagingConfiguration packagingConfiguration) {
+        List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
+        for (InfoElement elem : infoList) {
+            if (elem.getName().equals("PKG")) {
+                return elem.getValue();
+            }
+        }
+        return null;
+    }
+    
+    private void writePackagingScriptBodySVR4(BufferedWriter bw, MakeConfiguration conf) throws IOException {
+        PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
+        String packageName = findPackageName(packagingConfiguration); // FIXUP: what is null????
+        
+        bw.write("# Create pkginfo and prototype files\n"); // NOI18N
+        bw.write("PKGINFOFILE=$TMPDIR/pkginfo\n"); // NOI18N
+        bw.write("PROTOTYPEFILE=$TMPDIR/prototype\n"); // NOI18N
+        bw.write("rm -f $PKGINFOFILE $PROTOTYPEFILE\n"); // NOI18N
+        bw.write("\n"); // NOI18N        
+        bw.write("cd $TOP\n"); // NOI18N
+        List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
+        for (InfoElement elem : infoList) {
+            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n");
+        }
+        bw.write("\n"); // NOI18N        
+        bw.write("cd $TOP\n"); // NOI18N 
+        bw.write("echo \"i pkginfo=pkginfo\" >> $PROTOTYPEFILE\n"); // NOI18N
+        List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
+        for (FileElement elem : fileList) {
+            bw.write("echo \"");
+            if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                bw.write("d");
+            }
+            else if (elem.getType() == FileElement.FileType.FILE) {
+                bw.write("f");
+            }
+            else if (elem.getType() == FileElement.FileType.SOFTLINK) {
+                bw.write("f");
+            }
+            else {
+                assert false;
+            }
+            bw.write(" none");
+            bw.write(" " + elem.getTo());
+            if (elem.getFrom().length() > 0) {
+                bw.write("=" + elem.getFrom());
+            }
+            bw.write(" " + elem.getPermission());
+            bw.write(" " + elem.getOwner());
+            bw.write(" " + elem.getGroup());
+            bw.write("\"");
+            bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
+        }
+        bw.write("\n"); // NOI18N
+        bw.write("# Make package\n"); // NOI18N        
+        bw.write("cd $TOP\n"); // NOI18N   
+        bw.write(packagingConfiguration.getToolValue() + " -o -f $PROTOTYPEFILE -r . -d $TMPDIR\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("pkgtrans -s $TMPDIR tmp.pkg " + packageName + "\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
+        bw.write("mv $TMPDIR/tmp.pkg"  + " " + packagingConfiguration.getOutputValue() + "\n"); // NOI18N
+        bw.write("checkReturnCode\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Cleanup\n"); // NOI18N
