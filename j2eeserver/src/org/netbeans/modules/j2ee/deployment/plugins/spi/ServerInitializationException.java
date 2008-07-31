@@ -37,81 +37,15 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+package org.netbeans.modules.j2ee.deployment.plugins.spi;
 
-public class FileElement {
-    public enum FileType {FILE, DIRECTORY, SOFTLINK, UNKNOWN};
-    
-    private FileType type;
-    private String from;
-    private String to;
-    private String permission;
-    private String owner;
-    private String group;
-    
-    public FileElement(FileType type, String from, String to) {
-        this.type = type;
-        this.from = from;
-        this.to = to;
-        this.permission = ""; // NOI18N
-        this.owner = ""; // NOI18N
-        this.group = ""; // NOI18N
-    }
-    
-    public FileElement(FileType type, String from, String to, String permission, String owner, String group) {
-        this.type = type;
-        this.from = from;
-        this.to = to;
-        this.permission = permission;
-        this.owner = owner;
-        this.group = group;
+public class ServerInitializationException extends Exception {
+
+    public ServerInitializationException(String message) {
+        super(message);
     }
 
-    public FileType getType() {
-        return type;
-    }
-
-    public void setType(FileType type) {
-        this.type = type;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
-        this.from = from;
-    }
-
-    public String getTo() {
-        return to;
-    }
-
-    public void setTo(String to) {
-        this.to = to;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
-    }
+    public ServerInitializationException(String message, Throwable cause) {
+        super(message, cause);
+    }    
 }

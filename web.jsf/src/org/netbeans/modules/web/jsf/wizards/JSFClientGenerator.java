@@ -371,7 +371,7 @@ public class JSFClientGenerator {
             (ajaxify ? "<%@ include file=\"/" + JSPF_FOLDER + "/" + JSFCRUD_AJAX_JSPF + "\" %><script type=\"text/javascript\" src=\"" + rootRelativePathToWebFolder + JSFCRUD_JAVASCRIPT + "\"></script>" : "");
             
         boolean welcomePageExists = addLinkToListJspIntoIndexJsp(wm, simpleEntityName, styleAndScriptTags, projectEncoding);
-        final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" />\n" : "";  //NOI18N
+        final String linkToIndex = welcomePageExists ? "<br />\n<h:commandLink value=\"Index\" action=\"welcome\" immediate=\"true\" />\n" : "";  //NOI18N
 
         progressMsg = NbBundle.getMessage(JSFClientGenerator.class, "MSG_Progress_Jsf_Now_Generating", jsfFolderName + "/List.jsp"); //NOI18N
         progressContributor.progress(progressMsg, progressIndex++);

@@ -1,8 +1,8 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
- * 
+ *
  * Copyright 2008 Sun Microsystems, Inc. All rights reserved.
- * 
+ *
  * The contents of this file are subject to the terms of either the GNU
  * General Public License Version 2 only ("GPL") or the Common
  * Development and Distribution License("CDDL") (collectively, the
@@ -20,7 +20,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -31,87 +31,29 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.ruby.rubyproject.rake;
 
-package org.netbeans.modules.cnd.makeproject.packaging;
+import org.netbeans.modules.ruby.rubyproject.RubyProject;
+import org.netbeans.modules.ruby.rubyproject.RubyProjectTestBase;
 
-public class FileElement {
-    public enum FileType {FILE, DIRECTORY, SOFTLINK, UNKNOWN};
-    
-    private FileType type;
-    private String from;
-    private String to;
-    private String permission;
-    private String owner;
-    private String group;
-    
-    public FileElement(FileType type, String from, String to) {
-        this.type = type;
-        this.from = from;
-        this.to = to;
-        this.permission = ""; // NOI18N
-        this.owner = ""; // NOI18N
-        this.group = ""; // NOI18N
-    }
-    
-    public FileElement(FileType type, String from, String to, String permission, String owner, String group) {
-        this.type = type;
-        this.from = from;
-        this.to = to;
-        this.permission = permission;
-        this.owner = owner;
-        this.group = group;
+public class RakeRunnerTest extends RubyProjectTestBase {
+
+    public RakeRunnerTest(String testName) {
+        super(testName);
     }
 
-    public FileType getType() {
-        return type;
-    }
+    public void testDoStandardConfiguration() throws Exception {
+        registerLayer();
+        RubyProject project = createTestProject();
 
-    public void setType(FileType type) {
-        this.type = type;
-    }
-
-    public String getFrom() {
-        return from;
-    }
-
-    public void setFrom(String from) {
-        this.from = from;
-    }
-
-    public String getTo() {
-        return to;
-    }
-
-    public void setTo(String to) {
-        this.to = to;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public String getGroup() {
-        return group;
-    }
-
-    public void setGroup(String group) {
-        this.group = group;
+        RakeRunner runner = new RakeRunner(project);
+        runner.setPWD(getWorkDir());
+        runner.showWarnings(true);
+        runner.run("clean");
     }
 }
