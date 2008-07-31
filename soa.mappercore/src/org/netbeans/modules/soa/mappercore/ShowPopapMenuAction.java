@@ -43,18 +43,14 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyEvent;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.MenuElement;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.soa.mappercore.model.GraphItem;
 import org.netbeans.modules.soa.mappercore.model.Link;
 import org.netbeans.modules.soa.mappercore.model.MapperModel;
 import org.netbeans.modules.soa.mappercore.model.Vertex;
-import org.openide.actions.CopyAction;
 
 /**
  *
@@ -133,7 +129,9 @@ public class ShowPopapMenuAction extends MapperKeyboardAction {
         JPopupMenu menu = context.getCanvasPopupMenu(model, item);
 
         if (menu != null) {
-            mapperMenu.addSeparator();
+            if (menu.getComponentCount() > 0) {
+                mapperMenu.addSeparator();
+            }
 
             for (int i = 0; i < menu.getComponentCount(); i++) {
                 mapperMenu.add(menu.getComponent(i));

@@ -74,7 +74,7 @@ public class ShowDescriptionAreaActionTest extends JellyTestCase {
         suite.addTest(new ShowDescriptionAreaActionTest("testPerformPopup"));
         return suite;
          */
-        return createModuleTest(ShowDescriptionAreaActionTest.class, "testPerformPopup");
+        return createModuleTest(ShowDescriptionAreaActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

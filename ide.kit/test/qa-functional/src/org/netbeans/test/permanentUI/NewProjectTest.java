@@ -73,14 +73,16 @@ public class NewProjectTest extends JellyTestCase{
             
         conf = conf.addTest("testNewProjectCategories"); 
         conf = conf.addTest("testNewProjectsJava");
-        conf = conf.addTest("testNewProjectsWeb");
-        conf = conf.addTest("testNewProjectsEnterprise");
-        conf = conf.addTest("testNewProjectsMobility");
-        conf = conf.addTest("testNewProjectsUML");
+        conf = conf.addTest("testNewProjectsJavaWeb");
+        conf = conf.addTest("testNewProjectsJavaEE");
+        conf = conf.addTest("testNewProjectsJavaME");
+        //conf = conf.addTest("testNewProjectsUML"); 30/7/2008 - uml removed from build
         conf = conf.addTest("testNewProjectsSOA");
         conf = conf.addTest("testNewProjectsRuby");
         conf = conf.addTest("testNewProjectsCpp");
-        conf = conf.addTest("testNewProjectsNetBeansPluginModules");
+        conf = conf.addTest("testNewProjectsNetBeansModules");
+        conf = conf.addTest("testNewProjectsGroovy");
+        conf = conf.addTest("testNewProjectsPHP");
         
         return NbModuleSuite.create(conf);
             
@@ -178,26 +180,26 @@ public class NewProjectTest extends JellyTestCase{
         assertTrue(assertResults.assertString, assertResults.assertValue);                      
     }
     
-    public void testNewProjectsWeb(){
+    public void testNewProjectsJavaWeb(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("Web", npwo);
+        assertResults = oneCategoryTest("Java Web", "Java_Web", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);                      
     }
     
-    public void testNewProjectsEnterprise(){
+    public void testNewProjectsJavaEE(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("Enterprise", npwo);
+        assertResults = oneCategoryTest("Java EE", "Java_EE", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);                      
     }
 
-    public void testNewProjectsMobility(){
+    public void testNewProjectsJavaME(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("Mobility", npwo);
+        assertResults = oneCategoryTest("Java ME", "Java_ME", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);                      
     }
@@ -234,7 +236,7 @@ public class NewProjectTest extends JellyTestCase{
         assertTrue(assertResults.assertString, assertResults.assertValue);                      
     } 
     
-    public void testNewProjectsNetBeansPluginModules(){
+    public void testNewProjectsNetBeansModules(){
         ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("NetBeans Modules","NetBeans_Modules", npwo);
@@ -242,6 +244,21 @@ public class NewProjectTest extends JellyTestCase{
         assertTrue(assertResults.assertString, assertResults.assertValue); 
     }
     
+    public void testNewProjectsGroovy(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("Groovy", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
+    
+    public void testNewProjectsPHP(){
+        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+        assertResults = oneCategoryTest("PHP", npwo);
+        npwo.cancel();
+        assertTrue(assertResults.assertString, assertResults.assertValue);                      
+    }
     private ComparationReturnValues compareStringArrays(Iterator<String> itPermanentArrayList,Iterator<String> itArrayList){
             boolean assertvalue = true;
             String assertString = "";                       

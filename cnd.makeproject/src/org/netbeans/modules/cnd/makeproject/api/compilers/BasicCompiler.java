@@ -58,16 +58,17 @@ public abstract class BasicCompiler extends Tool {
         storagePrefix += RemoteUtils.getHostName(getHostKey()) + "/"; //NOI18N
     }
 
-   private String storagePrefix = System.getProperty("user.home") + "/.netbeans/6.5/cnd2/includes-cache/"; //NOI18N
+    private String storagePrefix = System.getProperty("user.home") + "/.netbeans/6.5/cnd2/includes-cache/"; //NOI18N
 
-   public String getStoragePrefix() {
-       return storagePrefix;
-   }
+    public String getStoragePrefix() {
+        return storagePrefix;
+    }
 
-   protected abstract CompilerDescriptor getCompilerDescription();
-    
+    @Override
+    public abstract CompilerDescriptor getDescriptor();
+
     public String getDevelopmentModeOptions(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getDevelopmentModeFlags() != null && compiler.getDevelopmentModeFlags().length > value){
             return compiler.getDevelopmentModeFlags()[value];
         }
@@ -75,7 +76,7 @@ public abstract class BasicCompiler extends Tool {
     }
 
     public String getWarningLevelOptions(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getWarningLevelFlags() != null && compiler.getWarningLevelFlags().length > value){
             return compiler.getWarningLevelFlags()[value];
         }
@@ -83,7 +84,7 @@ public abstract class BasicCompiler extends Tool {
     }
 
     public String getSixtyfourBitsOption(int value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getArchitectureFlags() != null && compiler.getArchitectureFlags().length > value){
             return compiler.getArchitectureFlags()[value];
         }
@@ -91,7 +92,7 @@ public abstract class BasicCompiler extends Tool {
     }
 
     public String getStripOption(boolean value) {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && value){
             return compiler.getStripFlag();
         }
@@ -99,7 +100,7 @@ public abstract class BasicCompiler extends Tool {
     }
 
     public String getDependencyGenerationOption() {
-        CompilerDescriptor compiler = getCompilerDescription();
+        CompilerDescriptor compiler = getDescriptor();
         if (compiler != null && compiler.getDependencyGenerationFlags() != null) {
             return compiler.getDependencyGenerationFlags();
         }
