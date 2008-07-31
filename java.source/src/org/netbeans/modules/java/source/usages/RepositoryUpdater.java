@@ -2309,31 +2309,36 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 sa.delete(s);
                             }
 
-                            List<Diagnostic> diag = new ArrayList<Diagnostic>();
-                            for (Diagnostic d : listener.errors) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            for (Diagnostic d : listener.warnings) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            if (!virtual && TasklistSettings.isTasklistEnabled()) { //Don't report errors in virtual files
-                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
-
-                                if (TasklistSettings.isBadgesEnabled()) {
-                                    //XXX: maybe move to the common path (to be used also in the else branch:
-                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-                                    if (an != null) {
-                                        an.updateInError(toRefresh);
+                            if (!virtual) { //Don't report errors in virtual files
+                                assert active.size() == 1;
+                                
+                                JavaFileObject jfo = active.iterator().next().jfo;
+                                List<Diagnostic> diag = new ArrayList<Diagnostic>();
+                                for (Diagnostic d : listener.errors) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
                                     }
                                 }
+                                for (Diagnostic d : listener.warnings) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
+                                    }
+                                }
+                                if (TasklistSettings.isTasklistEnabled()) {
+                                    Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
 
-                                JavaTaskProvider.refresh(fo);
-                            }                            
+                                    if (TasklistSettings.isBadgesEnabled()) {
+                                        //XXX: maybe move to the common path (to be used also in the else branch:
+                                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                                        if (an != null) {
+                                            an.updateInError(toRefresh);
+                                        }
+                                    }
+
+                                    JavaTaskProvider.refresh(fo);
+                                }
+                            }
                             for (JavaFileObject generated : jt.generate()) {
                                 if (generated instanceof OutputFileObject) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());
