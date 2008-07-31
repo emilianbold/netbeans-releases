@@ -69,7 +69,7 @@ import org.openide.util.WeakSet;
 abstract class JPDADebuggerActionProvider extends ActionsProviderSupport 
 implements PropertyChangeListener {
     
-    private JPDADebuggerImpl debugger;
+    protected JPDADebuggerImpl debugger;
     
     /** The ReqeustProcessor used by action performers. */
     private static RequestProcessor actionsRequestProcessor;

@@ -1,8 +1,29 @@
-Steps to run Rest Javascripts stubs
-=====================================
-1. Open Netbeans 6.1 IDE.
-2. Create a web project.
-3. Right click on the web project, then select "New->Restful Web Service Client Stubs". 
-In the wizard select a web project that contain the RESTful Web Services. Click "Finish".
-4. Run "/Web Pages/rest/TestStubs.html" to test generated Javascripts for the 
-RESTful Web Service project. This displays a table of available resources.
+<?xml version="1.0" encoding="__FILE_ENCODING__"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html>
+    <head>
+        <title>TTL_RestClient_Stubs - MSG_Readme</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=__FILE_ENCODING__" />
+        <link rel="stylesheet" href="./css/clientstubs.css" type="text/css"/>
+        <link rel="stylesheet" href="./css/css_master-all.css" type="text/css"/>
+    </head>
+    <body>
+        <div class="outerBorder">
+            <div class="header">
+                <div id="subheader" class="subheader"></div> <!-- sub-header -->
+                <div class="banner"><img src="./css/images/pname-clientstubs.png"/></div>
+            </div> <!-- header -->
+            <div id="main" class="main">
+                <table width="100%">
+                    <tr>
+                        <td id="content" class="content" valign="top" colspan="12">
+                            MSG_JS_Readme_Content
+                        </td>
+                    </tr>
+                </table>
+            </div> <!-- main -->
+        </div> <!-- outerborder -->
+    </body>
+</html>

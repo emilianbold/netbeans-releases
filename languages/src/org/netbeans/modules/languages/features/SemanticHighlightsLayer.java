@@ -135,7 +135,7 @@ class SemanticHighlightsLayer extends AbstractHighlightsContainer {
         }
     }
     
-    public HighlightsSequence getHighlights (int startOffset, int endOffset) {
+    public synchronized HighlightsSequence getHighlights (int startOffset, int endOffset) {
                                                                                 //S ystem.out.println("SemanticHighlightsLayer.getHighlights " + startOffset + " : " + endOffset);
         if (offsetsBag == null) {
             offsetsBag = new OffsetsBag (document);
