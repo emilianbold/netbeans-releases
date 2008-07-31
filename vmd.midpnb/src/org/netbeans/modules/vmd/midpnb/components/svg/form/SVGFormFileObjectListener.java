@@ -112,8 +112,13 @@ public class SVGFormFileObjectListener implements FileChangeListener {
 
     public static synchronized void regenerateSVGComponentsStructure(FileObject fo, final DesignComponent svgForm) {
         InputStream is = null;
+        if (!fo.isValid()){
+            throw new RuntimeException("FO is not valid!!!");
+        }
         try {
-            is = fo.getInputStream();
+            if (fo.isValid()){
+                is = fo.getInputStream();
+            }
         } catch (FileNotFoundException ex) {
             Exceptions.printStackTrace(ex);
         }
