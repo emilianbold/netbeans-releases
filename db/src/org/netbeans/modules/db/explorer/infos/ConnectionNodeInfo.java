@@ -187,12 +187,9 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         if ( conn == null ) {
             // Not connected, so no children
             setChildren(new Vector());
-            return;
+        } else {
+            setProperties();
         }
-        
-        setProperties();
-        
-        refreshChildren();
     }
     
     private void setProperties() {
@@ -444,7 +441,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
                 // connection is broken, connection state has been changed
                 setConnection(null); // fires change
                 
-                message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), new String[] {exc.getMessage()}); // NOI18N
+                message = MessageFormat.format(bundle().getString("EXC_ConnectionError"), exc.getMessage()); // NOI18N
             }
             
             // XXX hack for Derby
@@ -456,6 +453,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         }
     }
 
+    @Override
     public void delete() throws IOException {
         try {
             DatabaseConnection cinfo = (DatabaseConnection) getDatabaseConnection();
@@ -465,6 +463,7 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         }
     }
 
+    @Override
     public Object put(String key, Object obj) {
         if (key.equals(USER) || key.equals(DRIVER) || key.equals(DATABASE)
                 || key.equals(SCHEMA) || key.equals(REMEMBER_PWD)) {
@@ -492,6 +491,16 @@ public class ConnectionNodeInfo extends DatabaseNodeInfo implements ConnectionOp
         setName(infoConn.getName());
     }
 
+    @Override
+    public Vector<DatabaseNodeInfo> getChildren() throws DatabaseException{
+        if ( ! isConnected() ) {
+            return new Vector<DatabaseNodeInfo>();
+        } else {
+            return super.getChildren();
+        }
+    }
+
+    @Override
     public void refreshChildren() throws DatabaseException {
         Vector<DatabaseNodeInfo> children = getChildren();
         for ( DatabaseNodeInfo info : children ) {

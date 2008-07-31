@@ -97,7 +97,6 @@ public class TextLexerInputOperation<T extends TokenId> extends LexerInputOperat
     }
 
     protected void fillTokenData(AbstractToken<T> token) {
-        token.setTokenList(tokenList);
         token.setRawOffset(tokenStartOffset);
     }
     

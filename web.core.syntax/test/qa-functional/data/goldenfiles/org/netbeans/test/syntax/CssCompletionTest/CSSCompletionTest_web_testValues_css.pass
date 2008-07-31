@@ -32,6 +32,7 @@ color olive
 color orange
 color purple
 color red
+color rgb
 color silver
 color teal
 color white
@@ -53,7 +54,7 @@ border-right inherit
 border-style inset
 color lime
 color maroon
-border-width medium
+border-right medium
 color navy
 border-style none
 color olive
@@ -61,12 +62,13 @@ color orange
 border-style outset
 color purple
 color red
+color rgb
 border-style ridge
 color silver
 border-style solid
 color teal
-border-width thick
-border-width thin
+border-right thick
+border-right thin
 border-top-color transparent
 color white
 color yellow

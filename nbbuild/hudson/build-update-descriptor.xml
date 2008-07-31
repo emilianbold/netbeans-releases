@@ -5,6 +5,9 @@
             <fileset dir="nbbuild/nbms">
                 <include name="**/*.nbm"/>
             </fileset>
+            <updaterjar>
+                <fileset dir="nbbuild/netbeans" includes="platform*/modules/ext/updater.jar"/>
+            </updaterjar>
         </makeupdatedesc>
         <gzip src="nbbuild/nbms/updates.xml" destfile="nbbuild/nbms/updates.xml.gz"/>
         <taskdef name="vuc" classname="org.netbeans.nbbuild.VerifyUpdateCenter" classpath="nbbuild/nbantext.jar"/>

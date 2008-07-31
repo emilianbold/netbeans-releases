@@ -54,8 +54,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -64,6 +67,7 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.netbeans.api.project.ProjectUtils;
@@ -71,7 +75,8 @@ import org.netbeans.modules.websvc.rest.RestUtils;
 import org.openide.filesystems.FileUtil;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel;
 import org.netbeans.modules.websvc.rest.codegen.model.ClientStubModel.*;
-import org.netbeans.modules.websvc.rest.support.Inflector;
+import org.netbeans.modules.websvc.rest.projects.WebProjectRestSupport;
+import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.util.Exceptions;
@@ -126,7 +131,16 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JS_CONTAINERSTUB_TEMPLATE = "Templates/WebServices/JsContainerStub.js"; //NOI18N
     public static final String JS_CONTAINERITEMSTUB_TEMPLATE = "Templates/WebServices/JsContainerItemStub.js"; //NOI18N
     public static final String JS_GENERICSTUB_TEMPLATE = "Templates/WebServices/JsGenericStub.js"; //NOI18N
-    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.txt"; //NOI18N
+    public static final String JS_README_TEMPLATE = "Templates/WebServices/JsReadme.html"; //NOI18N
+    
+    public static final String TTL_DojoResources_Stubs = "TTL_DojoResources_Stubs";
+    public static final String MSG_Readme = "MSG_Readme";
+    public static final String MSG_TestPage = "MSG_TestPage";
+    public static final String TTL_RestClient_Stubs = "TTL_RestClient_Stubs";
+    public static final String TTL_JMakiWidget_Stubs = "TTL_JMakiWidget_Stubs";
+    public static final String MSG_SelectResource = "MSG_SelectResource";
+    public static final String MSG_JS_Readme_Content = "MSG_JS_Readme_Content";
+    public static final String MSG_JMaki_Readme_Content = "MSG_JMaki_Readme_Content";
      
     //Dojo templates
     public static final String DOJO_RESTSTORE = "RestStore";//NOI18N
@@ -150,7 +164,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String JMAKI_RESOURCESTABLE_DEST = "rtable"; //NOI18N
     public static final String JMAKI_RESOURCESTABLEUP_DEST = "rtableUp"; //NOI18N
     public static final String JMAKI_RESOURCESTABLEDOWN_DEST = "rtableDown"; //NOI18N
-    public static final String JMAKI_README_TEMPLATE = "Templates/WebServices/JmakiReadme.txt"; //NOI18N
+    public static final String JMAKI_README_TEMPLATE = "Templates/WebServices/JmakiReadme.html"; //NOI18N
     public static final String JMAKI_COMPONENTCSS_TEMPLATE = "Templates/WebServices/JmakiComponent.css"; //NOI18N
     public static final String JMAKI_COMPONENTHTM_TEMPLATE = "Templates/WebServices/JmakiComponent.htm"; //NOI18N
     public static final String JMAKI_COMPONENTJS_TEMPLATE = "Templates/WebServices/JmakiComponent.js"; //NOI18N
@@ -166,6 +180,9 @@ public class ClientStubsGenerator extends AbstractGenerator {
     public static final String DEFAULT_PROTOCOL = "http";
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_PORT = "8080";
+    public static final String DEFAULT_BASE_URL = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT;
+    public static final String BASE_URL_TOKEN = "___BASE_URL___";
+    public static final String FILE_ENCODING_TOKEN = "__FILE_ENCODING__";
     
     private FileObject rootFolder;
     private Project p;
@@ -177,7 +194,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject dojoDir;
     private FileObject restDir;
     private FileObject rdjDir;
-    private FileObject dataDir;
     private FileObject rjsDir;
     private FileObject templatesDir;
     private String includeJs = "";
@@ -192,16 +208,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
     private FileObject wadlFile;
     private String folderName;
     private String baseUrl;
-    
-    public ClientStubsGenerator(FileObject root, Project p, boolean createJmaki, boolean overwrite) throws IOException {
-        assert root != null;
-        assert p != null;
-        this.rootFolder = root;
-        this.p = p;
-        this.createJmaki = createJmaki;
-        this.overwrite = overwrite;
-        this.projectName = ProjectUtils.getInformation(getProject()).getName();
-    }
+    private String baseEncoding = "UTF-8";
     
     public ClientStubsGenerator(FileObject root, String folderName, Project p, 
             boolean createJmaki, boolean overwrite) throws IOException {
@@ -255,6 +262,26 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return model;
     }
     
+    public String getDefaultBaseUrl() {
+        return DEFAULT_BASE_URL+"/";
+    }
+    
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+    
+    public void setBaseUrl(String baseUrl) {
+        this.baseUrl = baseUrl;
+    }
+    
+    public String getBaseEncoding() {
+        return baseEncoding;
+    }
+    
+    public void setBaseEncoding(String baseEncoding) {
+        this.baseEncoding = baseEncoding;
+    }
+    
     private String getApplicationNameFromUrl(String url) {
         String appName = url.replaceAll(DEFAULT_PROTOCOL+"://", "");
         if(appName.endsWith("/"))
@@ -273,26 +300,82 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return ClientStubModel.normailizeName(appName);
     }
     
+    private String findBaseUrl(Project p) {
+        String url = null;
+        FileObject privProp = p.getProjectDirectory().getFileObject("nbproject/private/private.properties");
+        if(privProp != null) {
+            String asProp = getProperty(privProp, "deploy.ant.properties.file");
+            FileObject asPropFile = FileUtil.toFileObject(new File(asProp));
+            url = getProperty(asPropFile, "sjsas.url");
+            if(url == null)
+                url = getProperty(asPropFile, "tomcat.url");
+            if(url != null)
+                url = url.replace("\\", "");
+        }
+        return url;
+    }
+    
+    private String findBaseEncoding(Project p) {
+        FileObject projProp = p.getProjectDirectory().getFileObject("nbproject/project.properties");
+        return getProperty(projProp, "source.encoding");
+    }
+    
+    
+    private String getProperty(FileObject fo, String name) {
+        if(fo == null)
+            return null;
+        FileLock lock = null;
+        try {
+            lock = fo.lock();
+            BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
+            String line;
+            StringBuffer sb = new StringBuffer();
+            while ((line = reader.readLine()) != null) {
+                if(line.trim().startsWith(name+"="))
+                    return line.trim().split("=")[1];
+            }
+            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+            try {
+                writer.write(sb.toString());
+            } finally {
+                writer.close();
+            }
+        } catch(IOException iox) {  
+        } finally {
+            if(lock != null)
+                lock.releaseLock();
+        }
+        return null;
+    }
+    
     public Set<FileObject> generate(ProgressHandle pHandle) throws IOException {
         if(pHandle != null)
             initProgressReporting(pHandle, false);
-        
         this.model = new ClientStubModel();
-        baseUrl = DEFAULT_PROTOCOL+"://"+DEFAULT_HOST+":"+DEFAULT_PORT+"/";
         if(p != null) {
             this.model.buildModel(p);
-            baseUrl += getProjectName() + "/resources";
+            String url = findBaseUrl(p);
+            if(url == null)
+                url = getDefaultBaseUrl();
+            ServletMapping servletMap = WebProjectRestSupport.getRestServletMapping(p);
+            String path = "/resources";
+            if(servletMap != null)
+                path = servletMap.getUrlPattern();
+            if(path.endsWith("/*"))
+                path = path.substring(0, path.length()-2);
+            setBaseUrl((url.endsWith("/")?url:url+"/") + getProjectName() + (path.startsWith("/")?path:"/"+path));
+            setBaseEncoding(findBaseEncoding(p));
         } else if(wadlFile != null) {
             String url = this.model.buildModel(wadlFile);
-            if(url != null) {
-                baseUrl = url;
-                this.projectName = getApplicationNameFromUrl(baseUrl);
-            }
+            if(url == null)
+                url = getDefaultBaseUrl();
+            setBaseUrl(url);
+            this.projectName = getApplicationNameFromUrl(url);
         }
         List<Resource> resourceList = model.getResources();
         
         includeJs = "    "+RDJ+".includeJS('../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"');\n";
-        libsJs = "                   '../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"',\n";;
+        libsJs = "                   '../"+RJS+"/"+getProjectName().toLowerCase()+"/"+getProjectName() + "." + JS+"',\n";
         resourcesDojo = "";
         requireDojo = "";
         //Prepare include list
@@ -322,7 +405,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         FileObject prjStubDir = createFolder(rjsDir, getProjectName().toLowerCase());
         createDataObjectFromTemplate(JS_PROJECTSTUB_TEMPLATE, prjStubDir, getProjectName(), JS, canOverwrite());
-        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "", baseUrl);
+        updateProjectStub(prjStubDir.getFileObject(getProjectName(), JS), getProjectName(), "");
         for (Resource r : resourceList) {
             if(pHandle != null)
                 reportProgress(NbBundle.getMessage(ClientStubsGenerator.class,
@@ -497,13 +580,36 @@ public class ClientStubsGenerator extends AbstractGenerator {
     }
     
     private void initJs(Project p) throws IOException {
-        createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
-        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, false);  
-        createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, TXT, false);
+        TokenReplacer tr = new TokenReplacer();
+        tr.addToken(TTL_RestClient_Stubs, NbBundle.getMessage(ClientStubsGenerator.class, TTL_RestClient_Stubs));
+        tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
+        tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
+        tr.addToken(MSG_JS_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JS_Readme_Content));
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
+        
+        FileObject fo = createDataObjectFromTemplate(JS_TESTSTUBS_TEMPLATE, rjsDir, JS_TESTSTUBS, HTML, false);
+        tr.replaceTokens(fo);
+        
+        createDataObjectFromTemplate(JS_STUBSUPPORT_TEMPLATE, rjsDir, JS_SUPPORT, JS, false);
+        
+        fo = createDataObjectFromTemplate(JS_README_TEMPLATE, rjsDir, JS_README, HTML, false);
+        tr.replaceTokens(fo);
+        
+        File cssDir = new File(FileUtil.toFile(rjsDir), "css");
+        cssDir.mkdirs();
+        copySupportFiles(cssDir);
     }
 
     private void initDojo(Project p, List<Resource> resourceList) throws IOException {
-        dataDir = createFolder(rdjDir, DATA);//NoI18n
+        TokenReplacer tr = new TokenReplacer();
+        tr.addToken(TTL_DojoResources_Stubs, NbBundle.getMessage(ClientStubsGenerator.class, TTL_DojoResources_Stubs));
+        tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
+        tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
+        tr.addToken(MSG_SelectResource, NbBundle.getMessage(ClientStubsGenerator.class, MSG_SelectResource));
+        tr.addToken(BASE_URL_TOKEN, getBaseUrl());
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
+        
+        createFolder(rdjDir, DATA);//NoI18n
         FileObject widgetDir = createFolder(rdjDir, WIDGET);//NoI18n
         Resource c = null;
         for (Resource r : resourceList) {
@@ -523,12 +629,22 @@ public class ClientStubsGenerator extends AbstractGenerator {
             new ResourceDojoComponents(c, rdjDir).replaceTokens(fo);
         
         fo = createDataObjectFromTemplate(DOJO_TESTRESOURCESTABLE_TEMPLATE, rdjDir, DOJO_TESTRESOURCESTABLE, HTML, false);
+        tr.replaceTokens(fo);
         if(c != null)
             new ResourceDojoComponents(c, rdjDir).replaceTokens(fo);
     }
     
     private void initJmaki(Project p, List<Resource> resourceList) throws IOException {
-        createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, TXT, canOverwrite());
+        TokenReplacer tr = new TokenReplacer();
+        tr.addToken(TTL_JMakiWidget_Stubs, NbBundle.getMessage(ClientStubsGenerator.class, TTL_JMakiWidget_Stubs));
+        tr.addToken(MSG_Readme, NbBundle.getMessage(ClientStubsGenerator.class, MSG_Readme));
+        tr.addToken(MSG_TestPage, NbBundle.getMessage(ClientStubsGenerator.class, MSG_TestPage));
+        tr.addToken(MSG_JMaki_Readme_Content, NbBundle.getMessage(ClientStubsGenerator.class, MSG_JMaki_Readme_Content));
+        tr.addToken(FILE_ENCODING_TOKEN, getBaseEncoding());
+        
+        FileObject fo = createDataObjectFromTemplate(JMAKI_README_TEMPLATE, restDir, JMAKI_README, HTML, canOverwrite());
+        tr.replaceTokens(fo);
+        
         createDataObjectFromTemplate(JMAKI_RESTBUNDLE_TEMPLATE, getRootFolder(), BUNDLE, PROPERTIES, canOverwrite());
                 
         //find first container 
@@ -539,9 +655,36 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 break;
             }
         }
-        FileObject fo = createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, false);
+        fo = createDataObjectFromTemplate(JMAKI_TESTRESOURCESTABLE_TEMPLATE, restDir, JMAKI_TESTRESOURCESTABLE, JSP, false);
+        tr.replaceTokens(fo);
         if(c != null)
             new ResourceDojoComponents(c, restDir).replaceTokens(fo);
+    }
+    
+    private void copySupportFiles(File cssDir) throws IOException {
+        String[] fileNames = { 
+            "clientstubs.css", 
+            "css_master-all.css",
+            "images/background_border_bottom.gif",
+            "images/pbsel.png",
+            "images/bg_gradient.gif",
+            "images/pname-clientstubs.png",
+            "images/level1_selected-1lvl.jpg",
+            "images/primary-enabled.gif",
+            "images/masthead.png",
+            "images/primary-roll.gif",
+            "images/pbdis.png",
+            "images/secondary-enabled.gif",
+            "images/pbena.png",
+            "images/tbsel.png",
+            "images/pbmou.png",
+            "images/tbuns.png"
+        };
+        File imagesDir = new File(cssDir, "images");
+        imagesDir.mkdirs();
+        for(String file: fileNames) {
+            RestSupport.copyFile(cssDir, file);
+        }
     }
 
     protected String createDojoResourceSelectList(List<Resource> resourceList) {
@@ -619,16 +762,16 @@ public class ClientStubsGenerator extends AbstractGenerator {
 
             FileOutputStream dest = new FileOutputStream(zipFile);
             ZipOutputStream out = new ZipOutputStream(new BufferedOutputStream(dest));
-            
-            for(int i=0;i<sources.length;i++) {
+
+            for (int i = 0; i < sources.length; i++) {
                 File f = new File(sources[i]);
                 addEntry(f, paths[i], out);
             }
-                    out.close();
+            out.close();
         } catch (Exception e) {
             Exceptions.printStackTrace(e);
-                }
-            }
+        }
+    }
 
     private static void addEntry(File file, String path, ZipOutputStream out) throws FileNotFoundException, IOException {
         if (file.isDirectory()) {
@@ -643,15 +786,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
             //System.out.println("Adding: " + file);
             FileInputStream fi = new FileInputStream(file);
             origin = new BufferedInputStream(fi, READ_BUF_SIZE);
-                ZipEntry entry = new ZipEntry(path + File.separator + file.getName());
-                out.putNextEntry(entry);
-                            int count;
-                            while ((count = origin.read(data, 0, WRITE_BUF_SIZE)) != -1) {
-                                out.write(data, 0, count);
-                            }
-                                    origin.close();
-                                }
-                            }
+            ZipEntry entry = new ZipEntry(path + File.separator + file.getName());
+            out.putNextEntry(entry);
+            int count;
+            while ((count = origin.read(data, 0, WRITE_BUF_SIZE)) != -1) {
+                out.write(data, 0, count);
+            }
+            origin.close();
+        }
+    }
 
     private static boolean unzip(final InputStream source,
             final FileObject targetFolderFO, boolean overwrite) throws IOException {
@@ -730,15 +873,15 @@ public class ClientStubsGenerator extends AbstractGenerator {
         return result;
     }
 
-    private void updateProjectStub(FileObject projectStub, String prjName, String pkg, String baseUrl) throws IOException {
+    private void updateProjectStub(FileObject projectStub, String prjName, String pkg) throws IOException {
         FileLock lock = projectStub.lock();
         try {
             BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(projectStub)));
             String line;
             StringBuffer sb = new StringBuffer();
             while ((line = reader.readLine()) != null) {
-                if (line.contains("__BASE_URL__")) {
-                    sb.append(line.replaceAll("__BASE_URL__", baseUrl));
+                if (line.contains(BASE_URL_TOKEN)) {
+                    sb.append(line.replaceAll(BASE_URL_TOKEN, getBaseUrl()));
                 } else if (line.contains("__PROJECT_NAME__")) {
                     sb.append(line.replaceAll("__PROJECT_NAME__", prjName));
                 } else if (line.contains("__PROJECT_INIT_BODY__")) {
@@ -781,7 +924,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         sb2.append("\t\tvar str = '';\n");
         sb2.append("\t\t//Example test code for " + prjName + "\n");
         sb2.append("\t\tstr = '<h2>Resources for " + prjName + ":</h2><br><table border=\"1\">';\n");
-        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+baseUrl+"');\n");
+        sb2.append("\t\tvar app = new " + pkg+prjName + "('"+getBaseUrl()+"');\n");
         sb2.append("\t\tvar resources = app.getResources();\n");
         sb2.append("\t\tfor(i=0;i<resources.length;i++) {\n");
         sb2.append("\t\t  var resource = resources[i];\n");
@@ -829,66 +972,34 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
     }
     
-    public abstract class ResourceJavaScript {
-        final String[] containerStubTokens = {
-            "__CONTAINER_NAME__",
-            "__CONTAINER_PATH_NAME__",
-            "__CONTAINER_ITEM_NAME__",
-            "__CONTAINER_ITEM_PATH_NAME__",
-            "__STUB_METHODS__",
-            "__PROJECT_NAME__",
-            "<!-- __DOJO_RESOURCE_SELECT_LIST__ -->",
-            "<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->",
-            "<!-- __JMAKI_RESOURCE_TAG_LIST__ -->"
-        };
-        final String[] genericStubTokens = {
-            "__GENERIC_NAME__",
-            "__GENERIC_PATH_NAME__",
-            "__FIELDS_DEFINITION__",
-            "__GETTER_SETTER_METHODS__",
-            "__FIELDS_INIT__",
-            "__SUB_RESOURCE_NAME__",
-            "__SUB_RESOURCE_PATH_NAME__",
-            "__FIELDS_TOSTRING__",
-            "__FIELD_NAMES_TOSTRING__",
-            "__STUB_METHODS__"
-        };
-        final String[] stubOnlyTokens = {
-            "__RESOURCE_NAME__",
-            "__STUB_METHODS__"
-        };
-        final String RJSSUPPORT = "rjsSupport";
-        
-        protected Resource r;
-        protected FileObject jsFolder;
-        protected RepresentationNode root;
-        protected String pkg;
-        protected String object;
-        protected String stubJSToken;
-        
-        public ResourceJavaScript(Resource r, FileObject jsFolder) {
-            this.r = r;
-            this.jsFolder = jsFolder;
-            pkg = "";
-            object = "";
-            root = r.getRepresentation().getRoot();
-            stubJSToken = createStubJSMethods(r, object, pkg);
+    public class TokenReplacer {
+
+        private Map<String, String> tokens = new HashMap<String, String>();
+
+        public Map<String, String> getTokens() {
+            return Collections.unmodifiableMap(tokens);
         }
         
-        public FileObject getFolder() {
-            return jsFolder;
+        public void addToken(String name, String value) {
+            tokens.put(name, value);
         }
         
-        public abstract FileObject generate() throws IOException;
+        public void setTokens(Map<String, String> tokens) {
+            this.tokens = tokens;
+        }
+
+        public void replaceTokens(FileObject fo) throws IOException {
+            replaceTokens(fo, getTokens());
+        }
         
-        protected void replaceTokens(FileObject fo) throws IOException {
+        public void replaceTokens(FileObject fo, Map<String, String> tokenMap) throws IOException {
             FileLock lock = fo.lock();
             try {
                 BufferedReader reader = new BufferedReader(new FileReader(FileUtil.toFile(fo)));
                 String line;
                 StringBuffer sb = new StringBuffer();
                 while ((line = reader.readLine()) != null) {
-                    line = replaceTokens(line, "", "");
+                    line = replaceTokens(line, "", "", tokenMap);
                     sb.append(line);
                     sb.append("\n");
                 }
@@ -902,8 +1013,45 @@ public class ClientStubsGenerator extends AbstractGenerator {
                 lock.releaseLock();
             }
         }
+
+        private String replaceTokens(String line, String object, String pkg, Map<String, String> tokenMap) {
+            String replacedLine = line;
+            for(Map.Entry e:tokenMap.entrySet()) {
+                String key = (String) e.getKey();
+                String value = (String) e.getValue();
+                if(key != null && value != null)
+                    replacedLine = replacedLine.replaceAll(key, value);
+            }
+            return replacedLine;
+        }
+    }
+    
+    public abstract class ResourceJavaScript extends TokenReplacer {
+        final String RJSSUPPORT = "rjsSupport";
         
-        protected abstract String replaceTokens(String line, String object, String pkg);
+        protected Resource r;
+        protected FileObject jsFolder;
+        protected RepresentationNode root;
+        protected String pkg;
+        protected String object;
+        protected String stubJSToken;
+        private Map<String, String> tokens;
+        
+        public ResourceJavaScript(Resource r, FileObject jsFolder) {
+            super();
+            this.r = r;
+            this.jsFolder = jsFolder;
+            pkg = "";
+            object = "";
+            root = r.getRepresentation().getRoot();
+            stubJSToken = createStubJSMethods(r, object, pkg);
+        }
+        
+        public FileObject getFolder() {
+            return jsFolder;
+        }
+        
+        public abstract FileObject generate() throws IOException;
 
         protected String createStubJSMethods(Resource r, String object, String pkg) {
             StringBuffer sb = new StringBuffer();
@@ -1026,6 +1174,25 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         public ContainerJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
+            
+            if (root != null && root.getChildren().size() > 0) {
+                String containerName = r.getName();
+                String containerRepName = root.getName();
+                //TODO
+                String containerItemRepName = root.getChildren().get(0).getName();
+                String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
+                Map<String, String> containerStubTokens = new HashMap<String, String>();
+                containerStubTokens.put("__CONTAINER_NAME__", containerName);
+                containerStubTokens.put("__CONTAINER_PATH_NAME__", containerRepName);
+                containerStubTokens.put("__CONTAINER_ITEM_NAME__", containerItemName);
+                containerStubTokens.put("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
+                containerStubTokens.put("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                containerStubTokens.put("__PROJECT_NAME__", getProjectName());
+                containerStubTokens.put("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->", dojoResSelList + "\n<!-- __DOJO_RESOURCE_SELECT_LIST__ -->");
+                containerStubTokens.put("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList + "\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
+                containerStubTokens.put("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList + "\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
+                setTokens(containerStubTokens);
+            }
         }
         
         @Override
@@ -1048,60 +1215,29 @@ public class ClientStubsGenerator extends AbstractGenerator {
             replaceTokens(fo);
             return fo;
         }
-        
-        @Override
-        protected String replaceTokens(String line, String object, String pkg) {
-            String replacedLine = line;
-            String[] containerStubTokens = {
-                "__CONTAINER_NAME__",
-                "__CONTAINER_PATH_NAME__",
-                "__CONTAINER_ITEM_NAME__",
-                "__CONTAINER_ITEM_PATH_NAME__",
-                "__STUB_METHODS__",
-                "__PROJECT_NAME__",
-                "<!-- __DOJO_RESOURCE_SELECT_LIST__ -->",
-                "<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->",
-                "<!-- __JMAKI_RESOURCE_TAG_LIST__ -->"
-            };
-            if(root != null && root.getChildren().size() > 0) {
-                String containerName = r.getName();
-                String containerRepName = root.getName();
-                //TODO
-                String containerItemRepName = root.getChildren().get(0).getName();
-                String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
-                for(String token: containerStubTokens) {
-                    if("__CONTAINER_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_NAME__", containerName);
-                    else if("__CONTAINER_PATH_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_PATH_NAME__", containerRepName);
-                    else if("__CONTAINER_ITEM_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_NAME__", containerItemName);
-                    else if("__CONTAINER_ITEM_PATH_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
-                    else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
-                    else if("__PROJECT_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
-                    else if("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->", dojoResSelList+"\n<!-- __DOJO_RESOURCE_SELECT_LIST__ -->");
-                    else if("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList+"\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
-                     else if("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList+"\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
-                }
-            }
-            return replacedLine;
-        }
     }
     
     public class ContainerItemJavaScript extends ResourceJavaScript {
-        private String fieldsDefToken;
-        private String getSetToken;
-        private String fieldsInitToken;
-        private String toStringToken;
         
         public ContainerItemJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
+            
+            if(root != null){
+                String resourceName = r.getName();
+                String resourceRepName = root.getName();
+                Map<String, String> genericStubTokens = new HashMap<String, String>();
+                genericStubTokens.put("__GENERIC_NAME__", resourceName);
+                genericStubTokens.put("__GENERIC_PATH_NAME__", resourceRepName);
+                genericStubTokens.put("__FIELDS_DEFINITION__", createFieldsDefinition(root, true));
+                genericStubTokens.put("__GETTER_SETTER_METHODS__", createGetterSetterMethods(root, true));
+                genericStubTokens.put("__FIELDS_INIT__", createFieldsInitBody(root, true, pkg));
+                genericStubTokens.put("__SUB_RESOURCE_NAME__", "");
+                genericStubTokens.put("__SUB_RESOURCE_PATH_NAME__", "");
+                genericStubTokens.put("__FIELDS_TOSTRING__", createFieldsToStringBody(root, true));
+                genericStubTokens.put("__FIELD_NAMES_TOSTRING__", createFieldNamesBody(root, true));
+                genericStubTokens.put("__STUB_METHODS__", stubJSToken);
+                setTokens(genericStubTokens);
+            }
         }
         
         @Override
@@ -1121,58 +1257,8 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             createDataObjectFromTemplate(JS_CONTAINERITEMSTUB_TEMPLATE, jsFolder, fileName, JS, canOverwrite());
             fo = jsFolder.getFileObject(fileNameExt);
-            fieldsDefToken = createFieldsDefinition(root, true);
-            getSetToken = createGetterSetterMethods(root, true);
-            fieldsInitToken = createFieldsInitBody(root, true, pkg);
-            toStringToken = createFieldsToStringBody(root, true);
             replaceTokens(fo);
             return fo;
-        }
-        
-        @Override
-        protected String replaceTokens(String line, String object, String pkg) {
-            String replacedLine = line;
-            String[] genericStubTokens = {
-                "__GENERIC_NAME__",
-                "__GENERIC_PATH_NAME__",
-                "__FIELDS_DEFINITION__",
-                "__GETTER_SETTER_METHODS__",
-                "__FIELDS_INIT__",
-                "__SUB_RESOURCE_NAME__",
-                "__SUB_RESOURCE_PATH_NAME__",
-                "__FIELDS_TOSTRING__",
-                "__FIELD_NAMES_TOSTRING__",
-                "__STUB_METHODS__"
-            };
-            if(root != null){
-                String resourceName = r.getName();
-                String resourceRepName = root.getName();
-                for(String token: genericStubTokens) {
-                    if("__GENERIC_NAME__".equals(token)) {
-                        replacedLine = replacedLine.replaceAll("__GENERIC_NAME__", resourceName);
-                    } else if("__GENERIC_PATH_NAME__".equals(token)) {
-                        replacedLine = replacedLine.replaceAll("__GENERIC_PATH_NAME__", resourceRepName);
-                    } else if("__FIELDS_DEFINITION__".equals(token)) {
-                        replacedLine = replacedLine.replaceAll("__FIELDS_DEFINITION__", fieldsDefToken);
-                    } else if("__GETTER_SETTER_METHODS__".equals(token)) {
-                        replacedLine = replacedLine.replace("__GETTER_SETTER_METHODS__", getSetToken);
-                    } else if("__FIELDS_INIT__".equals(token)) {
-                        replacedLine = replacedLine.replace("__FIELDS_INIT__", fieldsInitToken);
-                    } else if("__SUB_RESOURCE_NAME__".equals(token)) {
-                        replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_NAME__", "");
-                    } else if("__SUB_RESOURCE_PATH_NAME__".equals(token)) {
-                        replacedLine = replacedLine.replaceAll("__SUB_RESOURCE_PATH_NAME__", "");
-                    } else if("__FIELDS_TOSTRING__".equals(token)) {
-                        replacedLine = replacedLine.replace("__FIELDS_TOSTRING__", toStringToken);
-                    } else if("__FIELD_NAMES_TOSTRING__".equals(token)) {
-                        String fieldsToString = createFieldNamesBody(root, true);
-                        replacedLine = replacedLine.replace("__FIELD_NAMES_TOSTRING__", fieldsToString);
-                    } else if("__STUB_METHODS__".equals(token)) {
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
-                    }
-                }
-            }
-            return replacedLine;
         }
         
         private String createGetterSetterMethods(RepresentationNode root, boolean skipUri) {
@@ -1318,6 +1404,10 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         public GenericResourceJavaScript(Resource r, FileObject jsFolder) {
             super(r, jsFolder);
+            Map<String, String> stubOnlyTokens = new HashMap<String, String>();
+            stubOnlyTokens.put("__RESOURCE_NAME__", r.getName());
+            stubOnlyTokens.put("__STUB_METHODS__", stubJSToken);
+            setTokens(stubOnlyTokens);
         }
         
         @Override
@@ -1339,23 +1429,6 @@ public class ClientStubsGenerator extends AbstractGenerator {
             fo = jsFolder.getFileObject(fileNameExt);
             replaceTokens(fo);
             return fo;
-        }
-        
-        @Override
-        protected String replaceTokens(String line, String object, String pkg) {
-            String replacedLine = line;
-            String[] stubOnlyTokens = {
-                "__RESOURCE_NAME__",
-                "__STUB_METHODS__"
-            };
-            String resourceName = r.getName();
-            for(String token: stubOnlyTokens) {
-                if("__RESOURCE_NAME__".equals(token))
-                    replacedLine = replacedLine.replaceAll("__RESOURCE_NAME__", resourceName);
-                else if("__STUB_METHODS__".equals(token))
-                    replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
-            }
-            return replacedLine;
         } 
      }
     
@@ -1363,10 +1436,35 @@ public class ClientStubsGenerator extends AbstractGenerator {
         
         public ResourceDojoComponents(Resource r, FileObject rdjDir) {
             super(r, rdjDir);
+            
+            if (r.isContainer() && root != null && root.getChildren().size() > 0) {
+                String containerName = r.getName();
+                String containerRepName = root.getName();
+                //TODO
+                String containerItemRepName = root.getChildren().get(0).getName();
+                String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
+                Map<String, String> containerStubTokens = new HashMap<String, String>();
+                containerStubTokens.put("//__INCLUDE_JS_SCRIPTS__", includeJs + "\n//__INCLUDE_JS_SCRIPTS__");
+                containerStubTokens.put("//__LIBS_JS_SCRIPTS__", libsJs + "\n//__LIBS_JS_SCRIPTS__");
+                containerStubTokens.put("//__RESOURCES_DOJO_SCRIPTS__", resourcesDojo + "\n//__RESOURCES_DOJO_SCRIPTS__");
+                containerStubTokens.put("//__REQUIRE_DOJO_SCRIPTS__", requireDojo + "\n//__REQUIRE_DOJO_SCRIPTS__");
+                containerStubTokens.put("__CONTAINER_NAME__", containerName);
+                containerStubTokens.put("__CONTAINER_PATH_NAME__", containerRepName);
+                containerStubTokens.put("__CONTAINER_ITEM_NAME__", containerItemName);
+                containerStubTokens.put("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
+                containerStubTokens.put("__STUB_METHODS__", createStubJSMethods(r, object, pkg));
+                containerStubTokens.put("__PROJECT_NAME__", getProjectName());
+                containerStubTokens.put("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->", dojoResSelList + "\n<!-- __DOJO_RESOURCE_SELECT_LIST__ -->");
+                containerStubTokens.put("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList + "\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
+                containerStubTokens.put("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList + "\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
+                containerStubTokens.put("TTL_JMakiWidget_Stubs", NbBundle.getMessage(ClientStubsGenerator.class, "TTL_JMakiWidget_Stubs"));
+                containerStubTokens.put(BASE_URL_TOKEN, getBaseUrl());
+                setTokens(containerStubTokens);
+            }
         }
         
         @Override
-        public FileObject generate() throws IOException {  
+        public FileObject generate() throws IOException {
             if (r.isContainer()) {
                 String name = r.getName();
                 FileObject dataDir = getFolder().getFileObject(DATA);
@@ -1377,44 +1475,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return rdjDir;
         }
-        
-        @Override
-        protected String replaceTokens(String line, String object, String pkg) {
-            String replacedLine = line;
-            replacedLine = replacedLine.replaceAll("//__INCLUDE_JS_SCRIPTS__", includeJs+"\n//__INCLUDE_JS_SCRIPTS__");
-            replacedLine = replacedLine.replaceAll("//__LIBS_JS_SCRIPTS__", libsJs+"\n//__LIBS_JS_SCRIPTS__");
-            replacedLine = replacedLine.replaceAll("//__RESOURCES_DOJO_SCRIPTS__", resourcesDojo+"\n//__RESOURCES_DOJO_SCRIPTS__");
-            replacedLine = replacedLine.replaceAll("//__REQUIRE_DOJO_SCRIPTS__", requireDojo+"\n//__REQUIRE_DOJO_SCRIPTS__");
 
-            if(r.isContainer() && root != null && root.getChildren().size() > 0) {
-                String containerName = r.getName();
-                String containerRepName = root.getName();
-                //TODO
-                String containerItemRepName = root.getChildren().get(0).getName();
-                String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
-                for(String token: containerStubTokens) {
-                    if("__CONTAINER_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_NAME__", containerName);
-                    else if("__CONTAINER_PATH_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_PATH_NAME__", containerRepName);
-                    else if("__CONTAINER_ITEM_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_NAME__", containerItemName);
-                    else if("__CONTAINER_ITEM_PATH_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
-                    else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
-                    else if("__PROJECT_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
-                    else if("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->", dojoResSelList+"\n<!-- __DOJO_RESOURCE_SELECT_LIST__ -->");
-                    else if("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList+"\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
-                     else if("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList+"\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
-                }
-            }
-            return replacedLine;
-        }
         
     }
     
@@ -1448,7 +1509,7 @@ public class ClientStubsGenerator extends AbstractGenerator {
         }
     }
     
-    public class ResourceJmakiTemplate extends ResourceJavaScript {
+    public class ResourceJmakiTemplate extends ResourceDojoComponents {
         
         public ResourceJmakiTemplate(Resource r, FileObject tRestDir) {
             super(r, tRestDir);
@@ -1474,38 +1535,5 @@ public class ClientStubsGenerator extends AbstractGenerator {
             }
             return getFolder();
         }
-
-        protected String replaceTokens(String line, String object, String pkg) {
-            String replacedLine = line;
-            if(r.isContainer() && root != null && root.getChildren().size() > 0) {
-                String containerName = r.getName();
-                String containerRepName = root.getName();
-                //TODO
-                String containerItemRepName = root.getChildren().get(0).getName();
-                String containerItemName = containerItemRepName.substring(0, 1).toUpperCase() + containerItemRepName.substring(1);
-                for(String token: containerStubTokens) {
-                    if("__CONTAINER_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_NAME__", containerName);
-                    else if("__CONTAINER_PATH_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_PATH_NAME__", containerRepName);
-                    else if("__CONTAINER_ITEM_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_NAME__", containerItemName);
-                    else if("__CONTAINER_ITEM_PATH_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__CONTAINER_ITEM_PATH_NAME__", containerItemRepName);
-                    else if("__STUB_METHODS__".equals(token))
-                        replacedLine = replacedLine.replace("__STUB_METHODS__", stubJSToken);
-                    else if("__PROJECT_NAME__".equals(token))
-                        replacedLine = replacedLine.replaceAll("__PROJECT_NAME__", getProjectName());
-                    else if("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __DOJO_RESOURCE_SELECT_LIST__ -->", dojoResSelList+"\n<!-- __DOJO_RESOURCE_SELECT_LIST__ -->");
-                    else if("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->", jmakiResSelList+"\n<!-- __JMAKI_RESOURCE_SELECT_LIST__ -->");
-                     else if("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->".equals(token))
-                        replacedLine = replacedLine.replaceAll("<!-- __JMAKI_RESOURCE_TAG_LIST__ -->", jmakiResTagList+"\n<!-- __JMAKI_RESOURCE_TAG_LIST__ -->");
-                }
-            }
-            return replacedLine;
-        }
-        
     }
 }

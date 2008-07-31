@@ -45,7 +45,6 @@ import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.NewWebProjectNameLocationStepOperator;
 import org.netbeans.jellytools.NewWebProjectServerSettingsStepOperator;
-import org.netbeans.jellytools.modules.web.nodes.WebPagesNode;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jellytools.nodes.SourcePackagesNode;
 import org.netbeans.junit.NbModuleSuite;
@@ -155,19 +154,12 @@ public class WebJSFProjectValidation extends WebProjectValidationEE5 {
         frameworkStep.rbDoNotAppendAnyLibrary().push();
 
         frameworkStep.finish();
-        // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-//        EditorWindowOperator.getEditor("index.jsp");//NOI18N
-//        ProjectSupport.waitScanFinished();
-//        // XXX HACK
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages, "welcomeJSF.jsp");//NOI18N
-        new Node(webPages, "WEB-INF|web.xml");//NOI18N
-        new Node(webPages, "WEB-INF|sun-web.xml");//NOI18N
-        new Node(webPages,"WEB-INF|faces-config.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
-//        assertEquals(true,ProjectSupport.closeProject(PROJECT_NAME));
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("welcomeJSF.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("WEB-INF|sun-web.xml");//NOI18N
+        verifyWebPagesNode("WEB-INF|faces-config.xml");//NOI18N
     }
 }

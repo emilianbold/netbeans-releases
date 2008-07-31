@@ -102,6 +102,11 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
         Mnemonics.setLocalizedText(radioButton, mnemonic);
         this.noneItem = noneItem;
         this.defaultItem = defaultItem;
+        
+        radioButton.getAccessibleContext().setAccessibleName( 
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
 
         initElements(Collections.<PropertyEditorElement>singleton(this));
     }
@@ -303,6 +308,11 @@ public final class PropertyEditorListSelectCommand extends PropertyEditorUserCod
             combobox.setModel(new DefaultComboBoxModel());
             combobox.addActionListener(this);
             add(combobox, BorderLayout.CENTER);
+            
+            combobox.getAccessibleContext().setAccessibleName(
+                    radioButton.getAccessibleContext().getAccessibleName());
+            combobox.getAccessibleContext().setAccessibleDescription(
+                    radioButton.getAccessibleContext().getAccessibleDescription());
         }
 
         public void setValue(final PropertyValue value) {

@@ -40,7 +40,6 @@ package org.netbeans.modules.php.editor.index;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -166,7 +165,22 @@ public class PHPIndex {
 
         return clusterUrl;
     }
-    
+
+    /** returns constnats of a class. */
+    public Collection<IndexedConstant> getAllClassConstants(PHPParseResult context, String className, String name, NameKind kind) { 
+        Collection<IndexedConstant> constants = new ArrayList<IndexedConstant>();
+        List<IndexedClass> inheritanceLine = getClassInheritanceLine(context, className);
+
+        if (inheritanceLine != null){
+            for (IndexedClass clazz : inheritanceLine){
+                //int mask = inheritanceLine.get(0) == clazz ? attrMask : (attrMask & (~Modifier.PRIVATE));
+                constants.addAll(getClassConstants(context, clazz.getName(), name, kind)); //NOI18N
+            }
+        }
+
+        return constants;
+    }
+
     /** returns all methods of a class. */
     public Collection<IndexedFunction> getAllMethods(PHPParseResult context, String className, String name, NameKind kind, int attrMask) {
         Collection<IndexedFunction> methods = new ArrayList<IndexedFunction>();
@@ -202,7 +216,7 @@ public class PHPIndex {
         List<IndexedClass>classLine = new LinkedList<IndexedClass>();
         Collection<String> processedClasses = new TreeSet<String>();
         
-        while (className != null){
+        while (className != null && className.length() > 0){
             if (processedClasses.contains(className)){
                 break; //TODO: circular reference, warn the user
             }
@@ -223,7 +237,7 @@ public class PHPIndex {
         
         return classLine;
     }
-    
+
     /** returns local constnats of a class. */
     public Collection<IndexedConstant> getClassConstants(PHPParseResult context, String className, String name, NameKind kind) { 
         Collection<IndexedConstant> properties = new ArrayList<IndexedConstant>();
@@ -320,9 +334,10 @@ public class PHPIndex {
             
             assert classSignatures.length == 1; 
             String foundClassName = getSignatureItem(classSignatures[0], 1);
+            foundClassName = (foundClassName != null) ? foundClassName.toLowerCase() : null;
             String persistentURL = classMap.getPersistentUrl();
             
-            if (!className.equals(foundClassName)) {
+            if (!className.toLowerCase().equals(foundClassName)) {
                 continue;
             }
 
@@ -532,11 +547,11 @@ public class PHPIndex {
                     
                     if(kind == NameKind.PREFIX) {
                         //case sensitive
-                        if(!className.startsWith(name)) {
+                        if(!className.toLowerCase().startsWith(name.toLowerCase())) {
                             continue;
                         }
                     } else if(kind == NameKind.EXACT_NAME) {
-                        if(!className.equals(name)) {
+                        if(!className.toLowerCase().equals(name.toLowerCase())) {
                             continue;
                         }
                     }

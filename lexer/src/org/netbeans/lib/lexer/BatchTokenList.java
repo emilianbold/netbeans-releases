@@ -176,6 +176,8 @@ extends ArrayList<TokenOrEmbedding<T>> implements TokenList<T> {
         while (lexerInputOperation != null && index >= size()) {
             AbstractToken<T> token = lexerInputOperation.nextToken();
             if (token != null) { // lexer returned valid token
+                if (!token.isFlyweight())
+                    token.setTokenList(this);
                 add(token);
                 if (laState != null) { // maintaining lookaheads and states
                     laState = laState.add(lexerInputOperation.lookahead(),

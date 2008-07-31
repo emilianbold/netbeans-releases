@@ -75,8 +75,7 @@ public class PropertiesActionTest extends JellyTestCase {
         suite.addTest(new PropertiesActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(PropertiesActionTest.class, "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(PropertiesActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

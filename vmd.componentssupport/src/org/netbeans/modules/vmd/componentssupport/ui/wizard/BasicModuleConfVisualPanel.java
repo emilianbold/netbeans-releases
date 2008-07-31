@@ -49,6 +49,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.modules.vmd.componentssupport.ui.UIUtils;
 import org.netbeans.modules.vmd.componentssupport.ui.helpers.BaseHelper;
 import org.openide.WizardDescriptor;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -102,6 +103,10 @@ final class BasicModuleConfVisualPanel extends JPanel {
                 checkValidity();
                 }
         };
+    }
+    
+    protected HelpCtx getHelp() {
+        return new HelpCtx(BasicModuleConfVisualPanel.class);
     }
     
     private boolean checkValidity(){

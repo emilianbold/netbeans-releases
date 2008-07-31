@@ -72,28 +72,19 @@ import org.openide.util.WeakSet;
 
 public class WatchesTreeModel implements TreeModel, TreeExpansionModel, PropertyChangeListener {
 
-    private GdbDebugger debugger;
-    private ContextProvider lookupProvider;
-    private static WatchesTreeModel watchesTreeModel;
+    private final GdbDebugger debugger;
     private Listener listener;
-    private Vector<ModelListener> listeners = new Vector<ModelListener>();
-    private Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
-    private Set<Object> expandedNodes = new WeakSet<Object>();
-    private Set<Object> collapsedNodes = new WeakSet<Object>();
-    private Logger log = Logger.getLogger("gdb.logger"); // NOI18N
-    
+    private final Vector<ModelListener> listeners = new Vector<ModelListener>();
+    private final Map<Watch, AbstractVariable> watchToVariable = new WeakHashMap<Watch, AbstractVariable>(); 
+    private final Set<Object> expandedNodes = new WeakSet<Object>();
+    private final Set<Object> collapsedNodes = new WeakSet<Object>();
+    private final Logger log = Logger.getLogger("gdb.logger"); // NOI18N
     
     public WatchesTreeModel(ContextProvider lookupProvider) {
-        this.lookupProvider = lookupProvider;
         debugger = (GdbDebugger) lookupProvider.lookupFirst(null, GdbDebugger.class);
         debugger.addPropertyChangeListener(this);
-        watchesTreeModel = this;
     }
 
-    public static WatchesTreeModel getWatchesTreeModel() {
-        return watchesTreeModel;
-    }
-    
     public void propertyChange(PropertyChangeEvent ev) {
         if (ev.getPropertyName().equals(GdbDebugger.PROP_STATE) &&
                 debugger.getState().equals(GdbDebugger.STATE_STOPPED)) {
@@ -128,7 +119,7 @@ public class WatchesTreeModel implements TreeModel, TreeExpansionModel, Property
      */
     public Object[] getChildren(Object parent, int from, int to) throws UnknownTypeException {
         if (parent == ROOT) {
-            // 1) ger Watches
+            // 1) get Watches
             Watch[] ws = DebuggerManager.getDebuggerManager().getWatches();
             to = Math.min(ws.length, to);
             from = Math.min(ws.length, from);

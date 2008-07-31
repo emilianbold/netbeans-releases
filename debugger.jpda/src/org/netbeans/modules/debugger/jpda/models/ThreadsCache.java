@@ -44,6 +44,7 @@ package org.netbeans.modules.debugger.jpda.models;
 import com.sun.jdi.ObjectCollectedException;
 import com.sun.jdi.ThreadGroupReference;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ThreadDeathEvent;
@@ -91,16 +92,20 @@ public class ThreadsCache implements Executor {
     
     public synchronized void setVirtualMachine(VirtualMachine vm) {
         if (this.vm == vm) return ;
-        this.vm = vm;
-        ThreadStartRequest tsr = vm.eventRequestManager().createThreadStartRequest();
-        ThreadDeathRequest tdr = vm.eventRequestManager().createThreadDeathRequest();
-        tsr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
-        tdr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
-        debugger.getOperator().register(tsr, this);
-        debugger.getOperator().register(tdr, this);
-        tsr.enable();
-        tdr.enable();
-        init();
+        try {
+            this.vm = vm;
+            ThreadStartRequest tsr = vm.eventRequestManager().createThreadStartRequest();
+            ThreadDeathRequest tdr = vm.eventRequestManager().createThreadDeathRequest();
+            tsr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
+            tdr.setSuspendPolicy(ThreadStartRequest.SUSPEND_NONE);
+            debugger.getOperator().register(tsr, this);
+            debugger.getOperator().register(tdr, this);
+            tsr.enable();
+            tdr.enable();
+            init();
+        } catch (VMDisconnectedException e) {
+            this.vm = null;
+        }
     }
     
     private synchronized void init() {

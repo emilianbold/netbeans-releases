@@ -655,7 +655,7 @@ public class SchemaView_0001 extends SchemaView {
           TEST_JAVA_APP_NAME
         );
 
-      SchemaMultiView xml = new SchemaMultiView( "newLoanApplication.xsd" );
+      SchemaMultiView xml = new SchemaMultiView( SAMPLE_SCHEMA_NAME );
       String sColumnDump = Dump( xml, 0, "" );
       if( !data.m_sData.equals( sColumnDump ) )
         fail( "Wrong column dump: \"" + sColumnDump + "\"" );
