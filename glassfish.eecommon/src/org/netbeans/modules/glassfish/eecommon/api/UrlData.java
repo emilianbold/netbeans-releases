@@ -37,7 +37,7 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.glassfish.javaee.db;
+package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -247,13 +247,16 @@ public class UrlData {
             if(dbname == null) {
                 dbname = props.get("databaseName");
                 if(dbname == null) {
-                    dbname = props.get("SID");
+                    dbname = props.get("databasename");
                     if(dbname == null) {
-                        dbname = props.get("database name");
+                        dbname = props.get("SID");
+                        if(dbname == null) {
+                            dbname = props.get("database name");
+                        }
                     }
                 }
             }
-        }
+        }    
         return dbname;
     }
     
