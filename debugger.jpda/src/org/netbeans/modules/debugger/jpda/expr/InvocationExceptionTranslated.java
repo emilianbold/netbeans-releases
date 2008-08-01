@@ -84,7 +84,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     public synchronized String getMessage() {
         if (message == null) {
             Method getMessageMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getMessage", "()Ljava/lang/String;");  // NOI8N
+                        concreteMethodByName ("getMessage", "()Ljava/lang/String;");  // NOI18N
             try {
                 StringReference sr = (StringReference) debugger.invokeMethod (
                         exeption,
@@ -108,7 +108,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     public String getLocalizedMessage() {
         if (localizedMessage == null) {
             Method getMessageMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getLocalizedMessage", "()Ljava/lang/String;");  // NOI8N
+                        concreteMethodByName ("getLocalizedMessage", "()Ljava/lang/String;");  // NOI18N
             try {
                 StringReference sr = (StringReference) debugger.invokeMethod (
                         exeption,
@@ -139,7 +139,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
     public synchronized Throwable getCause() {
         if (cause == null) {
             Method getCauseMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getCause", "()Ljava/lang/Throwable;");  // NOI8N
+                        concreteMethodByName ("getCause", "()Ljava/lang/Throwable;");  // NOI18N
             try {
                 ObjectReference or = (ObjectReference) debugger.invokeMethod (
                         exeption,
@@ -266,7 +266,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
         // Initialize stack trace if this is the first call to this method
         if (stackTrace == null) {
             Method getStackTraceMethod = ((ClassType) exeption.type ()).
-                        concreteMethodByName ("getStackTrace", "()[Ljava/lang/StackTraceElement;");  // NOI8N
+                        concreteMethodByName ("getStackTrace", "()[Ljava/lang/StackTraceElement;");  // NOI18N
             try {
                 ArrayReference ar = (ArrayReference) debugger.invokeMethod (
                         exeption,
@@ -293,7 +293,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
         int    lineNumber;
         
         Method getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getClassName", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("getClassName", "()Ljava/lang/String;");  // NOI18N
         try {
             StringReference sr = (StringReference) debugger.invokeMethod (
                     stElement,
@@ -306,7 +306,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             declaringClass = "";
         }
         getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getMethodName", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("getMethodName", "()Ljava/lang/String;");  // NOI18N
         try {
             StringReference sr = (StringReference) debugger.invokeMethod (
                     stElement,
@@ -319,7 +319,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             methodName = "";
         }
         getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getFileName", "()Ljava/lang/String;");  // NOI8N
+                    concreteMethodByName ("getFileName", "()Ljava/lang/String;");  // NOI18N
         try {
             StringReference sr = (StringReference) debugger.invokeMethod (
                     stElement,
@@ -332,7 +332,7 @@ public class InvocationExceptionTranslated extends ApplicationException {
             fileName = "";
         }
         getMethod = ((ClassType) stElement.type ()).
-                    concreteMethodByName ("getLineNumber", "()I");  // NOI8N
+                    concreteMethodByName ("getLineNumber", "()I");  // NOI18N
         try {
             IntegerValue iv = (IntegerValue) debugger.invokeMethod (
                     stElement,

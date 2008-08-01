@@ -74,7 +74,13 @@ public class AstPath implements Iterable<ASTNode> {
     public AstPath(ASTNode root, int caretOffset, BaseDocument document) {
 
         try {
-            Scanner scanner = new Scanner(document.getText(0, caretOffset + 1));
+            // make sure offset is not higher than document length, see #138353
+            int length = document.getLength();
+            int offset = caretOffset + 1;
+            if (offset >= length) {
+                offset = length - 1;
+            }
+            Scanner scanner = new Scanner(document.getText(0, offset));
             int line = 0;
             String lineText = "";
             while (scanner.hasNextLine()) {

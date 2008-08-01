@@ -156,6 +156,8 @@ public class ToDoTest extends TestBase {
         logTasks(tasks); 
         assertEquals("Number of tasks",2,tasks.size());
     }
+
+    @RandomlyFails // NB-Core-Build #1049
     public void testMainProject() throws Exception {
         NbModuleProject prj1 = generateStandaloneModule(getWorkDir(), "prj1");
         NbModuleProject prj2 = generateStandaloneModule(getWorkDir(), "prj2");

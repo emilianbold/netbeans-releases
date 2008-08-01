@@ -92,6 +92,12 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
     private void initComponents() {
         radioButton = new JRadioButton();
         Mnemonics.setLocalizedText(radioButton, label);
+
+        radioButton.getAccessibleContext().setAccessibleName(
+                radioButton.getText());
+        radioButton.getAccessibleContext().setAccessibleDescription(
+                radioButton.getText());
+
         customEditor = new CustomEditor();
     }
 
@@ -220,6 +226,13 @@ public class PropertyEditorPhoneNumber extends PropertyEditorUserCode implements
             textField = new JTextField();
             textField.getDocument().addDocumentListener(this);
             textField.addFocusListener(this);
+            
+            textField.getAccessibleContext().setAccessibleName( 
+                    radioButton.getAccessibleContext().getAccessibleName());
+            
+            textField.getAccessibleContext().setAccessibleDescription(
+                    radioButton.getAccessibleContext().getAccessibleDescription());
+            
             add(textField, BorderLayout.SOUTH);
         }
 

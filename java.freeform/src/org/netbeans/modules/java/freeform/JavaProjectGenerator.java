@@ -72,7 +72,7 @@ import org.w3c.dom.Element;
 public class JavaProjectGenerator {
 
     /** Keep root elements in the order specified by project's XML schema. */
-    private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects"}; // NOI18N
+    private static final String[] rootElementsOrder = new String[]{"name", "properties", "folders", "ide-actions", "export", "view", "subprojects", "project-license"}; // NOI18N
     private static final String[] viewElementsOrder = new String[]{"items", "context-menu"}; // NOI18N
     
     // this order is not required by schema, but follow it to minimize randomness a bit

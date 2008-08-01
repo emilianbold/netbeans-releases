@@ -52,14 +52,18 @@ import org.netbeans.modules.web.client.javascript.debugger.models.NbJSPreference
  * @author joelle
  */
 public class HttpMonitorUtility {
-
+    private static final NbJSPreferences NbJSPREF = NbJSPreferences.getInstance();
 
     public static boolean isEnabled() {
-        return NbJSPreferences.getInstance().getHttpMonitor();
+        return NbJSPREF.getHttpMonitorEnabled();
     }
 
     public static void setEnabled( boolean myEnabled){
-        NbJSPreferences.getInstance().setHttpMonitor(myEnabled);
+        NbJSPREF.setHttpMonitorEnabled(myEnabled);
+    }
+    
+    public static void setHttpMonitorOpened(boolean b) {
+        NbJSPREF.setHttpMonitorOpened(b);
     }
 
     public static Session getCurrentSession () {

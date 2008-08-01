@@ -41,25 +41,17 @@ package org.netbeans.modules.j2ee.persistence.wizard.jpacontroller;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.TypeParameterTree;
-import com.sun.source.tree.VariableTree;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
@@ -322,8 +314,16 @@ public class JpaControllerGenerator {
                             boolean isRelFieldAccess = JpaControllerUtil.isFieldAccess(relClass);
                             int otherSideMultiplicity = JpaControllerUtil.isRelationship(workingCopy, otherSide, isRelFieldAccess);
                             TypeMirror t = m.getReturnType();
-                            TypeMirror tstripped = JpaControllerUtil.stripCollection(t, workingCopy.getTypes());
+                            Types types = workingCopy.getTypes();
+                            TypeMirror tstripped = JpaControllerUtil.stripCollection(t, types);
                             boolean isCollection = t != tstripped;
+                            String simpleCollectionTypeName = null;
+                            String collectionTypeClass = null;
+                            if (isCollection) {
+                                TypeElement tAsElement = (TypeElement) types.asElement(t);
+                                simpleCollectionTypeName = tAsElement.getSimpleName().toString();
+                                collectionTypeClass = tAsElement.getQualifiedName().toString();
+                            }
                             String relType = tstripped.toString();
                             String simpleRelType = JpaControllerUtil.simpleClassName(relType); //just "Pavilion"
                             String relTypeReference = simpleRelType;
@@ -427,8 +427,8 @@ public class JpaControllerGenerator {
                                 String oldScalarRelFieldName = relFieldOld + relTypeReference;
                                 String newScalarRelFieldName = relFieldNew + relTypeReference;
                                 String oldOfNew = "old" + otherName.substring(3) + "Of" + newScalarRelFieldName.substring(0, 1).toUpperCase() + newScalarRelFieldName.substring(1);
-                                updateRelatedInEditPre.append("\n Collection<" + relTypeReference + "> " + relFieldOld + " = " + oldMe + "." + mName + "();\n");
-                                updateRelatedInEditPre.append("Collection <" + relTypeReference + "> " + relFieldNew + " = " + fieldName + "." + mName + "();\n");
+                                updateRelatedInEditPre.append("\n " + simpleCollectionTypeName + "<" + relTypeReference + "> " + relFieldOld + " = " + oldMe + "." + mName + "();\n");
+                                updateRelatedInEditPre.append(simpleCollectionTypeName + " <" + relTypeReference + "> " + relFieldNew + " = " + fieldName + "." + mName + "();\n");
                                 if (!relColumnNullable && otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) {
                                     illegalOrphansInEdit.append(
                                             "for(" + relTypeReference + " " + oldScalarRelFieldName + " : " + relFieldOld + ") {\n" +
@@ -530,7 +530,7 @@ public class JpaControllerGenerator {
                                 String orphanCheckCollection = relFieldName + "OrphanCheck";
                                 String orphanCheckScalar = isCollection ? orphanCheckCollection + relTypeReference : relFieldName + "OrphanCheck";
                                 illegalOrphansInDestroy.append(
-                                        (isCollection ? "Collection<" + relTypeReference + "> " + orphanCheckCollection : relTypeReference + " " + orphanCheckScalar) + " = " + fieldName + "." + mName +"();\n" +
+                                        (isCollection ? simpleCollectionTypeName + "<" + relTypeReference + "> " + orphanCheckCollection : relTypeReference + " " + orphanCheckScalar) + " = " + fieldName + "." + mName +"();\n" +
                                         (isCollection ? "for(" + relTypeReference + " " + orphanCheckScalar + " : " + orphanCheckCollection : "if (" + orphanCheckScalar + " != null") + ") {\n" +
                                         "if (illegalOrphanMessages == null) {\n" +
                                         "illegalOrphanMessages = new ArrayList<String>();\n" +
@@ -539,16 +539,16 @@ public class JpaControllerGenerator {
                                         "}\n");
                             }
                             if (otherSideMultiplicity == JpaControllerUtil.REL_TO_MANY || relColumnNullable) {
-                                updateRelatedInDestroy.append( (isCollection ? "Collection<" + relTypeReference + "> " + relFieldName : relTypeReference + " " + scalarRelFieldName) + " = " + fieldName + "." + mName +"();\n" +
+                                updateRelatedInDestroy.append( (isCollection ? simpleCollectionTypeName + "<" + relTypeReference + "> " + relFieldName : relTypeReference + " " + scalarRelFieldName) + " = " + fieldName + "." + mName +"();\n" +
                                         (isCollection ? "for(" + relTypeReference + " " + scalarRelFieldName + " : " + relFieldName : "if (" + scalarRelFieldName + " != null") + ") {\n" +
                                         ((otherSideMultiplicity == JpaControllerUtil.REL_TO_ONE) ? scalarRelFieldName + ".s" + otherName.substring(1) + "(null);\n" :
                                             scalarRelFieldName + "." + otherName + "().remove(" + fieldName +");\n") +
                                         scalarRelFieldName + " = em.merge(" + scalarRelFieldName +");\n}\n\n");
                             }
                             
-                            if (multiplicity == JpaControllerUtil.REL_TO_MANY) {
+                            if (collectionTypeClass != null) { //(multiplicity == JpaControllerUtil.REL_TO_MANY) {
                                 importFqs = new String[]{
-                                    "java.util.Collection"
+                                    collectionTypeClass //"java.util.Collection"
                                   };
                                 for (String importFq : importFqs) {
                                     modifiedImportCut = JpaControllerUtil.TreeMakerUtils.createImport(workingCopy, modifiedImportCut, importFq);

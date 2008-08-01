@@ -117,7 +117,7 @@ static const tstring TYPE_ERROR =               _T("Error");
 static const tstring FUNCTION =                 _T("function");
 static const tstring ARGUMENTS =                _T("arguments");
 static const tstring ARGUMENTS_LENGTH =         _T("arguments.length");
-static const tstring ARGUMENTS_CALLEE =         _T("arguments.callee");
+static const tstring ARGUMENTS_CALLEE_LENGTH =  _T("arguments.callee.length");
 static const tstring DOT =                      _T(".");
 static const tstring LOCAL_SCOPE =              _T("scope");
 static const tstring EMPTY =                    _T("");
@@ -280,7 +280,7 @@ private:
     DbgpConnection *m_pDbgpConnection;
     void getTopStackFrame(IRemoteDebugApplicationThread *pDebugAppThread, StackFrame *pStackFrame);
     void getTopStackFrame(StackFrame *pStackFrame);
-    void getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, StackFrame *pStackFrame);
+    BOOL getStackFrame(DebugStackFrameDescriptor *pFrameDescriptor, StackFrame *pStackFrame);
     void resume(BREAKRESUMEACTION resumeAction);
     State state;
     map<State, tstring> statesMap;

@@ -49,6 +49,7 @@ import javax.swing.JPanel;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.cnd.api.compilers.PlatformTypes;
 import org.netbeans.spi.debugger.ui.Controller;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -58,7 +59,6 @@ import org.openide.util.NbBundle;
 import org.netbeans.modules.cnd.debugger.gdb.EditorContextBridge;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.HelpCtx;
-import org.openide.util.Utilities;
 
 /**
  * Panel for customizing line breakpoints.
@@ -114,7 +114,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
 	    try {
 		URI uri = new URI(url);
 		String path = uri.getPath();
-		if (Utilities.isWindows() && path.charAt(0) == '/') {
+		if (b.getDebugger().getPlatform() == PlatformTypes.PLATFORM_WINDOWS && path.charAt(0) == '/') {
 		    path = path.substring(1);
 		}
 		tfFileName.setText(path);
@@ -306,7 +306,7 @@ public class LineBreakpointPanel extends JPanel implements Controller, HelpCtx.P
         }
         // Create a new breakpoint
         if (createBreakpoint) {
-	    DebuggerManager.getDebuggerManager().addBreakpoint(breakpoint);
+	    dm.addBreakpoint(breakpoint);
 	}
         return true;
     }

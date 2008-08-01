@@ -508,9 +508,11 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer {
     
     public void popFrames(StackFrame sf) throws IncompatibleThreadStateException {
         try {
+            notifyToBeResumed();
             threadReference.popFrames(sf);
             cleanCachedFrames();
             setReturnVariable(null); // Clear the return var
+            notifySuspended();
         } catch (IllegalThreadStateException ex) {
             throw new IncompatibleThreadStateException("Thread exited.");
         } catch (ObjectCollectedException ex) {

@@ -50,7 +50,6 @@ import javax.swing.JButton;
 import org.netbeans.api.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.dataview.meta.DBException;
 import org.openide.awt.StatusDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -253,7 +252,7 @@ public class DataView {
             }
             errMessages.add(ex);
             StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(DataView.class, "MSG_error") + ex.getMessage());
-            Exceptions.printStackTrace(ex);
+            //Exceptions.printStackTrace(ex);
         }
     }
 

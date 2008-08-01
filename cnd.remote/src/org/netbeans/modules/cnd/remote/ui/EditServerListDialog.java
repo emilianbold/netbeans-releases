@@ -40,15 +40,19 @@
 package org.netbeans.modules.cnd.remote.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.util.logging.Logger;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JButton;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -118,6 +122,20 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
         }
         lstDevHosts.setModel(model);
         lstDevHosts.setSelectedIndex(defaultIndex);
+        lstDevHosts.setCellRenderer(new MyCellRenderer());
+    }
+    
+    private final class MyCellRenderer extends DefaultListCellRenderer {
+
+        @Override
+        public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
+            Component out = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (index == getDefaultIndex()) {
+                out.setFont(out.getFont().deriveFont(Font.BOLD));
+            }
+            return out;
+        }
+        
     }
     
     public void setDialogDescriptor(DialogDescriptor desc) {
@@ -210,6 +228,8 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 
                 if (dlg.isDefault()) {
                     defaultIndex = model.getSize() - 1;
+                    lstDevHosts.repaint();
+                    valueChanged(null);
                 }
             }
         }
@@ -303,9 +323,11 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                         defaultIndex--;
                     }
                 }
+                lstDevHosts.repaint();
             } else if (b.getActionCommand().equals("SetAsDefault")) { // NOI18N
                 defaultIndex = lstDevHosts.getSelectedIndex();
                 b.setEnabled(false);
+                lstDevHosts.repaint();
             } else if (b.getActionCommand().equals("PathMapper")) { // NOI18N
                 showPathMapper();
             }

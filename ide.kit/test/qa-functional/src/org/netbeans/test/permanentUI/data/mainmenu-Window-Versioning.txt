@@ -1,2 +1,0 @@
-Versioning              > CVS	       C
-                          Subversion   S

@@ -925,12 +925,10 @@ public class WindowsNativeUtils extends NativeUtils {
     }
     
     private void changeDefaultApplication(SystemApplicationKey app, FileExtensionKey fe, Properties props) throws NativeException {
-        if(app.isUseByDefault()) {
+        if(app.isUseByDefault() == null || app.isUseByDefault().booleanValue() == true) {
             String name = fe.getDotName();
             String extKey = fe.getKey();
-            String appLocation = app.getLocation();
-            String appKey = app.getKey();
-            String command = app.getCommand();
+            String appKey = app.getKey();            
             
             if(!registry.keyExists(clSection, clKey +  extKey + SHELL_OPEN_COMMAND)) {
                 registry.createKey(clSection, clKey +  extKey + SHELL_OPEN_COMMAND);
@@ -947,22 +945,20 @@ public class WindowsNativeUtils extends NativeUtils {
                 s = registry.getStringValue(HKCU, CURRENT_USER_FILE_EXT_KEY + SEP + name, APPLICATION_VALUE_NAME);
             }
             
-            registry.setStringValue(HKCU, CURRENT_USER_FILE_EXT_KEY + SEP + name, APPLICATION_VALUE_NAME, appKey);
-            if(s!=null) {
-                setExtProperty(props, name, EXT_HKCU_DEFAULTAPP_PROPERTY,s);
+            if (app.isUseByDefault() != null || s == null) {
+                registry.setStringValue(HKCU, CURRENT_USER_FILE_EXT_KEY + SEP + name, APPLICATION_VALUE_NAME, appKey);
+                if (s != null) {
+                    setExtProperty(props, name, EXT_HKCU_DEFAULTAPP_PROPERTY, s);
+                }
             }
-            
         }
     }
     
     private void rollbackDefaultApplication(SystemApplicationKey app, FileExtensionKey fe, Properties props) throws NativeException {
         String property;
-        if(app.isUseByDefault()) {
+        if(app.isUseByDefault() == null || app.isUseByDefault().booleanValue() == true) {
             String name = fe.getDotName();
-            String extKey = fe.getKey();
-            String appLocation = app.getLocation();
-            String appKey = app.getKey();
-            String command = app.getCommand();
+            String extKey = fe.getKey();            
             property = getExtProperty(props, name, EXT_HKCRSHELL_OPEN_COMMAND_PROPERTY);
             if(property!=null) {
                 String s = SHELL_OPEN_COMMAND;
@@ -977,7 +973,7 @@ public class WindowsNativeUtils extends NativeUtils {
             if(registry.keyExists(HKCU, CURRENT_USER_FILE_EXT_KEY + SEP + name)) {
                 if(property!=null) {
                     registry.setStringValue(HKCU, CURRENT_USER_FILE_EXT_KEY + SEP + name, APPLICATION_VALUE_NAME, property);
-                } else {
+                } else if(app.isUseByDefault()!=null) {
                     registry.deleteValue(HKCU, CURRENT_USER_FILE_EXT_KEY + SEP + name, APPLICATION_VALUE_NAME);
                 }
             }
@@ -1136,7 +1132,6 @@ public class WindowsNativeUtils extends NativeUtils {
         String appLocation = app.getLocation();
         String appKey = app.getKey();
         String appFriendlyName = app.getFriendlyName();
-        String command = app.getCommand();
         String name = key.getDotName();
         if(!registry.keyExists(clSection, clKey + APPLICATIONS_KEY_NAME,appKey)) {
             registry.createKey(clSection, clKey + APPLICATIONS_KEY_NAME,appKey);

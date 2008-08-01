@@ -93,7 +93,7 @@ public class NewWebProjectTest extends J2eeTestCase {
     }
             
     public void createSampleWebProject() throws Exception {
-        getGlassFishV2Node();
+        //getGlassFishV2Node();
         String prjName = "SampleWebApplication";
         String web = Bundle.getStringTrimmed(
                 "org.netbeans.modules.web.core.Bundle",

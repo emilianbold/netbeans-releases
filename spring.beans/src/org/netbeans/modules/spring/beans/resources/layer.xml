@@ -46,7 +46,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-springconfig+xml">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-spring-beans-loader-SpringXMLConfigDataLoader.instance"/>
+                    <file name="org-netbeans-modules-spring-beans-loader-SpringXMLConfigDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.spring.beans.resources.Bundle"/>
+                    </file>
                 </folder>
                 <folder name="Actions">
                     <file name="org-openide-actions-OpenAction.instance">

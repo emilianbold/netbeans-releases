@@ -131,6 +131,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.Lookups;
 
 public class JaxWsNode extends AbstractNode implements 
@@ -191,7 +192,11 @@ public class JaxWsNode extends AbstractNode implements
             }
         };
         content.add(cookie);
-        setValue("wsdl-url", getWsdlURL());
+        RequestProcessor.getDefault().post(new Runnable() {
+            public void run() {
+                JaxWsNode.this.setValue("wsdl-url", getWsdlURL());
+            }
+        });
     }
 
     @Override

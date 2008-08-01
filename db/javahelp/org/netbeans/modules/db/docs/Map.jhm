@@ -89,4 +89,13 @@ made subject to such option by the copyright holder.
 
 <mapID target="org.netbeans.modules.db.mysql.ServerNode" url="mysql.html" />
 <mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="csh_mysql_props.html" />
+
+<!-- SQL specific topcs -->
+
+<mapID target="sql_history" url="sql_history.html" /> 
+
+<!-- SQL History CSH -->
+
+<mapID target="org.netbeans.modules.db.sql.editor.ui.SQLHistoryAction" url="sql_history" />
+
 </map>

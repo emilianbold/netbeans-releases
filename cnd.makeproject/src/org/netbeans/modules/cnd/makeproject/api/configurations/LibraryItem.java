@@ -89,6 +89,11 @@ public class LibraryItem {
     }
 
     // Should be overridden
+    public String getPath() {
+        return null;
+    }
+
+    // Should be overridden
     @Override
     public String toString() {
 	return "Should be overridden"; // NOI18N
@@ -174,19 +179,23 @@ public class LibraryItem {
 	}
 
         @Override
-	public String getOption(MakeConfiguration conf) {
+        public String getPath() {
+            String libPath = getMakeArtifact().getOutput();
+            if (!IpeUtils.isPathAbsolute(libPath))
+                libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
+            libPath = IpeUtils.escapeOddCharacters(libPath);
+            return libPath;
+        }
+
+        @Override
+        public String getOption(MakeConfiguration conf) {
             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
             Platform platform = Platforms.getPlatform(conf.getPlatform().getValue());
-        
-	    String libPath = getMakeArtifact().getOutput();
-	    if (!IpeUtils.isPathAbsolute(libPath))
-		libPath = getMakeArtifact().getProjectLocation() + '/' + libPath; // UNIX path
-            libPath = IpeUtils.escapeOddCharacters(libPath);
-	    String libDir = IpeUtils.getDirName(libPath);
-	    String libName = IpeUtils.getBaseName(libPath);
-            
+            String libPath = getPath();
+            String libDir = IpeUtils.getDirName(libPath);
+            String libName = IpeUtils.getBaseName(libPath);
             return platform.getLibraryLinkOption(libName, libDir, libPath, compilerSet);
-	}
+        }
 
         @Override
 	public boolean canEdit() {
@@ -340,6 +349,7 @@ public class LibraryItem {
 	    setType(LIB_FILE_ITEM);
 	}
 
+        @Override
 	public String getPath() {
 	    return path;
 	}

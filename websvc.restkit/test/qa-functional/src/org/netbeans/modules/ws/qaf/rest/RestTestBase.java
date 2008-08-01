@@ -85,7 +85,7 @@ public abstract class RestTestBase extends WebServicesTestBase {
     private static final String DB_PASSWORD = "app"; //NOI18N
     private Connection connection;
 
-    private static boolean CREATE_GOLDEN_FILES;
+    private static boolean CREATE_GOLDEN_FILES = Boolean.getBoolean("golden");
     private static final Logger LOGGER = Logger.getLogger(RestTestBase.class.getName());
 
     /**

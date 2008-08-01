@@ -46,6 +46,7 @@ import java.beans.PropertyEditorSupport;
 import java.util.List;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
+import org.netbeans.modules.cnd.makeproject.packaging.FileElement;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.nodes.PropertySupport;
@@ -116,17 +117,12 @@ public class PackagingNodeProp extends PropertySupport {
         
         @Override
         public String getAsText() {
-            return "Files...";
-            //return packagingConfiguration.getDisplayName();
-//	    boolean addSep = false;
-//	    StringBuilder ret = new StringBuilder();
-//	    for (int i = 0; i < value.size(); i++) {
-//		if (addSep)
-//		    ret.append(", "); // NOI18N
-//		ret.append(value.get(i).toString());
-//		addSep = true;
-//	    }
-//	    return ret.toString();
+            int noFiles = packagingConfiguration.getFiles().getValue().size();
+            String val = "" + noFiles + " Files"; // FIXUP
+            if (noFiles > 0) {
+                val += ": " + ((FileElement)packagingConfiguration.getFiles().getValue().get(0)).getFrom() + "..."; // NOI18N
+            }
+            return val;
         }
         
         @Override

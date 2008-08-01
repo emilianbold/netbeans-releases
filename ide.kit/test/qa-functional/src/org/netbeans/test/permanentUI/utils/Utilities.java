@@ -39,27 +39,22 @@
 package org.netbeans.test.permanentUI.utils;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 import java.util.Scanner;
-import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import javax.swing.JMenuItem;
-import javax.swing.MenuElement;
 
 /**
  *
  * @author Lukas Hasik
  */
 public class Utilities {
+
     private static boolean debug = false;
 
     /**
@@ -93,21 +88,23 @@ public class Utilities {
             Scanner scanner = new Scanner(new File(filename));
             //starts "| Item |"
             String menuName = scanner.nextLine();
-            if(debug)
-                System.out.println("1: "+menuName);
+            if (debug) {
+                System.out.println("1: " + menuName);
+            }
             int from;
             if ((from = menuName.indexOf("| ")) != -1) {
                 parsedMenu.setName(menuName.substring(from + "| ".length(), menuName.lastIndexOf(" |")));
                 char mnemo = menuName.substring(menuName.lastIndexOf(" |") + "| ".length()).trim().charAt(0);
-                parsedMenu.setMnemo(Character.isLetter(mnemo)?mnemo:'-');
+                parsedMenu.setMnemo(Character.isLetter(mnemo) ? mnemo : '-');
             } else {
-                System.out.println("Wrong file: missing header - menu name as | menuName |");                
+                System.out.println("Wrong file: missing header - menu name as | menuName |");
                 throw new IllegalStateException("Wrong file: missing header - menu name as | menuName |");
             }
             //skip ====== bellow menu name
             menuName = scanner.nextLine();
-            if(debug)
-                System.out.println("2: "+menuName);
+            if (debug) {
+                System.out.println("2: " + menuName);
+            }
             if (!(menuName.matches("^={5,}+\\s*+"))) {
                 System.err.println("Wrong file: missing ===== - bellow  menu name");
                 throw new IllegalStateException("Wrong file: missing ===== - bellow  menu name");
@@ -151,10 +148,10 @@ public class Utilities {
             //starts "Toolbars                 > [x] Build                  B"
             String submenuName = scanner.nextLine();
             int to;
-            if ((to = submenuName.indexOf("> ")) != -1) {
-                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf("   > ")).trim());
+            if ((to = submenuName.indexOf(">")) != -1) {
+                parsedMenu.setName(submenuName.substring(0, submenuName.lastIndexOf(">")).trim());
             } else {
-                 throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
+                throw new IllegalStateException("Wrong file: missing header - submenu name                 > [x] submenu item                  B");
             }
 
             ArrayList<NbMenuItem> submenu = new ArrayList<NbMenuItem>();
@@ -189,8 +186,9 @@ public class Utilities {
         //parse line
         Scanner line = new Scanner(lineText);
         NbMenuItem menuitem = new NbMenuItem();
-        if(debug)
-                System.out.println("Parsing line: "+line);
+        if (debug) {
+            System.out.println("Parsing line: " + line);
+        }
         //is it separator? "======="
         if (line.hasNext("^={5,}+\\s*")) { //at least 5x =
 
@@ -272,7 +270,7 @@ public class Utilities {
         if (level > 0 && submenu != null) {
             Iterator<NbMenuItem> sIt = submenu.iterator();
             while (sIt.hasNext()) {
-                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level-1);
+                printMenuStructure(out,/*(NbMenuItem)*/ sIt.next(), separator + separator, level - 1);
             }
         }
     }
@@ -387,7 +385,7 @@ public class Utilities {
                         } else { //compareItem doesn't exist
                             originItem = itOrigin.next();
                             returnText += originItem.getName() + " should NOT be in the menu. [" + originItem.toString() + "] \n";
-                        }                        
+                        }
                     } else {
                         if (itCompare.hasNext()) {//originItem doesn't exist
                             compareItem = itCompare.next();
@@ -419,21 +417,55 @@ public class Utilities {
         }
         return newArray;
     }
-    
+
     public static NbMenuItem getMenuByName(String menuName, NbMenuItem aMenu) {
         //browse throught the menu
-        if(menuName.equals(aMenu.getName())) {
+        if (menuName.equals(aMenu.getName())) {
             return aMenu;
         }
-        if(aMenu.getSubmenu() != null) { //recursively for submenu
-            
+        if (aMenu.getSubmenu() != null) { //recursively for submenu
+
             Iterator<NbMenuItem> aMenuIt = aMenu.getSubmenu().iterator();
-            while(aMenuIt.hasNext()) {
+            while (aMenuIt.hasNext()) {
                 NbMenuItem ret = getMenuByName(menuName, aMenuIt.next());
-                if(ret != null)
+                if (ret != null) {
                     return ret;
+                }
             }
         }
-        return  null;
+        return null;
+    }
+
+    public static String readFileToString(String filename) {
+        if(!(new File(filename).exists())) {
+            return "DIFF is empty";
+        } else {
+
+        }
+        FileInputStream fis = null;
+        byte[] b = null;
+                 
+        try {
+            fis = new FileInputStream(filename);
+            
+            int x = fis.available();
+            
+           b = new byte[x];
+            
+            fis.read(b);
+        } catch (IOException ex) {
+            System.out.println("problems with diff file - nothing with the test");
+            ex.printStackTrace();
+        } finally {
+            try {
+                fis.close();
+            } catch (IOException ex) {
+                System.out.println("just closing the diff file - nothing with the test");
+                ex.printStackTrace();
+            }
+        }
+        
+    
+        return new String(b);
     }
 }

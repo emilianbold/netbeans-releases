@@ -40,7 +40,7 @@
 
 (function() {
     const ignoreThese = /about:|javascript:|resource:|chrome:|jar:/;
-    const DEBUG = false;
+    const DEBUG = true;
 
     //Should we move this to constants.js?
     const STATE_IS_WINDOW = NetBeans.Constants.WebProgressListenerIF.STATE_IS_WINDOW;
@@ -72,7 +72,8 @@
         "xml": "text/xml",
         "css": "text/css",
         "js": "application/x-javascript",
-        "jss": "application/x-javascript",
+        "js": "application/javascript",
+        "jss": "application/json",
         "jpg": "image/jpeg",
         "jpeg": "image/jpeg",
         "gif": "image/gif",
@@ -91,6 +92,7 @@
         "application/x-javascript": "js",
         "text/javascript": "js",
         "application/javascript" : "js",
+        "application/json" : "jss",
         "image/jpeg": "image",
         "image/gif": "image",
         "image/png": "image",

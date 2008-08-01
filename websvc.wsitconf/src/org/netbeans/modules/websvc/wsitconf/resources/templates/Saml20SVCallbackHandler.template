@@ -1,10 +1,12 @@
-/*
- * __NAME__.java
- *
- * Created on __DATE__, __TIME__
- */
+<#-- FreeMarker template (see http://freemarker.org/) -->
+<#assign licenseFirst = "/*">
+<#assign licensePrefix = " * ">
+<#assign licenseLast = " */">
+<#include "../Licenses/license-${project.license}.txt">
 
-package Templates.Saml20Sv;
+<#if package?? && package != "">
+package ${package};
+</#if>
 
 import java.io.*;
 import java.util.*;
@@ -23,7 +25,7 @@ import org.w3c.dom.*;
 
 /** 
  *
- * @author  __USER__
+ * @author  ${user}
  * @version
  * 
  * SAML 2.0 Sender Vouches Callback Handler

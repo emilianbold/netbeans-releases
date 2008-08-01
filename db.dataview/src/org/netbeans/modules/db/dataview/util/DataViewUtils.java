@@ -67,6 +67,7 @@ public class DataViewUtils {
 
     static {
         JDBC_SQL_MAP.put(String.valueOf(Types.ARRAY), "array"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.STRUCT), "struct"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.BIGINT), "bigint"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.BINARY), "binary"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.BIT), "bit"); // NOI18N
@@ -90,6 +91,14 @@ public class DataViewUtils {
         JDBC_SQL_MAP.put(String.valueOf(Types.TINYINT), "tinyint"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.VARBINARY), "varbinary"); // NOI18N
         JDBC_SQL_MAP.put(String.valueOf(Types.VARCHAR), "varchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.JAVA_OBJECT), "java_object"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.OTHER), "other"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.REF), "ref"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(Types.DATALINK), "datalink"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(-9 /* NVARCHAR */), "nvarchar"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(-8 /* ROWID */), "rowid"); // NOI18N
+        JDBC_SQL_MAP.put(String.valueOf(-15 /*NCHAR */), "nchar"); // NOI18N
+
         JDBC_SQL_MAP.put(String.valueOf(Types.NULL), "null"); // NOI18N
     }
 
@@ -98,7 +107,7 @@ public class DataViewUtils {
         if (o instanceof String) {
             return (String) o;
         }
-        return null;
+        return "OTHER"; // NOI18N
     }
 
     public static boolean isNumeric(int jdbcType) {

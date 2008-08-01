@@ -278,6 +278,9 @@ public class RemoteServerList extends ArrayList<RemoteServerRecord> implements S
     }
     
     public boolean isValidExecutable(String hkey, String path) {
+        if (path == null || path.length() == 0) {
+            return false;
+        }
         String cmd = "PATH=/bin:/usr/bin:$PATH test -x " + path; // NOI18N
         int exit_status = RemoteCommandSupport.run(hkey, cmd);
         return exit_status == 0;

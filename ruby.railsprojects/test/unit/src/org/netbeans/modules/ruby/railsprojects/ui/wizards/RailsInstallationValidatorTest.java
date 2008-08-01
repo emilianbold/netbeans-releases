@@ -38,10 +38,12 @@
  */
 package org.netbeans.modules.ruby.railsprojects.ui.wizards;
 
+import java.io.File;
 import org.netbeans.api.ruby.platform.RubyPlatform;
 import org.netbeans.api.ruby.platform.RubyPlatformManager;
 import org.netbeans.api.ruby.platform.RubyTestBase;
 import org.netbeans.modules.ruby.railsprojects.ui.wizards.RailsInstallationValidator.RailsInstallationInfo;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -62,6 +64,7 @@ public class RailsInstallationValidatorTest extends RubyTestBase {
         assertEquals(NbBundle.getMessage(RailsInstallationValidator.class, "NoRails"), railsInfo.getMessage());
         
         installFakeGem("rails", "1.2.6", rubyWithGems);
+        FileUtil.toFileObject(new File(rubyWithGems.getBinDir())).createData("rails");
         
         railsInfo = RailsInstallationValidator.getRailsInstallation(rubyWithGems);
         assertTrue("RailsInstallationInfo '" + railsInfo.getMessage() + "' is valid", railsInfo.isValid());

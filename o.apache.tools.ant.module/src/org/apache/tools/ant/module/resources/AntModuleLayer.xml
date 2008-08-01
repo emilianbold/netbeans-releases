@@ -121,7 +121,9 @@ made subject to such option by the copyright holder.
         <folder name="text">
             <folder name="x-ant+xml">
                 <folder name="Factories">
-                    <file name="org-apache-tools-ant-module-loader-AntProjectDataLoader.instance"/>
+                    <file name="org-apache-tools-ant-module-loader-AntProjectDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.apache.tools.ant.module.Bundle"/>
+                    </file>
                 </folder>
                 
                 <folder name="Actions">

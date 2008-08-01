@@ -389,6 +389,7 @@ public class CompilerSet {
     }
     
     public String getDisplayName() {
+        // TODO: this thing is never used although it's being set to informative values by personality
         return displayName;
     }
     

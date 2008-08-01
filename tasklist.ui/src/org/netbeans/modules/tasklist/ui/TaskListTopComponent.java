@@ -64,14 +64,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.tasklist.filter.FilterRepository;
 import org.netbeans.modules.tasklist.impl.ScannerList;
 import org.netbeans.modules.tasklist.impl.ScanningScopeList;
+import org.netbeans.modules.tasklist.impl.TaskList;
 import org.netbeans.modules.tasklist.impl.TaskManagerImpl;
+import org.netbeans.spi.tasklist.Task;
 import org.netbeans.spi.tasklist.TaskScanningScope;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
@@ -97,6 +97,7 @@ final class TaskListTopComponent extends TopComponent {
     private FilterRepository filters;
     private TaskListTable table;
     private PropertyChangeListener changeListener;
+    private TaskList.Listener tasksListener;
     
     private TaskListTopComponent() {
         taskManager = TaskManagerImpl.getInstance();
@@ -271,29 +272,34 @@ final class TaskListTopComponent extends TopComponent {
             //later on the button in the toolbar will switch to the previously used table model
             model = new TaskListModel( taskManager.getTasks() );
             table.setModel( model );
-            final TableModelListener listener = new TableModelListener() {
-                public void tableChanged(TableModelEvent e) {
-                    if( model.getRowCount() > 0 ) {
-                        Runnable runnable = new Runnable() {
-                            public void run() {
-                                tableScroll.setViewportView( table );
-                                Color background = UIManager.getColor("TextArea.background"); //NOI18N
-                                if( null != background )
-                                    tableScroll.getViewport().setBackground( background );
-                                tableScroll.setBorder( BorderFactory.createEmptyBorder() );
-                                statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
-                            }
-                        };
-                        model.removeTableModelListener(this);
-                        if( SwingUtilities.isEventDispatchThread() ) {
-                            runnable.run();
-                        } else {
-                            SwingUtilities.invokeLater(runnable);
+            tasksListener = new TaskList.Listener() {
+                public void tasksAdded( List<? extends Task> tasks ) {
+                    Runnable runnable = new Runnable() {
+                        public void run() {
+                            tableScroll.setViewportView( table );
+                            Color background = UIManager.getColor("TextArea.background"); //NOI18N
+                            if( null != background )
+                                tableScroll.getViewport().setBackground( background );
+                            tableScroll.setBorder( BorderFactory.createEmptyBorder() );
+                            statusBarPanel.add( new StatusBar(taskManager.getTasks()), BorderLayout.CENTER );
                         }
+                    };
+                    taskManager.getTasks().removeListener(tasksListener);
+                    if( SwingUtilities.isEventDispatchThread() ) {
+                        runnable.run();
+                    } else {
+                        SwingUtilities.invokeLater(runnable);
                     }
+                    tasksListener = null;
+                }
+
+                public void tasksRemoved(List<? extends Task> tasks) {
+                }
+
+                public void cleared() {
                 }
             };
-            model.addTableModelListener(listener);
+            taskManager.getTasks().addListener(tasksListener);
             tableScroll.setViewportView( createNoTasksMessage() );
             tableScroll.setBorder( BorderFactory.createEmptyBorder() );
             

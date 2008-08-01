@@ -291,20 +291,22 @@ public abstract class RestSupport {
             FileUtil.createFolder(testdir);
         }
         String[] replaceKeys1 = {
-            "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_Trail", 
-            "MSG_TEST_RESBEANS_TestInput", "MSG_TEST_RESBEANS_TestOutput"
+            "TTL_TEST_RESBEANS", "MSG_TEST_RESBEANS_INFO"
         };
         String[] replaceKeys2 = {
             "MSG_TEST_RESBEANS_wadlErr", "MSG_TEST_RESBEANS_No_AJAX", "MSG_TEST_RESBEANS_Resource",
-            "MSG_TEST_RESBEANS_Param", "MSG_TEST_RESBEANS_ResourceInputs", "MSG_TEST_RESBEANS_See",
-            "MSG_TEST_RESBEANS_No_Container", "MSG_TEST_RESBEANS_Content", "MSG_TEST_RESBEANS_TabularView",
-            "MSG_TEST_RESBEANS_RawView", "MSG_TEST_RESBEANS_ResponseHeaders", "MSG_TEST_RESBEANS_Help",
-            "MSG_TEST_RESBEANS_TestButton", "MSG_TEST_RESBEANS_Loading", "MSG_TEST_RESBEANS_ServerError",
+            "MSG_TEST_RESBEANS_See", "MSG_TEST_RESBEANS_No_Container", "MSG_TEST_RESBEANS_Content", 
+            "MSG_TEST_RESBEANS_TabularView", "MSG_TEST_RESBEANS_RawView", "MSG_TEST_RESBEANS_ResponseHeaders", 
+            "MSG_TEST_RESBEANS_Help", "MSG_TEST_RESBEANS_TestButton", "MSG_TEST_RESBEANS_Loading", 
             "MSG_TEST_RESBEANS_Status", "MSG_TEST_RESBEANS_Headers", "MSG_TEST_RESBEANS_HeaderName",
-            "MSG_TEST_RESBEANS_HeaderValue", "MSG_TEST_RESBEANS_ErrorHint", "MSG_TEST_RESBEANS_Insert",
-            "MSG_TEST_RESBEANS_NoContents", "MSG_TEST_RESBEANS_NoHeaders", "MSG_TEST_RESBEANS_NewParamName",
-            "MSG_TEST_RESBEANS_NewParamValue", "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor",
-            "MSG_TEST_RESBEANS_No_SubResources", "MSG_TEST_RESBEANS_SubResources"
+            "MSG_TEST_RESBEANS_HeaderValue", "MSG_TEST_RESBEANS_Insert", "MSG_TEST_RESBEANS_NoContents", 
+            "MSG_TEST_RESBEANS_AddParamButton", "MSG_TEST_RESBEANS_Monitor", "MSG_TEST_RESBEANS_No_SubResources", 
+            "MSG_TEST_RESBEANS_SubResources", "MSG_TEST_RESBEANS_ChooseMethod", "MSG_TEST_RESBEANS_ChooseMime", 
+            "MSG_TEST_RESBEANS_Continue", "MSG_TEST_RESBEANS_AdditionalParams", "MSG_TEST_RESBEANS_INFO", 
+            "MSG_TEST_RESBEANS_Request", "MSG_TEST_RESBEANS_Sent", "MSG_TEST_RESBEANS_Received", 
+            "MSG_TEST_RESBEANS_TimeStamp", "MSG_TEST_RESBEANS_Response", "MSG_TEST_RESBEANS_CurrentSelection",
+            "MSG_TEST_RESBEANS_DebugWindow", "MSG_TEST_RESBEANS_Wadl", "MSG_TEST_RESBEANS_RequestFailed"
+            
         };
         FileObject testFO = copyFile(testdir, TEST_RESBEANS_HTML, replaceKeys1, true);
         copyFile(testdir, TEST_RESBEANS_JS, replaceKeys2, false);
@@ -340,7 +342,7 @@ public abstract class RestSupport {
     /*
      * Copy File, as well as replace tokens, overwrite if specified
      */
-    private FileObject copyFile(File testdir, String name, String[] replaceKeys, boolean overwrite) throws IOException {
+    public static FileObject copyFile(File testdir, String name, String[] replaceKeys, boolean overwrite) throws IOException {
         FileObject dir = FileUtil.toFileObject(testdir);
         FileObject fo = dir.getFileObject(name);
         if (fo == null) {
@@ -390,7 +392,7 @@ public abstract class RestSupport {
     /*
      * Copy File only
      */    
-    private void copyFile(File testdir, String name) throws IOException {
+    public static void copyFile(File testdir, String name) throws IOException {
         String path = "resources/"+name;
         File df = new File(testdir, name);
         if(!df.exists()) {

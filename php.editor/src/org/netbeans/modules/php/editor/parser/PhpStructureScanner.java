@@ -185,7 +185,7 @@ public class PhpStructureScanner implements StructureScanner {
                 String functionName = function.getFunctionName().getName();
                 PHPStructureItem item;
                 // className doesn't have to be defined if it's interace
-                if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI8N
+                if (className!= null && (className.equals(functionName) || "__construct".equals(functionName))) { //NOI18N
                     item = new PHPConstructorStructureItem(new GSFPHPElementHandle.MethodDeclarationHandle(info, method));
                 }
                 else {

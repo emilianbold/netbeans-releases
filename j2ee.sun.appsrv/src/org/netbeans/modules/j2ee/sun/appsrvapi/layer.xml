@@ -96,7 +96,9 @@ made subject to such option by the copyright holder.
         <folder name="xml">
             <folder name="sun-resource">
                 <folder name="Factories">
-                    <file name="org-netbeans-modules-j2ee-sun-ide-sunresources-resourcesloader-SunResourceDataLoader.instance"/>
+                    <file name="org-netbeans-modules-j2ee-sun-ide-sunresources-resourcesloader-SunResourceDataLoader.instance">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.j2ee.sun.appsrvapi.Bundle"/>
+                    </file>
                 </folder>
               <folder name="Actions">
               <file name="OpenAction.instance">
