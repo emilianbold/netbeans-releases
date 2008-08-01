@@ -151,24 +151,25 @@ public abstract class SQLCompletionItem implements CompletionItem {
 
     protected abstract String getRightHtmlText();
 
-    private void substituteText(JTextComponent component, int offset, int len, String toAdd) {
-        CharSequence prefix = getInsertPrefix();
+    private void substituteText(JTextComponent component, final int offset, final int len, final String toAdd) {
+        final CharSequence prefix = getInsertPrefix();
         if (prefix ==  null) {
             return;
         }
-        BaseDocument baseDoc = (BaseDocument) component.getDocument();
-        baseDoc.atomicLock();
-        try {
-            baseDoc.remove(offset, len);
-            baseDoc.insertString(offset, prefix.toString(), null);
-            if (toAdd != null) {
-                baseDoc.insertString(offset, toAdd, null);
+        final BaseDocument baseDoc = (BaseDocument) component.getDocument();
+        baseDoc.runAtomicAsUser(new Runnable() {
+            public void run() {
+                try {
+                    baseDoc.remove(offset, len);
+                    baseDoc.insertString(offset, prefix.toString(), null);
+                    if (toAdd != null) {
+                        baseDoc.insertString(offset, toAdd, null);
+                    }
+                } catch (BadLocationException ex) {
+                    // No can do, document may have changed.
+                }
             }
-        } catch (BadLocationException ex) {
-            // No can do, document may have changed.
-        } finally {
-            baseDoc.atomicUnlock();
-        }
+        });
     }
 
     private static final class Schema extends SQLCompletionItem {
