@@ -193,7 +193,6 @@ final class HttpMonitorTopComponent extends TopComponent {
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
             }
         });
-        LOG.info("Add Notify");
     }
 
     @Override
@@ -201,7 +200,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         super.removeNotify();
         setDetailsDividerLoc();
         setHttpMonitorDividerLoc();
-        LOG.info("Remove Notify");
     }
 
 
