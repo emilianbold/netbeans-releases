@@ -51,6 +51,7 @@ import junit.framework.Test;
 import org.netbeans.jemmy.operators.JComboBoxOperator;
 import org.netbeans.jemmy.operators.JTableOperator;
 import org.netbeans.jemmy.operators.JToggleButtonOperator;
+import org.netbeans.jemmy.TimeoutExpiredException;
 
 /**
  *
@@ -369,10 +370,24 @@ public class DTDActions_0001 extends DTDActions {
           sName = sName + "_" + iIndex;
         sName = sName + ".xml";
 
-        prn = pto.getProjectRootNode(
-            TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + sName
-          );
-        prn.select( );
+        int iLimit = 3;
+        boolean bRedo = true;
+        while( bRedo )
+        {
+          try
+          {
+            prn = pto.getProjectRootNode(
+                TEST_JAVA_APP_NAME + "|Source Packages|" + TEST_JAVA_APP_NAME + "|" + sName
+              );
+            prn.select( );
+            bRedo = false;
+          }
+          catch( TimeoutExpiredException ex )
+          {
+            if( 0 == iLimit-- )
+              throw ex;
+          }
+        }
       }
 
     }
