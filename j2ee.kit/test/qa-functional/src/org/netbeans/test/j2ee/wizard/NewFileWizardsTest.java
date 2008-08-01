@@ -57,7 +57,6 @@ import org.netbeans.jellytools.NewFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.SaveAllAction;
-import org.netbeans.jellytools.nodes.ProjectRootNode;
 import org.netbeans.jemmy.EventTool;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
@@ -357,8 +356,7 @@ public class NewFileWizardsTest extends JellyTestCase {
         Project p = (hasMoreSrcRoots)
         ? J2eeProjectSupport.getProject(new File(prjRoot), ".")
         : J2eeProjectSupport.getProject(new File(projectLocation), prjRoot);
-        NewFileWizardOperator nfwo = WizardUtils.createNewFile(p,
-                "Enterprise", type);
+        NewFileWizardOperator nfwo = WizardUtils.createNewFile(p, "Enterprise",type);
         NewFileNameLocationStepOperator nop = WizardUtils.setFileNameLocation(
                 ejbName, ejbPkg, srcRoot);
         if (type.equals("Message-Driven Bean")) {
