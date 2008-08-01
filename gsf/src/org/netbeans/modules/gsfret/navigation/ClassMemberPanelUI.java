@@ -55,6 +55,7 @@ import javax.swing.KeyStroke;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.modules.gsf.Language;
 import org.netbeans.modules.gsf.LanguageRegistry;
+import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.StructureItem;
 import org.netbeans.modules.gsf.api.StructureScanner;
 import org.netbeans.modules.gsf.api.StructureScanner.Configuration;
@@ -64,7 +65,6 @@ import org.netbeans.modules.gsfret.navigation.actions.FilterSubmenuAction;
 import org.netbeans.modules.gsfret.navigation.actions.SortActionSupport.SortByNameAction;
 import org.netbeans.modules.gsfret.navigation.actions.SortActionSupport.SortBySourceAction;
 import org.netbeans.modules.gsfret.navigation.base.FiltersManager;
-import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
@@ -95,9 +95,6 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private ClassMemberFilters filters;
     
     private Action[] actions; // General actions for the panel
-    
-    private static final Rectangle ZERO = new Rectangle(0,0,1,1);
-
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI(Language language) {
@@ -152,9 +149,8 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         if (includeFilters) {
             add(filtersPanel, BorderLayout.SOUTH);
         }
-        
+
         manager.setRootContext(ElementNode.getWaitNode());
-        
     }
 
     @Override
@@ -185,20 +181,24 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         });
     }
 
-    public void selectElementNode(int offset) {
-        ElementNode root = getRootNode();
-        if ( root == null ) {   
-            return;
-        }
-        final ElementNode node = root.getNodeForOffset(offset);
-        Node[] selectedNodes = manager.getSelectedNodes();
-        if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
-            try {
-                manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
-            } catch (PropertyVetoException propertyVetoException) {
-                Exceptions.printStackTrace(propertyVetoException);
+    public void selectElementNode(final CompilationInfo info, final int offset) {
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                ElementNode root = getRootNode();
+                if ( root == null ) {
+                    return;
+                }
+                final ElementNode node = root.getMimeRootNodeForOffset(info, offset);
+                Node[] selectedNodes = manager.getSelectedNodes();
+                if (!(selectedNodes != null && selectedNodes.length == 1 && selectedNodes[0] == node)) {
+                    try {
+                        manager.setSelectedNodes(new Node[]{ node == null ? getRootNode() : node });
+                    } catch (PropertyVetoException propertyVetoException) {
+                        Exceptions.printStackTrace(propertyVetoException);
+                    }
+                }
             }
-        }
+        });
     }
 
     public void refresh( final StructureItem description, final FileObject fileObject) {
@@ -225,7 +225,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
 
                 public void run() {
                     long startTime = System.currentTimeMillis();
-                    elementView.setRootVisible(false);        
+                    elementView.setRootVisible(false);
                     manager.setRootContext(new ElementNode( description, ClassMemberPanelUI.this, fileObject ) );
 
                     boolean expand = true;
@@ -308,7 +308,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private ElementNode getRootNode() {
         
         Node n = manager.getRootContext();
-        if ( n instanceof ElementNode ) {
+         if ( n instanceof ElementNode ) {
             return (ElementNode)n;
         }
         else {

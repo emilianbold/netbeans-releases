@@ -96,6 +96,6 @@ made subject to such option by the copyright holder.
 
 <!-- SQL History CSH -->
 
-<mapID target="org.netbeans.modules.db.sql.editor.ui.SQLHistoryAction" url="sql_history" />
+<mapID target="org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" url="sql_history" />
 
 </map>

@@ -299,7 +299,7 @@ public final class RubySession {
             RubyFrame frame = getSelectedFrame();
             return frame == null ? null : frame.inspectExpression(expression);
         } catch (RubyDebuggerException e) {
-            Util.finest("Unable to inspect expression [" + expression + ']'); // NOI18N
+            Util.finer("Unable to inspect expression [" + expression + ']'); // NOI18N
             return null;
         }
     }
@@ -328,7 +328,7 @@ public final class RubySession {
                 Util.severe("Cannot switch thread", e); // NOI18N
             }
         } else {
-            Util.finest("Cannot switch to thread which is not suspended [" + thread + "]");
+            Util.finer("Cannot switch to thread which is not suspended [" + thread + "]");
         }
     }
     
@@ -361,7 +361,7 @@ public final class RubySession {
             }
         }
         if (result == null) {
-            Util.finest("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
+            Util.finer("Cannot resolve absolute path for: \"" + path + '"'); // NOI18N
         }
         return result;
     }

@@ -78,12 +78,12 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
             packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         else {
-            packagingFilesPanel = new PackagingFiles3Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
+            packagingFilesPanel = new PackagingFiles4Panel(packagingConfiguration.getFiles().getValue(), conf.getBaseDir());
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
-        tabbedPane.addTab("Info", packagingInfoOuterPanel);
-        tabbedPane.addTab("Files", packagingFilesOuterPanel);
+        tabbedPane.addTab("Info", packagingInfoOuterPanel); // FIXUP
+        tabbedPane.addTab("Files", packagingFilesOuterPanel); // FIXUP
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             // Add tabs

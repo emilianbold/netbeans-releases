@@ -55,7 +55,6 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.windows.WindowManager;
 
@@ -109,6 +108,10 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
         return passwd;
     }
 
+    public void setPassword(String pwd) {
+        this.passwd = pwd;
+    }
+    
     public boolean promptYesNo(String str) {
         Object[] options = { "yes", "no" }; // NOI18N
         int foo;
@@ -134,10 +137,7 @@ public class RemoteUserInfo implements UserInfo, UIKeyboardInteractive {
             if (passwd != null && passwd.length() > 0) {
                 return true;
             } else {
-                JPanel pwdPanel = new JPanel();
-                pwdPanel.add(passwordField);
-                pwdPanel.setFocusCycleRoot(true);
-                Object[] ob = { pwdPanel };
+                Object[] ob = { passwordField };
                 int result;
                 synchronized (DLGLOCK) {
                     result = JOptionPane.showConfirmDialog(getParentComponent(), ob, message, JOptionPane.OK_CANCEL_OPTION);
