@@ -84,11 +84,7 @@ public class HttpPanel extends javax.swing.JPanel {
         savePasswordCheckBox.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "BK0007")); // NOI18N
         savePasswordCheckBox.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
-        jLabel1.setLabelFor(certFileTextField);
-        jLabel1.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.jLabel1.text")); // NOI18N
-
-        jLabel2.setLabelFor(certPasswordField);
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.jLabel2.text")); // NOI18N
+        sslPanel.setVerifyInputWhenFocusTarget(false);
 
         certPasswordField.setMinimumSize(new java.awt.Dimension(11, 22));
         certPasswordField.setPreferredSize(new java.awt.Dimension(11, 22));
@@ -99,32 +95,42 @@ public class HttpPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(browseButton, org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.browseButton.text")); // NOI18N
         browseButton.setToolTipText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.browseButton.toolTipText")); // NOI18N
 
+        userLabel1.setLabelFor(certFileTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel1, org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.userLabel1.text")); // NOI18N
+        userLabel1.setToolTipText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.userLabel1.toolTipText")); // NOI18N
+
+        userLabel2.setLabelFor(certPasswordField);
+        org.openide.awt.Mnemonics.setLocalizedText(userLabel2, org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.userLabel2.text")); // NOI18N
+        userLabel2.setToolTipText(org.openide.util.NbBundle.getMessage(HttpPanel.class, "HttpPanel.userLabel2.toolTipText")); // NOI18N
+
         org.jdesktop.layout.GroupLayout sslPanelLayout = new org.jdesktop.layout.GroupLayout(sslPanel);
         sslPanel.setLayout(sslPanelLayout);
         sslPanelLayout.setHorizontalGroup(
             sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sslPanelLayout.createSequentialGroup()
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(jLabel1)
-                    .add(jLabel2))
+                    .add(userLabel1, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                    .add(userLabel2, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 136, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
-                    .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
                     .add(sslPanelLayout.createSequentialGroup()
                         .add(certFileTextField, org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, 261, Short.MAX_VALUE)
                         .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
-                        .add(browseButton))))
+                        .add(browseButton))
+                    .add(sslPanelLayout.createSequentialGroup()
+                        .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 143, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE)
+                        .addContainerGap())))
         );
         sslPanelLayout.setVerticalGroup(
             sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.LEADING)
             .add(sslPanelLayout.createSequentialGroup()
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
                     .add(browseButton)
-                    .add(jLabel1)
+                    .add(userLabel1)
                     .add(certFileTextField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(org.jdesktop.layout.LayoutStyle.RELATED)
                 .add(sslPanelLayout.createParallelGroup(org.jdesktop.layout.GroupLayout.BASELINE)
-                    .add(jLabel2)
+                    .add(userLabel2)
                     .add(certPasswordField, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE, 22, org.jdesktop.layout.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(org.jdesktop.layout.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
@@ -197,14 +203,14 @@ public class HttpPanel extends javax.swing.JPanel {
     final javax.swing.JButton browseButton = new javax.swing.JButton();
     final javax.swing.JTextField certFileTextField = new javax.swing.JTextField();
     final javax.swing.JPasswordField certPasswordField = new javax.swing.JPasswordField();
-    private final javax.swing.JLabel jLabel1 = new javax.swing.JLabel();
-    private final javax.swing.JLabel jLabel2 = new javax.swing.JLabel();
     final javax.swing.JLabel leaveBlankLabel = new javax.swing.JLabel();
     final javax.swing.JLabel passwordLabel = new javax.swing.JLabel();
     final javax.swing.JButton proxySettingsButton = new javax.swing.JButton();
     final javax.swing.JCheckBox savePasswordCheckBox = new javax.swing.JCheckBox();
     final javax.swing.JPanel sslPanel = new javax.swing.JPanel();
     final javax.swing.JLabel userLabel = new javax.swing.JLabel();
+    final javax.swing.JLabel userLabel1 = new javax.swing.JLabel();
+    final javax.swing.JLabel userLabel2 = new javax.swing.JLabel();
     final javax.swing.JPasswordField userPasswordField = new javax.swing.JPasswordField();
     final javax.swing.JTextField userTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables

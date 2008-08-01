@@ -133,7 +133,13 @@ public abstract class ParserManager {
      */
     public abstract void removeASTEvaluator (ASTEvaluator e);
     
-    
+    /**
+     * Checks whether the parsed document has any syntax errors
+     * @return Returns TRUE if there are any syntax errors according to the defined grammar
+     */
+    public abstract boolean hasSyntaxErrors();
+
+
     private static void printManagers () {
         System.out.println("\nParserManagers:");
         Iterator<Document> it = managers.keySet ().iterator ();

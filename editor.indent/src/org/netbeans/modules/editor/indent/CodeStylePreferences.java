@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.editor.indent;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.PreferenceChangeEvent;
@@ -49,6 +50,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.openide.filesystems.FileObject;
@@ -59,7 +61,7 @@ import org.openide.util.WeakListeners;
  *
  * @author vita
  */
-public final class CodeStylePreferences implements PreferenceChangeListener {
+public final class CodeStylePreferences implements PreferenceChangeListener, Runnable {
 
     public static synchronized CodeStylePreferences get(Document doc) {
         CodeStylePreferences csp = (CodeStylePreferences) doc.getProperty(CodeStylePreferences.class);
@@ -86,8 +88,34 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
         if (evt.getKey() == null || PROP_USED_PROFILE.equals(evt.getKey())) {
             synchronized (this) {
                 useProject = PROJECT_PROFILE.equals(evt.getNewValue());
-                LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
+                logInfo();
             }
+        }
+    }
+    
+    // ----------------------------------------------------------------------
+    // PreferenceChangeListener implementation
+    // ----------------------------------------------------------------------
+
+    public void run() {
+        // this runs under ProjectManager.mutex().writeAccess, see #138528
+        synchronized (this) {
+            this.projectRoot = findProjectPreferences(doc);
+            if (projectRoot != null) {
+                // determine if we are using code style preferences from the project
+                String usedProfile = projectRoot.get(PROP_USED_PROFILE, DEFAULT_PROFILE);
+                this.useProject = PROJECT_PROFILE.equals(usedProfile);
+                this.projectPrefs = mimeType == null ?
+                    projectRoot.node(PROJECT_PROFILE) : projectRoot.node(PROJECT_PROFILE).node(mimeType);
+
+                // listen on changes
+                projectRoot.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, this.projectRoot));
+            } else {
+                useProject = false;
+                projectPrefs = null;
+            }
+            
+            logInfo();
         }
     }
     
@@ -102,38 +130,29 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N
     
-    private final Preferences projectRoot;
-    private final Preferences projectPrefs;
+    private final Document doc;
     private final Preferences globalPrefs;
+    
+    private Preferences projectRoot;
+    private Preferences projectPrefs;
     private boolean useProject;
+
     // just for logging
-    private final String filePath;
     private final String mimeType;
     
     private CodeStylePreferences(Document doc) {
+        this.doc = doc;
         this.mimeType = (String) doc.getProperty("mimeType"); //NOI18N
-    
-        this.projectRoot = findProjectPreferences(doc);
-        if (projectRoot != null) {
-            // determine if we are using code style preferences from the project
-            String usedProfile = projectRoot.get(PROP_USED_PROFILE, DEFAULT_PROFILE);
-            this.useProject = PROJECT_PROFILE.equals(usedProfile);
-            this.projectPrefs = mimeType == null ? 
-                projectRoot.node(PROJECT_PROFILE) : projectRoot.node(PROJECT_PROFILE).node(mimeType);
-            
-            // listen on changes
-            projectRoot.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, this.projectRoot));
-        } else {
-            useProject = false;
-            projectPrefs = null;
-        }
-        
         this.globalPrefs = MimeLookup.getLookup(mimeType == null ? MimePath.EMPTY : MimePath.parse(mimeType)).lookup(Preferences.class);
 
-        // just logging
-        FileObject f = findFileObject(doc);
-        this.filePath = f == null ? "no file" : f.getPath(); //NOI18N
-        LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
+        // by default we are using MimeLookup...
+        useProject = false;
+        projectPrefs = null;
+
+        // ... until project preferences are initialized and tell us otherwise
+        ProjectManager.mutex().postWriteRequest(this);
+
+        logInfo();
     }
     
     private static final Preferences findProjectPreferences(Document doc) {
@@ -155,6 +174,14 @@ public final class CodeStylePreferences implements PreferenceChangeListener {
             return (FileObject) sdp;
         } else {
             return null;
+        }
+    }
+    
+    private void logInfo() {
+        if (LOG.isLoggable(Level.FINE)) {
+            FileObject f = findFileObject(doc);
+            String filePath = f == null ? "no file" : f.getPath(); //NOI18N
+            LOG.fine("file '" + filePath + "' (" + mimeType + ") is using " + (useProject ? "project" : "global") + " Preferences"); //NOI18N
         }
     }
 }
