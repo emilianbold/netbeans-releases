@@ -49,7 +49,7 @@ public class ConnectionListTest extends TestBase {
      * added using the {@link ConnectionManager#addConnection} method.
      */
     public void testSameInstanceAfterAdd() throws Exception {
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         assertEquals(0, ConnectionList.getDefault().getConnections().length);
 
         DatabaseConnection dbconn = new DatabaseConnection("org.bar.BarDriver",
