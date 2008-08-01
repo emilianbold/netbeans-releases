@@ -50,7 +50,7 @@ public class IndexedInterface extends IndexedElement {
 
     public IndexedInterface(String name, String in, PHPIndex index, String fileUrl,
             String interfaces[], int offset,  int flags){
-        super(name, in, index, fileUrl, offset, flags, ElementKind.GLOBAL);
+        super(name, in, index, fileUrl, offset, flags, ElementKind.CLASS);
         this.interfaces = interfaces;
     }
 
