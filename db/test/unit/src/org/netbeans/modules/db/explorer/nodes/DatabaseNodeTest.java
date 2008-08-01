@@ -48,6 +48,8 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
+import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
+import org.netbeans.modules.db.explorer.infos.RootNodeInfo;
 import org.netbeans.modules.db.test.Util;
 import org.openide.nodes.Node;
 
@@ -60,7 +62,12 @@ public class DatabaseNodeTest extends TestCase {
     public DatabaseNodeTest(String testName) {
         super(testName);
     }        
-    
+
+    @Override
+    public void setUp() throws Exception {
+        Util.clearConnections();
+        Util.deleteDriverFiles();
+    }
     /**
      * Use case: create the root node, and verify that the expected
      * hierarchy of nodes and infos are created 
@@ -73,13 +80,10 @@ public class DatabaseNodeTest extends TestCase {
         DatabaseConnection conn = DatabaseConnection.create(
                 driver, "jdbc:mark//twain", "tomsawyer", null, "whitewash", true);
         ConnectionManager.getDefault().addConnection(conn);
-        
-        RootNode root = RootNode.getInstance();
-        
-        checkNodeChildren(root);
-        
-        checkInfoChildren(root.getInfo());
-        checkConnection(root.getInfo(), conn);
+        checkConnection(RootNodeInfo.getInstance(), conn);
+
+        checkInfoChildren(RootNodeInfo.getInstance());
+        checkNodeChildren(RootNode.getInstance());
     }
     
     private void checkNodeChildren(final RootNode root) throws Exception {
@@ -87,7 +91,6 @@ public class DatabaseNodeTest extends TestCase {
 
         // The Driver List Node and the connection node should be the two
         // children
-        System.out.println("Children length is " + children.length);
         assertTrue(children.length == 2);
         assertTrue(children[0] instanceof DriverListNode);
         assertTrue(children[1] instanceof ConnectionNode); 
@@ -96,6 +99,9 @@ public class DatabaseNodeTest extends TestCase {
     private void checkInfoChildren(DatabaseNodeInfo rootInfo) throws Exception {
         Vector children = rootInfo.getChildren();
         assertTrue(children.size() == 2);
+
+        assertTrue(children.get(0) instanceof ConnectionNodeInfo);
+        assertTrue(children.get(1) instanceof DriverListNodeInfo);
     }
     
     private void checkConnection(DatabaseNodeInfo rootInfo, 

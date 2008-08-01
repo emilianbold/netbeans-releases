@@ -233,12 +233,10 @@ public class RootNodeInfo extends DatabaseNodeInfo implements
         synchronized (ConnectionList.getDefault()) {
 
             if (ConnectionList.getDefault().contains(dbconn)) {
-                dbconn = ConnectionList.getDefault().getConnection(dbconn);
-            } else {
-                ConnectionList.getDefault().add(dbconn);
+                return;
             }
 
-            ConnectionNodeInfo ninfo = createConnectionNodeInfo(dbconn);
+            ConnectionList.getDefault().add(dbconn);
         }
         notifyChange();
     }
