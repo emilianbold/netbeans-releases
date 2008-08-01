@@ -527,29 +527,40 @@ public abstract class TreeView extends JScrollPane {
     *
     * @param n node to collapse
     */
-    public void collapseNode(Node n) {
+    public void collapseNode(final Node n) {
         if (n == null) {
             throw new IllegalArgumentException();
         }
 
-        TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, n)));
-        tree.collapsePath(treePath);
+        // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
+        // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
+        VisualizerNode.runSafe(new Runnable() {
+
+            public void run() {
+                tree.collapsePath(getTreePath(n));
+            }
+        });
     }
 
     /** Expandes the node in the tree.
     *
     * @param n node
     */
-    public void expandNode(Node n) {
+    public void expandNode(final Node n) {
         if (n == null) {
             throw new IllegalArgumentException();
         }
 
         lookupExplorerManager();
 
-        TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, n)));
+        // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
+        // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
+        VisualizerNode.runSafe(new Runnable() {
 
-        tree.expandPath(treePath);
+            public void run() {
+                tree.expandPath(getTreePath(n));
+            }
+        });
     }
 
     /** Test whether a node is expanded in the tree or not
@@ -557,15 +568,16 @@ public abstract class TreeView extends JScrollPane {
     * @return true if the node is expanded
     */
     public boolean isExpanded(Node n) {
-        TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, n)));
-
-        return tree.isExpanded(treePath);
+        return tree.isExpanded(getTreePath(n));
     }
 
     /** Expands all paths.
     */
     public void expandAll() {
-        class ExpandAll implements Runnable {
+
+        // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
+        // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
+        VisualizerNode.runSafe(new Runnable() {
 
             public void run() {
                 int i = 0;
@@ -580,13 +592,7 @@ public abstract class TreeView extends JScrollPane {
                     i++;
                 } while (i < tree.getRowCount());
             }
-        }
-        ExpandAll expAll = new ExpandAll();
-        if (Children.MUTEX.isReadAccess() || Children.MUTEX.isWriteAccess()) {
-            expAll.run();
-        } else {
-            Children.MUTEX.readAccess(expAll);
-        }
+        });
     }
 
     //
@@ -743,9 +749,7 @@ public abstract class TreeView extends JScrollPane {
             for (int j = toBeExpaned.size() - 1; j >= 0; j--) {
                 expandNode((Node) toBeExpaned.get(j));
             }
-
-            TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, nodes[i])));
-            paths[i] = treePath;
+            paths[i] = getTreePath(nodes[i]);
         }
 
         int[] rows = rowMapper.getRowsForPaths(paths);
@@ -761,6 +765,10 @@ public abstract class TreeView extends JScrollPane {
 
         // all is ok
         return false;
+    }
+    
+    private TreePath getTreePath(Node node) {
+        return new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, node)));
     }
 
     //
@@ -792,12 +800,19 @@ public abstract class TreeView extends JScrollPane {
     /** Synchronize the explored context from the manager of this Explorer.
     */
     final void synchronizeExploredContext() {
-        Node n = manager.getExploredContext();
-
-        if (n != null) {
-            TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, n)));
-            showPath(treePath);
+        final Node n = manager.getExploredContext();
+        if (n == null) {
+            return;
         }
+
+        // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
+        // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
+        VisualizerNode.runSafe(new Runnable() {
+
+            public void run() {
+                showPath(getTreePath(n));
+            }
+        });
     }
 
     /** Sets the selection model, which must be one of
@@ -885,20 +900,23 @@ public abstract class TreeView extends JScrollPane {
     * The default implementation does nothing.
     */
     final void synchronizeSelectedNodes() {
-        // #40152: if there is any scheduled change to view, perform it now
-        VisualizerNode.runQueue();
+        // run safely to be sure all preceding events are processed (especially VisualizerEvent.Added)
+        // otherwise VisualizerNodes may not be in hierarchy yet (see #140629)
+        VisualizerNode.runSafe(new Runnable() {
 
-        Node[] arr = manager.getSelectedNodes();
-        TreePath[] paths = new TreePath[arr.length];
+            public void run() {
+                Node[] arr = manager.getSelectedNodes();
+                TreePath[] paths = new TreePath[arr.length];
 
-        for (int i = 0; i < arr.length; i++) {
-            TreePath treePath = new TreePath(treeModel.getPathToRoot(VisualizerNode.getVisualizer(null, arr[i])));
-            paths[i] = treePath;
-        }
+                for (int i = 0; i < arr.length; i++) {
+                    paths[i] = getTreePath(arr[i]);
+                }
 
-        tree.getSelectionModel().removeTreeSelectionListener(managerListener);
-        showSelection(paths);
-        tree.getSelectionModel().addTreeSelectionListener(managerListener);
+                tree.getSelectionModel().removeTreeSelectionListener(managerListener);
+                showSelection(paths);
+                tree.getSelectionModel().addTreeSelectionListener(managerListener);
+            }
+        });
     }
 
     void scrollTreeToVisible(TreePath path, TreeNode child) {

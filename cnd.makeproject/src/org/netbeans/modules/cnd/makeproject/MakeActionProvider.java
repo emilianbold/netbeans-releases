@@ -372,7 +372,7 @@ public class MakeActionProvider implements ActionProvider {
                             path = IpeUtils.toRelativePath(conf.getProfile().getRunDirectory(), path);
                             path = FilePathAdaptor.naturalize(path);
                             CompilerSet compilerSet = conf.getCompilerSet().getCompilerSet();
-                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) {
+                            if (compilerSet != null && "MinGW".equals(compilerSet.getCompilerFlavor().toString())) { // NOI18N
                                 // IZ 120352
                                 path = FilePathAdaptor.normalize(path);
                         }
@@ -848,7 +848,7 @@ public class MakeActionProvider implements ActionProvider {
             // TODO: all validation below works, but it may be more efficient to make a verifying script
         }
 
-        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) {
+        if (csconf.getFlavor() != null && csconf.getFlavor().equals("Unknown")) { // NOI18N
             // Confiiguration was created with unknown tool set. Use the now default one.
             csname = csconf.getOption();
             cs = CompilerSetManager.getDefault(hkey).getCompilerSet(csname);

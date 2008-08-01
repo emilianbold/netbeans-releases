@@ -111,18 +111,13 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
     
     private int createBreakpointImpls() {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
-        int i, k = bs.length;
         int count = 0;
-	
-	if (k > 0) {
-	    for (i = 0; i < k; i++) {
-		if (bs[i] instanceof GdbBreakpoint) {
-		    createBreakpointImpl(bs[i]);
-                    count++;
-		}
-	    }
-	}
+        for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (bp instanceof GdbBreakpoint) {
+                createBreakpointImpl(bp);
+                count++;
+            }
+        }
         return count;
     }
 
@@ -140,11 +135,9 @@ public class BreakpointsEngineListener extends LazyActionsManagerListener
     }
     
     private void removeBreakpointImpls() {
-        Breakpoint[] bs = DebuggerManager.getDebuggerManager().getBreakpoints();
-        int i, k = bs.length;
-        for (i = 0; i < k; i++) {
-	    if (bs[i] instanceof GdbBreakpoint) {
-		removeBreakpointImpl(bs [i]);
+        for (Breakpoint bp : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+	    if (bp instanceof GdbBreakpoint) {
+		removeBreakpointImpl(bp);
 	    }
 	}
     }
