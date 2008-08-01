@@ -163,7 +163,6 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
     private static final Set<String> ignoredDirectories = parseSet("org.netbeans.javacore.ignoreDirectories", "SCCS CVS .svn"); // NOI18N
     private static final boolean noscan = Boolean.getBoolean("netbeans.javacore.noscan");   //NOI18N
     private static final boolean PERF_TEST = Boolean.getBoolean("perf.refactoring.test");
-    private static final String PACKAGE_INFO = "package-info.java";  //NOI18N
     static final String GOING_TO_RECOMPILE = "Going to recompile: {0}"; //NOI18N
     static final String CONTAINS_TASKLIST_DATA = "containsTasklistData"; //NOI18N
     static final String CONTAINS_TASKLIST_DEPENDENCY_DATA = "containsTasklistDependencyData"; //NOI18N
@@ -2310,31 +2309,36 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                                 sa.delete(s);
                             }
 
-                            List<Diagnostic> diag = new ArrayList<Diagnostic>();
-                            for (Diagnostic d : listener.errors) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            for (Diagnostic d : listener.warnings) {
-                                if (active == d.getSource()) {
-                                    diag.add(d);
-                                }
-                            }
-                            if (!virtual && TasklistSettings.isTasklistEnabled()) { //Don't report errors in virtual files
-                                Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
-
-                                if (TasklistSettings.isBadgesEnabled()) {
-                                    //XXX: maybe move to the common path (to be used also in the else branch:
-                                    ErrorAnnotator an = ErrorAnnotator.getAnnotator();
-
-                                    if (an != null) {
-                                        an.updateInError(toRefresh);
+                            if (!virtual) { //Don't report errors in virtual files
+                                assert active.size() == 1;
+                                
+                                JavaFileObject jfo = active.iterator().next().jfo;
+                                List<Diagnostic> diag = new ArrayList<Diagnostic>();
+                                for (Diagnostic d : listener.errors) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
                                     }
                                 }
+                                for (Diagnostic d : listener.warnings) {
+                                    if (jfo == d.getSource()) {
+                                        diag.add(d);
+                                    }
+                                }
+                                if (TasklistSettings.isTasklistEnabled()) {
+                                    Set<URL> toRefresh = TaskCache.getDefault().dumpErrors(root, file, fileFile, diag);
 
-                                JavaTaskProvider.refresh(fo);
-                            }                            
+                                    if (TasklistSettings.isBadgesEnabled()) {
+                                        //XXX: maybe move to the common path (to be used also in the else branch:
+                                        ErrorAnnotator an = ErrorAnnotator.getAnnotator();
+
+                                        if (an != null) {
+                                            an.updateInError(toRefresh);
+                                        }
+                                    }
+
+                                    JavaTaskProvider.refresh(fo);
+                                }
+                            }
                             for (JavaFileObject generated : jt.generate()) {
                                 if (generated instanceof OutputFileObject) {
                                     addedFiles.add(((OutputFileObject) generated).getFile());
@@ -2800,9 +2804,7 @@ public class RepositoryUpdater implements PropertyChangeListener, FileChangeList
                         collectFiles(child, javaFiles, virtualJavaFiles);
                     }
                     else if (name.endsWith('.'+JavaDataLoader.JAVA_EXTENSION)) { //NOI18N
-                        if (!PACKAGE_INFO.equals(name) && child.length()>0) {
-                            javaFiles.add(child);
-                        }
+                        javaFiles.add(child);
                     }
                     else if (VirtualSourceProviderQuery.hasVirtualSource(child)) {
                         virtualJavaFiles.add(child);
