@@ -37,40 +37,31 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.db.sql.editor.completion;
+package org.netbeans.api.db.sql.support;
 
-import javax.swing.text.Document;
-import junit.framework.TestCase;
-import org.netbeans.lib.lexer.test.ModificationTextDocument;
-import org.netbeans.modules.db.sql.editor.completion.SQLCompletionEnv.Context;
+import java.util.regex.Pattern;
+import org.netbeans.api.db.sql.support.SQLIdentifiers.Quoter;
 
 /**
  *
  * @author Andrei Badea
  */
-public class SQLCompletionEnvTest extends TestCase {
+public class NonASCIIQuoter extends Quoter {
 
-    public SQLCompletionEnvTest(String testName) {
-        super(testName);
+    private static final Pattern ASCII_IDENTIFIER = Pattern.compile("[a-zA-z][a-zA-Z0-9_]+");
+
+    private final String quoteString;
+
+    public NonASCIIQuoter(String quoteString) {
+        this.quoteString = quoteString;
     }
 
-    public void testGetContext() throws Exception {
-        Document doc = new ModificationTextDocument();
-        doc.insertString(0, "select a from b", null);
-        for (int i = 0; i < 6; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
-            assertTrue(env.isSelect());
-            assertNull(env.getContext());
-        }
-        for (int i = 6; i < 13; i++) {
-            SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.SELECT, env.getContext());
-        }
-        for (int i = 13; i < doc.getLength(); i++ ) {
-            SQLCompletionEnv env = SQLCompletionEnv.create(doc, i);
-            assertTrue(env.isSelect());
-            assertEquals(Context.FROM, env.getContext());
+    @Override
+    public String quoteIfNeeded(String identifier) {
+        if (!ASCII_IDENTIFIER.matcher(identifier).matches()) {
+            return quoteString + identifier + quoteString;
+        } else {
+            return identifier;
         }
     }
 }
