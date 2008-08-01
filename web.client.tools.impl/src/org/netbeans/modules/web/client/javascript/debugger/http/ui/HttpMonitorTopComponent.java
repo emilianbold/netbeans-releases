@@ -149,16 +149,22 @@ final class HttpMonitorTopComponent extends TopComponent {
                         } else {
                             reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
-
+                        
                         Map<String, String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
                             String mime = activity.getMimeType();
-                            if( mime != null && HttpActivitiesModel.getEditorMimeTypes().contains(mime) ){
-                                resBodyEditorPane.setContentType(activity.getMimeType());
-                            } else {
-                                resBodyEditorPane.setContentType("text/html");
+                            String contentType = "text/html";
+                            if( mime != null ) {
+                                if( HttpActivitiesModel.JS_CONTENT_TYPES.contains(mime) ){
+                                    contentType = "text/javascript";
+                                } else if (HttpActivitiesModel.CSS_CONTENT_TYPES.contains(mime)){
+                                    contentType = "text/x-css";
+                                } else if ( mime.contains("xml")){
+                                    contentType = "text/xml";
+                                }
                             }
+                            resBodyEditorPane.setContentType(contentType);
                             resBodyEditorPane.setText(activity.getResponseText());
 
 //                            resBodyTextArea.setText(activity.getResponseText());
