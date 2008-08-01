@@ -139,7 +139,7 @@ public class YamlScanner implements StructureScanner {
     }
 
     public Configuration getConfiguration() {
-        return null;
+        return new Configuration(false, false, 0);
     }
 
     private class YamlStructureItem implements StructureItem, Comparable<YamlStructureItem> {

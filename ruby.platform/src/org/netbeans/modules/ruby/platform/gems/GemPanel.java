@@ -187,7 +187,7 @@ public final class GemPanel extends JPanel {
     }
     
     private void cancelRunningTasks() {
-        LOGGER.finest("Cancelling all running GemPanel tasks");
+        LOGGER.finer("Cancelling all running GemPanel tasks");
         // TODO: implement
     }
     
@@ -324,7 +324,7 @@ public final class GemPanel extends JPanel {
         GemManager gemManager = getGemManager();
         assert gemManager != null : "gemManager must not be null";
         assert !gemManager.needsReload() : "gemManager is reloaded";
-        LOGGER.finest("Updating UI for: " + gemManager);
+        LOGGER.finer("Updating UI for: " + gemManager);
         
         hideProgressBars();
 
@@ -1144,7 +1144,7 @@ public final class GemPanel extends JPanel {
         final GemManager gemManager = getGemManager();
         Runnable updateTask = new Runnable() {
             public void run() {
-                LOGGER.finest("Update of " + gemManager + " scheduled");
+                LOGGER.finer("Update of " + gemManager + " scheduled");
                 assert !EventQueue.isDispatchThread();
 
                 final List<String> errors = new ArrayList<String>();
@@ -1153,7 +1153,7 @@ public final class GemPanel extends JPanel {
                 // Update UI
                 EventQueue.invokeLater(new Runnable() {
                     public void run() {
-                        LOGGER.finest("Update of " + gemManager + " finished");
+                        LOGGER.finer("Update of " + gemManager + " finished");
                         if (closed) {
                             return;
                         }
@@ -1172,14 +1172,14 @@ public final class GemPanel extends JPanel {
                         if (!platformHasChanged) {
                             notifyGemsUpdated();
                         } else { // platform has changed, ignore UI update
-                            LOGGER.finest("Gem Manager has changed from " + gemManager
+                            LOGGER.finer("Gem Manager has changed from " + gemManager
                                     + " to " + getGemManager() + ". Ignoring update."); // NOI18N
                         }
                     }
                 });
             }
         };
-        LOGGER.finest("Submitting refreshing of gems for: " + gemManager);
+        LOGGER.finer("Submitting refreshing of gems for: " + gemManager);
         updateTasksQueue.post(updateTask);
     }
 

@@ -131,7 +131,9 @@ final class HttpMonitorTopComponent extends TopComponent {
                         reqHeaderTableModel.setMap(EMPTY_MAP);
                         reqParamTextArea.setText("");
                         resHeaderTableModel.setMap(EMPTY_MAP);
-                        resBodyTextArea.setText("");
+//                        resBodyTextArea.setText("");
+                        resBodyEditorPane.setText("");
+                        resBodyEditorPane.setContentType("text/html");
                         return;
                     }
 
@@ -147,14 +149,32 @@ final class HttpMonitorTopComponent extends TopComponent {
                         } else {
                             reqParamTextArea.setText("URL PARAMS: " + request.getUrlParams());
                         }
-
+                        
                         Map<String, String> header = activity.getResponseHeader();
                         if (header != null) {
                             resHeaderTableModel.setMap(header);
-                            resBodyTextArea.setText(activity.getResponseText());
+                            String mime = activity.getMimeType();
+                            String contentType = "text/html";
+                            if( mime != null ) {
+                                if( HttpActivitiesModel.JS_CONTENT_TYPES.contains(mime) ){
+                                    contentType = "text/javascript";
+                                } else if (HttpActivitiesModel.CSS_CONTENT_TYPES.contains(mime)){
+                                    contentType = "text/x-css";
+                                } else if ( mime.contains("json") ) {
+                                    contentType = "text/x-json";
+                                }else if ( mime.contains("xml")){
+                                    contentType = "text/xml";
+                                }
+                            }
+                            resBodyEditorPane.setContentType(contentType);
+                            resBodyEditorPane.setText(activity.getResponseText());
+
+//                            resBodyTextArea.setText(activity.getResponseText());
                         } else {
                             resHeaderTableModel.setMap(EMPTY_MAP);
-                            resBodyTextArea.setText("");
+                            resBodyEditorPane.setText("");
+                            resBodyEditorPane.setContentType("text/html");
+//                            resBodyTextArea.setText("");
                         }
                     }
                 }
@@ -175,7 +195,6 @@ final class HttpMonitorTopComponent extends TopComponent {
                 httpMonitorSplitPane.setDividerLocation(getHttpMonitorDividerLoc());
             }
         });
-        LOG.info("Add Notify");
     }
 
     @Override
@@ -183,7 +202,6 @@ final class HttpMonitorTopComponent extends TopComponent {
         super.removeNotify();
         setDetailsDividerLoc();
         setHttpMonitorDividerLoc();
-        LOG.info("Remove Notify");
     }
 
 
@@ -293,7 +311,7 @@ final class HttpMonitorTopComponent extends TopComponent {
         resHeaderJTable = new javax.swing.JTable();
         resBodyPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
-        resBodyTextArea = new javax.swing.JTextArea();
+        resBodyEditorPane = new javax.swing.JEditorPane();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -503,10 +521,7 @@ final class HttpMonitorTopComponent extends TopComponent {
 
         resBodyPanel.setLayout(new java.awt.BorderLayout());
 
-        resBodyTextArea.setColumns(20);
-        resBodyTextArea.setEditable(false);
-        resBodyTextArea.setRows(5);
-        jScrollPane2.setViewportView(resBodyTextArea);
+        jScrollPane2.setViewportView(resBodyEditorPane);
 
         resBodyPanel.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
@@ -589,8 +604,8 @@ final class HttpMonitorTopComponent extends TopComponent {
     private javax.swing.JPanel reqParamPanel;
     private javax.swing.JTextArea reqParamTextArea;
     private javax.swing.JTabbedPane reqTabbedPane;
+    private javax.swing.JEditorPane resBodyEditorPane;
     private javax.swing.JPanel resBodyPanel;
-    private javax.swing.JTextArea resBodyTextArea;
     private javax.swing.JTable resHeaderJTable;
     private javax.swing.JScrollPane resHeaderPanel;
     private javax.swing.JLabel resLabel;

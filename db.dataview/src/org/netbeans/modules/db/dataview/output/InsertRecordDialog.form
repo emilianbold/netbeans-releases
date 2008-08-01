@@ -80,7 +80,7 @@
             <Property name="editable" type="boolean" value="false"/>
             <Property name="font" type="java.awt.Font" editor="org.netbeans.modules.form.editors2.FontEditor">
               <FontInfo relative="true">
-                <Font component="jTextArea1" property="font" relativeSize="true" size="-1"/>
+                <Font component="jTextArea1" property="font" relativeSize="true" size="0"/>
               </FontInfo>
             </Property>
             <Property name="lineWrap" type="boolean" value="true"/>

@@ -386,6 +386,10 @@ public class LocalServer implements Comparable<LocalServer> {
             }
         }
 
+        public void fireContentsChanged() {
+            fireContentsChanged(this, -1, -1);
+        }
+
         public Object getSelectedItem() {
             return selected;
         }

@@ -428,6 +428,10 @@ public class ServerFileDistributor extends ServerProgress {
                         return;
                     }
                 }
+                if (targetFO.equals(sourceFO)) {
+                    // do not write a file onto itself...
+                    return;
+                }
                 destFolder = targetFO.getParent();
 
                 // we need to rewrite the content of the file here... thanks,

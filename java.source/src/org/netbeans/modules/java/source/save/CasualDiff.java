@@ -90,6 +90,7 @@ public class CasualDiff {
     // used for diffing var def, when parameter is printed, annotation of
     // such variable should not provide new line at the end.
     private boolean parameterPrint = false;
+    private boolean enumConstantPrint = false;
     
     protected CasualDiff(Context context, WorkingCopy workingCopy, Map<Tree, ?> tree2Tag, Map<?, int[]> tag2Span) {
         diffs = new ListBuffer<Diff>();
@@ -148,6 +149,10 @@ public class CasualDiff {
                     }
                 }
                 break;
+            } else if (t.getKind() == Kind.VARIABLE) {
+                JCVariableDecl vt = (JCVariableDecl) t;
+                if ((vt.mods.flags & ENUM) != 0 && vt.init == current)
+                    td.enumConstantPrint = true;
             }
             
             current = t;
@@ -1126,9 +1131,11 @@ public class CasualDiff {
             localPointer = diffTree(oldT.encl, newT.encl, enclBounds);
         }
         diffParameterList(oldT.typeargs, newT.typeargs, null, localPointer, Measure.ARGUMENT);
-        int[] clazzBounds = getBounds(oldT.clazz);
-        copyTo(localPointer, clazzBounds[0]);
-        localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
+        if (!enumConstantPrint) {
+            int[] clazzBounds = getBounds(oldT.clazz);
+            copyTo(localPointer, clazzBounds[0]);
+            localPointer = diffTree(oldT.clazz, newT.clazz, clazzBounds);
+        }
         if (oldT.args.nonEmpty()) {
             copyTo(localPointer, localPointer = getOldPos(oldT.args.head));
         } else {
@@ -2979,7 +2986,7 @@ public class CasualDiff {
     }
     
     private void copyTo(int from, int to, VeryPretty loc) {
-        if (from == to) { 
+        if (from == to) {
             return;
         } else if (from > to || from < 0 || to < 0) {
             // #104107 - log the source when this problem occurs.

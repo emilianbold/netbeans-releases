@@ -66,8 +66,11 @@ public class PartFacadeEdgeConnector extends AbstractUMLConnectionWidget
 
         setControlPointShape(PointShape.NONE);
         setEndPointShape(PointShape.NONE);
+
     }
     
+    protected void initLabelManager() {}
+
     @Override
     public void initialize(IPresentationElement element)
     {
@@ -76,6 +79,7 @@ public class PartFacadeEdgeConnector extends AbstractUMLConnectionWidget
     public String getWidgetID() {
         return UMLWidgetIDString.PARTFACADEEDGECONNECTIONWIDGET.toString();
     }
+
 }
     
 
