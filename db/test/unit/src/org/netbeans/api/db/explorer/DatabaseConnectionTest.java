@@ -41,6 +41,7 @@
 
 package org.netbeans.api.db.explorer;
 
+import org.netbeans.modules.db.explorer.ConnectionList;
 import org.netbeans.modules.db.test.Util;
 import org.netbeans.modules.db.util.DBTestBase;
 
@@ -72,6 +73,12 @@ public class DatabaseConnectionTest extends DBTestBase {
         assertTrue(ConnectionManager.getDefault().getConnections().length > 0);
         
         Util.deleteConnectionFiles();
+
+        // In the real world users won't go about deleting files under a running NB,
+        // and if they do, it's reasonable to assume that NB should continue to hold
+        // instances in its cache.  Here we flush the cache to validate that everything's
+        // gone.
+        ConnectionList.getDefault().refreshCache();
         
         assertTrue(ConnectionManager.getDefault().getConnections().length == 0);
     }
