@@ -53,7 +53,7 @@ public class DatabaseConnectionTest extends DBTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
     }
     
     public DatabaseConnectionTest(String testName) {
@@ -61,7 +61,7 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
     
     public void testConnectionsRemovedWhenFilesDeleted() throws Exception{
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         Util.deleteDriverFiles();
 
         JDBCDriver driver = Util.createDummyDriver();
@@ -72,19 +72,13 @@ public class DatabaseConnectionTest extends DBTestBase {
         
         assertTrue(ConnectionManager.getDefault().getConnections().length > 0);
         
-        Util.deleteConnectionFiles();
-
-        // In the real world users won't go about deleting files under a running NB,
-        // and if they do, it's reasonable to assume that NB should continue to hold
-        // instances in its cache.  Here we flush the cache to validate that everything's
-        // gone.
-        ConnectionList.getDefault().refreshCache();
+        Util.clearConnections();
         
         assertTrue(ConnectionManager.getDefault().getConnections().length == 0);
     }
 
     public void testSameDatabaseConnectionReturned() throws Exception {
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         Util.deleteDriverFiles();
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
         
@@ -106,7 +100,7 @@ public class DatabaseConnectionTest extends DBTestBase {
     }
 
     public void testDeleteConnection() throws Exception {
-        Util.deleteConnectionFiles();
+        Util.clearConnections();
         Util.deleteDriverFiles();
         
         assertEquals(0, ConnectionManager.getDefault().getConnections().length);
