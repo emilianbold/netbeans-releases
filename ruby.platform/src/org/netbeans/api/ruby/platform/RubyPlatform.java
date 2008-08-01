@@ -482,7 +482,7 @@ public final class RubyPlatform {
         do {
             String binDir = getBinDir();
             if (binDir != null) {
-                LOGGER.finest("Looking for '" + toFind + "' executable; used intepreter: '" + getInterpreter() + "'"); // NOI18N
+                LOGGER.finer("Looking for '" + toFind + "' executable; used intepreter: '" + getInterpreter() + "'"); // NOI18N
                 exec = RubyPlatform.findExecutable(binDir, toFind);
             } else {
                 LOGGER.warning("Could not find Ruby interpreter executable when searching for '" + toFind + "'"); // NOI18N
@@ -507,7 +507,7 @@ public final class RubyPlatform {
             exec = findExecutable(toFind + ".bat"); // NOI18N
         }
         if (exec != null) {
-            LOGGER.finest("Found '" + toFind + "': '" + exec + "'");
+            LOGGER.finer("Found '" + toFind + "': '" + exec + "'");
         }
         return exec;
     }
@@ -538,7 +538,7 @@ public final class RubyPlatform {
     private static String findExecutable(final String dir, final String toFind) {
         String exec = dir + File.separator + toFind;
         if (!new File(exec).isFile()) {
-            LOGGER.finest("'" + exec + "' is not a file."); // NOI18N
+            LOGGER.finer("'" + exec + "' is not a file."); // NOI18N
             exec = null;
         }
         return exec;
