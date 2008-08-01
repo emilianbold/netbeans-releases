@@ -74,14 +74,13 @@ class GoToSourceCPE extends javax.swing.JPanel {
         setPreferredSize(new java.awt.Dimension(350, 80));
 
         org.openide.awt.Mnemonics.setLocalizedText(goToSourceButton, org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourceButtonText")); // NOI18N
-        goToSourceButton.setLabel(org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSource")); // NOI18N
         goToSourceButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 goToSourceButtonActionPerformed(evt);
             }
         });
 
-        noteLabel.setText(org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourceNote")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, org.openide.util.NbBundle.getMessage(GoToSourceCPE.class, "LBL_GoToSourceNote")); // NOI18N
 
         org.jdesktop.layout.GroupLayout layout = new org.jdesktop.layout.GroupLayout(this);
         this.setLayout(layout);
