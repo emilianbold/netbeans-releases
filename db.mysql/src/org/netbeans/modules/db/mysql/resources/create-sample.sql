@@ -53,19 +53,7 @@ CREATE TABLE customer (
 
 
 
-INSERT INTO customer
-values(
-1,'N','33015','JumboCom','111 E. Las Olas Blvd','Suite 51','Fort Lauderdale','FL','305-777-4632','305-777-4635','jumbocom@gmail.com',100000
-);
-INSERT INTO customer
-values(
 
-2,'M','33055','Livermore Enterprises','9754 Main Street','P.O. Box 567','Miami','FL','305-456-8888','305-456-8889','www.tsoftt.com',50000
-);
-INSERT INTO customer
-values(
-25,'M','75200','Oak Computers','8989 Qume Drive','Suite 9897','Houston','TX','214-999-1234','214-999-5432','www.oakc.com',25000
-);
 INSERT INTO customer
 values(
 3,'L','12347','Nano Apple','8585 Murray Drive','P.O. Box 456','Alanta','GA','555-275-9900','555-275-9911','www.nanoapple.net',90000
@@ -106,6 +94,21 @@ INSERT INTO customer
 values(
 410,'M','10096','Yankee Computer Repair','9653 33rd Ave','Floor 4','New York','NY','212-535-7000','212-535-7100','www.nycomp@repair.com',25000
 );
+
+INSERT INTO customer
+values(
+1,'N','33015','JumboCom','111 E. Las Olas Blvd','Suite 51','Fort Lauderdale','FL','305-777-4632','305-777-4635','jumbocom@gmail.com',100000
+);
+INSERT INTO customer
+values(
+
+2,'M','33055','Livermore Enterprises','9754 Main Street','P.O. Box 567','Miami','FL','305-456-8888','305-456-8889','www.tsoftt.com',50000
+);
+INSERT INTO customer
+values(
+25,'M','75200','Oak Computers','8989 Qume Drive','Suite 9897','Houston','TX','214-999-1234','214-999-5432','www.oakc.com',25000
+);
+
 
 
 
@@ -184,7 +187,10 @@ VALUES
 (19984681,'Sun MicroSystems','4000 Network Circle','Building 17','Santa Clara','CA','95051','206-972-4459','206-972-4399','app.send@sun.com','Cesar Palace'),
 (19984682,'Sun MicroSystems','4000 Network Circle','Building 18','Santa Clara','CA','95051','206-972-4451','206-972-4599','j2ee@sun.com','Waren Julius'),
 (19941212,'Sun MicroSystems','4000 Network Circle','Building 19','Santa Clara','CA','95051','206-972-4452','206-972-4699','javaee5@sun.com','bill snider'),
-(19987296,'Sun MicroSystems','4000 Network Circle','Building 20','Santa Clara','CA','95051','206-972-4453','206-972-4799','gerard@cnet.com','gerard dekerantarec')
+(19987296,'Sun MicroSystems','4000 Network Circle','Building 20','Santa Clara','CA','95051','206-972-4453','206-972-4799','gerard@cnet.com','gerard dekerantarec'),
+(19987297,'Livermore Enterprises','9754 Main Street','P.O. Box 567','Miami','FL','33055','206-972-4453','206-972-4799','jumbocom@gmail.com','Livermore Enterprises'),
+(19987298,'JumboCom','111 E. Las Olas Blvd','Suite 51','Fort Lauderdale','FL','33015','206-972-4453','206-972-4799','www.tsoftt.com','JumboCom'),
+(19987299,'Oak Computers','8989 Qume Drive','Suite 9897','Houston','TX','75200','206-972-4453','206-972-4799','www.oakc.com','Oak Computers')
 ;
 
 
@@ -213,8 +219,10 @@ VALUES
 ('48128',6.84675E2,4.75854E2,4.08074E2),
 ('48124',7.53765E2,4.87664E2,4.56632E2),
 ('10095',1.987854E3,9.75875E2,8.65681E2),
-('10096',1.876766E3,9.55666E2,9.23556E2)
-
+('10096',1.876766E3,9.55666E2,9.23556E2),
+('33015',1.876766E3,9.55666E2,9.23556E2),
+('33055',1.876766E3,9.55666E2,9.23556E2),
+('75200',1.876766E3,9.55666E2,9.23556E2)
 ;
 
 
@@ -361,4 +369,6 @@ ALTER TABLE purchase_order ADD CONSTRAINT FOREIGNKEY_product_id FOREIGN KEY (
 product_id )
         REFERENCES product ( product_id ) ON UPDATE no action ON DELETE 
 no action;
+
+
 

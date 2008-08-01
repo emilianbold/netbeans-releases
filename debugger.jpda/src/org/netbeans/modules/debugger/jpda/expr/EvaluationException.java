@@ -91,6 +91,8 @@ public class EvaluationException extends RuntimeException {
             msgParams = new String [] { params[0] == null ? null : params[0].toString() };
         else if (reason.equals("arraySizeBadType"))
             msgParams = new String [] { params[0] == null ? null : params[0].toString() };
+        else if (reason.equals("notArrayType"))
+            msgParams = new String [] { params[0] == null ? null : params[0].toString() };
         else if (reason.equals("arrayCreateError"))
             msgParams = new String [] { params[0] == null ? null : params[0].toString() };
         else if (reason.equals("instantiateInterface"))

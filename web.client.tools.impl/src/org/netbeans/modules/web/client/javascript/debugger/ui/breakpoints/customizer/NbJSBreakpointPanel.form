@@ -118,7 +118,7 @@
               <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="L_Line_Breakpoint_File_Name" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
             </Property>
             <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="ACSD_L_Line_Breakpoint_File_Name_1" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
+              <ResourceString bundle="org/netbeans/modules/web/client/javascript/debugger/ui/breakpoints/customizer/Bundle.properties" key="ACSD_L_Line_Breakpoint_File_Name" replaceFormat="java.util.ResourceBundle.getBundle(&quot;{bundleNameSlashes}&quot;).getString(&quot;{key}&quot;)"/>
             </Property>
           </AccessibilityProperties>
         </Component>

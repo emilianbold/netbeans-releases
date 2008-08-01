@@ -85,7 +85,7 @@ private:
     void sendResponse(tstring xmlString);
     void sendWindowsMessage(IHTMLDocument2 *pHTMLDocument);
     void sendSourcesMessage(IHTMLDocument2 *pHTMLDocument);
-    set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument);
+    set<tstring> getFrameURLs(IHTMLDocument2 *pHTMLDocument, BOOL scriptOnly);
     BOOL stringToBytes(tstring str, char **ppBytes, int *pBytesLen);
     tstring encodeToBase64(tstring value);
 };
