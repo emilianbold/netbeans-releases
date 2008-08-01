@@ -97,6 +97,7 @@ public class SQLStatementAnalyzer {
     }
 
     private void parse() {
+        boolean afterFromTableKeyword = false;
         do {
             switch (state) {
                 case START:
@@ -115,6 +116,7 @@ public class SQLStatementAnalyzer {
                         case KEYWORD:
                             if (isKeyword("FROM")) { // NOI18N
                                 state = State.FROM;
+                                afterFromTableKeyword = true;
                             }
                             break;
                     }
@@ -122,10 +124,18 @@ public class SQLStatementAnalyzer {
                 case FROM:
                     switch (seq.token().id()) {
                         case IDENTIFIER:
-                            fromTables.add(parseFromTable());
+                            if (afterFromTableKeyword) {
+                                fromTables.add(parseFromTable());
+                                afterFromTableKeyword = false;
+                            }
+                            break;
+                        case COMMA:
+                            afterFromTableKeyword = true;
                             break;
                         case KEYWORD:
-                            if (isKeywordAfterFrom()) {
+                            if (isKeyword("FROM") || isKeyword("JOIN")) { // NOI18N
+                                afterFromTableKeyword = true;
+                            } else if (isKeywordAfterFrom()) {
                                 state = State.END;
                             }
                             break;

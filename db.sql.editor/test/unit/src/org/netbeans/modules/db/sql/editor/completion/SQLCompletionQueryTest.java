@@ -107,6 +107,7 @@ public class SQLCompletionQueryTest extends NbTestCase {
         suite.addTest(new SQLCompletionQueryTest("fromSimple"));
         suite.addTest(new SQLCompletionQueryTest("fromSchema"));
         suite.addTest(new SQLCompletionQueryTest("selectFromJoinCondition"));
+        suite.addTest(new SQLCompletionQueryTest("selectFromJoinConditionAlias"));
 
         suite.addTest(new SQLCompletionQueryTest("whereAll"));
         suite.addTest(new SQLCompletionQueryTest("whereSimple"));
