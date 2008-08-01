@@ -93,7 +93,7 @@ public class TestEditControl extends UMLTestCase {
     private static String defaultOperationVisibility=org.netbeans.test.uml.editcontrol.utils.Utils.defaultOperationVisibility;
     //
     private String lastTestCase=null;
-    private static String workdir=System.getProperty("xtest.workdir");
+    private static String workdir=System.getProperty("nbjunit.workdir");
     private ProjectsTabOperator pto=null;
     private static boolean codeSync=false;
     //--
