@@ -63,7 +63,7 @@ import junit.framework.Test;
 public class Retriver_0002 extends Retriver {
     
     static final String TEST_BPEL_APP_NAME = "TravelReservationService_retriver_0002";
-    static final String TEST_BPEL_MODULE_NAME = "BpelModule_retruver_0002";
+    static final String TEST_BPEL_MODULE_NAME = "BpelModule_retriver_0002";
     static final String SCHEMA_NAME = "OTA_TravelItinerary.xsd";
 
     static final String [] m_aTestMethods = {
@@ -159,6 +159,8 @@ public class Retriver_0002 extends Retriver {
       opFileChooser.chooseFile( SCHEMA_NAME );
 
       fwNew.finish( );
+
+      Sleep( 10000 );
 
       // Check tree
       pto = new ProjectsTabOperator( );
