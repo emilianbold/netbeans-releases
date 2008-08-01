@@ -108,7 +108,7 @@ public class MySQLDatabaseServer implements DatabaseServer {
     // This is in two parts because the database name is an identifier and can't
     // be parameterized (it gets quoted and it is a syntax error to quote it).
     private static final String GRANT_ALL_SQL_1 = "GRANT ALL ON "; // NOI18N
-    private static final String GRANT_ALL_SQL_2 = ".* TO ?@?"; // NOI8N
+    private static final String GRANT_ALL_SQL_2 = ".* TO ?@?"; // NOI18N
 
     final LinkedBlockingQueue<Runnable> commandQueue = new LinkedBlockingQueue<Runnable>();
     final ConnectionProcessor connProcessor = new ConnectionProcessor(commandQueue);

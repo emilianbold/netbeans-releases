@@ -77,7 +77,6 @@ import org.netbeans.jellytools.NewWebProjectSourcesStepOperator;
 import org.netbeans.jellytools.OptionsOperator;
 import org.netbeans.jellytools.OutputTabOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.RuntimeTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.modules.j2ee.J2eeTestCase;
 import org.netbeans.jellytools.modules.j2ee.nodes.J2eeServerNode;
@@ -96,8 +95,6 @@ import org.netbeans.jemmy.operators.Operator;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.ide.ProjectSupport;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceCreationException;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
@@ -140,7 +137,7 @@ public class WebProjectValidation extends J2eeTestCase {
               "testNewJSP", "testNewJSP2", "testNewServlet", "testNewServlet2",
               "testCompileAllJSP", "testCompileJSP",
               "testCleanAndBuildProject", "testRunProject", "testRunJSP", "testViewServlet",
-              "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
+              "testCleanAndBuildProject", "testRunServlet", "testCreateTLD", "testCreateTagHandler", "testRunTag",
               "testNewHTML", "testRunHTML", "testNewSegment", "testNewDocument",
               "testStopServer", "testStartServer", "testBrowserSettings", "testFinish"
                /*"testJSPNavigator", "testHTMLNavigator" */);
@@ -188,18 +185,7 @@ public class WebProjectValidation extends J2eeTestCase {
     }
     
     public void testRegisterTomcat() {
-        // register Tomcat
-        String tomcatHome = System.getProperty("tomcat.home");
-        try {
-            InstanceProperties.createInstanceProperties("tomcat55:home="+tomcatHome+":base="+tomcatHome,
-                    "tomcat", "tomcat", "Testing Tomcat");
-        } catch(InstanceCreationException ice) {
-            fail(ice);
-        }
-        J2eeServerNode.invoke("Testing Tomcat");
-        RuntimeTabOperator.invoke();
-        sleep(30000);
-        
+        assertNotNull(getServerNode(Server.TOMCAT));
     }
     
     /** checks if the Server ports are not used */
@@ -242,7 +228,7 @@ public class WebProjectValidation extends J2eeTestCase {
         nameStep.txtProjectLocation().typeText(PROJECT_LOCATION);
         nameStep.next();
         NewWebProjectServerSettingsStepOperator serverStep = new NewWebProjectServerSettingsStepOperator();
-        serverStep.selectServer("Tomcat");
+        serverStep.cboServer().selectItem(0);
         serverStep.selectJavaEEVersion(org.netbeans.jellytools.Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "J2EESpecLevel_14"));
         serverStep.next();
         NewWebProjectSourcesStepOperator frameworkStep =  new NewWebProjectSourcesStepOperator();
@@ -250,17 +236,31 @@ public class WebProjectValidation extends J2eeTestCase {
         // wait for project creation
         sleep(5000);
         ProjectSupport.waitScanFinished();
-        EditorWindowOperator.getEditor("index.jsp");//NOI18N
-        ProjectSupport.waitScanFinished();
-        // XXX HACK
-        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
-        new Node(webPages,"index.jsp");//NOI18N
-        new Node(webPages,"WEB-INF|web.xml");//NOI18N
-        new Node(webPages,"META-INF|context.xml");//NOI18N
-        ref(Util.dumpProjectView(PROJECT_NAME));
-        compareReferenceFiles();
+        verifyWebPagesNode("index.jsp");
+        verifyWebPagesNode("WEB-INF|web.xml");
+        verifyWebPagesNode("META-INF|context.xml");
     }
     
+    protected void verifyProjectNode(String nodePath) {
+        Node prjNode = ProjectsTabOperator.invoke().getProjectRootNode(PROJECT_NAME);
+        Node node = new Node(prjNode,nodePath);//NOI18N
+        assertTrue(node.isPresent());
+        node.select();
+    }
+
+    protected void verifySourcePackageNode(String nodePath){
+        SourcePackagesNode sourceNode = new SourcePackagesNode(PROJECT_NAME);
+        Node node = new Node(sourceNode, nodePath);
+        assertTrue(node.isPresent());
+        node.select();
+    }
+    
+    protected void verifyWebPagesNode(String nodePath) {
+        WebPagesNode webPages = new WebPagesNode(PROJECT_NAME);
+        Node node = new Node(webPages,nodePath);//NOI18N
+        assertTrue(node.isPresent());
+        node.select();
+    }
     /** Test new JSP wizard.
      * - open New File wizard from main menu (File|New File)
      * - select sample project as target
@@ -492,7 +492,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.insert("Running JSP\n",12,1);
            sleep(2000);
         editor.save();
-        new Action("Run|Run File|Run \"page2.jsp\"",null).perform();
+        new Action("Run|Run File",null).perform();
         waitBuildSuccessful();
         assertDisplayerContent("<title>Page 2</title>");
         editor.deleteLine(12);
@@ -513,7 +513,7 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.insert("<% " + jspCode + " %>\n" , 19, 9);
         sleep(5000);
         editor.saveDocument();
-        new Action("Run|Run File|Run \"page2.jsp\"",null).perform();
+        new Action("Run|Run File",null).perform();
         waitBuildSuccessful();
         assertDisplayerContent("<title>Page 2</title>");
         new Node(rootNode,"Web Pages|page2.jsp").performPopupAction("View Servlet");
@@ -543,13 +543,15 @@ public class WebProjectValidation extends J2eeTestCase {
         editor.replace("            */", "");
         editor.replace("out.println(\"<title>Servlet Servlet1</title>\");",
                 "out.println(\"<title>Servlet with name=\"+request.getParameter(\"name\")+\"</title>\");");
-        new ActionNoBlock("Run|Run File|Run \"Servlet1.java\"",null).perform();
-        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution Uri");
+        new ActionNoBlock("Run|Run File",null).perform();
+        NbDialogOperator dialog = new NbDialogOperator("Set Servlet Execution URI");
         JComboBoxOperator combo = new JComboBoxOperator(dialog);
         combo.setSelectedItem(combo.getSelectedItem()+"?name=Servlet1");
         dialog.ok();
         //waitBuildSuccessful();
         editor.close();
+        getServerNode(Server.ANY).waitFinished();
+        sleep(2000);
         assertDisplayerContent("<title>Servlet with name=Servlet1</title>");
     }
     
@@ -746,7 +748,7 @@ public class WebProjectValidation extends J2eeTestCase {
         new Node(rootNode,"Web Pages|HTML.html").performPopupAction("Open");
         new EditorOperator("HTML.html").replace("<title></title>",
                 "<title>HTML Page</title>");
-        new Action("Run|Run File|Run \"HTML.html\"",null).perform();
+        new Action("Run|Run File",null).perform();
         //waitBuildSuccessful();
         new EditorOperator("HTML.html").close();
         assertDisplayerContent("<title>HTML Page</title>");
@@ -833,7 +835,7 @@ public class WebProjectValidation extends J2eeTestCase {
     
     public void testFinish() {
         server.stop();
-        ProjectSupport.closeProject(PROJECT_NAME);
+        new ActionNoBlock(null, "Close").perform(new ProjectsTabOperator().getProjectRootNode(PROJECT_NAME));
     }
     
     //********************************************************

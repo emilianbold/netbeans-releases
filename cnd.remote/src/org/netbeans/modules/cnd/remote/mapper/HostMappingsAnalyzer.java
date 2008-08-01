@@ -51,9 +51,6 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
  */
 public class HostMappingsAnalyzer {
 
-//    private final String remoteHkey;
-//    private final String userName;
-//    private final String hostName;
     private final PlatformInfo secondPI;
     private final PlatformInfo firstPI;
 
@@ -62,10 +59,6 @@ public class HostMappingsAnalyzer {
     }
 
     public HostMappingsAnalyzer(String secondHkey, String firstHkey) {
-//        this.remoteHkey = remoteHkey;
-//        this.localHkey = localHkey;
-//        hostName = RemoteUtils.getHostName(remoteHkey);
-//        userName = RemoteUtils.getUserName(remoteHkey);
         secondPI = PlatformInfo.getDefault(secondHkey);
         firstPI = PlatformInfo.getDefault(firstHkey);
 
@@ -82,7 +75,7 @@ public class HostMappingsAnalyzer {
             // all maps are host network name -> host local name
         Map<String, String> firstNetworkNames2Inner = populateMappingsList(firstPI, secondPI);
         Map<String, String> secondNetworkNames2Inner = populateMappingsList(secondPI, firstPI);
-        
+
         if (firstNetworkNames2Inner.size() > 0 && secondNetworkNames2Inner.size() > 0) {
             for (String firstNetworkName : firstNetworkNames2Inner.keySet()) {
                 for (String secondNetworkName : secondNetworkNames2Inner.keySet()) {
@@ -96,11 +89,13 @@ public class HostMappingsAnalyzer {
         return mappingsFirst2Second;
     }
 
-    private Map<String, String> populateMappingsList(PlatformInfo pi1, PlatformInfo pi2) {
+    // host is one we are searching on
+    // other is host in which context we are interested in mappings
+    private Map<String, String> populateMappingsList(PlatformInfo hostPlatformInfo, PlatformInfo otherPlatformInfo) {
         Map<String, String> map = new HashMap<String, String>();
         for (HostMappingProvider prov : providers) {
-            if (prov.isApplicable(pi1, pi2)) {
-                map.putAll( prov.findMappings(pi1.getHkey()) );
+            if (prov.isApplicable(hostPlatformInfo, otherPlatformInfo)) {
+                map.putAll( prov.findMappings(hostPlatformInfo.getHkey(), otherPlatformInfo.getHkey())  );
             }
         }
         return map;

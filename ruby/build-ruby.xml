@@ -148,7 +148,7 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="runtests" description="Run Ruby tests">
-        <subant buildpath="ruby:ruby.rhtml:ruby.platform:ruby.project:ruby.railsprojects"
+        <subant buildpath="ruby.platform:ruby:ruby.rhtml:ruby.project:ruby.railsprojects:ruby.testrunner"
             target="test"
             inheritall="false"
             inheritrefs="false">
@@ -164,11 +164,12 @@ made subject to such option by the copyright holder.
         <mkdir dir="${ruby.test.results}"/>
         <junitreport todir="${ruby.test.results}">
             <fileset dir="${nbroot}">
+                <include name="ruby.platform/${module.results}"/>
                 <include name="ruby/${module.results}"/>
                 <include name="ruby.rhtml/${module.results}"/>
-                <include name="ruby.platform/${module.results}"/>
                 <include name="ruby.project/${module.results}"/>
                 <include name="ruby.railsprojects/${module.results}"/>
+                <include name="ruby.testrunner/${module.results}"/>
             </fileset>
             <report format="frames" todir="${ruby.test.results}"/>
         </junitreport>

@@ -469,7 +469,7 @@ DbgpResponse *SourceCommand::process(DbgpConnection *pDbgpConnection, map<char, 
     }else{
         pDbgpResponse->setValue(buffer);
         success = 1;
-        //delete []buffer;
+        delete []buffer;
     }
     pDbgpResponse->addAttribute(SUCCESS, success);
     return pDbgpResponse;

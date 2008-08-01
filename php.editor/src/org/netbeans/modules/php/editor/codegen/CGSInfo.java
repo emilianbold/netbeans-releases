@@ -179,7 +179,7 @@ public class CGSInfo {
                     propertyName = name.substring(CGSGenerator.START_OF_SETTER.length());
                     existingSetters.add(propertyName.toLowerCase());
                 }
-                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI8N
+                else if (className!= null && (className.equals(name) || "__construct".equals(name))) { //NOI18N
                     hasConstructor = true;
                 }
             }

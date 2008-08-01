@@ -185,6 +185,7 @@ final class ButtonPopupSwitcher
     }
     
     public void mouseMoved(MouseEvent e) {
+        e.consume();
         Point p = e.getPoint();
         // It may have occured on the button that invoked the tabtable
         if (e.getSource() != this) {
@@ -197,10 +198,10 @@ final class ButtonPopupSwitcher
         } else {
             pTable.clearSelection();
         }
-        e.consume();
     }
     
     public void mousePressed(MouseEvent e) {
+        e.consume();
         Point p = e.getPoint();
         p = SwingUtilities.convertPoint((Component) e.getSource(), p, pTable);
         if (pTable.contains(p)) {
@@ -208,7 +209,6 @@ final class ButtonPopupSwitcher
             if (item != null) {
                 item.activate();
                 hideCurrentPopup();
-                e.consume();
             }
         }
     }

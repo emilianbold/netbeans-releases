@@ -318,7 +318,7 @@ public class UMLClassWidget  extends SwitchableWidget
             attributeSection.addChild(cw);
             classView.addChild(attributeSection);
             initializeAttributes(element);
-            cw.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI8N
+            cw.setCompartmentName(ATTRIBUTES_COMPARTMENT);//NOI18N
             addToLookup(cw);
 
 //            classView.addChild(new SeparatorWidget(scene, SeparatorWidget.Orientation.HORIZONTAL));
@@ -332,7 +332,7 @@ public class UMLClassWidget  extends SwitchableWidget
             CollapsibleWidget cwo = new CollapsibleWidget(scene, operations);
             classView.addChild(cwo);
             initializeOperations(element);
-            cwo.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI8N
+            cwo.setCompartmentName(OPERATIONS_COMPARTMENT);//NOI18N
             addToLookup(cwo);
             //
             setFont(getFont());
@@ -441,7 +441,7 @@ public class UMLClassWidget  extends SwitchableWidget
 //                                                   SeparatorWidget.Orientation.HORIZONTAL));
             CollapsibleWidget cwr = new CollapsibleWidget(getScene(), retVal);
             classView.addChild(cwr);
-            cwr.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI8N
+            cwr.setCompartmentName(REDEFINED_OPER_COMPARTMENT);//NOI18N
             addToLookup(cwr);
             operationRedefinedMap.put(classifier.getXMIID(), retVal);
         }
@@ -465,7 +465,7 @@ public class UMLClassWidget  extends SwitchableWidget
 //                                                   SeparatorWidget.Orientation.HORIZONTAL));
             CollapsibleWidget cwr = new CollapsibleWidget(getScene(), retVal);
             attributeSection.addChild(cwr);
-            cwr.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI8N
+            cwr.setCompartmentName(REDEFINED_ATTR_COMPARTMENT);//NOI18N
             addToLookup(cwr);
             attributeRedefinedMap.put(classifier.getXMIID(), retVal);
         }

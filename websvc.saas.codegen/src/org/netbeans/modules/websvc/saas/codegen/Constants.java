@@ -146,7 +146,7 @@ public class Constants {
     
     public static final String HTTP_RESPONSE = REST_API_PACKAGE + "core.Response"; //NOI18N
     
-    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI8N
+    public static final String RESPONSE_BUILDER = REST_API_PACKAGE + "core.Response.Builder";       //NOI18N
     
     public static final String ENTITY_TYPE = REST_API_PACKAGE + "Entity";
     

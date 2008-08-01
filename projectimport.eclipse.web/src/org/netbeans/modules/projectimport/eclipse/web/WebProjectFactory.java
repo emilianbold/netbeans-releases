@@ -121,6 +121,10 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         // create nb project location
         File nbProjectDir = model.getNetBeansProjectLocation();
         
+        if (ProjectFactorySupport.areSourceRootsOwned(model, importProblems)) {
+            return null;
+        }
+        
         WebContentData webData = parseWebContent(model.getEclipseProjectFolder());
         if (webData == null) {
             importProblems.add(org.openide.util.NbBundle.getMessage(WebProjectFactory.class, "MSG_MissingExtraWebFiles")); //NOI18N
@@ -349,12 +353,7 @@ public class WebProjectFactory implements ProjectTypeUpdater {
         ep.setProperty(WebProjectProperties.JAVAC_TARGET, model.getTargetLevel());
         ep.setProperty(WebProjectProperties.JAVAC_DEPRECATION, Boolean.toString(model.isDeprecation()));
         ep.setProperty(WebProjectProperties.JAVAC_COMPILER_ARG, model.getCompilerArgs());
-        String enc = model.getEncoding();
-        if (enc != null) {
-            ep.setProperty(WebProjectProperties.SOURCE_ENCODING, enc);
-        } else {
-            ep.remove(WebProjectProperties.SOURCE_ENCODING);
-        }
+        ep.setProperty(WebProjectProperties.SOURCE_ENCODING, model.getEncoding());
         helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(WebProjectProperties.JAVAC_DEBUG, Boolean.toString(model.isDebug()));

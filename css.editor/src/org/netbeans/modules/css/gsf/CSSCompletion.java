@@ -41,23 +41,19 @@ package org.netbeans.modules.css.gsf;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.awt.image.IndexColorModel;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 import javax.swing.ImageIcon;
-import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.lexer.TokenId;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.editor.PropertyModel.Element;
 import org.netbeans.modules.gsf.api.CompilationInfo;
 import org.netbeans.modules.gsf.api.CodeCompletionHandler;
@@ -70,8 +66,6 @@ import org.netbeans.modules.gsf.api.NameKind;
 import org.netbeans.modules.gsf.api.ParameterInfo;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.EditorUI;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.gsf.api.ParserResult;
 import org.netbeans.modules.gsf.api.TranslatedSource;
 import org.netbeans.modules.css.editor.Css;
@@ -85,11 +79,9 @@ import org.netbeans.modules.css.parser.CSSParserTreeConstants;
 import org.netbeans.modules.css.parser.NodeVisitor;
 import org.netbeans.modules.css.parser.SimpleNode;
 import org.netbeans.modules.css.parser.SimpleNodeUtil;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.gsf.api.CodeCompletionContext;
 import org.netbeans.modules.gsf.api.CodeCompletionResult;
 import org.netbeans.modules.gsf.spi.DefaultCompletionResult;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -253,24 +245,45 @@ public class CSSCompletion implements CodeCompletionHandler {
                 if(colonIndex >= 0) {
                     expressionText = propertyImage.substring(colonIndex + 1);
                 }
+               
+                //use just the current line, if the expression spans to multiple
+                //lines it is likely because of parsing error
+                int eolIndex = expressionText.indexOf('\n');
+                if (eolIndex > 0) {
+                    expressionText = expressionText.substring(0, eolIndex);
+                }
+
             }
-            
+
             Property prop = PROPERTIES.getProperty(property.image());
             if (prop != null) {
-                         
-            CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
-            
-            Collection<Element> alts = propVal.alternatives();
-                    
-            int completionItemInsertPosition = prefix.trim().length() == 0 
-                    ? caretOffset
-                    : AstUtils.documentPosition(node.startOffset(), source);
-            
-            return wrapPropertyValues(prop, 
-                    filterElements(alts, prefix), 
-                    CompletionItemKind.VALUE, 
-                    completionItemInsertPosition,
-                    false);
+
+                CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
+
+                Collection<Element> alts = propVal.alternatives();
+
+                Collection<Element> filteredByPrefix = filterElements(alts, prefix);
+
+                int completionItemInsertPosition = prefix.trim().length() == 0
+                        ? caretOffset
+                        : AstUtils.documentPosition(node.startOffset(), source);
+
+                //test the situation when completion is invoked just after a valid token
+                //like color: rgb|
+                //in such case the parser offers ( alternative which is valid
+                //so we must not use the prefix for filtering the results out.
+                if (alts.size() > 0 && filteredByPrefix.size() == 0) {
+                    completionItemInsertPosition = caretOffset; //complete on the position of caret
+                    filteredByPrefix = alts; //prefix is empty, do not filter at all
+                }
+
+                return wrapPropertyValues(prop,
+                        filteredByPrefix,
+                        CompletionItemKind.VALUE,
+                        completionItemInsertPosition,
+                        false);
+
+
             }
 
         //Why we need the (prefix.length() > 0 || astCaretOffset == node.startOffset())???
@@ -316,16 +329,34 @@ public class CSSCompletion implements CodeCompletionHandler {
             SimpleNode expression = (SimpleNode)node.jjtGetParent();
             String expressionText = expression.image();
             
+            //use just the current line, if the expression spans to multiple
+            //lines it is likely because of parsing error
+            int eolIndex = expressionText.indexOf('\n');
+            if(eolIndex > 0) {
+                expressionText = expressionText.substring(0, eolIndex);
+            }
+            
             CssPropertyValue propVal = new CssPropertyValue(prop, expressionText);
             
             Collection<Element> alts = propVal.alternatives();
                     
-            int completionItemInsertPosition = prefix.trim().length() == 0 
+            Collection<Element> filteredByPrefix = filterElements(alts, prefix);
+
+            int completionItemInsertPosition = prefix.trim().length() == 0
                     ? caretOffset
                     : AstUtils.documentPosition(node.startOffset(), source);
-            
+
+            //test the situation when completion is invoked just after a valid token
+            //like color: rgb|
+            //in such case the parser offers ( alternative which is valid
+            //so we must not use the prefix for filtering the results out.
+            if (alts.size() > 0 && filteredByPrefix.size() == 0) {
+                completionItemInsertPosition = caretOffset; //complete on the position of caret
+                filteredByPrefix = alts; //prefix is empty, do not filter at all
+            }
+
             return wrapPropertyValues(prop, 
-                    filterElements(alts, prefix), 
+                    filteredByPrefix, 
                     CompletionItemKind.VALUE, 
                     completionItemInsertPosition,
                     false);
@@ -512,6 +543,7 @@ public class CSSCompletion implements CodeCompletionHandler {
                 while((parent = parent.parent()) != null) {
                     if(parent.origin() != null) {
                         origin = parent.origin();
+                        break;
                     }
                 }    
             }
@@ -577,7 +609,7 @@ public class CSSCompletion implements CodeCompletionHandler {
 
         @Override
          public String getInsertPrefix() {
-            return getName() + (addSemicolon ? ";" : " ");
+            return getName() + (addSemicolon ? ";" : "");
         }
 
         @Override

@@ -91,11 +91,12 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       &lt;text display="none">editable=false&lt;/text>
  *       &lt;text display="none">enabled="true"&lt;/text>
  *
+ *       &lt;g>
  *       &lt;text id="country_combobox_editor_text" x="10" y="15" stroke="black" 
- *              font-size="15" font-family="SunSansSemiBold">Item 1
- *           &lt;!-- Metadata information. Please don't edit. -->
- *           &lt;text display="none">type=text&lt;/text>
- *       &lt;/text>
+ *              font-size="15" font-family="SunSansSemiBold">Item 1&lt;/text>
+ *              &lt;!-- Metadata information. Please don't edit. -->
+ *              &lt;text display="none">type=text&lt;/text>
+ *       &lt;/g>
  *       &lt;!-- The rectangle below is difference between rectangle that bound 
  *         combobox and combobox button ( the latter 
  *       has id = country_combobox_button ). It needed for counting bounds of input text area .
@@ -120,12 +121,13 @@ import org.w3c.dom.svg.SVGLocatableElement;
  *       for user when he press to button. It should be outside of ComboBox component figure ( and should
  *       be at the very end of XML file between other such figures ) because in this case it will be 
  *       on top of any other figure. Otherwise it will be hidden by following sibling component. -->
- *       &lt;text id="country_combobox_list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" 
+ *       &lt;g>
+ *           &lt;text id="country_combobox_list_hidden_text" visibility="hidden" x="10" y="13" stroke="black" font-size="15" 
  *                  font-family="SunSansSemiBold">
+ *           HIDDEN TEXT&lt;/text>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=hidden_text&lt;/text>
- *           HIDDEN TEXT
- *       &lt;/text>
+ *       &lt;/g>
  *       &lt;g>
  *           &lt;!-- Metadata information. Please don't edit. -->
  *           &lt;text display="none">type=bound&lt;/text>

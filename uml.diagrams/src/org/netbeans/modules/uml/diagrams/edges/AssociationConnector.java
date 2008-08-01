@@ -477,7 +477,7 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
         if (child != null)
         {
             setValues(edgeWriter,
-                    child.getLocation(), child.getPreferredSize(),
+                    child.getPreferredLocation(), child.getPreferredSize(),
                     key + "_PEID", null, null, typeInfo);
             edgeWriter.beginGraphNode();
             edgeWriter.endGraphNode();
@@ -530,11 +530,11 @@ public class AssociationConnector extends AbstractUMLConnectionWidget
                         EdgeInfo.EdgeLabel edgeLabel = endLabIter.next();
                         if (edgeLabel.getLabel().equalsIgnoreCase(NAME))
                         {
-                            manager.showLabel(END_NAME, labelType);
+                            manager.showLabel(END_NAME, labelType, edgeLabel.getPosition());
                         }
                         else if (edgeLabel.getLabel().equalsIgnoreCase(MULTIPLICITY))
                         {
-                            manager.showLabel(MULTIPLICITY, labelType);
+                            manager.showLabel(MULTIPLICITY, labelType, edgeLabel.getPosition());
                         }
                     }
 

@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.api.compilers;
 
 import org.netbeans.modules.cnd.api.compilers.CompilerSet.CompilerFlavor;
 import org.netbeans.modules.cnd.api.compilers.Tool;
+import org.netbeans.modules.cnd.api.compilers.ToolchainManager.MakeDescriptor;
 
 public class GNUMaketool extends Tool {
     
@@ -56,4 +57,10 @@ public class GNUMaketool extends Tool {
         copy.setName(getName());
         return copy;
     }
+
+    @Override
+    public MakeDescriptor getDescriptor() {
+        return getFlavor().getToolchainDescriptor().getMake();
+    }
+
 }

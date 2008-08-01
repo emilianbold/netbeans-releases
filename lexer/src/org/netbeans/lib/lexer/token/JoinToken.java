@@ -135,6 +135,13 @@ public final class JoinToken<T extends TokenId> extends PropertyToken<T> {
         return sb;
     }
 
+    public StringBuilder dumpText(StringBuilder sb, CharSequence inputSourceText) {
+        for (int i = 0; i < joinedParts.size(); i++) {
+            joinedParts.get(i).dumpText(sb, inputSourceText);
+        }
+        return sb;
+    }
+
     @Override
     protected String dumpInfoTokenType() {
         return "JoiT"; // NOI18N

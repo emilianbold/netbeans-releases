@@ -625,18 +625,7 @@ public final class GemManager {
                     Collections.sort(remote);
                 }
             } else {
-                // Produce the error list
-                boolean inErrors = false;
-                for (String line : gemRunner.getOutput()) {
-                    if (inErrors) {
-                        errors.add(line);
-                    } else if (line.startsWith("***") || line.startsWith(" ") || line.trim().length() == 0) { // NOI18N
-                        continue;
-                    } else if (!line.matches("[a-zA-Z\\-]+ \\(([0-9., ])+\\)\\s?")) { // NOI18N
-                        errors.add(line);
-                        inErrors = true;
-                    }
-                }
+                errors.addAll(gemRunner.getOutput());
             }
         } finally {
             runnerLock.unlock();
@@ -644,6 +633,14 @@ public final class GemManager {
     }
 
     private static void parseGemList(List<String> lines, List<Gem> localList, List<Gem> remoteList) {
+        if (LOGGER.isLoggable(Level.FINEST)) {
+            LOGGER.finest("Going to parse Gem list from the following output:");
+            LOGGER.finest("=== Output Start ===");
+            for (String line : lines) {
+                LOGGER.finest(line);
+            }
+            LOGGER.finest("=== Output End ===");
+        }
         Gem gem = null;
         boolean listStarted = false;
         boolean inLocal = false;
@@ -652,7 +649,6 @@ public final class GemManager {
         for (String line : lines) {
             if (line.length() == 0) {
                 gem = null;
-
                 continue;
             }
 
@@ -716,6 +712,8 @@ public final class GemManager {
                 }
             }
         }
+        LOGGER.finest("Parsed " + localList.size() + " local gems");
+        LOGGER.finest("Parsed " + remoteList.size() + " remote gems");
     }
 
     /**

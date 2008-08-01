@@ -301,7 +301,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
                     String name = null;
                     while (tk.hasMoreTokens()) {
                         name = tk.nextToken();
-                        FileObject fo = folder.getFileObject (name,"");   //NOI8N
+                        FileObject fo = folder.getFileObject (name,"");   //NOI18N
                         if (fo == null) {
                             break;
                         }
@@ -387,7 +387,7 @@ public final class JavaTargetChooserPanel implements WizardDescriptor.Panel<Wiza
     final public static String canUseFileName (FileObject targetFolder, String folderName, String newObjectName, String extension) {
         String newObjectNameToDisplay = newObjectName;
         if (newObjectName != null) {
-            newObjectName = newObjectName.replace ('.', '/'); // NOI8N
+            newObjectName = newObjectName.replace ('.', '/'); // NOI18N
         }
         if (extension != null && extension.length () > 0) {
             StringBuffer sb = new StringBuffer ();

@@ -47,6 +47,6 @@ import org.netbeans.modules.cnd.api.utils.PlatformInfo;
  * @author Sergey Grinev
  */
 public interface HostMappingProvider {
-    Map<String, String> findMappings(String hkey);
+    public Map<String, String> findMappings(String hkey, String otherHkey);
     public boolean isApplicable(PlatformInfo hostPlatform, PlatformInfo otherPlatform);
 }

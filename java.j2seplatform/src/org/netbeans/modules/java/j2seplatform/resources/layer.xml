@@ -69,12 +69,14 @@ made subject to such option by the copyright holder.
         <folder name="application">
           <folder name="x-java-archive">
               <folder name="Factories">
-                <file name="org-netbeans-modules-java-jarloader-JarDataLoader.instance"/>
+                  <file name="org-netbeans-modules-java-jarloader-JarDataLoader.instance">
+                    <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.java.j2seplatform.Bundle"/>
+                  </file>
               </folder>
           </folder>
         </folder>
     </folder>
-            
+
 
     <folder name="Services">
         <folder name="Platforms">

@@ -45,9 +45,6 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
 import java.util.Vector;
 
 import org.netbeans.api.debugger.Breakpoint;
@@ -137,6 +134,8 @@ public class BreakpointsTreeModel implements TreeModel {
      */
     public int getChildrenCount (Object node) throws UnknownTypeException {
         if (node == ROOT) {
+            if (listener == null)
+                listener = new Listener (this);
             // Performance, see issue #59058.
             return Integer.MAX_VALUE;
             //return getChildren (node, 0, 0).length;

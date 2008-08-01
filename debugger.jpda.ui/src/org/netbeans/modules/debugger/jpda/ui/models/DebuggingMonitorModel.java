@@ -283,7 +283,12 @@ NodeActionsProviderFilter, TableModel, Constants {
             );
         }*/
         if (o instanceof OwnedMonitors) {
-            return ((OwnedMonitors) o).monitors.length;
+            OwnedMonitors om = (OwnedMonitors)o;
+            if (om.monitors != null) {
+                return om.monitors.length;
+            } else {
+                return om.variables.length;
+            }
         }
         if (o instanceof Monitor) {
             return model.getChildrenCount(((Monitor) o).variable);

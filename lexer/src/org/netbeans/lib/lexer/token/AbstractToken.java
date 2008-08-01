@@ -93,9 +93,8 @@ implements TokenOrEmbedding<T> {
         this.id = id;
     }
     
-    AbstractToken(T id, TokenList<T> tokenList, int rawOffset) {
+    AbstractToken(T id, int rawOffset) {
         this.id = id;
-        this.tokenList = tokenList;
         this.rawOffset = rawOffset;
     }
     
@@ -249,21 +248,7 @@ implements TokenOrEmbedding<T> {
                 CharSequence text = text();
                 if (text != null) {
                     sb.append('"');
-                    int textLength = text.length();
-                    for (int i = 0; i < textLength; i++) {
-                        if (textLength > 400 && i >= 200 && i < textLength - 200) {
-                            i = textLength - 200;
-                            sb.append(" ...<TEXT-SHORTENED>... "); // NOI18N
-                            continue;
-                        }
-                        try {
-                            CharSequenceUtilities.debugChar(sb, text.charAt(i));
-                        } catch (IndexOutOfBoundsException e) {
-                            // For debugging purposes it's better than to completely fail
-                            sb.append("IOOBE at index=").append(i).append("!!!"); // NOI18N
-                            break;
-                        }
-                    }
+                    dumpTextImpl(sb, text);
                     sb.append('"');
                 } else {
                     sb.append("<null-text>"); // NOI18N
@@ -285,8 +270,43 @@ implements TokenOrEmbedding<T> {
         return sb;
     }
     
+    public StringBuilder dumpText(StringBuilder sb, CharSequence inputSourceText) {
+        assert (tokenList == null) : "Should only be called for tokens not yet added to a token-list";
+        int length = length();
+        if (sb == null) {
+            sb = new StringBuilder(length + 10); // some chars may be dumped as two chars
+        }
+        CharSequence text;
+        if (isFlyweight()) {
+            text = text();
+        } else { // non-flyweight
+            // not in token-list rawOffset is real offset
+            text = inputSourceText.subSequence(rawOffset, rawOffset + length);
+        }
+        dumpTextImpl(sb, text);
+        return sb;
+    }
+
+    private void dumpTextImpl(StringBuilder sb, CharSequence text) {
+        int textLength = text.length();
+        for (int i = 0; i < textLength; i++) {
+            if (textLength > 400 && i >= 200 && i < textLength - 200) {
+                i = textLength - 200;
+                sb.append(" ...<TEXT-SHORTENED>... "); // NOI18N
+                continue;
+            }
+            try {
+                CharSequenceUtilities.debugChar(sb, text.charAt(i));
+            } catch (IndexOutOfBoundsException e) {
+                // For debugging purposes it's better than to completely fail
+                sb.append("IOOBE at index=").append(i).append("!!!"); // NOI18N
+                break;
+            }
+        }
+    }
+
     protected String dumpInfoTokenType() {
         return "AbsT"; // NOI18N "AbstractToken"
     }
-    
+
 }

@@ -73,7 +73,7 @@ public class RemoteNativeExecution extends NativeExecution {
             Reader in) throws IOException, InterruptedException {
         RemoteNativeExecutionSupport support = null;
         if (host != null && host.length() > 0) {
-            support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out);
+            support = new RemoteNativeExecutionSupport(host, runDirFile, executable, arguments, envp, out, in);
         }
         return support == null ? -1 : support.getExitStatus();
     }

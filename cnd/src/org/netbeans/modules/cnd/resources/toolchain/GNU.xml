@@ -73,6 +73,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <dependency_generation flags="-MMD -MP -MF $@.d" />
     </c>
     <cpp>
         <compiler name="g++"/>
@@ -102,6 +103,7 @@ made subject to such option by the copyright holder.
             <bits_64 flags="-m64"/>
         </architecture>
         <strip flags="-s"/>
+        <dependency_generation flags="-MMD -MP -MF $@.d" />
     </cpp>
     <fortran>
         <compiler name="gfortran,g95,g90,g77"/>
@@ -149,8 +151,11 @@ made subject to such option by the copyright holder.
     </linker>
     <make>
         <tool name="make,gmake"/>
+        <version flags="--version" />
+        <dependency_support code="include $(wildcard $(addsuffix .d, ${OBJECTFILES}))\n" />
     </make>
     <debugger>
         <tool name="gdb"/>
+        <version flags="--version" />
     </debugger>
 </toolchaindefinition>
