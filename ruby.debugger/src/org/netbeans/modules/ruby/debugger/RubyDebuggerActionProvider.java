@@ -108,7 +108,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
     
     @Override
     public void doAction(final Object action) {
-        Util.finest("Performing \"" + action + '"');
+        Util.finer("Performing \"" + action + '"');
         if (action == ActionsManager.ACTION_KILL) {
             finish(true);
             return;
@@ -224,7 +224,7 @@ public final class RubyDebuggerActionProvider extends ActionsProviderSupport imp
      */
     private void finish(boolean terminate) {
         synchronized (terminated) {
-            Util.finest("Finishing session: " + rubySession.getName());
+            Util.finer("Finishing session: " + rubySession.getName());
             if (terminated) {
                 Util.warning("Finish is not supposed to be called when a process is already terminated");
                 return;
