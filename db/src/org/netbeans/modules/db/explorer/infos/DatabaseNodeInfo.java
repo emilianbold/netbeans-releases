@@ -503,7 +503,12 @@ public class DatabaseNodeInfo extends ConcurrentHashMap<String, Object>
     }
     
     public synchronized boolean isConnected() {
-        return connected;
+        if (this instanceof ConnectionNodeInfo) {
+            return this.connected;
+        } else {
+            ConnectionNodeInfo cinfo = (ConnectionNodeInfo)getParent(CONNECTION);
+            return cinfo.isConnected();
+        }
     }
 
     public DatabaseConnection getDatabaseConnection()
