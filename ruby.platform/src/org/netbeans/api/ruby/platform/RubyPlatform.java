@@ -291,11 +291,11 @@ public final class RubyPlatform {
     /** Return the site_ruby directory for the current ruby installation. Not cached. */
     public String getRubyLibSiteDir() {
         String sitedir = null;
-        File home = getHome();
-        assert home != null : "home not null";
+        File _home = getHome();
+        assert _home != null : "home not null";
 
         File lib =
-                new File(home, "lib" + File.separator + "ruby" + File.separator + "site_ruby"); // NOI18N
+                new File(_home, "lib" + File.separator + "ruby" + File.separator + "site_ruby"); // NOI18N
 
         if (!lib.exists()) {
             return null;
@@ -644,12 +644,6 @@ public final class RubyPlatform {
         return null;
     }
 
-    String getLatestRequiredRDebugIDEVersion() {
-        // TODO: ideally this would be e.g. '< 0.3' but then running external
-        // process has problems with the '<'. See issue 142240.
-        return "0.2.1"; // NOI18N
-    }
-
     /**
      * Tries to install fast Ruby debugger for the platform. That is an
      * appropriate version of <em>ruby-debug-ide</em> gem.
@@ -658,7 +652,9 @@ public final class RubyPlatform {
      */
     public boolean installFastDebugger() {
         assert gemManager != null : "has gemManager when trying to install fast debugger";
-        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, getLatestRequiredRDebugIDEVersion());
+        // TODO: ideally this would be e.g. '< 0.3' but then running external
+        // process has problems with the '<'. See issue 142240.
+        gemManager.installGem(RUBY_DEBUG_IDE_NAME, false, false, "0.2.1");
         return hasFastDebuggerInstalled();
     }
 
