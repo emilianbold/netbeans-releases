@@ -39,6 +39,7 @@
 
 package org.netbeans.modules.db.explorer.nodes;
 
+import java.util.Iterator;
 import java.util.Vector;
 import junit.framework.TestCase;
 import org.netbeans.api.db.explorer.ConnectionManager;
@@ -47,7 +48,6 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.modules.db.explorer.infos.ConnectionNodeInfo;
 import org.netbeans.modules.db.explorer.infos.DatabaseNodeInfo;
-import org.netbeans.modules.db.explorer.infos.DriverListNodeInfo;
 import org.netbeans.modules.db.test.Util;
 import org.openide.nodes.Node;
 
@@ -95,19 +95,24 @@ public class DatabaseNodeTest extends TestCase {
     private void checkInfoChildren(DatabaseNodeInfo rootInfo) throws Exception {
         Vector children = rootInfo.getChildren();
         assertTrue(children.size() == 2);
-        assertTrue(children.get(0) instanceof DriverListNodeInfo);
-        assertTrue(children.get(1) instanceof ConnectionNodeInfo);
     }
     
     private void checkConnection(DatabaseNodeInfo rootInfo, 
             DatabaseConnection expected) throws Exception {
-        
-        ConnectionNodeInfo connInfo = (ConnectionNodeInfo)rootInfo.getChildren().get(1);
-        DatabaseConnection conn = connInfo.getDatabaseConnection().getDatabaseConnection();
-        assertTrue(conn != null);
-        assertTrue(conn.getDatabaseURL().equals(expected.getDatabaseURL()));
-        assertTrue(conn.getUser().equals(expected.getUser()));
-        assertTrue(conn.getPassword().equals(expected.getPassword()));
-        assertTrue(conn.getDriverClass().equals(expected.getDriverClass()));        
+
+        Vector children = rootInfo.getChildren();
+        for (Iterator it = children.iterator() ; it.hasNext() ; ) {
+            Object next = it.next();
+            if (next instanceof ConnectionNodeInfo) {
+                ConnectionNodeInfo connInfo = (ConnectionNodeInfo)next;
+                DatabaseConnection conn = connInfo.getDatabaseConnection().getDatabaseConnection();
+                assertTrue(conn != null);
+                assertTrue(conn.getDatabaseURL().equals(expected.getDatabaseURL()));
+                assertTrue(conn.getUser().equals(expected.getUser()));
+                assertTrue(conn.getPassword().equals(expected.getPassword()));
+                assertTrue(conn.getDriverClass().equals(expected.getDriverClass()));
+                return;
+            }
+        }
     }
 }
