@@ -286,6 +286,10 @@ public class GdbUtils {
             } else {
                 break;
             }
+
+            if (tend == -1) {
+                break;
+            }
             
             // put the value in the map and prepare for the next property
             value = info.substring(i, tend);
