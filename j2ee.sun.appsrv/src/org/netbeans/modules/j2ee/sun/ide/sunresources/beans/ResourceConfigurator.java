@@ -55,6 +55,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
+import java.util.Map;
 import java.util.ResourceBundle;
 
 import javax.enterprise.deploy.spi.DeploymentManager;
@@ -89,6 +90,8 @@ import org.netbeans.modules.j2ee.sun.sunresources.beans.Wizard;
 import org.netbeans.modules.j2ee.sun.sunresources.beans.WizardConstants;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+
+import org.netbeans.modules.glassfish.eecommon.api.UrlData;
 
 /**
  *
@@ -390,20 +393,22 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return fileName;
     }
     
-    private JdbcConnectionPool setDerbyProps(String vendorName, String url, JdbcConnectionPool jdbcConnectionPool){
+    private JdbcConnectionPool setDerbyProps(String url, JdbcConnectionPool jdbcConnectionPool){
+        UrlData urlData = new UrlData(url);
+        String hostName = urlData.getHostName();
+        String portNumber = urlData.getPort();
+        String databaseName = urlData.getDatabaseName();
+        
         url = stripExtraDBInfo(url);
         String workingUrl = url.substring(url.indexOf("//") + 2, url.length()); //NOI18N
-        String hostName = getDerbyServerName(workingUrl);
         PropertyElement servName = jdbcConnectionPool.newPropertyElement();
         servName.setName(WizardConstants.__ServerName);
         servName.setValue(hostName);
         
-        String portNumber = getDerbyPortNo(workingUrl);
         PropertyElement portno = jdbcConnectionPool.newPropertyElement();
         portno.setName(WizardConstants.__DerbyPortNumber);
         portno.setValue(portNumber);
         
-        String databaseName = getDerbyDatabaseName(workingUrl);
         PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
         dbName.setName(WizardConstants.__DerbyDatabaseName);
         dbName.setValue(databaseName);
@@ -418,6 +423,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         jdbcConnectionPool.addPropertyElement(servName);
         jdbcConnectionPool.addPropertyElement(portno);
         jdbcConnectionPool.addPropertyElement(dbName);
+                    
         return jdbcConnectionPool;
     }
      
@@ -428,6 +434,11 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      * jdbc:sun:sqlserver://serverName[:portNumber]
      */
     private JdbcConnectionPool setAdditionalProps(String vendorName, String url, JdbcConnectionPool jdbcConnectionPool){
+        UrlData urlData = new UrlData(url);
+        String hostName = urlData.getHostName();
+        String portNumber = urlData.getPort();
+        String databaseName = urlData.getDatabaseName();
+        
         url = stripExtraDBInfo(url);
         String workingUrl = url;
         if(vendorName.equals("sybase2")){ //NOI18N
@@ -440,11 +451,10 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }else {
             workingUrl = url.substring(url.indexOf("//") + 2, url.length()); //NOI18N
         }
-        String hostName = getUrlServerName(workingUrl);
         PropertyElement servName = jdbcConnectionPool.newPropertyElement();
         servName.setName(WizardConstants.__ServerName);
         if(vendorName.contains("informix")){
-            String informixSname = getUrlInformixServerName(workingUrl);
+            String informixSname = getInformixServerName(urlData);
             if (vendorName.equals("informix")) {
                 servName.setValue(informixSname);
                 PropertyElement informixhostName = jdbcConnectionPool.newPropertyElement();
@@ -462,7 +472,6 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             servName.setValue(hostName);
         }
         jdbcConnectionPool.addPropertyElement(servName);
-        String portNumber = getUrlPortNo(workingUrl);
         if (! portNumber.equals("")) { //NOI18N
             PropertyElement portno = jdbcConnectionPool.newPropertyElement();
             portno.setName(WizardConstants.__PortNumber);
@@ -471,33 +480,17 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         if(Arrays.asList(WizardConstants.VendorsDBNameProp).contains(vendorName)) {  //NOI18N
             PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
-            String databaseName = "";
             if(vendorName.equals("sun_oracle") || vendorName.equals("datadirect_oracle")) {  //NOI18N
-                databaseName = getUrlSIDName(workingUrl);
                 dbName.setName(WizardConstants.__SID);
             }else{
-                databaseName = getUrlDatabaseName(workingUrl);
                 dbName.setName(WizardConstants.__DatabaseName);
-                if(databaseName.equals("")) { //NOI18N
-                    databaseName = getUrlDbName(workingUrl);
-                }
             }
-            dbName.setValue(databaseName);
-            jdbcConnectionPool.addPropertyElement(dbName);
+            if(databaseName != null) {
+                dbName.setValue(databaseName);
+                jdbcConnectionPool.addPropertyElement(dbName);
+            }    
         }
         
-        return jdbcConnectionPool;
-    }
-    
-    private JdbcConnectionPool setDBProp(String vendorName, String url, JdbcConnectionPool jdbcConnectionPool){
-        url = stripExtraDBInfo(url);
-        String workingUrl = url.substring(url.indexOf("//") + 2, url.length()); //NOI18N
-        String databaseName = getUrlDatabaseName(workingUrl);
-        PropertyElement dbName = jdbcConnectionPool.newPropertyElement();
-        dbName.setName(WizardConstants.__DerbyDatabaseName);
-        dbName.setValue(databaseName);
-        
-        jdbcConnectionPool.addPropertyElement(dbName);
         return jdbcConnectionPool;
     }
     
@@ -565,32 +558,15 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return vendorName;
     }
     
-    private String getDatabaseName(String database) {
-        String result = null;
-        int index = database.lastIndexOf('/') + 1;
-        if(index > 0) {
-            result = database.substring(index);
-        }
-        return result;
-    }
-    
-    private String getResourceType(boolean isXA) {
-        if(isXA) {
-            return "javax.sql.XADataSource";  // NOI18N
-        } else {
-            return "javax.sql.DataSource";  // NOI18N
-        }
-    }
-    
     private String isSameDatabaseConnection(JdbcConnectionPool connPool, String databaseUrl, String username, String password) {
         String poolJndiName = null;
+        UrlData urlData = new UrlData(databaseUrl);
+        String prefix = urlData.getPrefix();
         PropertyElement[] pl = connPool.getPropertyElement();
-        if(databaseUrl.startsWith("jdbc:derby:")){ //NOI18N
-            databaseUrl = stripExtraDBInfo(databaseUrl);
-            String workingUrl = databaseUrl.substring(databaseUrl.indexOf("//") + 2, databaseUrl.length());
-            String hostName = getDerbyServerName(workingUrl);
-            String portNumber = getDerbyPortNo(workingUrl);
-            String databaseName = getDerbyDatabaseName(workingUrl);
+        if(prefix.equals("jdbc:derby:")){ //NOI18N
+            String hostName = urlData.getHostName();
+            String portNumber = urlData.getPort();
+            String databaseName = urlData.getDatabaseName();
             String hostProp = null;
             String portProp = null;
             String dbProp = null;
@@ -740,132 +716,22 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }    
         return connAttr;
     }
-    
-    private String getUrlServerName(String url){
-        String hostName = ""; //NOI18N
-        int index = url.indexOf(":"); //NOI18N
-        if(index != -1) {
-            hostName = url.substring(0, index);
-        }else{
-            index = url.indexOf("/"); //NOI18N
-            if(index != -1) {
-                hostName = url.substring(0, index);
-            }else{
-                index= url.indexOf(";"); //NOI18N
-                if(index != -1) {
-                    hostName = url.substring(0, index);
-                }
-            }
-        }
-        return hostName;
-    }
-    
-    private String getUrlPortNo(String url){
-        String portNumber = "";  //NOI18N
-        int index = url.indexOf(":"); //NOI18N
-        if(index != -1){
-            int slashIndex = url.indexOf("/"); //NOI18N
-            int colonIndex = url.indexOf(";"); //NOI18N
-            if(slashIndex != -1)
-                portNumber = url.substring(index + 1, slashIndex); 
-            else{
-                if(colonIndex != -1)
-                    portNumber = url.substring(index + 1, colonIndex); 
-                else
-                    portNumber = url.substring(index + 1, url.length()); 
-            }    
-        }    
-        return portNumber;
-    }
-    
+            
     /**
-     * Parses incoming url to create DatabaseName additional properties required by server
-     * example urls
-     * jdbc:sun:db2://serverName:portNumber;databaseName=databaseName
-     * jdbc:sun:sqlserver://sunsqlserverHost:3333;databaseName=sunsqlserverdb;selectMethod=cursor
-     * jdbc:datadirect:informix://servername:port;InformixServer=server_name;DatabaseName=db_name"
-     */
-    private String getUrlDatabaseName(String url){
-        String databaseName = ""; //NOI18N
-        int dbIndex = url.toLowerCase(Locale.ENGLISH).indexOf(";databasename="); //NOI18N
-        if(dbIndex != -1){
-            int eqIndex = url.indexOf("=", dbIndex); //NOI18N
-            int lenIndex = url.indexOf(";", eqIndex); //NOI18N
-            if(lenIndex != -1){
-                databaseName = url.substring(eqIndex + 1, lenIndex);
-            }else{
-                databaseName = url.substring(eqIndex + 1, url.length());
-            }
-        }
-        return databaseName;
-    }
-    /**
-     * Parses incoming url(sun:oracle) to create SID additional properties required by server
-     * example of url : jdbc:sun:oracle://serverName[:portNumber][;SID=databaseName]
-     */
-    private String getUrlSIDName(String url){
-        String databaseName = ""; //NOI18N
-        int sidIndex = url.indexOf(";SID="); //NOI18N
-        if(sidIndex != -1){
-            int eqIndex = url.indexOf("=", sidIndex); //NOI18N
-            databaseName = url.substring(eqIndex + 1, url.length());
-        }
-        return databaseName;
-    }
-    /**
-     * Parses incoming url. to create additional properties required by server
-     * examples of url 
-     *   - jdbc:derby://serverName:portNumber/databaseName;create=true
-     *   - jdbc:mysql://host:port/database?relaxAutoCommit="true"
-     *   - jdbc:vendor://host:port/database
-     *   - "jdbc:informix-sqli://123.45.67.89:1533/testDB:INFORMIXSERVER=myserver;user=rdtest;password=test"
-     */
-    private String getUrlDbName(String url){
-        String databaseName = ""; //NOI18N
-        int slashIndex = url.indexOf("/"); //NOI18N
-        if(slashIndex != -1){
-            databaseName = getSubString(url, slashIndex);  
-        }
-        return databaseName;
-    }
-    
-    private String getSubString(String url, int stIndex){
-        String value = ""; //NOI18N       
-        if (stIndex != -1) {
-            int clIndex = url.indexOf(";", stIndex); //NOI18N
-            int scIndex = url.indexOf(":", stIndex); //NOI18N
-            int qIndex = url.indexOf("?", stIndex); //NOI18N
-            int val = clIndex;
-            if ((clIndex > scIndex) && (scIndex != -1)) {
-                val = scIndex;
-                if ((scIndex > qIndex) && (qIndex != -1)) {
-                    val = qIndex;
-                }
-            } else if ((clIndex > qIndex) && (qIndex != -1)) {
-                val = qIndex;
-            }
-            if (val != -1) {
-                value = url.substring(stIndex + 1, val);
-            } else {
-                value = url.substring(stIndex + 1, url.length());
-            }
-        }
-        return value;
-    }
-    /**
-     * Parses incoming url to get INFORMIXSERVER additional property 
+     * Get INFORMIXSERVER additional property 
      * example of url : jdbc:informix-sqli://#HOST$:#PORT$/#DB$:INFORMIXSERVER=#SERVER_NAME$
      */
-    private String getUrlInformixServerName(String url){
-        String informixServer = ""; //NOI18N
-        int index = url.toLowerCase(Locale.ENGLISH).indexOf("informixserver="); //NOI18N
-        if(index != -1){
-            int eqIndex = url.indexOf("=", index); //NOI18N
-            informixServer = getSubString(url, eqIndex);  
+    private String getInformixServerName(UrlData urlData){
+        String informixServer = "";
+        Map<String, String> props = urlData.getProperties();
+        for (Iterator it = props.keySet().iterator(); it.hasNext();) {
+            String propName = (String) it.next();
+            if(propName.toLowerCase(Locale.ENGLISH).equals("informixserver")){
+                informixServer = props.get(propName);
+            }
         }
         return informixServer;
     }
-    
     /***************************************** DS Management API *****************************************************************************/
     
     /**
@@ -1065,7 +931,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         }
         return ds;
     }    
-    
+
     private void createCPPoolResource(String name, String databaseUrl, String username, String password, String driver, File resourceDir) throws IOException {
         FileObject location = FileUtil.toFileObject(resourceDir);
         Resources resources = ResourceUtils.getServerResourcesGraph(location);
@@ -1102,7 +968,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         String dbUser = username;
         String dbPassword = password;
         if(vendorName.equals("derby_net")) {  //NOI18N)
-            jdbcConnectionPool = setDerbyProps(vendorName, databaseUrl, jdbcConnectionPool);
+            jdbcConnectionPool = setDerbyProps(databaseUrl, jdbcConnectionPool);
             if(dbUser == null || dbUser.trim().length() == 0) {
                 dbUser = "app"; //NOI18N
             }    
@@ -1111,7 +977,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
             }    
         }else {
             if(Arrays.asList(WizardConstants.VendorsExtraProps).contains(vendorName)) {
-               jdbcConnectionPool = setAdditionalProps(vendorName, databaseUrl, jdbcConnectionPool);
+                jdbcConnectionPool = setAdditionalProps(vendorName, databaseUrl, jdbcConnectionPool);
             }else{
                 if(vendorName.equals("pointbase")) { // NOI18N
                     PropertyElement databaseOrUrl = jdbcConnectionPool.newPropertyElement();
@@ -1239,7 +1105,7 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
      */
     private String createCheckForConnectionPool(String vendorName, String url, String username, String password, String driver, File dir){
         boolean createResource = true;
-        String poolName = vendorName + WizardConstants.__ConnPoolSuffix;
+        String poolName = createPoolName(url, vendorName, username);
         File resourceFile = getServerResourceFiles(dir);
         if(resourceFile != null){
             HashMap pools = getConnectionPools(resourceFile);
@@ -1276,6 +1142,20 @@ public class ResourceConfigurator implements ResourceConfiguratorInterface {
         return poolName;
     }
     
+    private String createPoolName(String url, String vendorName, String username){
+        UrlData urlData = new UrlData(url);
+        String poolName = vendorName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
+        String dbName = urlData.getDatabaseName();
+        if (dbName != null) {
+            poolName = vendorName + "_" + dbName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
+        }else{
+            String altdbName = urlData.getAlternateDBName();
+            if (altdbName != null) {
+                poolName = vendorName + "_" + altdbName + "_" + username + WizardConstants.__ConnPoolSuffix; //NOI18N
+            }
+        }
+        return poolName;
+    }
     /**
      * Implementation of Message Destination API in ConfigurationSupport
      * @return returns Set of SunMessageDestination's(JMS Resources) present in this J2EE project
