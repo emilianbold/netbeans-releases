@@ -51,7 +51,7 @@ public final class SQLIdentifiers {
      *   to be quoted and what the quote string should be.
      */
     public static Quoter createQuoter(DatabaseMetaData dbmd) {
-        return new Quoter(dbmd);
+        return new DatabaseMetaDataQuoter(dbmd);
     }
 
     
@@ -60,9 +60,17 @@ public final class SQLIdentifiers {
      * 
      * This class is immutable and thus thread-safe
      */
-    public static class Quoter {
+    public static abstract class Quoter {
+
+        Quoter() {}
+
+        public abstract String quoteIfNeeded(String identifier);
+    }
+
+    private static class DatabaseMetaDataQuoter extends Quoter {
+
         private static final Logger LOGGER = 
-            Logger.getLogger(Quoter.class.getName());
+            Logger.getLogger(DatabaseMetaDataQuoter.class.getName());
 
         // Rules for what happens to the casing of a character in an identifier
         // when it is not quoted
@@ -74,7 +82,7 @@ public final class SQLIdentifiers {
         private final String            quoteString;
         private final int               caseRule;
 
-        private Quoter(DatabaseMetaData dbmd) {
+        private DatabaseMetaDataQuoter(DatabaseMetaData dbmd) {
             extraNameChars  = getExtraNameChars(dbmd);
             quoteString     = getQuoteString(dbmd);
             caseRule        = getCaseRule(dbmd);

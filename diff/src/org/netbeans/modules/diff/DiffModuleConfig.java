@@ -165,6 +165,29 @@ public class DiffModuleConfig {
         }
         return null;
     }
+    
+     private void setDefaultProvider(DiffProvider ds) {
+        // TODO: Diff providers are registered in the layer so that we can change the order in which they
+        // TODO: appear in the lookup programmatically during runtime
+        FileSystem dfs = org.openide.filesystems.Repository.getDefault().getDefaultFileSystem();
+        FileObject services = dfs.findResource("Services/DiffProviders");
+        DataFolder df = DataFolder.findFolder(services);
+        DataObject[] children = df.getChildren();
+        for (int i = 0; i < children.length; i++) {
+            if (children[i] instanceof InstanceDataObject) {
+                InstanceDataObject ido = (InstanceDataObject) children[i];
+                if (ido.instanceOf(ds.getClass())) {
+                    try {
+                        if (ds.equals(ido.instanceCreate())) {
+                            df.setOrder(new DataObject[] { ido });
+                            break;
+                        }
+                    } catch (java.io.IOException ioex) {
+                    } catch (ClassNotFoundException cnfex) {}
+                }
+            }
+        }
+    } 
 
     private String getDiffCommand() {
         return getPreferences().get(PREF_EXTERNAL_DIFF_COMMAND, "diff {0} {1}");
@@ -197,6 +220,17 @@ public class DiffModuleConfig {
     
     public void setUseInteralDiff(boolean useInternal) {
         getPreferences().putBoolean(PREF_USE_INTERNAL_DIFF, useInternal);
+        Collection<? extends DiffProvider> diffs = Lookup.getDefault().lookupAll(DiffProvider.class);
+        if (useInternal) {
+            setDefaultProvider(getBuiltinProvider());
+        } else {
+            for (DiffProvider diff : diffs) {
+                if (diff instanceof CmdlineDiffProvider) {
+                    setDefaultProvider(diff);
+                    break;
+                }
+            }
+        }         
     }
 
     public boolean isUseInteralDiff() {

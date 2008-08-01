@@ -127,7 +127,7 @@ class InsertRecordDialog extends javax.swing.JDialog {
         jTextArea1.setBackground(javax.swing.UIManager.getDefaults().getColor("Label.background"));
         jTextArea1.setColumns(20);
         jTextArea1.setEditable(false);
-        jTextArea1.setFont(jTextArea1.getFont().deriveFont(jTextArea1.getFont().getSize()-1f));
+        jTextArea1.setFont(jTextArea1.getFont());
         jTextArea1.setLineWrap(true);
         jTextArea1.setRows(3);
         jTextArea1.setText(org.openide.util.NbBundle.getMessage(InsertRecordDialog.class, "InsertRecordDialog.jTextArea1.text")); // NOI18N

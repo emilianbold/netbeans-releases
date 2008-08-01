@@ -39,7 +39,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.languages.features.refactoring;
+package org.netbeans.modules.languages.refactoring;
 
 import java.io.IOException;
 import java.text.MessageFormat;
@@ -55,10 +55,9 @@ import org.netbeans.api.languages.ASTPath;
 import org.netbeans.api.languages.database.DatabaseContext;
 import org.netbeans.api.languages.database.DatabaseDefinition;
 import org.netbeans.api.languages.database.DatabaseItem;
+import org.netbeans.api.languages.database.DatabaseManager;
 import org.netbeans.api.languages.database.DatabaseUsage;
 import org.netbeans.modules.editor.NbEditorUtilities;
-import org.netbeans.modules.languages.features.DatabaseManager;
-import org.netbeans.modules.languages.features.DatabaseManager;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.RenameRefactoring;
