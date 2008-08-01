@@ -113,6 +113,16 @@ cp ./support-files/mysql.server ./support-files/mysql.server.tmp
 sed -e "s/^basedir=/basedir=$instdir/g" ./support-files/mysql.server > ./support-files/mysql.server.tmp
 mv ./support-files/mysql.server.tmp ./support-files/mysql.server
 
+#https://bugs.launchpad.net/bugs/251656
+if [ 0 -eq $ISROOT ] && 
+   [ -n "`grep lsb-base-logging.sh /lib/lsb/init-functions 2>/dev/null`" ] &&
+   [ -n "`grep usplash_write /etc/lsb-base-logging.sh 2>/dev/null`" ] && 
+   [ -n "`usplash_write OK > /dev/null | grep \"open: Permission denied\"`"] ; then
+    echo "... disabling lsb init-functions since it uses usplash_write which is not supported under user"
+    cp ./support-files/mysql.server ./support-files/mysql.server.tmp
+    sed -e "s/\/lib\/lsb\/init-functions/\/lib\/lsb\/init-functions-disabled/g" ./support-files/mysql.server > ./support-files/mysql.server.tmp
+    mv ./support-files/mysql.server.tmp ./support-files/mysql.server
+fi
 
 if [ 1 -eq $ISROOT ] ; then
 
