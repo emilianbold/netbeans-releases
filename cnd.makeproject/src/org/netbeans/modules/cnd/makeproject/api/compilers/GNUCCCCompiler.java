@@ -137,7 +137,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     protected String getCompilerStderrCommand() {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null){
-            return " "+compiler.getIncludeFlags();
+            return " " + compiler.getIncludeFlags(); // NOI18N
         }
         return ""; // NOI18N
     }
@@ -145,7 +145,7 @@ public abstract class GNUCCCCompiler extends CCCCompiler {
     protected String getCompilerStdoutCommand() {
         CompilerDescriptor compiler = getDescriptor();
         if (compiler != null){
-            return " "+compiler.getMacroFlags();
+            return " " + compiler.getMacroFlags();  // NOI18N
         }
         return ""; // NOI18N
     }

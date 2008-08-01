@@ -82,8 +82,8 @@ public class PackagingPanel extends javax.swing.JPanel implements HelpCtx.Provid
         }
         packagingFilesOuterPanel = new PackagingFilesOuterPanel(packagingFilesPanel, packagingConfiguration);
         
-        tabbedPane.addTab("Info", packagingInfoOuterPanel);
-        tabbedPane.addTab("Files", packagingFilesOuterPanel);
+        tabbedPane.addTab("Info", packagingInfoOuterPanel); // FIXUP
+        tabbedPane.addTab("Files", packagingFilesOuterPanel); // FIXUP
             
         if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_ZIP || packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             // Add tabs

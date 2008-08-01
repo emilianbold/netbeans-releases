@@ -178,7 +178,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Def Exe Perm
     public String getDefExePerm() {
-        return getPreferences().get(DEF_EXE_PERM, "755");
+        return getPreferences().get(DEF_EXE_PERM, "755"); // NOI18N
     }
     public void setDefExePerm(String value) {
         String oldValue = getDefExePerm();
@@ -189,7 +189,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Def File Perm
     public String getDefFilePerm() {
-        return getPreferences().get(DEF_FILE_PERM, "644");
+        return getPreferences().get(DEF_FILE_PERM, "644"); // NOI18N
     }
     public void setDefFilePerm(String value) {
         String oldValue = getDefFilePerm();
@@ -200,7 +200,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Def Owner Perm
     public String getDefOwner() {
-        return getPreferences().get(DEF_OWNER, "root");
+        return getPreferences().get(DEF_OWNER, "root"); // NOI18N
     }
     public void setDefOwner(String value) {
         String oldValue = getDefOwner();
@@ -211,7 +211,7 @@ public class MakeOptions extends SharedClassObject implements PropertyChangeList
     
     // Def Group Perm
     public String getDefGroup() {
-        return getPreferences().get(DEF_GROUP, "sys");
+        return getPreferences().get(DEF_GROUP, "sys"); // NOI18N
     }
     public void setDefGroup(String value) {
         String oldValue = getDefGroup();

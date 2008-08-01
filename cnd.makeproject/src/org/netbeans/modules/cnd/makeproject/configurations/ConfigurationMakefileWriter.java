@@ -625,13 +625,13 @@ public class ConfigurationMakefileWriter {
         
         bw.write("#!/bin/bash"); // NOI18N
         if (conf.getPackagingConfiguration().getVerbose().getValue()) {
-            bw.write(" -x");
+            bw.write(" -x"); // NOI18N
         }
         bw.write("\n"); // NOI18N
         bw.write("\n"); // NOI18N
-        bw.write("#\n");
-        bw.write("# Generated - do not edit!\n");
-        bw.write("#\n");
+        bw.write("#\n"); // NOI18N
+        bw.write("# Generated - do not edit!\n"); // NOI18N
+        bw.write("#\n"); // NOI18N
         bw.write("\n"); // NOI18N
         
         bw.write("# Macros\n"); // NOI18N
@@ -730,7 +730,7 @@ public class ConfigurationMakefileWriter {
             bw.write("# Generate zip file\n"); // NOI18N
             bw.write("cd $TOP\n"); // NOI18N
             bw.write("cd $TMPDIR\n"); // NOI18N
-            bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n");
+            bw.write(packagingConfiguration.getToolValue() + " -r "+ packagingConfiguration.getOptionsValue() + " " + outputRelToTmp + " *\n"); // NOI18N
         }
         else if (packagingConfiguration.getType().getValue() == PackagingConfiguration.TYPE_TAR) {
             bw.write("# Generate tar file\n"); // NOI18N
@@ -812,7 +812,7 @@ public class ConfigurationMakefileWriter {
         bw.write("cd $TOP\n"); // NOI18N
         List<InfoElement> infoList = packagingConfiguration.getHeader().getValue();
         for (InfoElement elem : infoList) {
-            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n");
+            bw.write("echo \'" + elem.getName() + "=\"" + elem.getValue() + "\"\'" + " >> $PKGINFOFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N        
         bw.write("cd $TOP\n"); // NOI18N 
@@ -821,7 +821,7 @@ public class ConfigurationMakefileWriter {
         List<String> dirList = findUndefinedDirectories(packagingConfiguration);
         for (String dir : dirList) {
             bw.write("echo \"");// NOI18N
-            bw.write("d");// NOI18N
+            bw.write("d"); // NOI18N
             bw.write(" none"); // Classes // NOI18N
             bw.write(" " + dir); // NOI18N
             bw.write(" 0" + MakeOptions.getInstance().getDefExePerm()); // NOI18N
@@ -858,7 +858,7 @@ public class ConfigurationMakefileWriter {
                 bw.write(" " + elem.getOwner());// NOI18N
                 bw.write(" " + elem.getGroup());// NOI18N
             }
-            bw.write("\"");
+            bw.write("\""); // NOI18N
             bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
         }
         bw.write("\n"); // NOI18N
