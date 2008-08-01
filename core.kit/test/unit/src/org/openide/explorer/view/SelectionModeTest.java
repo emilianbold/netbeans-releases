@@ -39,30 +39,19 @@
  * made subject to such option by the copyright holder.
  */
 
-/*
- *
- */
-
 package org.openide.explorer.view;
 
-import java.lang.ref.*;
-import java.awt.event.*;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.*;
-import javax.swing.JList;
-import javax.swing.SwingUtilities;
+import java.util.Arrays;
 import javax.swing.tree.TreeSelectionModel;
-
-import org.openide.*;
-import org.openide.explorer.*;
-import org.openide.nodes.*;
-import org.openide.util.*;
-import junit.framework.*;
-import junit.textui.TestRunner;
-import org.netbeans.junit.*;
+import org.netbeans.junit.NbTestCase;
+import org.openide.explorer.ExplorerManager;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 
 /**
  * Tests for control selection mode on TreeView (test on BeanTreeView).
@@ -83,18 +72,15 @@ public class SelectionModeTest extends NbTestCase {
         super(name);
     }
    
-    public static void main (String args[]) {
-        TestRunner.run (new NbTestSuite (SelectionModeTest.class));
-        System.exit(0);
-    }
-
-
+    @Override
     protected boolean runInEQ() {
         return true;
     }
     
     /** Create tree and a selection of nodes for test.
      */
+    @SuppressWarnings("deprecation")
+    @Override
     protected void setUp () {
         // disable any lookup, to isolate the test from other registered 
         // subsystems like core/windows
@@ -112,8 +98,8 @@ public class SelectionModeTest extends NbTestCase {
         
         tree = new BeanTreeView ();
         //tree = new ContextTreeView ();
-        
-        final ExplorerPanel p = new ExplorerPanel ();
+
+        final org.openide.explorer.ExplorerPanel p = new org.openide.explorer.ExplorerPanel();
         p.setName ("SelectionModeTest");
         
         p.add (tree, BorderLayout.CENTER);
