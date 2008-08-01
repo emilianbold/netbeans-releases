@@ -258,16 +258,18 @@ public class MapperSwingTreeModel implements ExtTreeModel<MapperTreeNode>,
     
     public JPopupMenu getCanvasPopupMenu(GraphItem item) {
         JPopupMenu newMenu = new JPopupMenu();
-/*todo a
+
         // vlv: print
-        JMenuItem newItem = new JMenuItem(PrintManager.printAction(<JComponent>));
+        JMenuItem newItem = new JMenuItem(PrintManager.printAction(
+                mMapperTcContext.getMapper()));
+        
         newItem.setText("Print...");
-        newItem.setMnemonic(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
-                KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK).getKeyCode());
-        newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK + 
+//        newItem.setMnemonic(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK +
+//                KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK).getKeyCode());
+        newItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, KeyEvent.CTRL_DOWN_MASK +
                 KeyEvent.SHIFT_DOWN_MASK + KeyEvent.ALT_DOWN_MASK));
         newMenu.add(newItem);
-*/
+
         return newMenu;
     }
     
