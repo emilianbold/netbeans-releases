@@ -50,7 +50,10 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.StringTokenizer;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ArchiverConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.BasicCompilerConfiguration;
@@ -759,6 +762,44 @@ public class ConfigurationMakefileWriter {
         return null;
     }
     
+    private List<String> findUndefinedDirectories(PackagingConfiguration packagingConfiguration) {
+        List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
+        HashSet set  = new HashSet();
+        ArrayList<String> list = new ArrayList<String>();
+        
+        // Already Defined
+        for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.DIRECTORY) {
+                String path = elem.getTo();
+                if (path.endsWith("/")) { // NOI18N
+                    path = path.substring(0, path.length()-1);
+                }
+                set.add(path);
+            }
+        }
+        // Do all sub dirrectories
+        for (FileElement elem : fileList) {
+            if (elem.getType() == FileElement.FileType.FILE || elem.getType() == FileElement.FileType.SOFTLINK) {
+                String path = IpeUtils.getDirName(elem.getTo());
+                String base = ""; // NOI18N
+                if (path != null && path.length() > 0) {
+                    StringTokenizer tokenizer = new StringTokenizer(path, "/"); // NOI18N
+                    while (tokenizer.hasMoreTokens()) {
+                        if (base.length() > 0) {
+                            base += "/"; // NOI18N
+                        }
+                        base += tokenizer.nextToken();
+                        if (!set.contains(base)) {
+                            set.add(base);
+                            list.add(base);
+                        }
+                    }
+                }
+            }
+        }
+        return list;
+    }
+    
     private void writePackagingScriptBodySVR4(BufferedWriter bw, MakeConfiguration conf) throws IOException {
         PackagingConfiguration packagingConfiguration = conf.getPackagingConfiguration();
         String packageName = findInfoValueName(packagingConfiguration, "PKG"); // NOI18N // FIXUP: what is null????
@@ -776,6 +817,22 @@ public class ConfigurationMakefileWriter {
         bw.write("\n"); // NOI18N        
         bw.write("cd $TOP\n"); // NOI18N 
         bw.write("echo \"i pkginfo=pkginfo\" >> $PROTOTYPEFILE\n"); // NOI18N
+        bw.write("\n"); // NOI18N     
+        List<String> dirList = findUndefinedDirectories(packagingConfiguration);
+        for (String dir : dirList) {
+            bw.write("echo \"");// NOI18N
+            bw.write("d");// NOI18N
+            bw.write(" none"); // Classes // NOI18N
+            bw.write(" " + dir); // NOI18N
+            bw.write(" " + MakeOptions.getInstance().getDefExePerm()); // NOI18N
+            bw.write(" " + MakeOptions.getInstance().getDefOwner()); // NOI18N
+            bw.write(" " + MakeOptions.getInstance().getDefGroup()); // NOI18N
+            bw.write("\""); // NOI18N
+            bw.write(" >> $PROTOTYPEFILE\n"); // NOI18N
+            
+        }
+        
+        bw.write("\n"); // NOI18N
         List<FileElement> fileList = packagingConfiguration.getFiles().getValue();
         for (FileElement elem : fileList) {
             bw.write("echo \"");// NOI18N
