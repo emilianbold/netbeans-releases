@@ -500,6 +500,7 @@ public class AcceptanceTestCase extends JellyTestCase {
         boolean bValid = true;
         // Get text editor for schema view source representation
         EditorOperator opEditor = new EditorOperator(strSchemaName);
+        try { Thread.sleep( 1000 ); } catch( InterruptedException ex ) { }
         // Call popup menu on schema source code
         opEditor.clickForPopup();
         // Push "Validate XML" menu item

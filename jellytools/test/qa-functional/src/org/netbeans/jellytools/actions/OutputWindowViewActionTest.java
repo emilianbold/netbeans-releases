@@ -71,8 +71,7 @@ public class OutputWindowViewActionTest extends JellyTestCase {
         suite.addTest(new OutputWindowViewActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(OutputWindowViewActionTest.class,  
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(OutputWindowViewActionTest.class);
     }
     
     /** Use for internal test execution inside IDE

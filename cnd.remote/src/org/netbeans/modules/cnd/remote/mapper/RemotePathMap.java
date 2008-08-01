@@ -129,7 +129,7 @@ public class RemotePathMap extends HashMap<String, String> implements PathMap {
             String key = unifySeparators(entry.getKey());
             if (ulpath.startsWith(key)) {
                 String mpoint = entry.getValue();
-                return mpoint + lpath.substring(key.length());
+                return mpoint + lpath.substring(key.length()).replace('\\', '/');
             }
         }
         return lpath;

@@ -229,6 +229,7 @@ public class EditServerListDialog extends JPanel implements ActionListener, Prop
                 if (dlg.isDefault()) {
                     defaultIndex = model.getSize() - 1;
                     lstDevHosts.repaint();
+                    valueChanged(null);
                 }
             }
         }

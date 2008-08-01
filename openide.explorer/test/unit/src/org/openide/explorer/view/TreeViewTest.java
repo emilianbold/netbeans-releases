@@ -62,6 +62,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
@@ -97,7 +98,7 @@ public final class TreeViewTest extends NbTestCase {
 
 
 //    public static TreeViewTest suite() {
-//        return new TreeViewTest("testPreventGCOfVisibleNodesLazy");
+//        return new TreeViewTest("testSetSelectedNodeIsSynchronizedLazy");
 //    }
     
     /**
@@ -418,7 +419,7 @@ public final class TreeViewTest extends NbTestCase {
             throw run.e;
         }
     }
-
+    
     public void testPreventGCOfVisibleNodesEager() throws Exception {
         doPreventGCOfVisibleNodes(false);
     }
@@ -503,6 +504,119 @@ public final class TreeViewTest extends NbTestCase {
         }
         fail("Node shall not be GCed: " + ref.get());
     }
+    
+    public void testSetSelectedNodeIsSynchronizedEager() throws Exception {
+        doSetSelectedNodeIsSynchronized(false);
+    }
+
+    public void testSetSelectedNodeIsSynchronizedLazy() throws Exception {
+        doSetSelectedNodeIsSynchronized(true);
+    }
+
+    private void doSetSelectedNodeIsSynchronized(boolean lazy) throws Exception {
+        assert !EventQueue.isDispatchThread();
+
+        testWindow = new ExplorerWindow();
+        testWindow.getContentPane().add(treeView = new TestTreeView());
+
+        class WindowDisplayer implements Runnable {
+            public void run() {
+                testWindow.pack();
+                testWindow.setVisible(true);
+            }
+
+            void waitShown() throws InterruptedException {
+                while (!testWindow.isShowing()) {
+                    Thread.sleep(100);
+                }
+                Thread.sleep(500);
+            }
+        }
+
+        final Keys keys = new Keys(lazy, "A", "B", "C");
+        AbstractNode node = new AbstractNode(keys);
+        node.setName(getName());
+        final AbstractNode root = node;
+
+        try {
+            WindowDisplayer wd = new WindowDisplayer();
+            testWindow.getExplorerManager().setRootContext(root);
+            EventQueue.invokeAndWait(wd);
+            wd.waitShown();
+        } catch (InvocationTargetException ex) {
+            ex.printStackTrace();
+        }
+
+        waitAWT();
+        testWindow.getExplorerManager().setRootContext(root);
+        assertSame("Root is OK", root, testWindow.getExplorerManager().getRootContext());
+
+        Node[] arr = node.getChildren().getNodes();
+        testWindow.getExplorerManager().setExploredContext(node);
+
+        final AwtBlock block = new AwtBlock();
+        block.block();
+        
+        class SetSelectedFromAwt implements Runnable {
+            Throwable e = null;
+
+            public void run() {
+                Node[] arr2 = root.getChildren().getNodes();
+                try {
+                    testWindow.getExplorerManager().setSelectedNodes(arr2);
+                } catch (Throwable ex) {
+                    e = ex;
+                }
+            }
+        }
+        SetSelectedFromAwt setSel = new SetSelectedFromAwt();
+        SwingUtilities.invokeLater(setSel);
+
+        keys.keys("A", "B", "C", "D");
+        block.unblock();
+        waitAWT();
+        if (setSel.e != null) {
+            fail();
+        }
+    }
+    
+    class AwtBlock implements Runnable {
+
+        public synchronized void run() {
+            notify();
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        synchronized void block() {
+            SwingUtilities.invokeLater(this);
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+        synchronized void unblock() {
+            notifyAll();
+        }
+    }
+    
+    class Block {
+        synchronized void block() {
+            try {
+                wait();
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        synchronized void unblock() {
+            notifyAll();
+        }
+    }
 
     /** Sample keys.
     */
@@ -528,6 +642,9 @@ public final class TreeViewTest extends NbTestCase {
          *   nodes for this key
          */
         protected Node[] createNodes(Object key) {
+            if (key.toString().startsWith("-")) {
+                return null;
+            }
             AbstractNode an = new AbstractNode (Children.LEAF);
             an.setName (key.toString ());
 

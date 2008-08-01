@@ -76,8 +76,7 @@ public class FindActionTest extends JellyTestCase {
         suite.addTest(new FindActionTest("testPerformShortcut"));
         return suite;
          */
-        return createModuleTest(FindActionTest.class, "testPerformPopup", 
-                "testPerformMenu", "testPerformAPI", "testPerformShortcut");
+        return createModuleTest(FindActionTest.class);
     }
 
     @Override
