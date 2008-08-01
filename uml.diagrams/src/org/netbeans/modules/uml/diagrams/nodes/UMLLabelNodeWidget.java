@@ -72,7 +72,7 @@ public abstract class UMLLabelNodeWidget extends UMLNodeWidget implements LabelN
     {
         if (labelWidget == null && getObject()!=null)
         {
-            labelWidget = new MovableLabelWidget(getScene(), this, getObject().getFirstSubject(), getWidgetID() + ".Label", loc("NodeLabel"));
+            labelWidget = new MovableLabelWidget(getScene(), this, getObject().getFirstSubject(), getResourcePath(), loc("NodeLabel"));
             labelWidget.setVisible(false);
             Widget parent = getParentWidget();
             if (parent != null)

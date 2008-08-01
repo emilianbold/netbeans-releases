@@ -59,7 +59,6 @@ import org.netbeans.modules.uml.diagrams.nodes.UMLNameWidget;
 import org.netbeans.modules.uml.drawingarea.ModelElementChangedKind;
 import org.netbeans.modules.uml.drawingarea.palette.context.DefaultContextPaletteModel;
 import org.netbeans.modules.uml.drawingarea.persistence.NodeWriter;
-import org.netbeans.modules.uml.drawingarea.persistence.PersistenceUtil;
 import org.netbeans.modules.uml.drawingarea.persistence.data.NodeInfo;
 import org.netbeans.modules.uml.drawingarea.view.UMLLabelWidget;
 import org.netbeans.modules.uml.drawingarea.view.UMLNodeWidget;
@@ -117,7 +116,7 @@ public class UseCaseWidget extends UMLNodeWidget
     private void initUseCaseWidget()
     {
         usecaseWidget = new Widget(scene);
-        ovalWidget = new OvalWidget(scene, USECASE_DEFAULT_WIDTH, USECASE_DEFAULT_HEIGHT, getWidgetID(), bundle.getString("LBL_body"));
+        ovalWidget = new OvalWidget(scene, USECASE_DEFAULT_WIDTH, USECASE_DEFAULT_HEIGHT, getResourcePath(), bundle.getString("LBL_body"));
         detailWidget = new Widget(getScene());
         detailWidget.setForeground(null);
         detailWidget.setBackground(null);
