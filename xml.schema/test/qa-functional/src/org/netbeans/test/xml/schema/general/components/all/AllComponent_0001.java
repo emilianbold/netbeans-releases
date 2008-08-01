@@ -106,8 +106,6 @@ public class AllComponent_0001 extends AllComponent {
       CheckingProperty( "ID", asCorrectIDValues, true );
       CheckingProperty( "ID", asIncorrectIDValues, false );
 
-      // TODO : Undo, Redo
-
       endTest( );
     }
 
@@ -117,8 +115,6 @@ public class AllComponent_0001 extends AllComponent {
 
       CheckingProperty( "Min Occurs", asCorrectMOValues, true );
       CheckingProperty( "Min Occurs", asIncorrectMOValues, false );
-
-      // TODO : Undo, Redo
 
       endTest( );
     }

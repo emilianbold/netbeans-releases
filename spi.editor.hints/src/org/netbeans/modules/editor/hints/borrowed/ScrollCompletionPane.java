@@ -102,7 +102,7 @@ public class ScrollCompletionPane extends JScrollPane {
     public ScrollCompletionPane(JTextComponent component, FixData fixes, String title, ListSelectionListener listener) {
         this( component, fixes, title, listener, null );
     }
-    
+
     public ScrollCompletionPane(JTextComponent component, FixData fixes, String title, ListSelectionListener listener, Dimension maxSize ) {
         this.component = component;
         
@@ -126,7 +126,8 @@ public class ScrollCompletionPane extends JScrollPane {
         minSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MIN_SIZE, null), new Dimension(60, 17));
         setMinimumSize(minSize);
 
-        maxSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
+        //Resize upto edge of screenborder, not COMPLETION_PANE_MAX_SIZE
+        //maxSize = parseDimension(prefs.get(SimpleValueNames.COMPLETION_PANE_MAX_SIZE, null), new Dimension(400, 300));
         if( maxSize != null ) {
             this.maxSize = maxSize;
             setMaximumSize(maxSize);

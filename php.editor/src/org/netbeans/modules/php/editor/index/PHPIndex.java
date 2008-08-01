@@ -335,9 +335,10 @@ public class PHPIndex {
             
             assert classSignatures.length == 1; 
             String foundClassName = getSignatureItem(classSignatures[0], 1);
+            foundClassName = (foundClassName != null) ? foundClassName.toLowerCase() : null;
             String persistentURL = classMap.getPersistentUrl();
             
-            if (!className.equals(foundClassName)) {
+            if (!className.toLowerCase().equals(foundClassName)) {
                 continue;
             }
 
@@ -547,11 +548,11 @@ public class PHPIndex {
                     
                     if(kind == NameKind.PREFIX) {
                         //case sensitive
-                        if(!className.startsWith(name)) {
+                        if(!className.toLowerCase().startsWith(name.toLowerCase())) {
                             continue;
                         }
                     } else if(kind == NameKind.EXACT_NAME) {
-                        if(!className.equals(name)) {
+                        if(!className.toLowerCase().equals(name.toLowerCase())) {
                             continue;
                         }
                     }

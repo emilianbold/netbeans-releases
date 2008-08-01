@@ -70,6 +70,7 @@ import org.netbeans.modules.cnd.makeproject.api.compilers.BasicCompiler;
 import org.netbeans.modules.cnd.api.compilers.CompilerSet;
 import org.netbeans.modules.cnd.api.compilers.Tool;
 import org.netbeans.modules.cnd.api.compilers.ToolchainManager.ToolchainDescriptor;
+import org.netbeans.modules.cnd.makeproject.MakeOptions;
 import org.netbeans.modules.cnd.makeproject.api.platforms.Platform;
 import org.netbeans.modules.cnd.makeproject.api.configurations.FortranCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.PackagingConfiguration;
@@ -276,12 +277,10 @@ public class ConfigurationMakefileWriter {
         String output = getOutput(conf);
         bw.write("# Build Targets\n"); // NOI18N
         if (conf.isCompileConfiguration()) {
-            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + output + "\n"); // NOI18N
-            bw.write("\n"); // NOI18N
-            if (hasSubprojects(conf)) {
-                bw.write(output + ": " + "${BUILD_SUBPROJECTS}" + "\n"); // NOI18N
-                bw.write("\n"); // NOI18N
-            }
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
+            bw.write("\t${MAKE} " + MakeOptions.getInstance().getMakeOptions() // NOI18N
+                    + " -f nbproject/Makefile-" + conf.getName() + ".mk " // NOI18N
+                    + output + "\n\n"); // NOI18N
             if (conf.isLinkerConfiguration())
                 writeLinkTarget(conf, bw, output);
             if (conf.isArchiverConfiguration())
@@ -290,7 +289,7 @@ public class ConfigurationMakefileWriter {
                 writeCompileTargets(conf, bw);
         }
         else if (conf.isMakefileConfiguration()) {
-            bw.write(".build-conf: " + "${BUILD_SUBPROJECTS} " + "\n"); // NOI18N
+            bw.write(".build-conf: ${BUILD_SUBPROJECTS}\n"); // NOI18N
             writeMakefileTargets(conf, bw);
         }
         writeSubProjectBuildTargets(conf, bw);
@@ -317,7 +316,14 @@ public class ConfigurationMakefileWriter {
 	for (int i = 0; i < additionalDependencies.length; i++) {
 	    bw.write(output + ": " + additionalDependencies[i] + "\n\n"); // NOI18N
 	}
-        bw.write(output + ": " + "${OBJECTFILES}" + "\n"); // NOI18N
+        LibraryItem[] libs = linkerConfiguration.getLibrariesConfiguration().getLibraryItemsAsArray();
+        for (LibraryItem lib : libs) {
+            String libPath = lib.getPath();
+            if (libPath != null && libPath.length() > 0) {
+                bw.write(output + ": " + libPath + "\n\n"); // NOI18N
+            }
+        }
+        bw.write(output + ": ${OBJECTFILES}\n"); // NOI18N
         String folders = IpeUtils.getDirName(output);
         if (folders != null)
             bw.write("\t${MKDIR} -p " + folders + "\n"); // NOI18N

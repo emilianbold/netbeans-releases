@@ -70,25 +70,25 @@ import org.openide.DialogDisplayer;
  * @author  Milan Kubec
  */
 public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
-    
+
     private JWSProjectProperties jwsProps;
     private File lastImageFolder = null;
-    
+
     private static String extResColumnNames[];
     private static String appletParamsColumnNames[];
-    
+
     public static CustomizerRunComponent runComponent;
     static {
         runComponent = new CustomizerRunComponent();
     }
-    
+
     /** Creates new form JWSCustomizerPanel */
     public JWSCustomizerPanel(JWSProjectProperties props) {
-        
+
         this.jwsProps = props;
-        
+
         initComponents();
-        
+
         enableCheckBox.setModel(jwsProps.enabledModel);
         enableCheckBox.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.enableCheckBox.mnemonic").toCharArray()[0]);
         offlineCheckBox.setModel(jwsProps.allowOfflineModel);
@@ -100,33 +100,34 @@ public class JWSCustomizerPanel extends JPanel implements HelpCtx.Provider {
         codebaseTextField.setDocument(jwsProps.codebaseURLDocument);
         appletClassComboBox.setModel(jwsProps.appletClassModel);
         applicationDescRadioButton.setModel(jwsProps.applicationDescButtonModel);
+        applicationDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.applicationDescRadioButton.mnemonic").toCharArray()[0]);
         appletDescRadioButton.setModel(jwsProps.appletDescButtonModel);
+        appletDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletDescRadioButton.mnemonic").toCharArray()[0]);
         compDescRadioButton.setModel(jwsProps.compDescButtonModel);
-        
+        compDescRadioButton.setMnemonic(NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.compDescRadioButton.mnemonic").toCharArray()[0]);
+
         setCodebaseComponents();
         boolean enableSelected = enableCheckBox.getModel().isSelected();
         setEnabledAllComponents(enableSelected);
         setEnabledRunComponent(enableSelected);
-        
-        setEnabledAppletControls(appletDescRadioButton.getModel().isSelected());
-        
+
         extResColumnNames = new String[] {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.href"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.name"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.extResources.version")
         };
-        appletParamsColumnNames = new String[] { 
+        appletParamsColumnNames = new String[] {
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.name"),
             NbBundle.getMessage(JWSCustomizerPanel.class, "JWSCustomizerPanel.appletParams.value")
         };
-        
+
     }
-    
+
     private static void setEnabledRunComponent(boolean enable) {
         runComponent.setCheckboxEnabled(enable);
         runComponent.setHintVisible(!enable);
     }
-    
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -451,7 +452,7 @@ private void extResButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         jwsProps.setExtResProperties(props);
     }
     dialog.dispose();
-    
+
 }//GEN-LAST:event_extResButtonActionPerformed
 
 private void appletDescRadioButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_appletDescRadioButtonActionPerformed
@@ -477,7 +478,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         jwsProps.setAppletParamsProperties(props);
     }
     dialog.dispose();
-    
+
 }//GEN-LAST:event_appletParamsButtonActionPerformed
 
     private void setEnabledAppletControls(boolean b) {
@@ -489,9 +490,9 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
     public HelpCtx getHelpCtx() {
         return new HelpCtx(JWSCustomizerPanel.class);
     }
-    
+
     private static class IconFileFilter extends FileFilter {
-        
+
         // XXX should check size of images?
         public boolean accept(File f) {
             if (f.isDirectory()) {
@@ -507,17 +508,17 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
             }
             return false;
         }
-        
+
         public String getDescription() {
             return NbBundle.getMessage(JWSCustomizerPanel.class, "MSG_IconFileFilter_Description");
         }
-        
+
     }
-    
+
     private CodebaseComboBoxModel getCBModel() {
         return (CodebaseComboBoxModel) codebaseComboBox.getModel();
     }
-    
+
     private void setCodebaseComponents() {
         String value = getCBModel().getSelectedCodebaseItem();
         if (JWSProjectProperties.CB_TYPE_LOCAL.equals(value)) {
@@ -531,7 +532,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
             codebaseTextField.setEditable(true);
         }
     }
-    
+
     private void setEnabledAllComponents(boolean b) {
         iconLabel.setEnabled(b);
         iconTextField.setEnabled(b);
@@ -550,7 +551,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
             setEnabledAppletControls(b);
         }
     }
-    
+
     private List<Map<String,String>> copyList(List<Map<String,String>> list2Copy) {
         List<Map<String,String>> list2Return = new ArrayList<Map<String,String>>();
         for (Map<String,String> map : list2Copy) {
@@ -563,7 +564,7 @@ private void appletParamsButtonActionPerformed(java.awt.event.ActionEvent evt) {
         }
         return list2Return;
     }
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox appletClassComboBox;
     private javax.swing.JLabel appletClassLabel;

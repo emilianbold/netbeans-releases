@@ -47,8 +47,7 @@ import org.netbeans.modules.mobility.svgcore.composer.SceneManager;
 import org.netbeans.modules.mobility.svgcore.model.SVGFileModel;
 
 /**
- *
- * @author avk
+ * @author akorostelev
  */
 public class SVGFormElement extends SVGComponentDrop{
 

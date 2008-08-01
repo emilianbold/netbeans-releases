@@ -147,6 +147,8 @@ public class XMLGeneration_0003 extends XMLGeneration {
       jcom.setText( "http://www.openlaszlo.org/lps/tools/lzx.xsd" );
       jcom.pushKey( KeyEvent.VK_ENTER );
 
+      Sleep( 10000 );
+
       jtable.clickOnCell( 0, 2, 1 );
       JComboBoxOperator jcombo = new JComboBoxOperator( jnew, 0 );
       jcombo.selectItem( "canvas" );
