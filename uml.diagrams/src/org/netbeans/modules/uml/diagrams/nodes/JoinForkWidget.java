@@ -117,10 +117,10 @@ public class JoinForkWidget extends UMLLabelNodeWidget
             
             //create a  join/fork node
             mainView = new CustomizableWidget(scene, 
-                    getWidgetID(), bundle.getString("LBL_body"));
+                    getResourcePath(), bundle.getString("LBL_body"));
     
-            mainView.setCustomizableResourceTypes(
-                    new ResourceType [] {ResourceType.BACKGROUND} );
+//            mainView.setCustomizableResourceTypes(
+//                    new ResourceType [] {ResourceType.BACKGROUND} );
             mainView.setBorder (BorderFactory.createLineBorder());
             mainView.setOpaque(true);
             setCurrentView(mainView);

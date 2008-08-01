@@ -84,7 +84,7 @@ public class DataStoreWidget extends ActivityNodeWidget
         
         //create main view 
         MainViewWidget mainView = new MainViewWidget(scene,
-                                                             getWidgetID(),
+                                                             getResourcePath(),
                                                              bundle.getString("LBL_body"));
         mainView.setLayout(
                 LayoutFactory.createVerticalFlowLayout(

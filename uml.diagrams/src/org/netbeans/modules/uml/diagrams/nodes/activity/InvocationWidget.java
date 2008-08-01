@@ -74,7 +74,7 @@ public class InvocationWidget extends ActivityNodeWidget
 
             //create main view 
             RoundedRectWidget mainView = new RoundedRectWidget(scene,
-                                                               getWidgetID(),
+                                                               getResourcePath(),
                                                                bundle.getString("LBL_body"));
 
             mainView.setMinimumSize(new Dimension(
@@ -102,7 +102,7 @@ public class InvocationWidget extends ActivityNodeWidget
             
             nameWidget = new MultilineEditableCompartmentWidget(scene, "", null,
                                                                  mainView,
-                                                                 getWidgetID()+".name",
+                                                                 getResourcePath(),
                                                                  bundle.getString("LBL_text"));
             nameWidget.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5)); 
             nameWidget.setAlignment(UMLLabelWidget.Alignment.CENTER);
@@ -120,20 +120,6 @@ public class InvocationWidget extends ActivityNodeWidget
         }
     }
 
-//    @Override
-//    public void propertyChange(PropertyChangeEvent event)
-//    {
-//        IElement element = (IElement) event.getSource();
-//        String propName = event.getPropertyName();
-//        if (element != null && element instanceof IInvocationNode)
-//        {
-//            IInvocationNode invocationElem = (IInvocationNode) element;
-//            if (propName.equals(ModelElementChangedKind.NAME_MODIFIED.toString()))
-//            {
-//                nameWidget.setLabel(invocationElem.getNameWithAlias());
-//            }
-//        }
-//    }
 
     public String getWidgetID()
     {
