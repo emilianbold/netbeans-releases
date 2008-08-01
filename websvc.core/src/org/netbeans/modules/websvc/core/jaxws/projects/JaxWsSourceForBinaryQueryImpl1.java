@@ -42,13 +42,11 @@ package org.netbeans.modules.websvc.core.jaxws.projects;
 import java.io.File;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.api.jaxws.project.config.Service;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation;
 import org.openide.filesystems.FileObject;
@@ -72,18 +70,8 @@ public class JaxWsSourceForBinaryQueryImpl1 implements SourceForBinaryQueryImple
                 if (prj != null) {
                     JAXWSSupport jaxWSS = JAXWSSupport.getJAXWSSupport(prj.getProjectDirectory());
                     if (jaxWSS != null) {
-                        boolean isServiceFromWsdl = false;
-                        List services = jaxWSS.getServices();
-                        for (Object service:services) {
-                            if (((Service)service).getWsdlUrl() != null) {
-                                isServiceFromWsdl = true;
-                                break;
-                            }
-                        }
-                        if (isServiceFromWsdl) {
-                            result = new Result(prj);
-                            cache.put(binaryRoot, result);
-                        }
+                        result = new Result(prj);
+                        cache.put(binaryRoot, result);
                     }
                 }
             }         

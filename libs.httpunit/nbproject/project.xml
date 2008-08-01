@@ -21,15 +21,16 @@ Microsystems, Inc. All Rights Reserved.
     <type>org.netbeans.modules.apisupport.project</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/nb-module-project/2">
-            <code-name-base>org.netbeans.soa.libs.httpunit</code-name-base>
+            <code-name-base>org.netbeans.libs.httpunit</code-name-base>
             <module-dependencies/>
             <public-packages>
                 <subpackages>com.meterware</subpackages>
             </public-packages>
             <class-path-extension>
-                <runtime-relative-path>ext/jbi/httpunit-1.6.2.jar</runtime-relative-path>
+                <runtime-relative-path>ext/httpunit-1.6.2.jar</runtime-relative-path>
                 <binary-origin>external/httpunit-1.6.2.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>
 </project>
+
