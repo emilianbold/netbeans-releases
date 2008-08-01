@@ -704,8 +704,10 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         df.getNodeDelegate ().getChildren ().getNodes (true);
 
         int pos = supp.indexOf (n);          
-        
-        assert pos != -1 : "Node " + n + " has position " + pos + " in children " + Arrays.asList (n.getParentNode ().getChildren ().getNodes ());
+
+        // #141851: getNodes()/getNodePosition() is not called under Children.MUTEX 
+        // therefore it is not guaranteed that node will be found (node could be deleted meanwhile)
+        // assert pos != -1 : "Node " + n + " has position " + pos + " in children " + Arrays.asList (n.getParentNode ().getChildren ().getNodes ());
 
         return pos;
     }

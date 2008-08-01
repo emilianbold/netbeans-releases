@@ -47,6 +47,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.gsf.api.Indexer;
@@ -71,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocBlock;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTag;
@@ -132,6 +134,7 @@ public class PHPIndexer implements Indexer {
     static final String FIELD_BASE = "base"; //NOI18N
     static final String FIELD_EXTEND = "extend"; //NOI18N
     static final String FIELD_CLASS = "clz"; //NOI18N
+    static final String FIELD_IFACE = "iface"; //NOI18N
     static final String FIELD_CONST = "const"; //NOI18N
     static final String FIELD_CLASS_CONST = "clz.const"; //NOI18N
     static final String FIELD_FIELD = "field"; //NOI18N
@@ -209,7 +212,7 @@ public class PHPIndexer implements Indexer {
         // php runtime files. Go to the php.project/tools, modify and run
         // preindex.sh script. Also change the number of license in
         // php.project/external/preindexed-php-license.txt
-        return "0.4.7"; // NOI18N
+        return "0.4.8"; // NOI18N
     }
 
     public String getIndexerName() {
@@ -306,6 +309,10 @@ public class PHPIndexer implements Indexer {
                     IndexDocument classDocument = factory.createDocument(10);
                     documents.add(classDocument);
                     indexClass((ClassDeclaration)statement, classDocument);
+                } else if (statement instanceof InterfaceDeclaration){
+                    IndexDocument ifaceDocument = factory.createDocument(10);
+                    documents.add(ifaceDocument);
+                    indexInterface((InterfaceDeclaration)statement, ifaceDocument);
                 }
             }
             
@@ -343,6 +350,56 @@ public class PHPIndexer implements Indexer {
             document.addPair(FIELD_CLASS, classSignature.toString(), true);
             
             for (Statement statement : classDeclaration.getBody().getStatements()){
+                if (statement instanceof MethodDeclaration) {
+                    MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
+                    indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);
+                } else if (statement instanceof FieldsDeclaration) {
+                    FieldsDeclaration fieldsDeclaration = (FieldsDeclaration) statement;
+                    
+                    for (SingleFieldDeclaration field : fieldsDeclaration.getFields()){
+                        if (field.getName().getName() instanceof Identifier) {
+                            Identifier identifier = (Identifier) field.getName().getName();
+                            StringBuilder fieldSignature = new StringBuilder();
+                            fieldSignature.append(identifier.getName() + ";"); //NOI18N
+                            fieldSignature.append(field.getStartOffset() + ";"); //NOI18N
+                            fieldSignature.append(fieldsDeclaration.getModifier() + ";"); //NOI18N
+                                     
+                            document.addPair(FIELD_FIELD, fieldSignature.toString(), false);
+                        }
+                    }
+                } else if (statement instanceof ClassConstantDeclaration) {
+                    ClassConstantDeclaration constDeclaration = (ClassConstantDeclaration) statement;
+                    
+                    for (Identifier id : constDeclaration.getNames()){
+                        StringBuilder signature = new StringBuilder();
+                        signature.append(id.getName() + ";");
+                        signature.append(constDeclaration.getStartOffset() + ";");
+                        document.addPair(FIELD_CLASS_CONST, signature.toString(), false);
+                    }
+                }
+
+            }
+        }
+        
+        private void indexInterface(InterfaceDeclaration ifaceDecl, IndexDocument document) {
+            StringBuilder ifaceSign = new StringBuilder();
+            ifaceSign.append(ifaceDecl.getName().getName().toLowerCase() + ";"); //NOI18N
+            ifaceSign.append(ifaceDecl.getName().getName() + ";"); //NOI18N
+            ifaceSign.append(ifaceDecl.getStartOffset() + ";"); //NOI18N
+            
+            for (Iterator<Identifier> it = ifaceDecl.getInterfaes().iterator(); it.hasNext();) {
+                Identifier id = it.next();
+                ifaceSign.append(id.getName());
+                
+                if (it.hasNext()){
+                    ifaceSign.append(',');
+                }
+            }
+            
+            ifaceSign.append(';');
+            document.addPair(FIELD_IFACE, ifaceSign.toString(), true);
+            
+            for (Statement statement : ifaceDecl.getBody().getStatements()){
                 if (statement instanceof MethodDeclaration) {
                     MethodDeclaration methodDeclaration = (MethodDeclaration) statement;
                     indexMethod(methodDeclaration.getFunction(), methodDeclaration.getModifier(), document);

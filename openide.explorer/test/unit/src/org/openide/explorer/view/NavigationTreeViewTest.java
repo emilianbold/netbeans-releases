@@ -152,7 +152,7 @@ public class NavigationTreeViewTest extends NbTestCase {
                         owner = o;
                     }
                 }
-                if (owner == null && i < 10) {
+                if (owner == null && i < 20) {
                     i++;
                     return;
                 }
