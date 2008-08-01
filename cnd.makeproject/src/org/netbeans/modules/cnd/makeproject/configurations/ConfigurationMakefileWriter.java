@@ -536,7 +536,7 @@ public class ConfigurationMakefileWriter {
         if (conf.getDependencyChecking().getValue() && !conf.isMakefileConfiguration()) {
             bw.write("\n"); // NOI18N
             bw.write("# Enable dependency checking\n"); // NOI18N
-            bw.write("include .dep.inc\n");
+            bw.write("include .dep.inc\n"); // NOI18N
         }
     }
     
@@ -716,6 +716,9 @@ public class ConfigurationMakefileWriter {
                 }
                 bw.write("cd " + "$TMPDIR/" + toDir + "\n"); // NOI18N
                 bw.write("ln -s " + elem.getFrom() + " " + toName + "\n"); // NOI18N
+            }
+            else if (elem.getType() == FileElement.FileType.UNKNOWN) {
+                // skip ???
             }
             else {
                 assert false;
